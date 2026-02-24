@@ -45,7 +45,7 @@ const S = {
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
 };
 
-const TABS = ["Analyzer", "Keywords", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
+const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
@@ -262,6 +262,194 @@ export default function BlogSEO() {
 
   const [serpFeatResult, setSerpFeatResult] = useState(null);
   const [serpFeatLoading, setSerpFeatLoading] = useState(false);
+
+  /* ── BATCH 3 STATE ──────────────────────────────────────────────────── */
+  const [sentenceVarietyResult, setSentenceVarietyResult] = useState(null);
+  const [sentenceVarietyLoading, setSentenceVarietyLoading] = useState(false);
+
+  const [emotionalToneResult, setEmotionalToneResult] = useState(null);
+  const [emotionalToneLoading, setEmotionalToneLoading] = useState(false);
+
+  const [jargonResult, setJargonResult] = useState(null);
+  const [jargonLoading, setJargonLoading] = useState(false);
+
+  const [expertiseResult, setExpertiseResult] = useState(null);
+  const [expertiseLoading, setExpertiseLoading] = useState(false);
+
+  const [multimediaResult, setMultimediaResult] = useState(null);
+  const [multimediaLoading, setMultimediaLoading] = useState(false);
+
+  const [questionsResult, setQuestionsResult] = useState(null);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+
+  const [introQualityResult, setIntroQualityResult] = useState(null);
+  const [introQualityLoading, setIntroQualityLoading] = useState(false);
+
+  const [ctaAuditResult, setCtaAuditResult] = useState(null);
+  const [ctaAuditLoading, setCtaAuditLoading] = useState(false);
+
+  const [formattingResult, setFormattingResult] = useState(null);
+  const [formattingLoading, setFormattingLoading] = useState(false);
+
+  const [thinContentResult, setThinContentResult] = useState(null);
+  const [thinContentLoading, setThinContentLoading] = useState(false);
+
+  const [kwProminenceResult, setKwProminenceResult] = useState(null);
+  const [kwProminenceLoading, setKwProminenceLoading] = useState(false);
+
+  const [kwTfidfResult, setKwTfidfResult] = useState(null);
+  const [kwTfidfLoading, setKwTfidfLoading] = useState(false);
+
+  const [coOccurrenceResult, setCoOccurrenceResult] = useState(null);
+  const [coOccurrenceLoading, setCoOccurrenceLoading] = useState(false);
+
+  const [secondaryKwResult, setSecondaryKwResult] = useState(null);
+  const [secondaryKwLoading, setSecondaryKwLoading] = useState(false);
+
+  const [voiceSearchResult, setVoiceSearchResult] = useState(null);
+  const [voiceSearchLoading, setVoiceSearchLoading] = useState(false);
+
+  const [negCheckResult, setNegCheckResult] = useState(null);
+  const [negCheckLoading, setNegCheckLoading] = useState(false);
+
+  const [featSnippetResult, setFeatSnippetResult] = useState(null);
+  const [featSnippetLoading, setFeatSnippetLoading] = useState(false);
+
+  const [urlAnalysisResult, setUrlAnalysisResult] = useState(null);
+  const [urlAnalysisLoading, setUrlAnalysisLoading] = useState(false);
+
+  const [mobileSeoResult, setMobileSeoResult] = useState(null);
+  const [mobileSeoLoading, setMobileSeoLoading] = useState(false);
+
+  const [hreflangResult, setHreflangResult] = useState(null);
+  const [hreflangLoading, setHreflangLoading] = useState(false);
+
+  const [ampResult, setAmpResult] = useState(null);
+  const [ampLoading, setAmpLoading] = useState(false);
+
+  const [resourceHintsResult, setResourceHintsResult] = useState(null);
+  const [resourceHintsLoading, setResourceHintsLoading] = useState(false);
+
+  const [jsonLdLintResult, setJsonLdLintResult] = useState(null);
+  const [jsonLdLintLoading, setJsonLdLintLoading] = useState(false);
+
+  const [ogImageDimsResult, setOgImageDimsResult] = useState(null);
+  const [ogImageDimsLoading, setOgImageDimsLoading] = useState(false);
+
+  const [httpsStatusResult, setHttpsStatusResult] = useState(null);
+  const [httpsStatusLoading, setHttpsStatusLoading] = useState(false);
+
+  const [blogOutlineKw, setBlogOutlineKw] = useState("");
+  const [blogOutlineAudience, setBlogOutlineAudience] = useState("general");
+  const [blogOutlineResult, setBlogOutlineResult] = useState(null);
+  const [blogOutlineLoading, setBlogOutlineLoading] = useState(false);
+
+  const [introGenKw, setIntroGenKw] = useState("");
+  const [introGenStyle, setIntroGenStyle] = useState("PAS");
+  const [introGenResult, setIntroGenResult] = useState(null);
+  const [introGenLoading, setIntroGenLoading] = useState(false);
+
+  const [titleIdeasKw, setTitleIdeasKw] = useState("");
+  const [titleIdeasResult, setTitleIdeasResult] = useState(null);
+  const [titleIdeasLoading, setTitleIdeasLoading] = useState(false);
+
+  const [ctaGenKw, setCtaGenKw] = useState("");
+  const [ctaGenGoal, setCtaGenGoal] = useState("signup");
+  const [ctaGenResult, setCtaGenResult] = useState(null);
+  const [ctaGenLoading, setCtaGenLoading] = useState(false);
+
+  const [keyTakeawaysResult, setKeyTakeawaysResult] = useState(null);
+  const [keyTakeawaysLoading, setKeyTakeawaysLoading] = useState(false);
+
+  const [summaryGenResult, setSummaryGenResult] = useState(null);
+  const [summaryGenLoading, setSummaryGenLoading] = useState(false);
+
+  const [toneAnalyzerResult, setToneAnalyzerResult] = useState(null);
+  const [toneAnalyzerLoading, setToneAnalyzerLoading] = useState(false);
+
+  const [contentGraderResult, setContentGraderResult] = useState(null);
+  const [contentGraderLoading, setContentGraderLoading] = useState(false);
+
+  const [pullQuotesResult, setPullQuotesResult] = useState(null);
+  const [pullQuotesLoading, setPullQuotesLoading] = useState(false);
+
+  const [headlineHookTitle, setHeadlineHookTitle] = useState("");
+  const [headlineHookResult, setHeadlineHookResult] = useState(null);
+  const [headlineHookLoading, setHeadlineHookLoading] = useState(false);
+
+  const [passageOptResult, setPassageOptResult] = useState(null);
+  const [passageOptLoading, setPassageOptLoading] = useState(false);
+
+  const [repurposeResult, setRepurposeResult] = useState(null);
+  const [repurposeLoading, setRepurposeLoading] = useState(false);
+
+  const [productName, setProductName] = useState(""); const [productPrice, setProductPrice] = useState(""); const [productBrand, setProductBrand] = useState(""); const [productDesc, setProductDesc] = useState(""); const [productImage, setProductImage] = useState("");
+  const [productSchemaResult, setProductSchemaResult] = useState(null); const [productSchemaLoading, setProductSchemaLoading] = useState(false);
+
+  const [eventName, setEventName] = useState(""); const [eventDate, setEventDate] = useState(""); const [eventLocation, setEventLocation] = useState(""); const [eventOrg, setEventOrg] = useState("");
+  const [eventSchemaResult, setEventSchemaResult] = useState(null); const [eventSchemaLoading, setEventSchemaLoading] = useState(false);
+
+  const [personName, setPersonName] = useState(""); const [personJob, setPersonJob] = useState(""); const [personDesc, setPersonDesc] = useState(""); const [personSameAs, setPersonSameAs] = useState("");
+  const [personSchemaResult, setPersonSchemaResult] = useState(null); const [personSchemaLoading, setPersonSchemaLoading] = useState(false);
+
+  const [courseName, setCourseName] = useState(""); const [courseProvider, setCourseProvider] = useState(""); const [coursePrice, setCoursePrice] = useState(""); const [courseDuration, setCourseDuration] = useState("");
+  const [courseSchemaResult, setCourseSchemaResult] = useState(null); const [courseSchemaLoading, setCourseSchemaLoading] = useState(false);
+
+  const [recipeName, setRecipeName] = useState(""); const [recipeAuthorName, setRecipeAuthorName] = useState(""); const [recipePrepTime, setRecipePrepTime] = useState(""); const [recipeCookTime, setRecipeCookTime] = useState(""); const [recipeIngredients, setRecipeIngredients] = useState("");
+  const [recipeSchemaResult, setRecipeSchemaResult] = useState(null); const [recipeSchemaLoading, setRecipeSchemaLoading] = useState(false);
+
+  const [softwareName, setSoftwareName] = useState(""); const [softwareDesc, setSoftwareDesc] = useState(""); const [softwarePrice, setSoftwarePrice] = useState("0"); const [softwareCategory, setSoftwareCategory] = useState("WebApplication");
+  const [softwareSchemaResult, setSoftwareSchemaResult] = useState(null); const [softwareSchemaLoading, setSoftwareSchemaLoading] = useState(false);
+
+  const [bizName, setBizName] = useState(""); const [bizAddress, setBizAddress] = useState(""); const [bizCity, setBizCity] = useState(""); const [bizPhone, setBizPhone] = useState(""); const [bizType, setBizType] = useState("LocalBusiness");
+  const [localBizSchemaResult, setLocalBizSchemaResult] = useState(null); const [localBizSchemaLoading, setLocalBizSchemaLoading] = useState(false);
+
+  const [extLinkAuthResult, setExtLinkAuthResult] = useState(null);
+  const [extLinkAuthLoading, setExtLinkAuthLoading] = useState(false);
+
+  const [linkDensityResult, setLinkDensityResult] = useState(null);
+  const [linkDensityLoading, setLinkDensityLoading] = useState(false);
+
+  const [outboundAuditResult, setOutboundAuditResult] = useState(null);
+  const [outboundAuditLoading, setOutboundAuditLoading] = useState(false);
+
+  const [socialProofResult, setSocialProofResult] = useState(null);
+  const [socialProofLoading, setSocialProofLoading] = useState(false);
+
+  const [citationCheckResult, setCitationCheckResult] = useState(null);
+  const [citationCheckLoading, setCitationCheckLoading] = useState(false);
+
+  const [passageIndexResult, setPassageIndexResult] = useState(null);
+  const [passageIndexLoading, setPassageIndexLoading] = useState(false);
+
+  const [contentVisibilityResult, setContentVisibilityResult] = useState(null);
+  const [contentVisibilityLoading, setContentVisibilityLoading] = useState(false);
+
+  /* ── BATCH 4: SERP & CTR ─────────────────────────────────────────────── */
+  const [ctrOptimizerResult, setCtrOptimizerResult] = useState(null); const [ctrOptimizerLoading, setCtrOptimizerLoading] = useState(false); const [ctrTitle, setCtrTitle] = useState(""); const [ctrMeta, setCtrMeta] = useState(""); const [ctrKeyword, setCtrKeyword] = useState("");
+  const [serpFeaturesResult, setSerpFeaturesResult] = useState(null); const [serpFeaturesLoading, setSerpFeaturesLoading] = useState(false);
+  const [paaGenResult, setPaaGenResult] = useState(null); const [paaGenLoading, setPaaGenLoading] = useState(false); const [paaGenKeyword, setPaaGenKeyword] = useState(""); const [paaGenNiche, setPaaGenNiche] = useState("");
+  const [richResultCheckResult, setRichResultCheckResult] = useState(null); const [richResultCheckLoading, setRichResultCheckLoading] = useState(false);
+  const [rankbrainResult, setRankbrainResult] = useState(null); const [rankbrainLoading, setRankbrainLoading] = useState(false);
+  const [longtailEmbedResult, setLongtailEmbedResult] = useState(null); const [longtailEmbedLoading, setLongtailEmbedLoading] = useState(false); const [longtailTitle, setLongtailTitle] = useState(""); const [longtailPrimary, setLongtailPrimary] = useState("");
+  const [metaAbResult, setMetaAbResult] = useState(null); const [metaAbLoading, setMetaAbLoading] = useState(false); const [metaAbTitle, setMetaAbTitle] = useState(""); const [metaAbKeyword, setMetaAbKeyword] = useState("");
+  const [difficultyResult, setDifficultyResult] = useState(null); const [difficultyLoading, setDifficultyLoading] = useState(false); const [diffKeyword, setDiffKeyword] = useState(""); const [diffNiche, setDiffNiche] = useState("");
+  const [competitorSnapshotResult, setCompetitorSnapshotResult] = useState(null); const [competitorSnapshotLoading, setCompetitorSnapshotLoading] = useState(false); const [snapKeyword, setSnapKeyword] = useState("");
+
+  /* ── BATCH 4: BACKLINKS ──────────────────────────────────────────────── */
+  const [backlinkOppsResult, setBacklinkOppsResult] = useState(null); const [backlinkOppsLoading, setBacklinkOppsLoading] = useState(false); const [backlinkNiche, setBacklinkNiche] = useState("");
+  const [linkGapResult, setLinkGapResult] = useState(null); const [linkGapLoading, setLinkGapLoading] = useState(false); const [linkGapDomain, setLinkGapDomain] = useState(""); const [linkGapComp1, setLinkGapComp1] = useState(""); const [linkGapComp2, setLinkGapComp2] = useState(""); const [linkGapNiche, setLinkGapNiche] = useState("");
+  const [outreachResult, setOutreachResult] = useState(null); const [outreachLoading, setOutreachLoading] = useState(false); const [outreachTarget, setOutreachTarget] = useState(""); const [outreachContentTitle, setOutreachContentTitle] = useState(""); const [outreachType, setOutreachType] = useState("guest post");
+  const [bestofResult, setBestofResult] = useState(null); const [bestofLoading, setBestofLoading] = useState(false); const [bestofNiche, setBestofNiche] = useState("");
+  const [anchorOptResult, setAnchorOptResult] = useState(null); const [anchorOptLoading, setAnchorOptLoading] = useState(false); const [anchorOptKeyword, setAnchorOptKeyword] = useState("");
+  const [linkStrategyResult, setLinkStrategyResult] = useState(null); const [linkStrategyLoading, setLinkStrategyLoading] = useState(false); const [linkStratNiche, setLinkStratNiche] = useState(""); const [linkStratBudget, setLinkStratBudget] = useState("");
+  const [internalSuggestResult, setInternalSuggestResult] = useState(null); const [internalSuggestLoading, setInternalSuggestLoading] = useState(false);
+
+  /* ── BATCH 4: CONTENT EXTRAS ─────────────────────────────────────────── */
+  const [freshnessResult, setFreshnessResult] = useState(null); const [freshnessLoading, setFreshnessLoading] = useState(false);
+  const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperKeyword, setSkyscraperKeyword] = useState("");
+  const [relunchResult, setRelunchResult] = useState(null); const [relunchLoading, setRelunchLoading] = useState(false); const [relunchKeyword, setRelunchKeyword] = useState("");
+  const [semanticEnrichResult, setSemanticEnrichResult] = useState(null); const [semanticEnrichLoading, setSemanticEnrichLoading] = useState(false); const [semanticEnrichKeyword, setSemanticEnrichKeyword] = useState("");
 
   /* ── ANALYZER ─────────────────────────────────────────────────────────── */
   const runScan = useCallback(async () => {
@@ -736,6 +924,515 @@ export default function BlogSEO() {
     } catch {}
     setSerpFeatLoading(false);
   }, [scanResult, kwInput]);
+
+  /* ── BATCH 3 CALLBACKS ──────────────────────────────────────────────── */
+  const runSentenceVariety = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSentenceVarietyLoading(true); setSentenceVarietyResult(null);
+    try { const r = await apiFetch(`${API}/content/sentence-variety`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSentenceVarietyResult(r); } catch {}
+    setSentenceVarietyLoading(false);
+  }, [scanResult]);
+
+  const runEmotionalTone = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setEmotionalToneLoading(true); setEmotionalToneResult(null);
+    try { const r = await apiFetch(`${API}/content/emotional-tone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setEmotionalToneResult(r); } catch {}
+    setEmotionalToneLoading(false);
+  }, [scanResult]);
+
+  const runJargonDetector = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setJargonLoading(true); setJargonResult(null);
+    try { const r = await apiFetch(`${API}/content/jargon-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setJargonResult(r); } catch {}
+    setJargonLoading(false);
+  }, [scanResult]);
+
+  const runExpertiseSignals = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setExpertiseLoading(true); setExpertiseResult(null);
+    try { const r = await apiFetch(`${API}/content/expertise-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setExpertiseResult(r); } catch {}
+    setExpertiseLoading(false);
+  }, [scanResult]);
+
+  const runMultimediaScore = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setMultimediaLoading(true); setMultimediaResult(null);
+    try { const r = await apiFetch(`${API}/content/multimedia-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setMultimediaResult(r); } catch {}
+    setMultimediaLoading(false);
+  }, [scanResult]);
+
+  const runQuestionsCount = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setQuestionsLoading(true); setQuestionsResult(null);
+    try { const r = await apiFetch(`${API}/content/questions-count`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setQuestionsResult(r); } catch {}
+    setQuestionsLoading(false);
+  }, [scanResult]);
+
+  const runIntroQuality = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setIntroQualityLoading(true); setIntroQualityResult(null);
+    try { const r = await apiFetch(`${API}/content/intro-quality`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setIntroQualityResult(r); } catch {}
+    setIntroQualityLoading(false);
+  }, [scanResult]);
+
+  const runCtaAudit = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setCtaAuditLoading(true); setCtaAuditResult(null);
+    try { const r = await apiFetch(`${API}/content/cta-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setCtaAuditResult(r); } catch {}
+    setCtaAuditLoading(false);
+  }, [scanResult]);
+
+  const runFormattingScore = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setFormattingLoading(true); setFormattingResult(null);
+    try { const r = await apiFetch(`${API}/content/formatting-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setFormattingResult(r); } catch {}
+    setFormattingLoading(false);
+  }, [scanResult]);
+
+  const runThinContent = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setThinContentLoading(true); setThinContentResult(null);
+    try { const r = await apiFetch(`${API}/content/thin-content`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setThinContentResult(r); } catch {}
+    setThinContentLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runKwProminence = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setKwProminenceLoading(true); setKwProminenceResult(null);
+    try { const r = await apiFetch(`${API}/keywords/prominence`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setKwProminenceResult(r); } catch {}
+    setKwProminenceLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runKwTfidf = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setKwTfidfLoading(true); setKwTfidfResult(null);
+    try { const r = await apiFetch(`${API}/keywords/tfidf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setKwTfidfResult(r); } catch {}
+    setKwTfidfLoading(false);
+  }, [scanResult]);
+
+  const runCoOccurrence = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setCoOccurrenceLoading(true); setCoOccurrenceResult(null);
+    try { const r = await apiFetch(`${API}/keywords/co-occurrence`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setCoOccurrenceResult(r); } catch {}
+    setCoOccurrenceLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runSecondaryKw = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setSecondaryKwLoading(true); setSecondaryKwResult(null);
+    try { const r = await apiFetch(`${API}/keywords/secondary`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setSecondaryKwResult(r); } catch {}
+    setSecondaryKwLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runVoiceSearch = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setVoiceSearchLoading(true); setVoiceSearchResult(null);
+    try { const r = await apiFetch(`${API}/keywords/voice-search`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setVoiceSearchResult(r); } catch {}
+    setVoiceSearchLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runNegativeCheck = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setNegCheckLoading(true); setNegCheckResult(null);
+    try { const r = await apiFetch(`${API}/keywords/negative-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setNegCheckResult(r); } catch {}
+    setNegCheckLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runFeatSnippet = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setFeatSnippetLoading(true); setFeatSnippetResult(null);
+    try { const r = await apiFetch(`${API}/keywords/featured-snippet`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setFeatSnippetResult(r); } catch {}
+    setFeatSnippetLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runUrlAnalysis = useCallback(async () => {
+    if (!url.trim()) return;
+    setUrlAnalysisLoading(true); setUrlAnalysisResult(null);
+    try { const r = await apiFetch(`${API}/technical/url-analysis`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setUrlAnalysisResult(r); } catch {}
+    setUrlAnalysisLoading(false);
+  }, [url]);
+
+  const runMobileSeo = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setMobileSeoLoading(true); setMobileSeoResult(null);
+    try { const r = await apiFetch(`${API}/technical/mobile-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setMobileSeoResult(r); } catch {}
+    setMobileSeoLoading(false);
+  }, [scanResult]);
+
+  const runHreflang = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setHreflangLoading(true); setHreflangResult(null);
+    try { const r = await apiFetch(`${API}/technical/hreflang`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setHreflangResult(r); } catch {}
+    setHreflangLoading(false);
+  }, [scanResult]);
+
+  const runAmpCheck = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setAmpLoading(true); setAmpResult(null);
+    try { const r = await apiFetch(`${API}/technical/amp-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setAmpResult(r); } catch {}
+    setAmpLoading(false);
+  }, [scanResult]);
+
+  const runResourceHints = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setResourceHintsLoading(true); setResourceHintsResult(null);
+    try { const r = await apiFetch(`${API}/technical/resource-hints`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setResourceHintsResult(r); } catch {}
+    setResourceHintsLoading(false);
+  }, [scanResult]);
+
+  const runJsonLdLint = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setJsonLdLintLoading(true); setJsonLdLintResult(null);
+    try { const r = await apiFetch(`${API}/technical/json-ld-lint`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setJsonLdLintResult(r); } catch {}
+    setJsonLdLintLoading(false);
+  }, [scanResult]);
+
+  const runOgImageDims = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setOgImageDimsLoading(true); setOgImageDimsResult(null);
+    try { const r = await apiFetch(`${API}/technical/og-image-dims`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setOgImageDimsResult(r); } catch {}
+    setOgImageDimsLoading(false);
+  }, [scanResult]);
+
+  const runHttpsStatus = useCallback(async () => {
+    if (!url.trim()) return;
+    setHttpsStatusLoading(true); setHttpsStatusResult(null);
+    try { const r = await apiFetch(`${API}/technical/https-status`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setHttpsStatusResult(r); } catch {}
+    setHttpsStatusLoading(false);
+  }, [url]);
+
+  const runBlogOutline = useCallback(async () => {
+    if (!blogOutlineKw.trim()) return;
+    setBlogOutlineLoading(true); setBlogOutlineResult(null);
+    try { const r = await apiFetch(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: blogOutlineKw.trim(), audience: blogOutlineAudience }) }); if (r.ok) setBlogOutlineResult(r); } catch {}
+    setBlogOutlineLoading(false);
+  }, [blogOutlineKw, blogOutlineAudience]);
+
+  const runIntroGenerator = useCallback(async () => {
+    if (!introGenKw.trim()) return;
+    setIntroGenLoading(true); setIntroGenResult(null);
+    try { const r = await apiFetch(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introGenKw.trim(), style: introGenStyle }) }); if (r.ok) setIntroGenResult(r); } catch {}
+    setIntroGenLoading(false);
+  }, [introGenKw, introGenStyle]);
+
+  const runTitleIdeas = useCallback(async () => {
+    if (!titleIdeasKw.trim()) return;
+    setTitleIdeasLoading(true); setTitleIdeasResult(null);
+    try { const r = await apiFetch(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleIdeasKw.trim() }) }); if (r.ok) setTitleIdeasResult(r); } catch {}
+    setTitleIdeasLoading(false);
+  }, [titleIdeasKw]);
+
+  const runCtaGenerator = useCallback(async () => {
+    if (!ctaGenKw.trim()) return;
+    setCtaGenLoading(true); setCtaGenResult(null);
+    try { const r = await apiFetch(`${API}/ai/cta-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: ctaGenKw.trim(), goal: ctaGenGoal }) }); if (r.ok) setCtaGenResult(r); } catch {}
+    setCtaGenLoading(false);
+  }, [ctaGenKw, ctaGenGoal]);
+
+  const runKeyTakeaways = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setKeyTakeawaysLoading(true); setKeyTakeawaysResult(null);
+    try { const r = await apiFetch(`${API}/ai/key-takeaways`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setKeyTakeawaysResult(r); } catch {}
+    setKeyTakeawaysLoading(false);
+  }, [scanResult]);
+
+  const runSummaryGenerator = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSummaryGenLoading(true); setSummaryGenResult(null);
+    try { const r = await apiFetch(`${API}/ai/summary-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSummaryGenResult(r); } catch {}
+    setSummaryGenLoading(false);
+  }, [scanResult]);
+
+  const runToneAnalyzer = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setToneAnalyzerLoading(true); setToneAnalyzerResult(null);
+    try { const r = await apiFetch(`${API}/ai/tone-analyzer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setToneAnalyzerResult(r); } catch {}
+    setToneAnalyzerLoading(false);
+  }, [scanResult]);
+
+  const runContentGrader = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setContentGraderLoading(true); setContentGraderResult(null);
+    try { const r = await apiFetch(`${API}/ai/content-grader`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setContentGraderResult(r); } catch {}
+    setContentGraderLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runPullQuotes = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setPullQuotesLoading(true); setPullQuotesResult(null);
+    try { const r = await apiFetch(`${API}/ai/pull-quotes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setPullQuotesResult(r); } catch {}
+    setPullQuotesLoading(false);
+  }, [scanResult]);
+
+  const runHeadlineHook = useCallback(async () => {
+    const h = headlineHookTitle || scanResult?.title;
+    if (!h) return;
+    setHeadlineHookLoading(true); setHeadlineHookResult(null);
+    try { const r = await apiFetch(`${API}/ai/headline-hook`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ headline: h, keyword: kwInput.trim() }) }); if (r.ok) setHeadlineHookResult(r); } catch {}
+    setHeadlineHookLoading(false);
+  }, [headlineHookTitle, scanResult, kwInput]);
+
+  const runPassageOptimizer = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setPassageOptLoading(true); setPassageOptResult(null);
+    try { const r = await apiFetch(`${API}/ai/passage-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setPassageOptResult(r); } catch {}
+    setPassageOptLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runRepurpose = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setRepurposeLoading(true); setRepurposeResult(null);
+    try { const r = await apiFetch(`${API}/ai/content-repurpose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setRepurposeResult(r); } catch {}
+    setRepurposeLoading(false);
+  }, [scanResult]);
+
+  const runProductSchema = useCallback(async () => {
+    if (!productName.trim()) return;
+    setProductSchemaLoading(true); setProductSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/product`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: productName, price: productPrice, brand: productBrand, description: productDesc, image: productImage }) }); if (r.ok) setProductSchemaResult(r); } catch {}
+    setProductSchemaLoading(false);
+  }, [productName, productPrice, productBrand, productDesc, productImage]);
+
+  const runEventSchema = useCallback(async () => {
+    if (!eventName.trim() || !eventDate.trim()) return;
+    setEventSchemaLoading(true); setEventSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/event`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: eventName, date: eventDate, location: eventLocation, organizer: eventOrg }) }); if (r.ok) setEventSchemaResult(r); } catch {}
+    setEventSchemaLoading(false);
+  }, [eventName, eventDate, eventLocation, eventOrg]);
+
+  const runPersonSchema = useCallback(async () => {
+    if (!personName.trim()) return;
+    setPersonSchemaLoading(true); setPersonSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/person`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: personName, jobTitle: personJob, description: personDesc, sameAs: personSameAs }) }); if (r.ok) setPersonSchemaResult(r); } catch {}
+    setPersonSchemaLoading(false);
+  }, [personName, personJob, personDesc, personSameAs]);
+
+  const runCourseSchema = useCallback(async () => {
+    if (!courseName.trim()) return;
+    setCourseSchemaLoading(true); setCourseSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/course`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: courseName, provider: courseProvider, price: coursePrice, duration: courseDuration }) }); if (r.ok) setCourseSchemaResult(r); } catch {}
+    setCourseSchemaLoading(false);
+  }, [courseName, courseProvider, coursePrice, courseDuration]);
+
+  const runRecipeSchema = useCallback(async () => {
+    if (!recipeName.trim()) return;
+    setRecipeSchemaLoading(true); setRecipeSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/recipe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: recipeName, author: recipeAuthorName, prepTime: recipePrepTime, cookTime: recipeCookTime, ingredients: recipeIngredients }) }); if (r.ok) setRecipeSchemaResult(r); } catch {}
+    setRecipeSchemaLoading(false);
+  }, [recipeName, recipeAuthorName, recipePrepTime, recipeCookTime, recipeIngredients]);
+
+  const runSoftwareSchema = useCallback(async () => {
+    if (!softwareName.trim()) return;
+    setSoftwareSchemaLoading(true); setSoftwareSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/software`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: softwareName, description: softwareDesc, price: softwarePrice, category: softwareCategory }) }); if (r.ok) setSoftwareSchemaResult(r); } catch {}
+    setSoftwareSchemaLoading(false);
+  }, [softwareName, softwareDesc, softwarePrice, softwareCategory]);
+
+  const runLocalBizSchema = useCallback(async () => {
+    if (!bizName.trim()) return;
+    setLocalBizSchemaLoading(true); setLocalBizSchemaResult(null);
+    try { const r = await apiFetch(`${API}/schema/local-business`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: bizName, address: bizAddress, city: bizCity, phone: bizPhone, type: bizType }) }); if (r.ok) setLocalBizSchemaResult(r); } catch {}
+    setLocalBizSchemaLoading(false);
+  }, [bizName, bizAddress, bizCity, bizPhone, bizType]);
+
+  const runExtLinkAuth = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setExtLinkAuthLoading(true); setExtLinkAuthResult(null);
+    try { const r = await apiFetch(`${API}/links/external-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setExtLinkAuthResult(r); } catch {}
+    setExtLinkAuthLoading(false);
+  }, [scanResult]);
+
+  const runLinkDensity = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setLinkDensityLoading(true); setLinkDensityResult(null);
+    try { const r = await apiFetch(`${API}/links/link-density`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setLinkDensityResult(r); } catch {}
+    setLinkDensityLoading(false);
+  }, [scanResult]);
+
+  const runOutboundAudit = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setOutboundAuditLoading(true); setOutboundAuditResult(null);
+    try { const r = await apiFetch(`${API}/links/outbound-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setOutboundAuditResult(r); } catch {}
+    setOutboundAuditLoading(false);
+  }, [scanResult]);
+
+  const runSocialProof = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSocialProofLoading(true); setSocialProofResult(null);
+    try { const r = await apiFetch(`${API}/trust/social-proof`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSocialProofResult(r); } catch {}
+    setSocialProofLoading(false);
+  }, [scanResult]);
+
+  const runCitationCheck = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setCitationCheckLoading(true); setCitationCheckResult(null);
+    try { const r = await apiFetch(`${API}/trust/citation-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setCitationCheckResult(r); } catch {}
+    setCitationCheckLoading(false);
+  }, [scanResult]);
+
+  const runPassageIndex = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setPassageIndexLoading(true); setPassageIndexResult(null);
+    try { const r = await apiFetch(`${API}/passage-indexing`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setPassageIndexResult(r); } catch {}
+    setPassageIndexLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runContentVisibility = useCallback(async () => {
+    if (!scanResult?.url || !kwInput.trim()) return;
+    setContentVisibilityLoading(true); setContentVisibilityResult(null);
+    try { const r = await apiFetch(`${API}/ai/content-visibility`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setContentVisibilityResult(r); } catch {}
+    setContentVisibilityLoading(false);
+  }, [scanResult, kwInput]);
+
+  /* ── BATCH 4: SERP & CTR CALLBACKS ──────────────────────────────────── */
+  const runCtrOptimizer = useCallback(async () => {
+    if (!ctrTitle.trim()) return;
+    setCtrOptimizerLoading(true); setCtrOptimizerResult(null);
+    try { const r = await apiFetch(`${API}/serp/ctr-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: ctrTitle, metaDescription: ctrMeta, keyword: ctrKeyword }) }); if (r.ok) setCtrOptimizerResult(r); } catch {}
+    setCtrOptimizerLoading(false);
+  }, [ctrTitle, ctrMeta, ctrKeyword]);
+
+  const runIntentClassifier = useCallback(async () => {
+    if (!intentKeyword.trim()) return;
+    setIntentLoading(true); setIntentResult(null);
+    try { const r = await apiFetch(`${API}/serp/intent-classifier`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: intentKeyword }) }); if (r.ok) setIntentResult(r); } catch {}
+    setIntentLoading(false);
+  }, [intentKeyword]);
+
+  const runSerpFeatureTargets = useCallback(async () => {
+    if (!url.trim()) return;
+    setSerpFeaturesLoading(true); setSerpFeaturesResult(null);
+    try { const r = await apiFetch(`${API}/serp/feature-targets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: kwInput.trim() }) }); if (r.ok) setSerpFeaturesResult(r); } catch {}
+    setSerpFeaturesLoading(false);
+  }, [url, kwInput]);
+
+  const runPaaGenerator = useCallback(async () => {
+    if (!paaGenKeyword.trim()) return;
+    setPaaGenLoading(true); setPaaGenResult(null);
+    try { const r = await apiFetch(`${API}/serp/paa-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: paaGenKeyword, niche: paaGenNiche }) }); if (r.ok) setPaaGenResult(r); } catch {}
+    setPaaGenLoading(false);
+  }, [paaGenKeyword, paaGenNiche]);
+
+  const runRichResultCheck = useCallback(async () => {
+    if (!url.trim()) return;
+    setRichResultCheckLoading(true); setRichResultCheckResult(null);
+    try { const r = await apiFetch(`${API}/serp/rich-result-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRichResultCheckResult(r); } catch {}
+    setRichResultCheckLoading(false);
+  }, [url]);
+
+  const runRankbrainAdvisor = useCallback(async () => {
+    if (!url.trim()) return;
+    setRankbrainLoading(true); setRankbrainResult(null);
+    try { const r = await apiFetch(`${API}/serp/rankbrain-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRankbrainResult(r); } catch {}
+    setRankbrainLoading(false);
+  }, [url]);
+
+  const runLongtailEmbed = useCallback(async () => {
+    if (!longtailTitle.trim() || !longtailPrimary.trim()) return;
+    setLongtailEmbedLoading(true); setLongtailEmbedResult(null);
+    try { const r = await apiFetch(`${API}/serp/longtail-embedder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: longtailTitle, primaryKeyword: longtailPrimary }) }); if (r.ok) setLongtailEmbedResult(r); } catch {}
+    setLongtailEmbedLoading(false);
+  }, [longtailTitle, longtailPrimary]);
+
+  const runMetaAbVariants = useCallback(async () => {
+    if (!metaAbTitle.trim()) return;
+    setMetaAbLoading(true); setMetaAbResult(null);
+    try { const r = await apiFetch(`${API}/serp/meta-ab-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: metaAbTitle, keyword: metaAbKeyword }) }); if (r.ok) setMetaAbResult(r); } catch {}
+    setMetaAbLoading(false);
+  }, [metaAbTitle, metaAbKeyword]);
+
+  const runDifficultyScore = useCallback(async () => {
+    if (!diffKeyword.trim()) return;
+    setDifficultyLoading(true); setDifficultyResult(null);
+    try { const r = await apiFetch(`${API}/serp/difficulty-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: diffKeyword, niche: diffNiche }) }); if (r.ok) setDifficultyResult(r); } catch {}
+    setDifficultyLoading(false);
+  }, [diffKeyword, diffNiche]);
+
+  const runCompetitorSnapshot = useCallback(async () => {
+    if (!snapKeyword.trim()) return;
+    setCompetitorSnapshotLoading(true); setCompetitorSnapshotResult(null);
+    try { const r = await apiFetch(`${API}/serp/competitor-snapshot`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: snapKeyword, url: url.trim() }) }); if (r.ok) setCompetitorSnapshotResult(r); } catch {}
+    setCompetitorSnapshotLoading(false);
+  }, [snapKeyword, url]);
+
+  /* ── BATCH 4: BACKLINK CALLBACKS ─────────────────────────────────────── */
+  const runBacklinkOpps = useCallback(async () => {
+    if (!backlinkNiche.trim()) return;
+    setBacklinkOppsLoading(true); setBacklinkOppsResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/opportunity-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: backlinkNiche, url: url.trim() }) }); if (r.ok) setBacklinkOppsResult(r); } catch {}
+    setBacklinkOppsLoading(false);
+  }, [backlinkNiche, url]);
+
+  const runLinkGap = useCallback(async () => {
+    if (!linkGapDomain.trim()) return;
+    setLinkGapLoading(true); setLinkGapResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ yourDomain: linkGapDomain, competitor1: linkGapComp1, competitor2: linkGapComp2, niche: linkGapNiche }) }); if (r.ok) setLinkGapResult(r); } catch {}
+    setLinkGapLoading(false);
+  }, [linkGapDomain, linkGapComp1, linkGapComp2, linkGapNiche]);
+
+  const runOutreachGenerator = useCallback(async () => {
+    if (!outreachContentTitle.trim()) return;
+    setOutreachLoading(true); setOutreachResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/outreach-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetSite: outreachTarget, contentTitle: outreachContentTitle, outreachType }) }); if (r.ok) setOutreachResult(r); } catch {}
+    setOutreachLoading(false);
+  }, [outreachTarget, outreachContentTitle, outreachType]);
+
+  const runBestofFinder = useCallback(async () => {
+    if (!bestofNiche.trim()) return;
+    setBestofLoading(true); setBestofResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/bestof-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: bestofNiche }) }); if (r.ok) setBestofResult(r); } catch {}
+    setBestofLoading(false);
+  }, [bestofNiche]);
+
+  const runAnchorOptimizer = useCallback(async () => {
+    if (!anchorOptKeyword.trim()) return;
+    setAnchorOptLoading(true); setAnchorOptResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/anchor-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetKeyword: anchorOptKeyword, url: url.trim() }) }); if (r.ok) setAnchorOptResult(r); } catch {}
+    setAnchorOptLoading(false);
+  }, [anchorOptKeyword, url]);
+
+  const runLinkStrategy = useCallback(async () => {
+    if (!linkStratNiche.trim()) return;
+    setLinkStrategyLoading(true); setLinkStrategyResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/strategy-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: linkStratNiche, monthlyBudget: linkStratBudget, domain: url.trim() }) }); if (r.ok) setLinkStrategyResult(r); } catch {}
+    setLinkStrategyLoading(false);
+  }, [linkStratNiche, linkStratBudget, url]);
+
+  const runInternalSuggest = useCallback(async () => {
+    if (!url.trim()) return;
+    setInternalSuggestLoading(true); setInternalSuggestResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/internal-suggester`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setInternalSuggestResult(r); } catch {}
+    setInternalSuggestLoading(false);
+  }, [url]);
+
+  /* ── BATCH 4: CONTENT EXTRA CALLBACKS ───────────────────────────────── */
+  const runFreshnessScore = useCallback(async () => {
+    if (!url.trim()) return;
+    setFreshnessLoading(true); setFreshnessResult(null);
+    try { const r = await apiFetch(`${API}/content/freshness-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setFreshnessResult(r); } catch {}
+    setFreshnessLoading(false);
+  }, [url]);
+
+  const runSkyscraperGap = useCallback(async () => {
+    if (!url.trim()) return;
+    setSkyscraperLoading(true); setSkyscraperResult(null);
+    try { const r = await apiFetch(`${API}/content/skyscraper-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: skyscraperKeyword || kwInput.trim() }) }); if (r.ok) setSkyscraperResult(r); } catch {}
+    setSkyscraperLoading(false);
+  }, [url, skyscraperKeyword, kwInput]);
+
+  const runRelunchAdvisor = useCallback(async () => {
+    if (!url.trim()) return;
+    setRelunchLoading(true); setRelunchResult(null);
+    try { const r = await apiFetch(`${API}/content/relaunch-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: relunchKeyword || kwInput.trim() }) }); if (r.ok) setRelunchResult(r); } catch {}
+    setRelunchLoading(false);
+  }, [url, relunchKeyword, kwInput]);
+
+  const runSemanticEnrich = useCallback(async () => {
+    if (!url.trim() && !semanticEnrichKeyword.trim()) return;
+    setSemanticEnrichLoading(true); setSemanticEnrichResult(null);
+    try { const r = await apiFetch(`${API}/content/semantic-enrichment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: semanticEnrichKeyword || kwInput.trim() }) }); if (r.ok) setSemanticEnrichResult(r); } catch {}
+    setSemanticEnrichLoading(false);
+  }, [url, semanticEnrichKeyword, kwInput]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -2593,6 +3290,1427 @@ export default function BlogSEO() {
                 <div style={{ fontSize: 13 }}>Enter a seed keyword to discover keyword clusters, long-tail variations, and content ideas.</div>
               </div>
             )}
+          </>
+        )}
+
+        {/* ================================================================
+            CONTENT+ TAB (On-page quality)
+            ================================================================ */}
+        {tab === "Content+" && (
+          <>
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: sentenceVarietyResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📏 Sentence Variety</div>
+                <button style={S.btn(sentenceVarietyResult ? undefined : "primary")} onClick={runSentenceVariety} disabled={sentenceVarietyLoading || !scanResult}>
+                  {sentenceVarietyLoading ? <><span style={S.spinner} /> Checking…</> : sentenceVarietyResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!sentenceVarietyResult && !sentenceVarietyLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Distribution of short/medium/long sentences and variety score.</div>}
+              {sentenceVarietyResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>
+                  <div>Short: {sentenceVarietyResult.short}</div>
+                  <div>Medium: {sentenceVarietyResult.medium}</div>
+                  <div>Long: {sentenceVarietyResult.long}</div>
+                  <div>Avg words: {sentenceVarietyResult.avgWordsPerSentence}</div>
+                  <div>Score: {sentenceVarietyResult.varietyScore}</div>
+                  <div style={{ color: "#93c5fd" }}>💡 {sentenceVarietyResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: emotionalToneResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🎭 Emotional Tone (AI)</div>
+                <button style={S.btn(emotionalToneResult ? undefined : "primary")} onClick={runEmotionalTone} disabled={emotionalToneLoading || !scanResult}>
+                  {emotionalToneLoading ? <><span style={S.spinner} /> Analyzing…</> : emotionalToneResult ? "🔄 Re-run" : "Analyze"}
+                </button>
+              </div>
+              {!emotionalToneResult && !emotionalToneLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Detect primary tone, positivity, urgency, trust, and emotions.</div>}
+              {emotionalToneResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Primary: {emotionalToneResult.primaryTone} · Tone score: {emotionalToneResult.toneScore}</div>
+                  <div>Positivity: {emotionalToneResult.positivity} · Urgency: {emotionalToneResult.urgency} · Trust: {emotionalToneResult.trustworthiness}</div>
+                  <div>Emotions: {(emotionalToneResult.emotions || []).join(", ")}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {emotionalToneResult.recommendation}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: jargonResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧠 Jargon & Complexity</div>
+                <button style={S.btn(jargonResult ? undefined : "primary")} onClick={runJargonDetector} disabled={jargonLoading || !scanResult}>
+                  {jargonLoading ? <><span style={S.spinner} /> Checking…</> : jargonResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!jargonResult && !jargonLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Detect jargon, long-word ratio, and complexity score.</div>}
+              {jargonResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Words: {jargonResult.totalWords} · Long words: {jargonResult.longWordCount} · Complex %: {jargonResult.complexWordRatio}%</div>
+                  <div>Jargon: {(jargonResult.jargonWords || []).join(", ") || "None"}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {jargonResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: expertiseResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🏅 E-E-A-T Signals</div>
+                <button style={S.btn(expertiseResult ? undefined : "primary")} onClick={runExpertiseSignals} disabled={expertiseLoading || !scanResult}>
+                  {expertiseLoading ? <><span style={S.spinner} /> Checking…</> : expertiseResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!expertiseResult && !expertiseLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Statistics, citations, author bio, external links, and expertise score.</div>}
+              {expertiseResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {expertiseResult.expertiseScore} ({expertiseResult.grade})</div>
+                  <div>Stats: {expertiseResult.signals.statistics} · Citations: {expertiseResult.signals.citations} · Author bio: {expertiseResult.signals.authorBio ? "Yes" : "No"}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {expertiseResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: multimediaResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🖼️ Multimedia Score</div>
+                <button style={S.btn(multimediaResult ? undefined : "primary")} onClick={runMultimediaScore} disabled={multimediaLoading || !scanResult}>
+                  {multimediaLoading ? <><span style={S.spinner} /> Checking…</> : multimediaResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!multimediaResult && !multimediaLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Counts images, video, audio, charts, tables and media per words.</div>}
+              {multimediaResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 8 }}>
+                  <div>Images: {multimediaResult.images}</div>
+                  <div>Videos: {multimediaResult.videos}</div>
+                  <div>Audio: {multimediaResult.audios}</div>
+                  <div>Tables: {multimediaResult.tables}</div>
+                  <div>Score: {multimediaResult.multimediaScore}</div>
+                  <div style={{ color: "#93c5fd" }}>💡 {multimediaResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: questionsResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>❓ Questions & PAA</div>
+                <button style={S.btn(questionsResult ? undefined : "primary")} onClick={runQuestionsCount} disabled={questionsLoading || !scanResult}>
+                  {questionsLoading ? <><span style={S.spinner} /> Checking…</> : questionsResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!questionsResult && !questionsLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Question sentences, heading questions, engagement score.</div>}
+              {questionsResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Total questions: {questionsResult.totalQuestions} · Headings: {questionsResult.questionHeadingCount} · Engagement: {questionsResult.engagementScore}</div>
+                  {(questionsResult.headingQuestions || []).slice(0, 5).map((q, i) => <div key={i} style={{ color: "#93c5fd" }}>• {q}</div>)}
+                  {questionsResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {questionsResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: introQualityResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🎬 Intro Quality</div>
+                <button style={S.btn(introQualityResult ? undefined : "primary")} onClick={runIntroQuality} disabled={introQualityLoading || !scanResult}>
+                  {introQualityLoading ? <><span style={S.spinner} /> Checking…</> : introQualityResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!introQualityResult && !introQualityLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Hook strength, word count, stat/question detection.</div>}
+              {introQualityResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Words: {introQualityResult.wordCount} · Score: {introQualityResult.introScore}</div>
+                  <div>Has question: {introQualityResult.hasQuestion ? "Yes" : "No"} · Stat: {introQualityResult.hasStat ? "Yes" : "No"} · Hook: {introQualityResult.hasHook ? "Yes" : "No"}</div>
+                  {(introQualityResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {introQualityResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: ctaAuditResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📢 CTA Audit</div>
+                <button style={S.btn(ctaAuditResult ? undefined : "primary")} onClick={runCtaAudit} disabled={ctaAuditLoading || !scanResult}>
+                  {ctaAuditLoading ? <><span style={S.spinner} /> Checking…</> : ctaAuditResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!ctaAuditResult && !ctaAuditLoading && <div style={{ fontSize: 13, color: "#52525b" }}>CTA buttons, keyword density, final CTA presence.</div>}
+              {ctaAuditResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Buttons: {ctaAuditResult.buttonCount} · CTA score: {ctaAuditResult.ctaScore}</div>
+                  <div>CTA density: {ctaAuditResult.ctaDensity} · Final CTA: {ctaAuditResult.hasFinalCTA ? "Yes" : "No"}</div>
+                  <div>Samples: {(ctaAuditResult.ctaTextSamples || []).join(" · ")}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {ctaAuditResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: formattingResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧩 Formatting Score</div>
+                <button style={S.btn(formattingResult ? undefined : "primary")} onClick={runFormattingScore} disabled={formattingLoading || !scanResult}>
+                  {formattingLoading ? <><span style={S.spinner} /> Checking…</> : formattingResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!formattingResult && !formattingLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Lists, tables, bold, blockquotes, callouts, code.</div>}
+              {formattingResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {formattingResult.formattingScore} · Lists: {formattingResult.bullets + formattingResult.numbered}</div>
+                  <div>Tables: {formattingResult.tables} · Blockquotes: {formattingResult.blockquotes}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {formattingResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: thinContentResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🥛 Thin Content</div>
+                <button style={S.btn(thinContentResult ? undefined : "primary")} onClick={runThinContent} disabled={thinContentLoading || !scanResult}>
+                  {thinContentLoading ? <><span style={S.spinner} /> Checking…</> : thinContentResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!thinContentResult && !thinContentLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Word count, headings, paragraphs, repetition ratio, depth score.</div>}
+              {thinContentResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Words: {thinContentResult.wordCount} · Headings: {thinContentResult.headings} · Depth score: {thinContentResult.contentDepthScore}</div>
+                  <div>Risk: {thinContentResult.thinContentRisk}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {thinContentResult.recommendation}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: passageIndexResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧭 Passage Indexing</div>
+                <button style={S.btn(passageIndexResult ? undefined : "primary")} onClick={runPassageIndex} disabled={passageIndexLoading || !scanResult || !kwInput.trim()}>
+                  {passageIndexLoading ? <><span style={S.spinner} /> Checking…</> : passageIndexResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!passageIndexResult && !passageIndexLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Find top self-contained passages for snippets.</div>}
+              {passageIndexResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {passageIndexResult.passageIndexingScore} · Passages: {passageIndexResult.totalPassagesAnalysed}</div>
+                  {(passageIndexResult.topPassages || []).slice(0, 3).map((p, i) => <div key={i} style={{ color: "#93c5fd", marginTop: 4 }}>• {p.text}</div>)}
+                  {(passageIndexResult.optimizationTips || []).map((t, i) => <div key={i} style={{ color: "#fbbf24" }}>💡 {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Content Freshness Score */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🗓️ Content Freshness Score</div>
+              <div style={S.cardDesc}>Detect how fresh or stale your content is — and get specific update recommendations to boost rankings.</div>
+              <div style={S.row}>
+                <button style={S.btn("primary")} onClick={runFreshnessScore} disabled={freshnessLoading || !url.trim()}>
+                  {freshnessLoading ? <><span style={S.spinner} /> Analyzing…</> : "Check Freshness"}
+                </button>
+              </div>
+              {freshnessResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Freshness: <b style={{ color: freshnessResult.freshnessScore >= 70 ? "#4ade80" : freshnessResult.freshnessScore >= 40 ? "#facc15" : "#f87171" }}>{freshnessResult.freshnessScore}/100 ({freshnessResult.freshnessLabel})</b></span>
+                    <span>Age: <b>{freshnessResult.daysOldEstimate}</b></span>
+                  </div>
+                  {freshnessResult.publishDateDetected !== 'not found' && <div style={{ marginBottom: 4 }}>Published: {freshnessResult.publishDateDetected}</div>}
+                  <div style={{ marginBottom: 4 }}>Update priority: <b style={{ color: freshnessResult.updatePriority === "immediate" ? "#f87171" : "#facc15" }}>{freshnessResult.updatePriority}</b></div>
+                  {freshnessResult.outdatedSignals?.length > 0 && <div style={{ marginBottom: 4 }}>Outdated signals: {freshnessResult.outdatedSignals.join(", ")}</div>}
+                  {freshnessResult.updateRecommendations?.length > 0 && (
+                    <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>{freshnessResult.updateRecommendations.map((r, i) => <li key={i}>{r}</li>)}</ul>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Skyscraper Gap Finder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏙️ Skyscraper Gap Finder</div>
+              <div style={S.cardDesc}>Apply the Skyscraper Technique — find every content gap you need to fill to outrank the top results.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword (optional, uses main URL keyword if blank)..." value={skyscraperKeyword} onChange={e => setSkyscraperKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runSkyscraperGap} disabled={skyscraperLoading || !url.trim()}>
+                {skyscraperLoading ? <><span style={S.spinner} /> Finding gaps…</> : "Find Skyscraper Gaps"}
+              </button>
+              {skyscraperResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Quality: <b>{skyscraperResult.currentQualityScore}/100</b></span>
+                    <span>Potential: <b style={{ color: skyscraperResult.skyscraperPotential?.includes("high") ? "#4ade80" : "#facc15" }}>{skyscraperResult.skyscraperPotential}</b></span>
+                    <span>Words: <b>{skyscraperResult.currentWordCount}</b> → <b>{skyscraperResult.recommendedNewWordCount}</b></span>
+                  </div>
+                  {skyscraperResult.contentGaps?.slice(0, 6).map((g, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600 }}>{g.suggestedH2}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>{g.contentBrief}</div>
+                      <span style={{ color: g.importance === "critical" ? "#f87171" : g.importance === "high" ? "#facc15" : "#a1a1aa", fontSize: 11 }}>+{g.estimatedWordAdd} words · {g.importance}</span>
+                    </div>
+                  ))}
+                  {skyscraperResult.linkBaitElements?.length > 0 && (
+                    <div style={{ marginTop: 8 }}><b>Link bait elements to add:</b> {skyscraperResult.linkBaitElements.join(", ")}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Content Relaunch Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🚀 Content Relaunch Advisor</div>
+              <div style={S.cardDesc}>Get a step-by-step plan to update and re-promote old posts for a traffic boost.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword (optional)..." value={relunchKeyword} onChange={e => setRelunchKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runRelunchAdvisor} disabled={relunchLoading || !url.trim()}>
+                {relunchLoading ? <><span style={S.spinner} /> Planning…</> : "Plan Relaunch"}
+              </button>
+              {relunchResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Worthiness: <b style={{ color: relunchResult.relunchWorthiness?.includes("definitely") || relunchResult.relunchWorthiness?.includes("yes") ? "#4ade80" : "#facc15" }}>{relunchResult.relunchWorthiness}</b></div>
+                  <div style={{ color: "#a1a1aa", marginBottom: 8 }}>{relunchResult.reasoning}</div>
+                  {relunchResult.relunchTitle && <div style={{ marginBottom: 4 }}>Updated title: <b>{relunchResult.relunchTitle}</b></div>}
+                  {relunchResult.relunchPlan && (
+                    <div style={{ marginTop: 6 }}>
+                      {Object.entries(relunchResult.relunchPlan).map(([k, v], i) => (
+                        <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                          <b style={{ color: "#818cf8" }}>{k}:</b> {Array.isArray(v) ? v.join(", ") : v}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ marginTop: 8, color: "#4ade80" }}>Estimated traffic lift: {relunchResult.estimatedTrafficLift}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Semantic Enrichment Tool */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🧠 Semantic Enrichment Tool</div>
+              <div style={S.cardDesc}>Discover LSI terms, related entities, and semantic topics missing from your content to improve topical authority.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Main keyword to enrich for (optional)..." value={semanticEnrichKeyword} onChange={e => setSemanticEnrichKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runSemanticEnrich} disabled={semanticEnrichLoading || (!url.trim() && !semanticEnrichKeyword.trim())}>
+                {semanticEnrichLoading ? <><span style={S.spinner} /> Enriching…</> : "Analyze Semantic Richness"}
+              </button>
+              {semanticEnrichResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Semantic score: <b style={{ color: semanticEnrichResult.semanticScore >= 70 ? "#4ade80" : semanticEnrichResult.semanticScore >= 40 ? "#facc15" : "#f87171" }}>{semanticEnrichResult.semanticScore}/100 ({semanticEnrichResult.semanticLabel})</b></span>
+                    <span>Topic completeness: <b>{semanticEnrichResult.topicCompleteness}%</b></span>
+                  </div>
+                  {semanticEnrichResult.lsiTermsMissing?.length > 0 && <div style={{ marginBottom: 6 }}>Missing LSI terms: <span style={{ color: "#fbbf24" }}>{semanticEnrichResult.lsiTermsMissing?.slice(0, 6).join(", ")}</span></div>}
+                  {semanticEnrichResult.semanticEnrichments?.slice(0, 8).map((e, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ fontWeight: 600 }}>{e.term}</span>
+                      <span style={{ marginLeft: 8, color: "#818cf8", fontSize: 11 }}>{e.type}</span>
+                      <span style={{ marginLeft: 8, color: e.importance === "critical" ? "#f87171" : "#facc15", fontSize: 11 }}>{e.importance}</span>
+                      <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 2 }}>{e.suggestedUsage}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            KEYWORD+ TAB (On-page keywords)
+            ================================================================ */}
+        {tab === "Keyword+" && (
+          <>
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: kwProminenceResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🎯 Keyword Prominence</div>
+                <button style={S.btn(kwProminenceResult ? undefined : "primary")} onClick={runKwProminence} disabled={kwProminenceLoading || !scanResult || !kwInput.trim()}>
+                  {kwProminenceLoading ? <><span style={S.spinner} /> Checking…</> : kwProminenceResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!kwProminenceResult && !kwProminenceLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Title, H1, intro, meta, URL, and headings signals.</div>}
+              {kwProminenceResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {kwProminenceResult.prominenceScore} ({kwProminenceResult.grade})</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {kwProminenceResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: kwTfidfResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📊 TF-IDF</div>
+                <button style={S.btn(kwTfidfResult ? undefined : "primary")} onClick={runKwTfidf} disabled={kwTfidfLoading || !scanResult}>
+                  {kwTfidfLoading ? <><span style={S.spinner} /> Analyzing…</> : kwTfidfResult ? "🔄 Re-run" : "Analyze"}
+                </button>
+              </div>
+              {!kwTfidfResult && !kwTfidfLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Top terms and keyword density.</div>}
+              {kwTfidfResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Top terms: {(kwTfidfResult.topTerms || []).slice(0, 6).map(t => t.term).join(", ")}</div>
+                  <div>Density: {kwTfidfResult.keywordDensity ?? "n/a"}% · Dominant: {kwTfidfResult.dominantTheme}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {kwTfidfResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: coOccurrenceResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔗 Co-occurring Terms</div>
+                <button style={S.btn(coOccurrenceResult ? undefined : "primary")} onClick={runCoOccurrence} disabled={coOccurrenceLoading || !scanResult || !kwInput.trim()}>
+                  {coOccurrenceLoading ? <><span style={S.spinner} /> Checking…</> : coOccurrenceResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!coOccurrenceResult && !coOccurrenceLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Terms that appear near the keyword.</div>}
+              {coOccurrenceResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(coOccurrenceResult.coOccurringTerms || []).slice(0, 8).map((t, i) => <div key={i}>• {t.term} ({t.count})</div>)}
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {coOccurrenceResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: secondaryKwResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧭 Secondary Keywords (AI)</div>
+                <button style={S.btn(secondaryKwResult ? undefined : "primary")} onClick={runSecondaryKw} disabled={secondaryKwLoading || !scanResult || !kwInput.trim()}>
+                  {secondaryKwLoading ? <><span style={S.spinner} /> Generating…</> : secondaryKwResult ? "🔄 Re-run" : "Generate"}
+                </button>
+              </div>
+              {!secondaryKwResult && !secondaryKwLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AI suggests 10 secondary/LSI terms with intent.</div>}
+              {secondaryKwResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(secondaryKwResult.secondary || []).slice(0, 6).map((k, i) => <div key={i}>• {k.keyword} ({k.intent}, {k.priority})</div>)}
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>Gaps: {(secondaryKwResult.contentGaps || []).join(" · ")}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: voiceSearchResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🗣️ Voice Search (AI)</div>
+                <button style={S.btn(voiceSearchResult ? undefined : "primary")} onClick={runVoiceSearch} disabled={voiceSearchLoading || !scanResult || !kwInput.trim()}>
+                  {voiceSearchLoading ? <><span style={S.spinner} /> Generating…</> : voiceSearchResult ? "🔄 Re-run" : "Generate"}
+                </button>
+              </div>
+              {!voiceSearchResult && !voiceSearchLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Conversational queries and snippet answer.</div>}
+              {voiceSearchResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {voiceSearchResult.score}</div>
+                  {(voiceSearchResult.voiceKeywords || []).slice(0, 5).map((q, i) => <div key={i}>• {q}</div>)}
+                  <div style={{ marginTop: 6 }}>Snippet: {voiceSearchResult.featuredSnippetTarget}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: negCheckResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🚫 Over-Optimisation</div>
+                <button style={S.btn(negCheckResult ? undefined : "primary")} onClick={runNegativeCheck} disabled={negCheckLoading || !scanResult || !kwInput.trim()}>
+                  {negCheckLoading ? <><span style={S.spinner} /> Checking…</> : negCheckResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!negCheckResult && !negCheckLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Spam phrases, keyword stuffing, density.</div>}
+              {negCheckResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Density: {negCheckResult.keywordDensity}% · Spam: {negCheckResult.spamPhraseCount}</div>
+                  {(negCheckResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {negCheckResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: featSnippetResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>⭐ Featured Snippet</div>
+                <button style={S.btn(featSnippetResult ? undefined : "primary")} onClick={runFeatSnippet} disabled={featSnippetLoading || !scanResult || !kwInput.trim()}>
+                  {featSnippetLoading ? <><span style={S.spinner} /> Checking…</> : featSnippetResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!featSnippetResult && !featSnippetLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Best paragraph, FAQ/HowTo/Table signals, snippet score.</div>}
+              {featSnippetResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {featSnippetResult.featuredSnippetScore} · Type: {featSnippetResult.snippetType}</div>
+                  <div>Best para: {featSnippetResult.bestSnippetParagraph}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {featSnippetResult.tip}</div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            TECHNICAL+ TAB
+            ================================================================ */}
+        {tab === "Technical+" && (
+          <>
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: urlAnalysisResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔗 URL Analysis</div>
+                <button style={S.btn(urlAnalysisResult ? undefined : "primary")} onClick={runUrlAnalysis} disabled={urlAnalysisLoading || !url.trim()}>
+                  {urlAnalysisLoading ? <><span style={S.spinner} /> Checking…</> : urlAnalysisResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!urlAnalysisResult && !urlAnalysisLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Slug length, special chars, protocol, issues.</div>}
+              {urlAnalysisResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {urlAnalysisResult.urlScore} · Slug: {urlAnalysisResult.slug}</div>
+                  {(urlAnalysisResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  {urlAnalysisResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {urlAnalysisResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: mobileSeoResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📱 Mobile SEO</div>
+                <button style={S.btn(mobileSeoResult ? undefined : "primary")} onClick={runMobileSeo} disabled={mobileSeoLoading || !scanResult}>
+                  {mobileSeoLoading ? <><span style={S.spinner} /> Checking…</> : mobileSeoResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!mobileSeoResult && !mobileSeoLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Viewport, responsive images, render-blockers.</div>}
+              {mobileSeoResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {mobileSeoResult.mobileScore} · Viewport: {mobileSeoResult.hasViewport ? "Yes" : "No"}</div>
+                  {(mobileSeoResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  {mobileSeoResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {mobileSeoResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: hreflangResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🌐 Hreflang</div>
+                <button style={S.btn(hreflangResult ? undefined : "primary")} onClick={runHreflang} disabled={hreflangLoading || !scanResult}>
+                  {hreflangLoading ? <><span style={S.spinner} /> Checking…</> : hreflangResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!hreflangResult && !hreflangLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Alternate languages and x-default.</div>}
+              {hreflangResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Tags: {hreflangResult.count} · x-default: {hreflangResult.hasXDefault ? "Yes" : "No"}</div>
+                  {(hreflangResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  {hreflangResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {hreflangResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: ampResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>⚡ AMP Check</div>
+                <button style={S.btn(ampResult ? undefined : "primary")} onClick={runAmpCheck} disabled={ampLoading || !scanResult}>
+                  {ampLoading ? <><span style={S.spinner} /> Checking…</> : ampResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!ampResult && !ampLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AMP presence and canonical links.</div>}
+              {ampResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Status: {ampResult.ampStatus}</div>
+                  {(ampResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  {ampResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {ampResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: resourceHintsResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🚀 Resource Hints</div>
+                <button style={S.btn(resourceHintsResult ? undefined : "primary")} onClick={runResourceHints} disabled={resourceHintsLoading || !scanResult}>
+                  {resourceHintsLoading ? <><span style={S.spinner} /> Checking…</> : resourceHintsResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!resourceHintsResult && !resourceHintsLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Preload, prefetch, dns-prefetch, preconnect.</div>}
+              {resourceHintsResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {resourceHintsResult.resourceHintsScore} · Render-blocking: {resourceHintsResult.renderBlockingResources}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {resourceHintsResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: jsonLdLintResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧾 JSON-LD Lint</div>
+                <button style={S.btn(jsonLdLintResult ? undefined : "primary")} onClick={runJsonLdLint} disabled={jsonLdLintLoading || !scanResult}>
+                  {jsonLdLintLoading ? <><span style={S.spinner} /> Checking…</> : jsonLdLintResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!jsonLdLintResult && !jsonLdLintLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Validate JSON-LD blocks for syntax and @context/@type.</div>}
+              {jsonLdLintResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Total scripts: {jsonLdLintResult.totalScripts} · Valid: {jsonLdLintResult.valid} · Invalid: {jsonLdLintResult.invalid}</div>
+                  <div>Lint score: {jsonLdLintResult.lintScore}</div>
+                  {jsonLdLintResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {jsonLdLintResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: ogImageDimsResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🖼️ OG Image Dimensions</div>
+                <button style={S.btn(ogImageDimsResult ? undefined : "primary")} onClick={runOgImageDims} disabled={ogImageDimsLoading || !scanResult}>
+                  {ogImageDimsLoading ? <><span style={S.spinner} /> Checking…</> : ogImageDimsResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!ogImageDimsResult && !ogImageDimsLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Check og:image size tags and recommendations.</div>}
+              {ogImageDimsResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>OG image: {ogImageDimsResult.ogImage || "n/a"}</div>
+                  {(ogImageDimsResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  {ogImageDimsResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {ogImageDimsResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: httpsStatusResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔒 HTTPS Status</div>
+                <button style={S.btn(httpsStatusResult ? undefined : "primary")} onClick={runHttpsStatus} disabled={httpsStatusLoading || !url.trim()}>
+                  {httpsStatusLoading ? <><span style={S.spinner} /> Checking…</> : httpsStatusResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {!httpsStatusResult && !httpsStatusLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Protocol, status code, redirects.</div>}
+              {httpsStatusResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>HTTPS: {httpsStatusResult.isHTTPS ? "Yes" : "No"} · Status: {httpsStatusResult.statusCode}</div>
+                  {(httpsStatusResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
+                  {httpsStatusResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {httpsStatusResult.tip}</div>}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            AI CREATE TAB
+            ================================================================ */}
+        {tab === "AI Create" && (
+          <>
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>🧭 AI Blog Outline</div>
+              <div style={{ ...S.row, marginBottom: 10 }}>
+                <input style={{ ...S.input, maxWidth: 320 }} placeholder="Keyword or topic" value={blogOutlineKw} onChange={e => setBlogOutlineKw(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Audience" value={blogOutlineAudience} onChange={e => setBlogOutlineAudience(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runBlogOutline} disabled={blogOutlineLoading || !blogOutlineKw.trim()}>
+                  {blogOutlineLoading ? <><span style={S.spinner} /> Generating…</> : "Generate (2 cr)"}
+                </button>
+              </div>
+              {blogOutlineResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div style={{ fontWeight: 700 }}>{blogOutlineResult.title}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>{blogOutlineResult.metaDescription}</div>
+                  {(blogOutlineResult.sections || []).slice(0, 6).map((s, i) => <div key={i}>• {s.heading} ({s.suggestedWordCount}w)</div>)}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎬 AI Intro Generator</div>
+              <div style={{ ...S.row, marginBottom: 10 }}>
+                <input style={{ ...S.input, maxWidth: 320 }} placeholder="Keyword or topic" value={introGenKw} onChange={e => setIntroGenKw(e.target.value)} />
+                <select style={{ ...S.input, maxWidth: 160 }} value={introGenStyle} onChange={e => setIntroGenStyle(e.target.value)}>
+                  <option value="PAS">PAS</option>
+                  <option value="AIDA">AIDA</option>
+                  <option value="Story">Story</option>
+                </select>
+                <button style={S.btn("primary")} onClick={runIntroGenerator} disabled={introGenLoading || !introGenKw.trim()}>
+                  {introGenLoading ? <><span style={S.spinner} /> Generating…</> : "Generate (2 cr)"}
+                </button>
+              </div>
+              {introGenResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(introGenResult.intros || []).map((i, idx) => <div key={idx} style={{ marginBottom: 6 }}>• {i.text}</div>)}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏷️ AI Title Ideas</div>
+              <div style={{ ...S.row, marginBottom: 10 }}>
+                <input style={{ ...S.input, maxWidth: 320 }} placeholder="Keyword" value={titleIdeasKw} onChange={e => setTitleIdeasKw(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runTitleIdeas} disabled={titleIdeasLoading || !titleIdeasKw.trim()}>
+                  {titleIdeasLoading ? <><span style={S.spinner} /> Generating…</> : "Generate (2 cr)"}
+                </button>
+              </div>
+              {titleIdeasResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(titleIdeasResult.titles || []).slice(0, 8).map((t, i) => <div key={i}>• {t.title}</div>)}
+                  {titleIdeasResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {titleIdeasResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>📢 AI CTA Generator</div>
+              <div style={{ ...S.row, marginBottom: 10 }}>
+                <input style={{ ...S.input, maxWidth: 240 }} placeholder="Keyword" value={ctaGenKw} onChange={e => setCtaGenKw(e.target.value)} />
+                <select style={{ ...S.input, maxWidth: 160 }} value={ctaGenGoal} onChange={e => setCtaGenGoal(e.target.value)}>
+                  <option value="signup">Signup</option>
+                  <option value="demo">Demo</option>
+                  <option value="purchase">Purchase</option>
+                </select>
+                <button style={S.btn("primary")} onClick={runCtaGenerator} disabled={ctaGenLoading || !ctaGenKw.trim()}>
+                  {ctaGenLoading ? <><span style={S.spinner} /> Generating…</> : "Generate (2 cr)"}
+                </button>
+              </div>
+              {ctaGenResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(ctaGenResult.ctas || []).map((c, i) => <div key={i}>• {c.variant}: {c.text} [btn: {c.buttonText}]</div>)}
+                  {ctaGenResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {ctaGenResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: keyTakeawaysResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📌 Key Takeaways (AI)</div>
+                <button style={S.btn(keyTakeawaysResult ? undefined : "primary")} onClick={runKeyTakeaways} disabled={keyTakeawaysLoading || !scanResult}>
+                  {keyTakeawaysLoading ? <><span style={S.spinner} /> Generating…</> : keyTakeawaysResult ? "🔄 Re-run" : "Generate"}
+                </button>
+              </div>
+              {keyTakeawaysResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(keyTakeawaysResult.takeaways || []).map((t, i) => <div key={i}>• {t.point}</div>)}
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>{keyTakeawaysResult.summary}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: summaryGenResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📝 Summary Generator</div>
+                <button style={S.btn(summaryGenResult ? undefined : "primary")} onClick={runSummaryGenerator} disabled={summaryGenLoading || !scanResult}>
+                  {summaryGenLoading ? <><span style={S.spinner} /> Summarizing…</> : summaryGenResult ? "🔄 Re-run" : "Summarize"}
+                </button>
+              </div>
+              {summaryGenResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>TL;DR: {summaryGenResult.tldr}</div>
+                  {(summaryGenResult.tweetThread || []).map((t, i) => <div key={i}>• {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: toneAnalyzerResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🎙️ Tone Analyzer</div>
+                <button style={S.btn(toneAnalyzerResult ? undefined : "primary")} onClick={runToneAnalyzer} disabled={toneAnalyzerLoading || !scanResult}>
+                  {toneAnalyzerLoading ? <><span style={S.spinner} /> Analyzing…</> : toneAnalyzerResult ? "🔄 Re-run" : "Analyze"}
+                </button>
+              </div>
+              {toneAnalyzerResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Primary: {toneAnalyzerResult.primaryTone} · Tone score: {toneAnalyzerResult.toneScore}</div>
+                  <div>Active voice: {toneAnalyzerResult.activeVoiceRatio}% · Consistency: {toneAnalyzerResult.toneConsistency}%</div>
+                  {(toneAnalyzerResult.improvements || []).map((t, i) => <div key={i} style={{ color: "#93c5fd" }}>• {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: contentGraderResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧮 Content Grader</div>
+                <button style={S.btn(contentGraderResult ? undefined : "primary")} onClick={runContentGrader} disabled={contentGraderLoading || !scanResult}>
+                  {contentGraderLoading ? <><span style={S.spinner} /> Grading…</> : contentGraderResult ? "🔄 Re-run" : "Grade"}
+                </button>
+              </div>
+              {contentGraderResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Overall: {contentGraderResult.overallGrade} ({contentGraderResult.overallScore})</div>
+                  {(contentGraderResult.improvements || []).map((t, i) => <div key={i} style={{ color: "#fbbf24" }}>• {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: pullQuotesResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>💬 Pull Quotes</div>
+                <button style={S.btn(pullQuotesResult ? undefined : "primary")} onClick={runPullQuotes} disabled={pullQuotesLoading || !scanResult}>
+                  {pullQuotesLoading ? <><span style={S.spinner} /> Extracting…</> : pullQuotesResult ? "🔄 Re-run" : "Extract"}
+                </button>
+              </div>
+              {pullQuotesResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(pullQuotesResult.quotes || []).slice(0, 5).map((q, i) => <div key={i}>• {q.quote}</div>)}
+                  {pullQuotesResult.bestQuote && <div style={{ color: "#93c5fd", marginTop: 6 }}>Best: {pullQuotesResult.bestQuote}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: headlineHookResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🪝 Headline Hook Optimizer</div>
+                <input style={{ ...S.input, maxWidth: 360 }} placeholder="Current title (optional)" value={headlineHookTitle} onChange={e => setHeadlineHookTitle(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runHeadlineHook} disabled={headlineHookLoading || (!headlineHookTitle && !scanResult)}>
+                  {headlineHookLoading ? <><span style={S.spinner} /> Optimizing…</> : "Optimize"}
+                </button>
+              </div>
+              {headlineHookResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(headlineHookResult.optimisations || []).slice(0, 4).map((h, i) => <div key={i}>• {h.title} ({h.formula})</div>)}
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>Hook: {headlineHookResult.openingLine}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: passageOptResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧭 AI Passage Optimizer</div>
+                <button style={S.btn(passageOptResult ? undefined : "primary")} onClick={runPassageOptimizer} disabled={passageOptLoading || !scanResult || !kwInput.trim()}>
+                  {passageOptLoading ? <><span style={S.spinner} /> Optimizing…</> : passageOptResult ? "🔄 Re-run" : "Optimize"}
+                </button>
+              </div>
+              {passageOptResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Best passage: {passageOptResult.bestPassage}</div>
+                  <div style={{ marginTop: 6, color: "#93c5fd" }}>Optimised: {passageOptResult.optimisedPassage}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: repurposeResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>♻️ Content Repurpose</div>
+                <button style={S.btn(repurposeResult ? undefined : "primary")} onClick={runRepurpose} disabled={repurposeLoading || !scanResult}>
+                  {repurposeLoading ? <><span style={S.spinner} /> Generating…</> : repurposeResult ? "🔄 Re-run" : "Generate"}
+                </button>
+              </div>
+              {repurposeResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  {(repurposeResult.repurposes || []).slice(0, 6).map((r, i) => <div key={i}>• {r.format} ({r.effort}/{r.estimatedReach})</div>)}
+                  {repurposeResult.quickWins && <div style={{ color: "#93c5fd", marginTop: 6 }}>Quick wins: {repurposeResult.quickWins.join(" · ")}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...S.card }}>
+              <div style={{ ...S.row, marginBottom: contentVisibilityResult ? 10 : 6 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>👁️ Content Visibility Score</div>
+                <button style={S.btn(contentVisibilityResult ? undefined : "primary")} onClick={runContentVisibility} disabled={contentVisibilityLoading || !scanResult || !kwInput.trim()}>
+                  {contentVisibilityLoading ? <><span style={S.spinner} /> Scoring…</> : contentVisibilityResult ? "🔄 Re-run" : "Score"}
+                </button>
+              </div>
+              {contentVisibilityResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Visibility: {contentVisibilityResult.visibilityScore} · LLM citations: {contentVisibilityResult.llmCitationLikelihood}</div>
+                  <div>SERP: FS {contentVisibilityResult.serpVisibility?.featuredSnippet} · PAA {contentVisibilityResult.serpVisibility?.paa} · Img {contentVisibilityResult.serpVisibility?.imageRank} · Video {contentVisibilityResult.serpVisibility?.videoRank}</div>
+                  {(contentVisibilityResult.actionPlan || []).slice(0, 4).map((a, i) => <div key={i} style={{ color: "#93c5fd" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            SCHEMA & LINKS TAB
+            ================================================================ */}
+        {tab === "Schema & Links" && (
+          <>
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>🛍️ Product Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={productName} onChange={e => setProductName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 140 }} placeholder="Price" value={productPrice} onChange={e => setProductPrice(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 180 }} placeholder="Brand" value={productBrand} onChange={e => setProductBrand(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 220 }} placeholder="Image URL" value={productImage} onChange={e => setProductImage(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runProductSchema} disabled={productSchemaLoading || !productName.trim()}>
+                  {productSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              <textarea style={{ ...S.textarea, minHeight: 60 }} placeholder="Description" value={productDesc} onChange={e => setProductDesc(e.target.value)} />
+              {productSchemaResult && <pre style={S.fixCode}>{productSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎟️ Event Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={eventName} onChange={e => setEventName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 180 }} placeholder="Start date" value={eventDate} onChange={e => setEventDate(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Location" value={eventLocation} onChange={e => setEventLocation(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Organizer" value={eventOrg} onChange={e => setEventOrg(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runEventSchema} disabled={eventSchemaLoading || !eventName.trim() || !eventDate.trim()}>
+                  {eventSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              {eventSchemaResult && <pre style={S.fixCode}>{eventSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>👤 Person Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={personName} onChange={e => setPersonName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Job title" value={personJob} onChange={e => setPersonJob(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 260 }} placeholder="SameAs (comma-separated)" value={personSameAs} onChange={e => setPersonSameAs(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runPersonSchema} disabled={personSchemaLoading || !personName.trim()}>
+                  {personSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              <textarea style={{ ...S.textarea, minHeight: 60 }} placeholder="Description" value={personDesc} onChange={e => setPersonDesc(e.target.value)} />
+              {personSchemaResult && <pre style={S.fixCode}>{personSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎓 Course Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={courseName} onChange={e => setCourseName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Provider" value={courseProvider} onChange={e => setCourseProvider(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 160 }} placeholder="Price" value={coursePrice} onChange={e => setCoursePrice(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 160 }} placeholder="Duration" value={courseDuration} onChange={e => setCourseDuration(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runCourseSchema} disabled={courseSchemaLoading || !courseName.trim()}>
+                  {courseSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              {courseSchemaResult && <pre style={S.fixCode}>{courseSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>🍳 Recipe Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={recipeName} onChange={e => setRecipeName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 180 }} placeholder="Author" value={recipeAuthorName} onChange={e => setRecipeAuthorName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 140 }} placeholder="Prep time" value={recipePrepTime} onChange={e => setRecipePrepTime(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 140 }} placeholder="Cook time" value={recipeCookTime} onChange={e => setRecipeCookTime(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runRecipeSchema} disabled={recipeSchemaLoading || !recipeName.trim()}>
+                  {recipeSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              <textarea style={{ ...S.textarea, minHeight: 60 }} placeholder="Ingredients (comma-separated)" value={recipeIngredients} onChange={e => setRecipeIngredients(e.target.value)} />
+              {recipeSchemaResult && <pre style={S.fixCode}>{recipeSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>💻 Software Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={softwareName} onChange={e => setSoftwareName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 220 }} placeholder="Description" value={softwareDesc} onChange={e => setSoftwareDesc(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 120 }} placeholder="Price" value={softwarePrice} onChange={e => setSoftwarePrice(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 160 }} placeholder="Category" value={softwareCategory} onChange={e => setSoftwareCategory(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runSoftwareSchema} disabled={softwareSchemaLoading || !softwareName.trim()}>
+                  {softwareSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              {softwareSchemaResult && <pre style={S.fixCode}>{softwareSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏪 Local Business Schema</div>
+              <div style={{ ...S.row, marginBottom: 8 }}>
+                <input style={{ ...S.input, maxWidth: 200 }} placeholder="Name" value={bizName} onChange={e => setBizName(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 220 }} placeholder="Address" value={bizAddress} onChange={e => setBizAddress(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 160 }} placeholder="City" value={bizCity} onChange={e => setBizCity(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 160 }} placeholder="Phone" value={bizPhone} onChange={e => setBizPhone(e.target.value)} />
+                <input style={{ ...S.input, maxWidth: 180 }} placeholder="Type" value={bizType} onChange={e => setBizType(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runLocalBizSchema} disabled={localBizSchemaLoading || !bizName.trim()}>
+                  {localBizSchemaLoading ? <><span style={S.spinner} /> Generate…</> : "Generate"}
+                </button>
+              </div>
+              {localBizSchemaResult && <pre style={S.fixCode}>{localBizSchemaResult.jsonLd}</pre>}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: extLinkAuthResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🌐 External Link Authority</div>
+                <button style={S.btn(extLinkAuthResult ? undefined : "primary")} onClick={runExtLinkAuth} disabled={extLinkAuthLoading || !scanResult}>
+                  {extLinkAuthLoading ? <><span style={S.spinner} /> Checking…</> : extLinkAuthResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {extLinkAuthResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Total external: {extLinkAuthResult.totalExternal} · Authority: {extLinkAuthResult.authoritative}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {extLinkAuthResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: linkDensityResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔗 Link Density</div>
+                <button style={S.btn(linkDensityResult ? undefined : "primary")} onClick={runLinkDensity} disabled={linkDensityLoading || !scanResult}>
+                  {linkDensityLoading ? <><span style={S.spinner} /> Checking…</> : linkDensityResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {linkDensityResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Links/100w: {linkDensityResult.linksPerHundredWords} · Risk: {linkDensityResult.linkDensityRisk}</div>
+                  <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {linkDensityResult.tip}</div>
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: outboundAuditResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧭 Outbound Link Audit</div>
+                <button style={S.btn(outboundAuditResult ? undefined : "primary")} onClick={runOutboundAudit} disabled={outboundAuditLoading || !scanResult}>
+                  {outboundAuditLoading ? <><span style={S.spinner} /> Checking…</> : outboundAuditResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {outboundAuditResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Total outbound: {outboundAuditResult.totalOutbound} · Unique domains: {outboundAuditResult.uniqueDomains}</div>
+                  {outboundAuditResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {outboundAuditResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: socialProofResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>🤝 Social Proof</div>
+                <button style={S.btn(socialProofResult ? undefined : "primary")} onClick={runSocialProof} disabled={socialProofLoading || !scanResult}>
+                  {socialProofLoading ? <><span style={S.spinner} /> Checking…</> : socialProofResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {socialProofResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {socialProofResult.socialProofScore} · Share buttons: {socialProofResult.shareButtons}</div>
+                  {socialProofResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {socialProofResult.tip}</div>}
+                </div>
+              )}
+            </div>
+
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: "center", marginBottom: citationCheckResult ? 14 : 0 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📚 Citation Quality</div>
+                <button style={S.btn(citationCheckResult ? undefined : "primary")} onClick={runCitationCheck} disabled={citationCheckLoading || !scanResult}>
+                  {citationCheckLoading ? <><span style={S.spinner} /> Checking…</> : citationCheckResult ? "🔄 Re-check" : "Check"}
+                </button>
+              </div>
+              {citationCheckResult && (
+                <div style={{ fontSize: 13, color: "#d4d4d8" }}>
+                  <div>Score: {citationCheckResult.citationScore} ({citationCheckResult.citationGrade})</div>
+                  <div>Authority links: {citationCheckResult.authorityLinks}</div>
+                  {citationCheckResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {citationCheckResult.tip}</div>}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            SERP & CTR TAB
+            ================================================================ */}
+        {tab === "SERP & CTR" && (
+          <>
+            {/* CTR Optimizer */}
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>📈 CTR Optimizer</div>
+              <div style={S.cardDesc}>Analyze your title &amp; meta for click-through potential and get AI-improved versions.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Page title..." value={ctrTitle} onChange={e => setCtrTitle(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Meta description..." value={ctrMeta} onChange={e => setCtrMeta(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword (optional)..." value={ctrKeyword} onChange={e => setCtrKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runCtrOptimizer} disabled={ctrOptimizerLoading || !ctrTitle.trim()}>
+                {ctrOptimizerLoading ? <><span style={S.spinner} /> Analyzing…</> : "Optimize CTR"}
+              </button>
+              {ctrOptimizerResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8 }}>
+                    <span>CTR Score: <b style={{ color: ctrOptimizerResult.ctrScore >= 70 ? "#4ade80" : ctrOptimizerResult.ctrScore >= 50 ? "#facc15" : "#f87171" }}>{ctrOptimizerResult.ctrScore}/100</b></span>
+                    <span>Title: <b>{ctrOptimizerResult.titleScore}/100</b></span>
+                    <span>Desc: <b>{ctrOptimizerResult.descScore}/100</b></span>
+                  </div>
+                  {ctrOptimizerResult.improvedTitle && <div style={{ marginBottom: 6 }}><b>Improved title:</b> {ctrOptimizerResult.improvedTitle}</div>}
+                  {ctrOptimizerResult.improvedDesc && <div style={{ marginBottom: 6 }}><b>Improved desc:</b> {ctrOptimizerResult.improvedDesc}</div>}
+                  {ctrOptimizerResult.estimatedCTRLift && <div style={{ color: "#4ade80" }}>Estimated CTR lift: {ctrOptimizerResult.estimatedCTRLift}</div>}
+                  {ctrOptimizerResult.powerWords?.length > 0 && <div style={{ marginTop: 6 }}>Power words: {ctrOptimizerResult.powerWords.join(", ")}</div>}
+                  {(ctrOptimizerResult.titleIssues?.length > 0 || ctrOptimizerResult.descIssues?.length > 0) && (
+                    <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+                      {[...(ctrOptimizerResult.titleIssues || []), ...(ctrOptimizerResult.descIssues || [])].map((iss, i) => <li key={i} style={{ color: "#fca5a5" }}>{iss}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Search Intent Classifier */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎯 Search Intent Classifier</div>
+              <div style={S.cardDesc}>Classify the intent behind any keyword and check if your content matches.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Keyword to classify..." value={intentKeyword} onChange={e => setIntentKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runIntentClassifier} disabled={intentLoading || !intentKeyword.trim()}>
+                {intentLoading ? <><span style={S.spinner} /> Classifying…</> : "Classify Intent"}
+              </button>
+              {intentResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span>Intent: <b style={{ color: "#818cf8" }}>{intentResult.primaryIntent}</b></span>
+                    <span>Confidence: <b>{intentResult.confidence}%</b></span>
+                    <span>Sub-intent: <b>{intentResult.subIntent}</b></span>
+                  </div>
+                  <div style={{ marginBottom: 4 }}>Content match: <b>{intentResult.contentMatch}%</b> — {intentResult.contentMatchExplanation}</div>
+                  <div>Target audience: {intentResult.targetAudience} · Stage: {intentResult.buyerStage}</div>
+                  {intentResult.recommendations?.length > 0 && <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>{intentResult.recommendations.map((r, i) => <li key={i}>{r}</li>)}</ul>}
+                </div>
+              )}
+            </div>
+
+            {/* SERP Feature Targets */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⭐ SERP Feature Targets</div>
+              <div style={S.cardDesc}>Discover which rich SERP features your content can win (Featured Snippet, PAA, HowTo, FAQ…).</div>
+              <div style={S.row}>
+                <button style={S.btn("primary")} onClick={runSerpFeatureTargets} disabled={serpFeaturesLoading || !url.trim()}>
+                  {serpFeaturesLoading ? <><span style={S.spinner} /> Scanning…</> : "Find SERP Targets"}
+                </button>
+              </div>
+              {serpFeaturesResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}><b>Top opportunity:</b> {serpFeaturesResult.topOpportunity}</div>
+                  {serpFeaturesResult.eligibleFeatures?.slice(0, 5).map((f, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ fontWeight: 600 }}>{f.feature}</span>
+                      <span style={{ color: f.eligibility >= 70 ? "#4ade80" : f.eligibility >= 40 ? "#facc15" : "#f87171", marginLeft: 8 }}>{f.eligibility}%</span>
+                      {f.currentlyWinning && <span style={{ marginLeft: 8, color: "#4ade80" }}>✓ Winning</span>}
+                      {f.stepsToWin?.length > 0 && <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 2 }}>{f.stepsToWin[0]}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* People Also Ask Generator */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>❓ People Also Ask Generator</div>
+              <div style={S.cardDesc}>Generate realistic PAA questions to add to your content as FAQ sections or H2 headings.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Target keyword..." value={paaGenKeyword} onChange={e => setPaaGenKeyword(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Niche (optional)..." value={paaGenNiche} onChange={e => setPaaGenNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runPaaGenerator} disabled={paaGenLoading || !paaGenKeyword.trim()}>
+                {paaGenLoading ? <><span style={S.spinner} /> Generating…</> : "Generate PAA Questions"}
+              </button>
+              {paaGenResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}><b>{paaGenResult.totalQuestions}</b> questions across {paaGenResult.topicClusters?.join(", ")}</div>
+                  {paaGenResult.questions?.slice(0, 8).map((q, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600 }}>{q.question}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 2 }}>{q.answerSnippet}</div>
+                      <div style={{ color: "#818cf8", fontSize: 11, marginTop: 2 }}>Intent: {q.intent} · Difficulty: {q.difficulty}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Rich Result Eligibility */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏷️ Rich Result Eligibility Check</div>
+              <div style={S.cardDesc}>Check which Google rich results your page is eligible for based on schema markup.</div>
+              <button style={S.btn("primary")} onClick={runRichResultCheck} disabled={richResultCheckLoading || !url.trim()}>
+                {richResultCheckLoading ? <><span style={S.spinner} /> Checking…</> : "Check Rich Results"}
+              </button>
+              {richResultCheckResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Schemas detected: <b>{richResultCheckResult.schemasDetected?.join(", ") || "none"}</b></div>
+                  <div style={{ marginBottom: 6 }}>
+                    <span style={{ color: "#4ade80" }}>{richResultCheckResult.totalEligible} eligible</span>
+                    {" · "}
+                    <span style={{ color: "#f87171" }}>{richResultCheckResult.totalMissing} missing</span>
+                  </div>
+                  {richResultCheckResult.richResults?.map((r, i) => (
+                    <div key={i} style={{ padding: "4px 0", display: "flex", gap: 8, alignItems: "center" }}>
+                      <span style={{ color: r.status === "eligible" ? "#4ade80" : "#f87171" }}>{r.status === "eligible" ? "✓" : "✗"}</span>
+                      <span>{r.type}</span>
+                      {r.fix && <span style={{ color: "#a1a1aa", fontSize: 12 }}>→ {r.fix}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* RankBrain / UX Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🤖 RankBrain UX Advisor</div>
+              <div style={S.cardDesc}>Get dwell time, bounce rate, and UX recommendations aligned with Google's RankBrain signals.</div>
+              <button style={S.btn("primary")} onClick={runRankbrainAdvisor} disabled={rankbrainLoading || !url.trim()}>
+                {rankbrainLoading ? <><span style={S.spinner} /> Analyzing…</> : "Analyze UX Signals"}
+              </button>
+              {rankbrainResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Dwell score: <b style={{ color: rankbrainResult.dwellTimeScore >= 70 ? "#4ade80" : "#facc15" }}>{rankbrainResult.dwellTimeScore}/100</b></span>
+                    <span>Bounce risk: <b style={{ color: rankbrainResult.bounceRiskScore <= 30 ? "#4ade80" : "#f87171" }}>{rankbrainResult.bounceRiskScore}/100</b></span>
+                    <span>Predicted dwell: <b>{rankbrainResult.predictedDwellTime}</b></span>
+                  </div>
+                  <div style={{ marginBottom: 6 }}>Opening hook: <b>{rankbrainResult.openingHookStrength}</b> — {rankbrainResult.openingHookFeedback}</div>
+                  {rankbrainResult.topImprovements?.slice(0, 4).map((t, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ color: "#818cf8" }}>{t.area}</span>: {t.fix}
+                      <span style={{ marginLeft: 6, color: t.expectedImpact === "high" ? "#4ade80" : "#facc15", fontSize: 11 }}>[{t.expectedImpact}]</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Long-tail Title Embedder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔀 Long-tail Title Embedder</div>
+              <div style={S.cardDesc}>Embed additional long-tail keywords naturally into your title for multi-keyword ranking.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your current title..." value={longtailTitle} onChange={e => setLongtailTitle(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Primary keyword..." value={longtailPrimary} onChange={e => setLongtailPrimary(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLongtailEmbed} disabled={longtailEmbedLoading || !longtailTitle.trim() || !longtailPrimary.trim()}>
+                {longtailEmbedLoading ? <><span style={S.spinner} /> Generating…</> : "Generate Long-tail Variants"}
+              </button>
+              {longtailEmbedResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}><b>Best variant:</b> {longtailEmbedResult.bestVariant}</div>
+                  {longtailEmbedResult.longTailVariants?.slice(0, 5).map((v, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600 }}>{v.revisedTitle}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>Keyword: {v.keyword} · Volume: {v.searchVolume} · Difficulty: {v.difficulty}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Meta A/B Variants */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🧪 Meta Description A/B Variants</div>
+              <div style={S.cardDesc}>Generate 5 A/B meta description variants using different psychological triggers.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Page title..." value={metaAbTitle} onChange={e => setMetaAbTitle(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword (optional)..." value={metaAbKeyword} onChange={e => setMetaAbKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runMetaAbVariants} disabled={metaAbLoading || !metaAbTitle.trim()}>
+                {metaAbLoading ? <><span style={S.spinner} /> Generating…</> : "Generate Variants"}
+              </button>
+              {metaAbResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Recommended: <b style={{ color: "#818cf8" }}>Variant {metaAbResult.recommended}</b></div>
+                  {metaAbResult.variants?.map((v, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3 }}>
+                        <span style={{ background: v.id === metaAbResult.recommended ? "#3730a3" : "#27272a", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>Variant {v.id}</span>
+                        <span style={{ color: "#a1a1aa", fontSize: 11 }}>{v.trigger} · {v.ctrEstimate} CTR</span>
+                        <span style={{ color: "#a1a1aa", fontSize: 11 }}>{v.characterCount} chars</span>
+                      </div>
+                      <div style={{ fontSize: 13 }}>{v.description}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Keyword Difficulty Score */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📊 Keyword Difficulty Estimator</div>
+              <div style={S.cardDesc}>Estimate keyword difficulty, search volume, and ranking timeframe for any keyword.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Keyword..." value={diffKeyword} onChange={e => setDiffKeyword(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Niche (optional)..." value={diffNiche} onChange={e => setDiffNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runDifficultyScore} disabled={difficultyLoading || !diffKeyword.trim()}>
+                {difficultyLoading ? <><span style={S.spinner} /> Estimating…</> : "Estimate Difficulty"}
+              </button>
+              {difficultyResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Difficulty: <b style={{ color: difficultyResult.estimatedDifficulty >= 70 ? "#f87171" : difficultyResult.estimatedDifficulty >= 40 ? "#facc15" : "#4ade80" }}>{difficultyResult.estimatedDifficulty}/100 ({difficultyResult.difficultyLabel})</b></span>
+                    <span>Volume: <b>{difficultyResult.estimatedMonthlySearches}</b></span>
+                  </div>
+                  <div style={{ marginBottom: 4 }}>CPC: {difficultyResult.cpcEstimate} · Ranking time: {difficultyResult.rankingTimeframe}</div>
+                  <div style={{ marginBottom: 4 }}>Best content type: {difficultyResult.contentStrategy}</div>
+                  {difficultyResult.quickWinPotential && <div style={{ color: "#4ade80" }}>✓ Quick win: {difficultyResult.quickWinExplanation}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* SERP Competitor Snapshot */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔭 SERP Competitor Snapshot</div>
+              <div style={S.cardDesc}>Analyze the competitive landscape for any keyword to find content gaps and ranking opportunities.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword..." value={snapKeyword} onChange={e => setSnapKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runCompetitorSnapshot} disabled={competitorSnapshotLoading || !snapKeyword.trim()}>
+                {competitorSnapshotLoading ? <><span style={S.spinner} /> Analyzing…</> : "Snapshot Competitors"}
+              </button>
+              {competitorSnapshotResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Recommended type: <b>{competitorSnapshotResult.recommendedContentType}</b> · Min words: <b>{competitorSnapshotResult.minimumWordCount}</b></div>
+                  {competitorSnapshotResult.topCompetitors?.slice(0, 3).map((c, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ color: "#facc15" }}>#{c.position}</span> {c.contentType} · {c.estimatedWordCount} words · DA: {c.estimatedDA}
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>Strength: {c.keyStrength}</div>
+                    </div>
+                  ))}
+                  {competitorSnapshotResult.contentOpportunities?.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>Opportunities:</div>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>{competitorSnapshotResult.contentOpportunities.map((o, i) => <li key={i}>{o}</li>)}</ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            BACKLINKS TAB
+            ================================================================ */}
+        {tab === "Backlinks" && (
+          <>
+            {/* Backlink Opportunity Finder */}
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>🔗 Backlink Opportunity Finder</div>
+              <div style={S.cardDesc}>Discover 10 realistic link building opportunities tailored to your niche — with outreach tactics and difficulty ratings.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Your niche (e.g. 'e-commerce fashion')..." value={backlinkNiche} onChange={e => setBacklinkNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runBacklinkOpps} disabled={backlinkOppsLoading || !backlinkNiche.trim()}>
+                {backlinkOppsLoading ? <><span style={S.spinner} /> Finding…</> : "Find Opportunities"}
+              </button>
+              {backlinkOppsResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Top quick win: <b style={{ color: "#4ade80" }}>{backlinkOppsResult.topQuickWin}</b></div>
+                  <div style={{ marginBottom: 8 }}>Strategic priority: <b style={{ color: "#818cf8" }}>{backlinkOppsResult.strategicPriority}</b></div>
+                  {backlinkOppsResult.opportunities?.slice(0, 8).map((o, i) => (
+                    <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
+                        <span style={{ background: "#3f3f46", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{o.type}</span>
+                        <span style={{ color: o.difficulty === "easy" ? "#4ade80" : o.difficulty === "medium" ? "#facc15" : "#f87171", fontSize: 11 }}>{o.difficulty}</span>
+                        <span style={{ color: "#a1a1aa", fontSize: 11 }}>DA: {o.estimatedDA} · {o.linkType}</span>
+                        <span style={{ color: "#a1a1aa", fontSize: 11 }}>Value: {o.linkValue}</span>
+                      </div>
+                      <div style={{ fontWeight: 600 }}>{o.sourceDomain}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 2 }}>{o.tactic}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Competitor Link Gap */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔍 Competitor Link Gap Analyzer</div>
+              <div style={S.cardDesc}>Find the backlink gap between your site and competitors, and get a plan to close it.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your domain (e.g. yourshop.com)..." value={linkGapDomain} onChange={e => setLinkGapDomain(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Competitor 1 domain..." value={linkGapComp1} onChange={e => setLinkGapComp1(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Competitor 2 domain..." value={linkGapComp2} onChange={e => setLinkGapComp2(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Niche..." value={linkGapNiche} onChange={e => setLinkGapNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLinkGap} disabled={linkGapLoading || !linkGapDomain.trim()}>
+                {linkGapLoading ? <><span style={S.spinner} /> Analyzing…</> : "Analyze Link Gap"}
+              </button>
+              {linkGapResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Gap score: <b style={{ color: linkGapResult.gapAnalysis?.gapScore >= 70 ? "#f87171" : "#facc15" }}>{linkGapResult.gapAnalysis?.gapScore}/100</b></span>
+                    <span>Severity: <b>{linkGapResult.gapAnalysis?.gapSeverity}</b></span>
+                    <span>Time to close: <b>{linkGapResult.timeToCloseGap}</b></span>
+                  </div>
+                  {linkGapResult.prioritizedActions?.length > 0 && (
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>{linkGapResult.prioritizedActions.map((a, i) => <li key={i}>{a}</li>)}</ul>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Outreach Email Generator */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>✉️ Outreach Email Generator</div>
+              <div style={S.cardDesc}>AI-generated personalized outreach emails for link building with follow-up sequences.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Target site (e.g. industry-blog.com)..." value={outreachTarget} onChange={e => setOutreachTarget(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your content title..." value={outreachContentTitle} onChange={e => setOutreachContentTitle(e.target.value)} />
+              <select style={{ ...S.input, marginBottom: 8 }} value={outreachType} onChange={e => setOutreachType(e.target.value)}>
+                {["guest post", "resource link", "broken link replacement", "skyscraper", "collaboration"].map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <button style={S.btn("primary")} onClick={runOutreachGenerator} disabled={outreachLoading || !outreachContentTitle.trim()}>
+                {outreachLoading ? <><span style={S.spinner} /> Writing…</> : "Generate Outreach Email"}
+              </button>
+              {outreachResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Subject: <b>{outreachResult.subject}</b></div>
+                  <div style={{ background: "#09090b", padding: "10px", borderRadius: 6, marginBottom: 8, fontSize: 13, whiteSpace: "pre-wrap" }}>{outreachResult.emailBody}</div>
+                  <div style={{ marginBottom: 4 }}>Follow-up subject: <i>{outreachResult.followUpSubject}</i></div>
+                  <div style={{ color: "#a1a1aa", fontSize: 12, whiteSpace: "pre-wrap" }}>{outreachResult.followUpBody}</div>
+                  <div style={{ marginTop: 8, color: "#a1a1aa", fontSize: 12 }}>Success probability: {outreachResult.successProbability}</div>
+                </div>
+              )}
+            </div>
+
+            {/* "Best Of" List Finder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📋 "Best Of" List Finder</div>
+              <div style={S.cardDesc}>Find roundup and "best of" lists in your niche — easy placements for backlinks.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Your niche..." value={bestofNiche} onChange={e => setBestofNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runBestofFinder} disabled={bestofLoading || !bestofNiche.trim()}>
+                {bestofLoading ? <><span style={S.spinner} /> Finding…</> : "Find Lists"}
+              </button>
+              {bestofResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8 }}>Pitch template: <i>{bestofResult.pitchTemplate}</i></div>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Google search strings:</div>
+                  {bestofResult.searchStrings?.slice(0, 6).map((s, i) => (
+                    <div key={i} style={{ padding: "3px 0", color: "#93c5fd", fontSize: 13 }}>{s}</div>
+                  ))}
+                  {bestofResult.listTypes?.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      {bestofResult.listTypes.slice(0, 4).map((l, i) => (
+                        <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                          <span style={{ fontWeight: 600 }}>{l.type}</span>
+                          <span style={{ marginLeft: 8, color: l.difficulty === "easy" ? "#4ade80" : "#facc15", fontSize: 11 }}>{l.difficulty}</span>
+                          <div style={{ color: "#a1a1aa", fontSize: 12 }}>{l.outreachApproach}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Anchor Text Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⚓ Anchor Text Optimizer</div>
+              <div style={S.cardDesc}>Build a natural anchor text profile to avoid over-optimization penalties while maximizing link equity.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword for your page..." value={anchorOptKeyword} onChange={e => setAnchorOptKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runAnchorOptimizer} disabled={anchorOptLoading || !anchorOptKeyword.trim()}>
+                {anchorOptLoading ? <><span style={S.spinner} /> Optimizing…</> : "Optimize Anchor Profile"}
+              </button>
+              {anchorOptResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Current assessment: <b>{anchorOptResult.currentDistributionAssessment}</b></div>
+                  <div style={{ marginBottom: 8, fontSize: 12, color: "#a1a1aa" }}>
+                    Ideal: exact {anchorOptResult.idealDistribution?.exactMatch} · partial {anchorOptResult.idealDistribution?.partialMatch} · branded {anchorOptResult.idealDistribution?.branded} · generic {anchorOptResult.idealDistribution?.generic}
+                  </div>
+                  {anchorOptResult.recommendedAnchors?.slice(0, 6).map((a, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ fontWeight: 600 }}>{a.anchorText}</span>
+                      <span style={{ marginLeft: 8, color: "#818cf8", fontSize: 11 }}>{a.type}</span>
+                      <span style={{ marginLeft: 8, color: "#a1a1aa", fontSize: 11 }}>{a.usageRecommendation}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Link Building Strategy Builder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🗺️ Link Building Strategy Builder</div>
+              <div style={S.cardDesc}>Get a full phased link building strategy with tactics, timelines, and monthly targets.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your niche..." value={linkStratNiche} onChange={e => setLinkStratNiche(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Monthly budget (optional, e.g. '$200/mo' or 'free only')..." value={linkStratBudget} onChange={e => setLinkStratBudget(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLinkStrategy} disabled={linkStrategyLoading || !linkStratNiche.trim()}>
+                {linkStrategyLoading ? <><span style={S.spinner} /> Building…</> : "Build Strategy"}
+              </button>
+              {linkStrategyResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{linkStrategyResult.strategyName}</div>
+                  <div style={{ color: "#a1a1aa", marginBottom: 8 }}>{linkStrategyResult.overview}</div>
+                  <div style={{ marginBottom: 4 }}>Monthly target: <b>{linkStrategyResult.monthlyLinkTarget}</b> · 6-month projection: <b>{linkStrategyResult.sixMonthLinkProjection || linkStrategyResult["6MonthLinkProjection"]}</b></div>
+                  {linkStrategyResult.phases?.map((p, i) => (
+                    <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600 }}>Phase {p.phase}: {p.name} ({p.duration})</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>Focus: {p.primaryTactic} · Target: {p.targetLinks} links</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Internal Link Suggester */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🕸️ Internal Link Suggester</div>
+              <div style={S.cardDesc}>Analyze a page and get AI-suggested internal linking opportunities to boost page authority flow.</div>
+              <button style={S.btn("primary")} onClick={runInternalSuggest} disabled={internalSuggestLoading || !url.trim()}>
+                {internalSuggestLoading ? <><span style={S.spinner} /> Analyzing…</> : "Find Internal Link Opportunities"}
+              </button>
+              {internalSuggestResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Internal link score: <b style={{ color: internalSuggestResult.internalLinkScore >= 70 ? "#4ade80" : "#facc15" }}>{internalSuggestResult.internalLinkScore}/100</b></span>
+                    <span>Current links: <b>{internalSuggestResult.currentInternalLinkCount}</b></span>
+                    <span>Orphan risk: <b style={{ color: internalSuggestResult.orphanRisk === "high" ? "#f87171" : "#4ade80" }}>{internalSuggestResult.orphanRisk}</b></span>
+                  </div>
+                  {internalSuggestResult.suggestedLinkOpportunities?.slice(0, 6).map((s, i) => (
+                    <div key={i} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div><b>"{s.anchorTextSuggestion}"</b> → {s.targetPageType}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>{s.pageDescription} · {s.locationInContent}</div>
+                      <span style={{ color: s.importance === "high" ? "#4ade80" : "#facc15", fontSize: 11 }}>{s.importance} priority</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         )}
 
