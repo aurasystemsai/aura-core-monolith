@@ -159,6 +159,7 @@ const toolRouters = [
   { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router'), middleware: requireTool('technical-seo-auditor'), creditAction: 'seo-scan' },
   { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router'), middleware: requireTool('schema-rich-results-engine'), creditAction: 'schema-gen' },
   { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router'), middleware: requireTool('rank-visibility-tracker'), creditAction: 'rank-check' },
+  { path: '/api/keyword-research-suite', router: require('./tools/keyword-research-suite/router'), middleware: requireTool('keyword-research-suite'), creditAction: 'keyword-research' },
   { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post' },
   { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant'), creditAction: 'support-reply' },
   { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text' },
