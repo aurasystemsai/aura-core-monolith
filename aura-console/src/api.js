@@ -72,3 +72,15 @@ export async function apiFetch(url, options = {}) {
     }
   }
 }
+
+/**
+ * Like apiFetch but automatically parses the JSON body and returns a plain object.
+ * Use this in components where the response body is always JSON and you access r.property directly.
+ * Returns: { ok: boolean, status: number, ...bodyFields }
+ */
+export async function apiFetchJSON(url, options = {}) {
+  const resp = await apiFetch(url, options);
+  let data = {};
+  try { data = await resp.json(); } catch {}
+  return { ...data, ok: resp.ok, status: resp.status };
+}
