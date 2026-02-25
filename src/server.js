@@ -154,6 +154,7 @@ const toolRouters = [
   { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router'), middleware: requireTool('blog-draft-engine'), creditAction: 'blog-draft' },
   { path: '/api/abandoned-checkout-winback', router: require('./tools/abandoned-checkout-winback/router'), middleware: requireTool('abandoned-checkout-winback'), creditAction: 'email-gen' },
   { path: '/api/review-ugc-engine', router: require('./tools/review-ugc-engine/router'), middleware: requireTool('review-ugc-engine'), creditAction: 'generic-ai' },
+  { path: '/api/ai-content-image-gen', router: require('./tools/ai-content-image-gen/router'), middleware: requireTool('ai-content-image-gen'), creditAction: 'content-brief' },
   { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router'), middleware: requireTool('email-automation-builder'), creditAction: 'email-gen' },
   { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router'), middleware: requireTool('internal-link-optimizer'), creditAction: 'internal-link' },
   { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router'), middleware: requireTool('technical-seo-auditor'), creditAction: 'seo-scan' },

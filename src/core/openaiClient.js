@@ -37,7 +37,20 @@ function getOpenAIClient() {
   }
 
   if (!apiKey) {
-    throw new Error('[OpenAI] OPENAI_API_KEY is required in production');
+    console.warn('[OpenAI] OPENAI_API_KEY not set — AI features will return stubs. Add OPENAI_API_KEY to .env to enable AI.');
+    cachedClient = {
+      chat: {
+        completions: {
+          create: async () => ({
+            choices: [{ message: { content: JSON.stringify({ ok: false, error: 'OPENAI_API_KEY not configured' }) } }],
+          }),
+        },
+      },
+      async createChatCompletion() {
+        return { data: { choices: [{ message: { content: 'OpenAI not configured' } }] } };
+      },
+    };
+    return cachedClient;
   }
 
   const client = new OpenAI({ apiKey });

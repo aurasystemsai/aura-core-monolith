@@ -93,6 +93,7 @@ const DataEnrichmentSuite = lazy(() => import("./components/tools/DataEnrichment
 const ProductSEOEngine = lazy(() => import("./components/tools/ProductSEOEngine.jsx"));
 const PersonalizationRecommendationEngine = lazy(() => import("./components/tools/PersonalizationRecommendationEngine.jsx"));
 const SocialMediaAnalyticsListening = lazy(() => import("./components/tools/SocialMediaAnalyticsListening.jsx"));
+const AIContentImageGen = lazy(() => import("./components/tools/AIContentImageGen.jsx"));
 
 const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
 
@@ -518,6 +519,7 @@ function App() {
                 {activeSection === "link-intersect-outreach" && <LinkIntersectOutreach />}
                 {activeSection === "local-seo-toolkit" && <LocalSEOToolkit />}
                 {activeSection === "competitive-analysis" && <CompetitiveAnalysis />}
+                {activeSection === "ai-content-image-gen" && <AIContentImageGen />}
 
                 {/* -- Email & Lifecycle -- */}
                 {(activeSection === "email-automation-builder" || activeSection === "klaviyo-flow-automation" || activeSection === "ab-testing-suite" || activeSection === "visual-workflow-builder" || activeSection === "workflow-automation-builder" || activeSection === "workflow-orchestrator" || activeSection === "orchestration" || activeSection === "multi-channel-optimizer" || activeSection === "conditional-logic-automation") && <EmailAutomationBuilder />}
