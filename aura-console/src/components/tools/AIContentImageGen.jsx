@@ -94,15 +94,24 @@ function ModelSelect({ value, onChange }) {
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 const TABS = [
-  { id: "product", label: "📦 Product Content" },
-  { id: "ads",     label: "📣 Ad Copy" },
-  { id: "social",  label: "📱 Social Media" },
-  { id: "images",  label: "🖼️ Images" },
-  { id: "brand",   label: "🎨 Brand Voice" },
-  { id: "video",   label: "🎬 Video & Motion" },
-  { id: "blog",    label: "✍️ Blog & Long-form" },
-  { id: "quality", label: "🔍 Analyze & Score" },
-  { id: "history", label: "📜 History" },
+  { id: "product",    label: "📦 Product Content" },
+  { id: "ads",        label: "📣 Ad Copy" },
+  { id: "social",     label: "📱 Social Media" },
+  { id: "images",     label: "🖼️ Images" },
+  { id: "brand",      label: "🎨 Brand Voice" },
+  { id: "video",      label: "🎬 Video & Motion" },
+  { id: "blog",       label: "✍️ Blog & Long-form" },
+  { id: "quality",    label: "🔍 Analyze & Score" },
+  { id: "amazon",     label: "🛒 Amazon" },
+  { id: "copy",       label: "📝 Copywriting" },
+  { id: "business",   label: "🏢 Business Copy" },
+  { id: "email",      label: "📧 Email Marketing" },
+  { id: "moreads",    label: "📢 More Ads" },
+  { id: "youtube",    label: "▶️ YouTube Copy" },
+  { id: "landing",    label: "🚀 Landing Pages" },
+  { id: "utilities",  label: "🛠️ Utilities" },
+  { id: "ecom",       label: "🏷️ E-com Specials" },
+  { id: "history",    label: "📜 History" },
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -1113,6 +1122,571 @@ function QualityTab() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// AMAZON TAB
+// ═══════════════════════════════════════════════════════════
+function AmazonTab() {
+  const [sub, setSub] = useState("product-description");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "product-description", label: "Product Description" },
+    { id: "bullet-points",       label: "Bullet Points" },
+    { id: "title",               label: "Product Title" },
+    { id: "backend-keywords",    label: "Backend Keywords" },
+    { id: "brand-headline",      label: "Brand Headline" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/amazon/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        <div style={S.row}>
+          {(sub === "product-description" || sub === "bullet-points" || sub === "title") && (
+            <div style={S.col}><label style={S.label}>Product Name *</label><input style={S.input} placeholder="e.g. Bamboo Cutting Board Set" value={form.title || form.productName || ""} onChange={e => { f("title", e.target.value); f("productName", e.target.value); }} /></div>
+          )}
+          {sub === "backend-keywords" && <div style={S.col}><label style={S.label}>Product Name *</label><input style={S.input} value={form.productName || ""} onChange={e => f("productName", e.target.value)} /></div>}
+          {sub === "brand-headline" && <div style={S.col}><label style={S.label}>Brand Name *</label><input style={S.input} value={form.brand || ""} onChange={e => f("brand", e.target.value)} /></div>}
+          <div style={S.col}><label style={S.label}>Category</label><input style={S.input} placeholder="e.g. Kitchen & Dining" value={form.category || ""} onChange={e => f("category", e.target.value)} /></div>
+        </div>
+        {(sub === "product-description" || sub === "bullet-points") && (
+          <div style={{ marginBottom: 14 }}><label style={S.label}>Key Features (comma-separated)</label><input style={S.input} placeholder="bamboo, dishwasher-safe, 3 sizes" value={form.featuresRaw || ""} onChange={e => { f("featuresRaw", e.target.value); f("features", e.target.value.split(",").map(x => x.trim()).filter(Boolean)); }} /></div>
+        )}
+        {sub === "title" && (
+          <div style={S.row}>
+            <div style={S.col}><label style={S.label}>Brand</label><input style={S.input} value={form.brand || ""} onChange={e => f("brand", e.target.value)} /></div>
+            <div style={S.col}><label style={S.label}>Color</label><input style={S.input} value={form.color || ""} onChange={e => f("color", e.target.value)} /></div>
+            <div style={S.col}><label style={S.label}>Material</label><input style={S.input} value={form.material || ""} onChange={e => f("material", e.target.value)} /></div>
+          </div>
+        )}
+        {sub === "brand-headline" && <div style={{ marginBottom: 14 }}><label style={S.label}>Product Line</label><input style={S.input} value={form.productLine || ""} onChange={e => f("productLine", e.target.value)} /></div>}
+        {sub === "backend-keywords" && <div style={{ marginBottom: 14 }}><label style={S.label}>Competitors/Alternatives</label><input style={S.input} value={form.competitors || ""} onChange={e => f("competitors", e.target.value)} /></div>}
+        <div style={S.row}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate Amazon Copy</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Amazon Copy Results">
+          {result.titles && result.titles.map((t, i) => <div key={i} style={{ marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ ...S.badge, ...S.badgePurple }}>Title {i + 1}</span><CopyBtn text={t} /></div><div style={{ color: "#d4d4d8", fontSize: 14, marginTop: 4 }}>{t}</div></div>)}
+          {result.bullets && <><div style={{ ...S.resultLabel, marginTop: 12 }}>Bullet Points</div>{result.bullets.map((b, i) => <div key={i} style={{ padding: "8px 12px", background: "#09090b", borderRadius: 6, marginBottom: 6, color: "#d4d4d8", fontSize: 13 }}>• {b}</div>)}</>}
+          {result.bulletPoints && <><div style={{ ...S.resultLabel, marginTop: 12 }}>Bullet Points</div>{result.bulletPoints.map((b, i) => <div key={i} style={{ padding: "8px 12px", background: "#09090b", borderRadius: 6, marginBottom: 6, color: "#d4d4d8", fontSize: 13 }}>• {b}</div>)}</>}
+          {result.description && <><div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}><div style={S.resultLabel}>Description</div><CopyBtn text={result.description} /></div><div style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.7 }}>{result.description}</div></>}
+          {result.backendKeywords && <><div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}><div style={S.resultLabel}>Backend Keywords</div><CopyBtn text={result.backendKeywords} /></div><code style={{ color: "#6ee7b7", fontSize: 13, wordBreak: "break-all" }}>{result.backendKeywords}</code></>}
+          {result.headlines && <><div style={S.resultLabel}>Headlines</div>{result.headlines.map((h, i) => <div key={i} style={{ padding: "8px 12px", background: "#09090b", borderRadius: 6, marginBottom: 6, display: "flex", justifyContent: "space-between" }}><span style={{ color: "#d4d4d8", fontSize: 13 }}>{h}</span><CopyBtn text={h} /></div>)}</>}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// COPYWRITING FRAMEWORKS TAB
+// ═══════════════════════════════════════════════════════════
+function CopywritingTab() {
+  const [sub, setSub] = useState("aida");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "aida",              label: "AIDA Framework" },
+    { id: "pas",               label: "PAS Framework" },
+    { id: "bab",               label: "BAB Framework" },
+    { id: "feature-to-benefit",label: "Feature → Benefit" },
+    { id: "sentence-expander", label: "Sentence Expander" },
+    { id: "content-shortener", label: "Shorten Content" },
+    { id: "paraphrase",        label: "Paraphrase & Rewrite" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const payload = { ...form };
+      if (sub === "feature-to-benefit" && form.featuresRaw) payload.features = form.featuresRaw.split("\n").map(x => x.trim()).filter(Boolean);
+      const r = await apiFetch(`${API}/copy/${sub}`, { method: "POST", body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  const needsProduct = ["aida", "pas", "bab"].includes(sub);
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        {needsProduct && <div style={{ marginBottom: 14 }}><label style={S.label}>Product / Offer *</label><input style={S.input} placeholder="e.g. Premium Yoga Mat" value={form.product || ""} onChange={e => f("product", e.target.value)} /></div>}
+        {sub === "aida" && <div style={S.row}><div style={S.col}><label style={S.label}>Target Audience</label><input style={S.input} value={form.audience || ""} onChange={e => f("audience", e.target.value)} /></div><div style={S.col}><label style={S.label}>Key Benefit</label><input style={S.input} value={form.benefit || ""} onChange={e => f("benefit", e.target.value)} /></div></div>}
+        {sub === "pas" && <div style={S.row}><div style={S.col}><label style={S.label}>Main Pain Point</label><input style={S.input} value={form.painPoint || ""} onChange={e => f("painPoint", e.target.value)} /></div><div style={S.col}><label style={S.label}>Solution Provided</label><input style={S.input} value={form.solution || ""} onChange={e => f("solution", e.target.value)} /></div></div>}
+        {sub === "bab" && <div style={{ marginBottom: 14 }}><label style={S.label}>Transformation Delivered</label><input style={S.input} value={form.transformation || ""} onChange={e => f("transformation", e.target.value)} /></div>}
+        {sub === "feature-to-benefit" && <div style={{ marginBottom: 14 }}><label style={S.label}>Product Name</label><input style={S.input} value={form.productName || ""} onChange={e => f("productName", e.target.value)} style={{ ...S.input, marginBottom: 10 }} /><label style={S.label}>Features (one per line) *</label><textarea style={S.textarea} rows={5} placeholder={"Waterproof coating\n5,000 mAh battery\nFoldable screen"} value={form.featuresRaw || ""} onChange={e => f("featuresRaw", e.target.value)} /></div>}
+        {(sub === "sentence-expander" || sub === "content-shortener" || sub === "paraphrase") && <div style={{ marginBottom: 14 }}><label style={S.label}>{sub === "sentence-expander" ? "Short Text to Expand *" : sub === "content-shortener" ? "Content to Shorten *" : "Content to Rewrite *"}</label><textarea style={S.textarea} rows={5} value={form.text || form.content || ""} onChange={e => { f("text", e.target.value); f("content", e.target.value); }} /></div>}
+        {sub === "sentence-expander" && <div style={S.row}><div style={S.col}><label style={S.label}>Target Length</label><select style={S.select} value={form.targetLength || "paragraph"} onChange={e => f("targetLength", e.target.value)}><option value="paragraph">Single Paragraph</option><option value="3-4 paragraphs">3-4 Paragraphs</option><option value="full section">Full Section</option></select></div></div>}
+        {sub === "content-shortener" && <div style={S.row}><div style={S.col}><label style={S.label}>Target Word Count</label><input style={S.input} type="number" value={form.targetWords || 50} onChange={e => f("targetWords", parseInt(e.target.value))} /></div></div>}
+        {sub === "paraphrase" && <div style={S.row}><div style={S.col}><label style={S.label}>Target Tone</label><select style={S.select} value={form.targetTone || "professional"} onChange={e => f("targetTone", e.target.value)}><option value="professional">Professional</option><option value="casual">Casual</option><option value="formal">Formal</option><option value="friendly">Friendly</option><option value="persuasive">Persuasive</option><option value="luxury">Luxury</option></select></div><div style={S.col}><label style={S.label}>Versions</label><select style={S.select} value={form.numberOfVersions || 3} onChange={e => f("numberOfVersions", parseInt(e.target.value))}><option value={2}>2</option><option value={3}>3</option><option value={4}>4</option><option value={5}>5</option></select></div></div>}
+        <div style={S.row}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate Copy</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Copywriting Results">
+          {result.combined && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Full Copy ({sub.toUpperCase()})</div><CopyBtn text={result.combined} /></div><div style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{result.combined}</div><hr style={S.divider} /></>}
+          {result.attention && <><div style={S.resultLabel}>Attention</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.attention}</p></>}
+          {result.interest && <><div style={S.resultLabel}>Interest</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.interest}</p></>}
+          {result.desire && <><div style={S.resultLabel}>Desire</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.desire}</p></>}
+          {result.action && <><div style={S.resultLabel}>Action / CTA</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.action}</p></>}
+          {result.pain && <><div style={S.resultLabel}>Pain</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.pain}</p></>}
+          {result.agitate && <><div style={S.resultLabel}>Agitate</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.agitate}</p></>}
+          {result.solution && <><div style={S.resultLabel}>Solution</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.solution}</p></>}
+          {result.before && <><div style={S.resultLabel}>Before</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.before}</p></>}
+          {result.after && <><div style={S.resultLabel}>After</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.after}</p></>}
+          {result.bridge && <><div style={S.resultLabel}>Bridge</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.bridge}</p></>}
+          {result.conversions && result.conversions.map((c, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ color: "#71717a", fontSize: 12, marginBottom: 4 }}>Feature: {c.feature}</div><div style={{ color: "#6ee7b7", fontSize: 13, marginBottom: 3 }}>✓ Benefit: {c.benefit}</div><div style={{ color: "#c4b5fd", fontSize: 13 }}>✦ Emotional: {c.emotionalBenefit}</div><div style={{ color: "#d4d4d8", fontSize: 13, marginTop: 4 }}>"{c.copySnippet}"</div></div>)}
+          {result.expanded && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Expanded</div><CopyBtn text={result.expanded} /></div><p style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.7 }}>{result.expanded}</p></>}
+          {result.condensed && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Condensed ({result.wordCount} words)</div><CopyBtn text={result.condensed} /></div><p style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.7 }}>{result.condensed}</p></>}
+          {result.versions && result.versions.map((v, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span style={{ ...S.badge, ...S.badgePurple }}>{v.tone || `Version ${v.version}`}</span><CopyBtn text={v.rewrite} /></div><p style={{ color: "#d4d4d8", fontSize: 14, marginBottom: 0 }}>{v.rewrite}</p></div>)}
+          {result.headline && <><div style={S.resultLabel}>Suggested Headline</div><div style={{ color: "#f59e0b", fontSize: 15, fontWeight: 600 }}>{result.headline}</div></>}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// BUSINESS COPY TAB
+// ═══════════════════════════════════════════════════════════
+function BusinessCopyTab() {
+  const [sub, setSub] = useState("product-name");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "product-name",       label: "Product Name" },
+    { id: "tagline",            label: "Tagline & Slogan" },
+    { id: "press-release",      label: "Press Release" },
+    { id: "mission-vision",     label: "Mission & Vision" },
+    { id: "about-page",         label: "About Page" },
+    { id: "bio",                label: "Bio Generator" },
+    { id: "value-proposition",  label: "Value Proposition" },
+    { id: "policy-copy",        label: "Policy Copy" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/business/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        {sub === "product-name" && <><div style={{ marginBottom: 14 }}><label style={S.label}>Product/Service Description *</label><textarea style={S.textarea} value={form.description || ""} onChange={e => f("description", e.target.value)} /></div><div style={S.row}><div style={S.col}><label style={S.label}>Industry</label><input style={S.input} value={form.industry || ""} onChange={e => f("industry", e.target.value)} /></div><div style={S.col}><label style={S.label}>Naming Style</label><select style={S.select} value={form.style || "modern"} onChange={e => f("style", e.target.value)}><option value="modern">Modern</option><option value="playful">Playful</option><option value="premium">Premium</option><option value="minimal">Minimal</option><option value="descriptive">Descriptive</option></select></div></div></>}
+        {sub === "tagline" && <div style={S.row}><div style={S.col}><label style={S.label}>Brand Name *</label><input style={S.input} value={form.brandName || ""} onChange={e => f("brandName", e.target.value)} /></div><div style={S.col}><label style={S.label}>Value Proposition</label><input style={S.input} value={form.valueProposition || ""} onChange={e => f("valueProposition", e.target.value)} /></div></div>}
+        {sub === "press-release" && <><div style={{ marginBottom: 14 }}><label style={S.label}>Headline *</label><input style={S.input} value={form.headline || ""} onChange={e => f("headline", e.target.value)} /></div><div style={{ marginBottom: 14 }}><label style={S.label}>Summary *</label><textarea style={S.textarea} value={form.summary || ""} onChange={e => f("summary", e.target.value)} /></div><div style={S.row}><div style={S.col}><label style={S.label}>Company Name</label><input style={S.input} value={form.companyName || ""} onChange={e => f("companyName", e.target.value)} /></div><div style={S.col}><label style={S.label}>Key Quote</label><input style={S.input} value={form.quote || ""} onChange={e => f("quote", e.target.value)} /></div></div></>}
+        {sub === "mission-vision" && <div style={S.row}><div style={S.col}><label style={S.label}>Company Name *</label><input style={S.input} value={form.companyName || ""} onChange={e => f("companyName", e.target.value)} /></div><div style={S.col}><label style={S.label}>Industry</label><input style={S.input} value={form.industry || ""} onChange={e => f("industry", e.target.value)} /></div></div>}
+        {sub === "about-page" && <><div style={S.row}><div style={S.col}><label style={S.label}>Company Name *</label><input style={S.input} value={form.companyName || ""} onChange={e => f("companyName", e.target.value)} /></div><div style={S.col}><label style={S.label}>Tone</label><select style={S.select} value={form.tone || "authentic"} onChange={e => f("tone", e.target.value)}><option value="authentic">Authentic</option><option value="professional">Professional</option><option value="bold">Bold</option><option value="warm">Warm</option></select></div></div><div style={{ marginBottom: 14 }}><label style={S.label}>Brand Story / Origin</label><textarea style={S.textarea} value={form.story || ""} onChange={e => f("story", e.target.value)} /></div></>}
+        {sub === "bio" && <><div style={S.row}><div style={S.col}><label style={S.label}>Name *</label><input style={S.input} value={form.name || ""} onChange={e => f("name", e.target.value)} /></div><div style={S.col}><label style={S.label}>Role / Title</label><input style={S.input} value={form.role || ""} onChange={e => f("role", e.target.value)} /></div></div><div style={{ marginBottom: 14 }}><label style={S.label}>Key Achievements (comma-separated)</label><input style={S.input} value={form.achievementsRaw || ""} onChange={e => { f("achievementsRaw", e.target.value); f("achievements", e.target.value.split(",").map(x => x.trim()).filter(Boolean)); }} /></div></>}
+        {sub === "value-proposition" && <div style={S.row}><div style={S.col}><label style={S.label}>Product / Service *</label><input style={S.input} value={form.product || ""} onChange={e => f("product", e.target.value)} /></div><div style={S.col}><label style={S.label}>Target Audience</label><input style={S.input} value={form.audience || ""} onChange={e => f("audience", e.target.value)} /></div></div>}
+        {sub === "policy-copy" && <div style={S.row}><div style={S.col}><label style={S.label}>Policy Type</label><select style={S.select} value={form.policyType || "return"} onChange={e => f("policyType", e.target.value)}><option value="return">Return Policy</option><option value="shipping">Shipping Policy</option><option value="privacy">Privacy Policy Summary</option><option value="terms">Terms of Service</option></select></div><div style={S.col}><label style={S.label}>Store Name</label><input style={S.input} value={form.storeName || ""} onChange={e => f("storeName", e.target.value)} /></div></div>}
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Business Copy Results">
+          {result.names && result.names.map((n, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#f59e0b", fontSize: 15, fontWeight: 700 }}>{n.name}</span><CopyBtn text={n.name} /></div><div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{n.rationale}</div></div>)}
+          {result.taglines && result.taglines.map((t, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#f59e0b", fontSize: 14, fontWeight: 600 }}>"{t.tagline}"</span><CopyBtn text={t.tagline} /></div><div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{t.style} — {t.explanation}</div></div>)}
+          {result.pressRelease && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Press Release</div><CopyBtn text={result.pressRelease} /></div><pre style={S.pre}>{result.pressRelease}</pre></>}
+          {result.mission && <><div style={S.resultLabel}>Mission Statement</div><div style={{ color: "#6ee7b7", fontSize: 15, fontWeight: 500, padding: "12px 16px", background: "#09090b", borderRadius: 8, marginBottom: 8 }}>"{result.mission.statement}"</div></>}
+          {result.vision && <><div style={S.resultLabel}>Vision Statement</div><div style={{ color: "#c4b5fd", fontSize: 15, fontWeight: 500, padding: "12px 16px", background: "#09090b", borderRadius: 8, marginBottom: 8 }}>"{result.vision.statement}"</div></>}
+          {result.fullPage && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>About Page Copy</div><CopyBtn text={result.fullPage} /></div><pre style={S.pre}>{result.fullPage}</pre></>}
+          {result.medium && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Bio (Medium)</div><CopyBtn text={result.medium} /></div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.medium}</p></>}
+          {result.short && !result.taglines && <><div style={S.resultLabel}>Short Bio</div><p style={{ color: "#a1a1aa", fontSize: 13 }}>{result.short}</p></>}
+          {result.headline && !result.pressRelease && <><div style={S.resultLabel}>Headline</div><div style={{ color: "#f59e0b", fontSize: 15, fontWeight: 600 }}>{result.headline}</div></>}
+          {result.genieStatement && <><div style={S.resultLabel}>One-line Positioning</div><div style={{ color: "#6ee7b7", fontSize: 14, fontStyle: "italic", padding: 12, background: "#09090b", borderRadius: 8 }}>{result.genieStatement}</div></>}
+          {result.policyText && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Policy Text</div><CopyBtn text={result.policyText} /></div><pre style={S.pre}>{result.policyText}</pre></>}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// EMAIL MARKETING TAB
+// ═══════════════════════════════════════════════════════════
+function EmailMarketingTab() {
+  const [sub, setSub] = useState("cold-outreach");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "cold-outreach",  label: "Cold Outreach" },
+    { id: "welcome-series", label: "Welcome Series" },
+    { id: "post-purchase",  label: "Post-Purchase" },
+    { id: "newsletter",     label: "Newsletter" },
+    { id: "winback",        label: "Win-Back Campaign" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/email/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  const emails = result?.sequence || result?.series || result?.emails || [];
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        {sub === "cold-outreach" && <><div style={{ marginBottom: 14 }}><label style={S.label}>Product / Offer *</label><input style={S.input} value={form.product || ""} onChange={e => f("product", e.target.value)} /></div><div style={S.row}><div style={S.col}><label style={S.label}>Recipient Role</label><input style={S.input} placeholder="e.g. Head of Marketing" value={form.recipientRole || ""} onChange={e => f("recipientRole", e.target.value)} /></div><div style={S.col}><label style={S.label}>Pain Point</label><input style={S.input} value={form.painPoint || ""} onChange={e => f("painPoint", e.target.value)} /></div></div><div style={S.row}><div style={S.col}><label style={S.label}>Emails in Sequence</label><select style={S.select} value={form.sequences || 3} onChange={e => f("sequences", parseInt(e.target.value))}><option value={2}>2</option><option value={3}>3</option><option value={4}>4</option><option value={5}>5</option></select></div></div></>}
+        {(sub === "welcome-series" || sub === "post-purchase" || sub === "winback" || sub === "newsletter") && <div style={S.row}><div style={S.col}><label style={S.label}>Brand Name *</label><input style={S.input} value={form.brandName || ""} onChange={e => f("brandName", e.target.value)} /></div><div style={S.col}><label style={S.label}>{sub === "post-purchase" ? "Product Purchased" : sub === "newsletter" ? "Topic/Theme" : "Product/Service"}</label><input style={S.input} value={form.product || form.productPurchased || form.topic || ""} onChange={e => { f("product", e.target.value); f("productPurchased", e.target.value); f("topic", e.target.value); }} /></div></div>}
+        {sub === "winback" && <div style={S.row}><div style={S.col}><label style={S.label}>Inactive Days</label><input style={S.input} type="number" value={form.inactiveDays || 90} onChange={e => f("inactiveDays", parseInt(e.target.value))} /></div><div style={S.col}><label style={S.label}>Incentive</label><input style={S.input} value={form.incentive || "10% discount"} onChange={e => f("incentive", e.target.value)} /></div></div>}
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate Emails</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Email Copy">
+          {emails.length > 0 ? emails.map((e, i) => (
+            <div key={i} style={{ background: "#09090b", borderRadius: 10, padding: 16, marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ ...S.badge, ...S.badgePurple }}>Email {e.email || i + 1}{e.sendTiming ? ` — ${e.sendTiming}` : ""}</span>
+                <CopyBtn text={`Subject: ${e.subjectLine}\n\n${e.body}`} />
+              </div>
+              <div style={{ color: "#f59e0b", fontWeight: 600, marginBottom: 4 }}>Subject: {e.subjectLine}</div>
+              {e.previewText && <div style={{ color: "#71717a", fontSize: 12, marginBottom: 8 }}>Preview: {e.previewText}</div>}
+              <p style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.7, marginBottom: 0 }}>{e.body}</p>
+              {e.cta && <div style={{ color: "#6ee7b7", fontSize: 13, marginTop: 8 }}>CTA: {e.cta}</div>}
+            </div>
+          )) : (
+            <>
+              {result.subjectLine && <div style={{ color: "#f59e0b", fontWeight: 600, marginBottom: 4 }}>Subject: {result.subjectLine}</div>}
+              {result.previewText && <div style={{ color: "#71717a", fontSize: 12, marginBottom: 8 }}>Preview: {result.previewText}</div>}
+              {result.body && <div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Email Body</div><CopyBtn text={result.body} /></div>}
+              {result.body && <pre style={S.pre}>{result.body}</pre>}
+              {result.sections && result.sections.map((sec, i) => <div key={i} style={{ marginBottom: 12 }}><div style={S.resultLabel}>{sec.headline || sec.type}</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{sec.content}</p></div>)}
+            </>
+          )}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// MORE ADS TAB (LinkedIn, Pinterest, Google Display, Twitter, Audio)
+// ═══════════════════════════════════════════════════════════
+function MoreAdsTab() {
+  const [sub, setSub] = useState("linkedin");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "linkedin",      label: "LinkedIn Ads" },
+    { id: "pinterest",     label: "Pinterest Ads" },
+    { id: "google-display",label: "Google Display" },
+    { id: "twitter",       label: "Twitter/X Ads" },
+    { id: "audio-script",  label: "Audio Ad Script" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/ads/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        <div style={{ marginBottom: 14 }}><label style={S.label}>Product / Service *</label><input style={S.input} value={form.product || ""} onChange={e => f("product", e.target.value)} /></div>
+        <div style={S.row}>
+          <div style={S.col}><label style={S.label}>Target Audience</label><input style={S.input} value={form.audience || form.targetAudience || ""} onChange={e => { f("audience", e.target.value); f("targetAudience", e.target.value); }} /></div>
+          {sub === "linkedin" && <div style={S.col}><label style={S.label}>Campaign Goal</label><select style={S.select} value={form.goal || "leads"} onChange={e => f("goal", e.target.value)}><option value="leads">Lead Gen</option><option value="awareness">Brand Awareness</option><option value="website-traffic">Website Traffic</option><option value="engagement">Engagement</option></select></div>}
+          {sub === "audio-script" && <div style={S.col}><label style={S.label}>Duration (seconds)</label><select style={S.select} value={form.duration || 30} onChange={e => f("duration", parseInt(e.target.value))}><option value={15}>15s</option><option value={30}>30s</option><option value={60}>60s</option></select></div>}
+        </div>
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate Ad Copy</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Ad Copy Results">
+          {result.singleImage && <><div style={S.resultLabel}>Single Image Ad</div><div style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 10 }}><div style={{ color: "#f59e0b", fontWeight: 600 }}>{result.singleImage.headline}</div><p style={{ color: "#d4d4d8", fontSize: 13, margin: "6px 0" }}>{result.singleImage.introText}</p><span style={{ ...S.badge, ...S.badgePurple }}>{result.singleImage.cta}</span></div></>}
+          {result.messageAd && <><div style={S.resultLabel}>Message Ad (InMail)</div><div style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 10 }}><div style={{ color: "#f59e0b", fontWeight: 600, marginBottom: 6 }}>{result.messageAd.subject}</div><p style={{ color: "#d4d4d8", fontSize: 13 }}>{result.messageAd.body}</p></div></>}
+          {result.pinTitle && <><div style={S.resultLabel}>Pin Title</div><div style={{ display: "flex", justifyContent: "space-between" }}><div style={{ color: "#f59e0b", fontSize: 14, fontWeight: 600 }}>{result.pinTitle}</div><CopyBtn text={result.pinTitle} /></div></>}
+          {result.pinDescription && <><div style={{ ...S.resultLabel, marginTop: 10 }}>Pin Description</div><div style={{ display: "flex", justifyContent: "space-between" }}><p style={{ color: "#d4d4d8", fontSize: 13, margin: 0 }}>{result.pinDescription}</p><CopyBtn text={result.pinDescription} /></div></>}
+          {result.headlines && !result.pinTitle && <><div style={S.resultLabel}>Headlines</div>{result.headlines.map((h, i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "#09090b", borderRadius: 6, marginBottom: 4 }}><span style={{ color: "#d4d4d8", fontSize: 13 }}>{h}</span><CopyBtn text={h} /></div>)}</>}
+          {result.descriptions && <><div style={S.resultLabel}>Descriptions</div>{result.descriptions.map((d, i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: "#09090b", borderRadius: 6, marginBottom: 4 }}><span style={{ color: "#a1a1aa", fontSize: 13 }}>{d}</span><CopyBtn text={d} /></div>)}</>}
+          {result.promotedTweets && <><div style={S.resultLabel}>Promoted Tweets</div>{result.promotedTweets.map((t, i) => <div key={i} style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 8 }}><p style={{ color: "#d4d4d8", fontSize: 14, margin: "0 0 8px" }}>{t}</p><CopyBtn text={t} /></div>)}</>}
+          {result.script && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Script ({result.wordCount || "—"} words)</div><CopyBtn text={result.script} /></div><pre style={S.pre}>{result.script}</pre>{result.voiceDirection && <div style={{ color: "#71717a", fontSize: 12, marginTop: 6 }}>🎙 {result.voiceDirection}</div>}</>}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// YOUTUBE COPY TAB
+// ═══════════════════════════════════════════════════════════
+function YouTubeTab() {
+  const [sub, setSub] = useState("title");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "title",          label: "Video Title" },
+    { id: "description",    label: "Description" },
+    { id: "script",         label: "Full Script" },
+    { id: "shorts-script",  label: "Shorts Script" },
+    { id: "video-hooks",    label: "Video Hooks" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/youtube/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        <div style={{ marginBottom: 14 }}><label style={S.label}>{sub === "title" || sub === "video-hooks" ? "Video Topic *" : sub === "description" ? "Video Title *" : "Video Title / Topic *"}</label><input style={S.input} value={form.topic || form.videoTitle || form.title || ""} onChange={e => { f("topic", e.target.value); f("videoTitle", e.target.value); f("title", e.target.value); }} /></div>
+        <div style={S.row}>
+          <div style={S.col}><label style={S.label}>Channel Name</label><input style={S.input} value={form.channelName || ""} onChange={e => f("channelName", e.target.value)} /></div>
+          <div style={S.col}><label style={S.label}>Target Keyword</label><input style={S.input} value={form.keyword || ""} onChange={e => f("keyword", e.target.value)} /></div>
+        </div>
+        {sub === "script" && <div style={S.row}><div style={S.col}><label style={S.label}>Duration (mins)</label><select style={S.select} value={form.duration || 10} onChange={e => f("duration", parseInt(e.target.value))}><option value={5}>5 mins</option><option value={10}>10 mins</option><option value={15}>15 mins</option><option value={20}>20 mins</option></select></div><div style={S.col}><label style={S.label}>Style</label><select style={S.select} value={form.style || "educational"} onChange={e => f("style", e.target.value)}><option value="educational">Educational</option><option value="review">Review</option><option value="tutorial">Tutorial</option><option value="entertainment">Entertainment</option></select></div></div>}
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate YouTube Copy</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="YouTube Content">
+          {result.titles && result.titles.map((t, i) => <div key={i} style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#d4d4d8", fontSize: 14 }}>{t.title}</span><CopyBtn text={t.title} /></div><div style={{ display: "flex", gap: 6, marginTop: 4 }}><span style={{ ...S.badge, ...S.badgePurple }}>{t.style}</span><span style={{ ...S.badge, background: "#14532d", color: "#86efac" }}>{t.estimatedCTR} CTR</span></div></div>)}
+          {result.description && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Description</div><CopyBtn text={result.description} /></div><pre style={S.pre}>{result.description}</pre></>}
+          {result.tags && <><div style={S.resultLabel}>Tags</div><div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{result.tags.map((t, i) => <span key={i} style={{ ...S.badge, ...S.badgePurple }}>{t}</span>)}</div></>}
+          {result.fullScript && <><div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}><div style={S.resultLabel}>Full Script</div><CopyBtn text={result.fullScript} /></div><pre style={S.pre}>{result.fullScript}</pre></>}
+          {!result.fullScript && result.hook && <><div style={S.resultLabel}>Hook (First 30s)</div><div style={{ padding: 12, background: "#09090b", borderRadius: 8, color: "#f59e0b", fontSize: 14 }}>{result.hook}</div></>}
+          {result.phases && result.phases.map((p, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span style={{ ...S.badge, ...S.badgePurple }}>{p.phase}</span><span style={{ color: "#71717a", fontSize: 12 }}>{p.seconds}s</span></div><p style={{ color: "#d4d4d8", fontSize: 13, margin: 0 }}>{p.script}</p></div>)}
+          {result.hooks && result.hooks.map((h, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ ...S.badge, ...S.badgePurple }}>{h.type}</span><CopyBtn text={h.hook} /></div><p style={{ color: "#d4d4d8", fontSize: 14, margin: "6px 0 0" }}>{h.hook}</p><div style={{ color: "#71717a", fontSize: 12 }}>{h.whyItWorks}</div></div>)}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// LANDING PAGES TAB
+// ═══════════════════════════════════════════════════════════
+function LandingPagesTab() {
+  const [sub, setSub] = useState("headline");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "headline",    label: "Headline Generator" },
+    { id: "full-page",   label: "Full Page Copy" },
+    { id: "cta-copy",    label: "CTA Buttons" },
+    { id: "pricing-page",label: "Pricing Page" },
+    { id: "ab-headlines",label: "A/B Headlines" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/landing/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        {sub !== "ab-headlines" && sub !== "cta-copy" && <div style={{ marginBottom: 14 }}><label style={S.label}>Product / Offer *</label><input style={S.input} value={form.product || form.productName || ""} onChange={e => { f("product", e.target.value); f("productName", e.target.value); }} /></div>}
+        {sub === "ab-headlines" && <div style={{ marginBottom: 14 }}><label style={S.label}>Original Headline *</label><input style={S.input} value={form.originalHeadline || ""} onChange={e => f("originalHeadline", e.target.value)} /></div>}
+        {sub === "cta-copy" && <div style={{ marginBottom: 14 }}><label style={S.label}>Context *</label><input style={S.input} placeholder="e.g. SaaS product free trial landing page" value={form.context || ""} onChange={e => f("context", e.target.value)} /></div>}
+        <div style={S.row}>
+          <div style={S.col}><label style={S.label}>Target Audience</label><input style={S.input} value={form.audience || ""} onChange={e => f("audience", e.target.value)} /></div>
+          <div style={S.col}><label style={S.label}>{sub === "full-page" ? "Special Offer / CTA" : sub === "cta-copy" ? "Goal" : "Key Benefit"}</label><input style={S.input} value={form.benefit || form.offer || form.goal || ""} onChange={e => { f("benefit", e.target.value); f("offer", e.target.value); f("goal", e.target.value); }} /></div>
+        </div>
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate Landing Page Copy</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Landing Page Copy">
+          {result.headlines && result.headlines.map((h, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 14, marginBottom: 10 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#f59e0b", fontSize: 16, fontWeight: 700 }}>{h.headline}</span><CopyBtn text={h.headline} /></div>{h.subheadline && <p style={{ color: "#a1a1aa", fontSize: 13, marginTop: 6 }}>{h.subheadline}</p>}<div style={{ display: "flex", gap: 6, marginTop: 6 }}><span style={{ ...S.badge, ...S.badgePurple }}>{h.type}</span><span style={{ ...S.badge, background: "#1c1917", color: "#d6d3d1" }}>{h.framework}</span></div></div>)}
+          {result.sections && result.sections.map((s, i) => <div key={i} style={{ marginBottom: 14 }}><div style={{ ...S.resultLabel }}>{s.section}</div><div style={{ color: "#f59e0b", fontWeight: 600, marginBottom: 4 }}>{s.headline}</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{s.copy}</p></div>)}
+          {result.primaryCTA && <div style={{ padding: 12, background: "#4c1d95", borderRadius: 8, marginBottom: 10 }}><div style={{ color: "#c4b5fd", fontWeight: 700, fontSize: 16 }}>🎯 {result.primaryCTA.button}</div>{result.primaryCTA.urgencyLine && <div style={{ color: "#f59e0b", fontSize: 12, marginTop: 4 }}>{result.primaryCTA.urgencyLine}</div>}</div>}
+          {result.buttons && result.buttons.map((btn, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6ee7b7", fontWeight: 700, fontSize: 15 }}>[{btn.text}]</span><CopyBtn text={btn.text} /></div>{btn.subtext && <div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{btn.subtext}</div>}</div>)}
+          {result.original && <><div style={S.resultLabel}>Original vs Variants (A/B)</div><div style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, borderLeft: "3px solid #71717a", marginBottom: 8 }}><span style={{ color: "#71717a", fontSize: 11 }}>CONTROL</span><div style={{ color: "#d4d4d8", fontSize: 14, marginTop: 4 }}>{result.original.headline}</div></div>{result.variants && result.variants.map((v, i) => <div key={i} style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, borderLeft: "3px solid #7c3aed", marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ ...S.badge, ...S.badgePurple }}>{v.changeType}</span><CopyBtn text={v.headline} /></div><div style={{ color: "#d4d4d8", fontSize: 14, marginTop: 4 }}>{v.headline}</div><div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{v.hypothesis}</div></div>)}</>}
+          {result.tiers && result.tiers.map((t, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ ...S.badge, ...S.badgePurple }}>{t.tierName}</span>{t.mostPopularBadge && <span style={{ ...S.badge, ...S.badgeGreen }}>Most Popular</span>}</div><p style={{ color: "#a1a1aa", fontSize: 13, margin: "6px 0" }}>{t.tagline}</p><span style={{ color: "#6ee7b7", fontWeight: 600 }}>CTA: {t.cta}</span></div>)}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES TAB
+// ═══════════════════════════════════════════════════════════
+function UtilitiesTab() {
+  const [sub, setSub] = useState("keyword-extractor");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "keyword-extractor",  label: "Keyword Extractor" },
+    { id: "article-summarizer", label: "Article Summarizer" },
+    { id: "content-repurposer", label: "Content Repurposer" },
+    { id: "listicle-ideas",     label: "Listicle Ideas" },
+    { id: "translate",          label: "Translate Content" },
+  ];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const payload = { ...form };
+      if (sub === "content-repurposer" && form.targetFormatsRaw) payload.targetFormats = form.targetFormatsRaw.split(",").map(x => x.trim()).filter(Boolean);
+      const r = await apiFetch(`${API}/util/${sub}`, { method: "POST", body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  const LANGUAGES = ["Spanish", "French", "German", "Portuguese", "Italian", "Dutch", "Japanese", "Chinese (Simplified)", "Korean", "Arabic", "Hindi", "Russian"];
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        {(sub === "keyword-extractor" || sub === "article-summarizer" || sub === "content-repurposer") && (
+          <div style={{ marginBottom: 14 }}><label style={S.label}>Content *</label><textarea style={S.textarea} rows={6} value={form.content || ""} onChange={e => f("content", e.target.value)} /></div>
+        )}
+        {sub === "article-summarizer" && <div style={S.row}><div style={S.col}><label style={S.label}>Summary Length</label><select style={S.select} value={form.summaryLength || "medium"} onChange={e => f("summaryLength", e.target.value)}><option value="short">Short (50-80 words)</option><option value="medium">Medium (150-200 words)</option><option value="long">Long (300-400 words)</option></select></div></div>}
+        {sub === "content-repurposer" && <div style={{ marginBottom: 14 }}><label style={S.label}>Target Formats (comma-separated)</label><input style={S.input} placeholder="twitter-thread, linkedin-post, instagram-caption, email" value={form.targetFormatsRaw || ""} onChange={e => f("targetFormatsRaw", e.target.value)} /></div>}
+        {sub === "listicle-ideas" && <><div style={{ marginBottom: 14 }}><label style={S.label}>Topic *</label><input style={S.input} value={form.topic || ""} onChange={e => f("topic", e.target.value)} /></div><div style={S.row}><div style={S.col}><label style={S.label}>Target Audience</label><input style={S.input} value={form.audience || ""} onChange={e => f("audience", e.target.value)} /></div><div style={S.col}><label style={S.label}>Number of Ideas</label><select style={S.select} value={form.count || 10} onChange={e => f("count", parseInt(e.target.value))}><option value={5}>5</option><option value={10}>10</option><option value={15}>15</option><option value={20}>20</option></select></div></div></>}
+        {sub === "translate" && <><div style={{ marginBottom: 14 }}><label style={S.label}>Content to Translate *</label><textarea style={S.textarea} rows={5} value={form.content || ""} onChange={e => f("content", e.target.value)} /></div><div style={S.row}><div style={S.col}><label style={S.label}>Target Language *</label><select style={S.select} value={form.targetLanguage || "Spanish"} onChange={e => f("targetLanguage", e.target.value)}>{LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}</select></div><div style={S.col}><label style={S.label}>Cultural Adaptation</label><select style={S.select} value={form.adaptCulture !== false ? "true" : "false"} onChange={e => f("adaptCulture", e.target.value === "true")}><option value="true">Yes — adapt for native speakers</option><option value="false">No — literal translation</option></select></div></div></>}
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Run</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="Results">
+          {result.primaryKeywords && <><div style={S.resultLabel}>Primary Keywords</div><div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>{result.primaryKeywords.map((k, i) => <span key={i} style={{ ...S.badge, ...S.badgePurple }}>{k}</span>)}</div></>}
+          {result.longTailPhrases && <><div style={S.resultLabel}>Long-tail Phrases</div><div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>{result.longTailPhrases.map((k, i) => <span key={i} style={{ ...S.badge, background: "#1c1917", color: "#d6d3d1" }}>{k}</span>)}</div></>}
+          {result.summary && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Summary</div><CopyBtn text={result.summary} /></div><p style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.7 }}>{result.summary}</p></>}
+          {result.tldr && <div style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 10 }}><span style={{ ...S.badge, ...S.badgeGreen, marginRight: 8 }}>TL;DR</span><span style={{ color: "#d4d4d8", fontSize: 13 }}>{result.tldr}</span></div>}
+          {result.keyPoints && <><div style={S.resultLabel}>Key Points</div>{result.keyPoints.map((p, i) => <div key={i} style={{ padding: "6px 10px", color: "#d4d4d8", fontSize: 13 }}>• {p}</div>)}</>}
+          {result.repurposed && result.repurposed.map((r, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 14, marginBottom: 10 }}><div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span style={{ ...S.badge, ...S.badgePurple }}>{r.format}</span><CopyBtn text={r.content} /></div><pre style={{ ...S.pre, marginTop: 6 }}>{r.content}</pre></div>)}
+          {result.ideas && result.ideas.map((idea, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#d4d4d8", fontSize: 14, fontWeight: 500 }}>{idea.title}</span><CopyBtn text={idea.title} /></div><div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{idea.angle}</div></div>)}
+          {result.translated && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Translated ({result.language})</div><CopyBtn text={result.translated} /></div><pre style={S.pre}>{result.translated}</pre>{result.qualityNotes && <div style={{ color: "#71717a", fontSize: 12, marginTop: 8 }}>📝 {result.qualityNotes}</div>}</>}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// ECOM SPECIALS TAB
+// ═══════════════════════════════════════════════════════════
+function EcomSpecialsTab() {
+  const [sub, setSub] = useState("flash-sale");
+  const [form, setForm] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const SUBS = [
+    { id: "flash-sale",        label: "Flash Sale Copy" },
+    { id: "bundle-description",label: "Bundle Description" },
+    { id: "loyalty-program",   label: "Loyalty Program" },
+    { id: "seasonal-sale",     label: "Seasonal Sale" },
+    { id: "gift-guide",        label: "Gift Guide" },
+  ];
+  const SEASONS = ["Black Friday", "Cyber Monday", "Holiday Season", "New Year Sale", "Valentine's Day", "Spring Sale", "Summer Sale", "Back to School", "Flash Sale"];
+  const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  async function run() {
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetch(`${API}/ecom/${sub}`, { method: "POST", body: JSON.stringify(form) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setResult(r);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
+  }
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {SUBS.map(s => <button key={s.id} style={{ ...S.btn, ...(sub === s.id ? S.btnPurple : S.btnGray), ...S.btnSm }} onClick={() => { setSub(s.id); setResult(null); setForm({}); }}>{s.label}</button>)}
+      </div>
+      <div style={S.card}>
+        {(sub === "flash-sale" || sub === "bundle-description") && <div style={{ marginBottom: 14 }}><label style={S.label}>Product / Bundle Name *</label><input style={S.input} value={form.product || form.bundleName || ""} onChange={e => { f("product", e.target.value); f("bundleName", e.target.value); }} /></div>}
+        {(sub === "loyalty-program" || sub === "seasonal-sale" || sub === "gift-guide") && <div style={{ marginBottom: 14 }}><label style={S.label}>{sub === "gift-guide" ? "Gift Guide Theme *" : "Brand Name *"}</label><input style={S.input} value={form.brandName || form.theme || ""} onChange={e => { f("brandName", e.target.value); f("theme", e.target.value); }} /></div>}
+        {sub === "flash-sale" && <div style={S.row}><div style={S.col}><label style={S.label}>Discount</label><input style={S.input} value={form.discount || "20% off"} onChange={e => f("discount", e.target.value)} /></div><div style={S.col}><label style={S.label}>Deadline</label><input style={S.input} value={form.deadline || "24 hours"} onChange={e => f("deadline", e.target.value)} /></div></div>}
+        {sub === "bundle-description" && <div style={{ marginBottom: 14 }}><label style={S.label}>Products in Bundle (comma-separated)</label><input style={S.input} value={form.productsRaw || ""} onChange={e => { f("productsRaw", e.target.value); f("products", e.target.value.split(",").map(x => x.trim()).filter(Boolean)); }} /></div>}
+        {sub === "loyalty-program" && <div style={S.row}><div style={S.col}><label style={S.label}>Program Name</label><input style={S.input} value={form.programName || ""} onChange={e => f("programName", e.target.value)} /></div><div style={S.col}><label style={S.label}>Tiers (comma-separated)</label><input style={S.input} value={form.tiersRaw || ""} placeholder="Bronze, Silver, Gold" onChange={e => { f("tiersRaw", e.target.value); f("tiers", e.target.value.split(",").map(x => x.trim()).filter(Boolean)); }} /></div></div>}
+        {sub === "seasonal-sale" && <div style={S.row}><div style={S.col}><label style={S.label}>Season / Campaign</label><select style={S.select} value={form.season || "Black Friday"} onChange={e => f("season", e.target.value)}>{SEASONS.map(s => <option key={s} value={s}>{s}</option>)}</select></div><div style={S.col}><label style={S.label}>Discount</label><input style={S.input} value={form.discount || "30% off everything"} onChange={e => f("discount", e.target.value)} /></div></div>}
+        <div style={{ ...S.row, marginTop: 14 }}><ModelSelect value={form.model || "gpt-4o-mini"} onChange={v => f("model", v)} /></div>
+        <button style={{ ...S.btn, ...S.btnPurple }} onClick={run} disabled={loading}>{loading && <Spinner />}Generate Copy</button>
+        {error && <div style={{ color: "#f87171", marginTop: 12, fontSize: 13 }}>{error}</div>}
+      </div>
+      {result && (
+        <ResultBlock label="E-com Copy Results">
+          {result.bannerHeadline && <div style={{ padding: 16, background: "#4c1d95", borderRadius: 8, textAlign: "center", marginBottom: 12 }}><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{result.bannerHeadline}</div></div>}
+          {result.heroHeadline && <div style={{ padding: 16, background: "#4c1d95", borderRadius: 8, textAlign: "center", marginBottom: 12 }}><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{result.heroHeadline}</div>{result.subheadline && <div style={{ color: "#c4b5fd", marginTop: 4 }}>{result.subheadline}</div>}</div>}
+          {result.emailSubject && <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 6 }}><span style={{ color: "#f59e0b" }}>✉ {result.emailSubject}</span><CopyBtn text={result.emailSubject} /></div>}
+          {result.emailSubjects && result.emailSubjects.map((e, i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 6 }}><span style={{ color: "#f59e0b" }}>✉ Email {i + 1}: {e}</span><CopyBtn text={e} /></div>)}
+          {result.smsText && <div style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 6 }}><span style={{ ...S.badge, ...S.badgeGreen, marginRight: 8 }}>SMS</span><span style={{ color: "#d4d4d8", fontSize: 13 }}>{result.smsText}</span></div>}
+          {result.socialPost && <><div style={S.resultLabel}>Social Post</div><pre style={S.pre}>{result.socialPost}</pre></>}
+          {result.socialPosts && result.socialPosts.map((p, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><span style={{ ...S.badge, ...S.badgePurple, marginBottom: 6, display: "inline-block" }}>{p.platform}</span><p style={{ color: "#d4d4d8", fontSize: 13, marginBottom: 0 }}>{p.copy}</p></div>)}
+          {result.description && <><div style={{ display: "flex", justifyContent: "space-between" }}><div style={S.resultLabel}>Bundle Description</div><CopyBtn text={result.description} /></div><p style={{ color: "#d4d4d8", fontSize: 14, lineHeight: 1.7 }}>{result.description}</p></>}
+          {result.tagline && <div style={{ color: "#f59e0b", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>"{result.tagline}"</div>}
+          {result.howItWorks && <><div style={S.resultLabel}>How It Works</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{result.howItWorks}</p></>}
+          {result.sections && result.sections.map((s, i) => <div key={i} style={{ marginBottom: 12 }}><div style={S.resultLabel}>{s.sectionTitle}</div>{s.picks?.map((p, j) => <div key={j} style={{ padding: "8px 12px", background: "#09090b", borderRadius: 6, marginBottom: 4 }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{p.product}</span>: <span style={{ color: "#d4d4d8", fontSize: 13 }}>{p.copySnippet}</span></div>)}</div>)}
+        </ResultBlock>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
 // HISTORY TAB
 // ═══════════════════════════════════════════════════════════
 function HistoryTab() {
@@ -1179,7 +1753,7 @@ export default function AIContentImageGen() {
     <div style={S.page}>
       <div style={S.header}>
         <h1 style={S.title}>🤖 AI Content & Image Gen</h1>
-        <p style={S.subtitle}>38 AI-powered tools — product copy, ad creative, social media, images, video, blog posts, and more.</p>
+        <p style={S.subtitle}>90 AI-powered tools — product copy, ad creative, Amazon, email, landing pages, YouTube, business copy, utilities, and more.</p>
       </div>
 
       <div style={S.tabs}>
@@ -1190,15 +1764,24 @@ export default function AIContentImageGen() {
         ))}
       </div>
 
-      {tab === "product" && <ProductContentTab />}
-      {tab === "ads" && <AdCopyTab />}
-      {tab === "social" && <SocialTab />}
-      {tab === "images" && <ImagesTab />}
-      {tab === "brand" && <BrandVoiceTab />}
-      {tab === "video" && <VideoTab />}
-      {tab === "blog" && <BlogTab />}
-      {tab === "quality" && <QualityTab />}
-      {tab === "history" && <HistoryTab />}
+      {tab === "product"   && <ProductContentTab />}
+      {tab === "ads"       && <AdCopyTab />}
+      {tab === "social"    && <SocialTab />}
+      {tab === "images"    && <ImagesTab />}
+      {tab === "brand"     && <BrandVoiceTab />}
+      {tab === "video"     && <VideoTab />}
+      {tab === "blog"      && <BlogTab />}
+      {tab === "quality"   && <QualityTab />}
+      {tab === "amazon"    && <AmazonTab />}
+      {tab === "copy"      && <CopywritingTab />}
+      {tab === "business"  && <BusinessCopyTab />}
+      {tab === "email"     && <EmailMarketingTab />}
+      {tab === "moreads"   && <MoreAdsTab />}
+      {tab === "youtube"   && <YouTubeTab />}
+      {tab === "landing"   && <LandingPagesTab />}
+      {tab === "utilities" && <UtilitiesTab />}
+      {tab === "ecom"      && <EcomSpecialsTab />}
+      {tab === "history"   && <HistoryTab />}
     </div>
   );
 }

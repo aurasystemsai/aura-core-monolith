@@ -1,6 +1,6 @@
 /**
  * AI Content & Image Gen — router.js
- * 38 endpoints across 8 categories:
+ * 90 endpoints across 18 categories:
  *   A) Product Content (8)
  *   B) Ad & Marketing Copy (6)
  *   C) Social Media (4)
@@ -9,6 +9,16 @@
  *   F) Video & Motion (4)
  *   G) Blog & Long-form (3)
  *   H) Multimodal & Quality (2)
+ *   I) Amazon Marketplace (5)
+ *   J) Copywriting Frameworks (7)
+ *   K) Business Copy (8)
+ *   L) Email Marketing (5)
+ *   M) Platform Ads Extended (5)
+ *   N) YouTube & Video Copy (5)
+ *   O) Landing Pages & Conversion (5)
+ *   P) Content Utilities (5)
+ *   Q) E-commerce Specific Copy (5)
+ *   R) Creative Scoring Extended (2)
  */
 
 const express = require('express');
@@ -816,6 +826,876 @@ router.post('/analyze/content-quality', async (req, res) => {
     const result = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     db.addHistory({ type: 'content-quality', contentType, result: { scores: result.scores, grade: result.grade } });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY I — AMAZON MARKETPLACE COPY (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 39: Amazon Product Description */
+router.post('/amazon/product-description', async (req, res) => {
+  try {
+    const { title, features = [], category = '', brand = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write an Amazon product description for: "${title}"\nBrand: ${brand || 'Generic'}\nCategory: ${category}\nKey features: ${features.join(', ') || 'N/A'}\n\nReturn JSON: { "title": "...(<=200 chars, keyword-rich)", "bulletPoints": ["exactly 5 benefit-focused bullets, each starting with ALL CAPS keyword"], "description": "...(150-350 word HTML-friendly paragraph)", "backendKeywords": "space-separated keywords for backend search terms (<=250 bytes)" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 900,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'amazon-product-description', title, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 40: Amazon Bullet Points */
+router.post('/amazon/bullet-points', async (req, res) => {
+  try {
+    const { title, features = [], targetAudience = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write 5 Amazon bullet points for: "${title}"\nTarget audience: ${targetAudience || 'general'}\nFeatures: ${features.join(', ') || 'N/A'}\n\nRules: Each starts with 2-3 ALL CAPS keyword phrase, then benefit explanation. Max 200 chars each. Focus on benefits, not just features.\n\nReturn JSON: { "bullets": ["bullet 1", "bullet 2", "bullet 3", "bullet 4", "bullet 5"], "tip": "one optimization tip" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'amazon-bullets', title, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 41: Amazon Product Title */
+router.post('/amazon/title', async (req, res) => {
+  try {
+    const { productName, brand = '', material = '', size = '', color = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!productName) return res.status(400).json({ ok: false, error: 'productName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Create Amazon product titles for: "${productName}"\nBrand: ${brand}\nMaterial: ${material}\nSize: ${size}\nColor: ${color}\n\nReturn JSON: { "titles": ["title variant 1 (<=200 chars)", "title variant 2", "title variant 3"], "recommended": 0, "keywordsUsed": ["list of primary keywords embedded"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 400,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'amazon-title', productName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 42: Amazon Backend Keywords */
+router.post('/amazon/backend-keywords', async (req, res) => {
+  try {
+    const { productName, category = '', competitors = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!productName) return res.status(400).json({ ok: false, error: 'productName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate Amazon backend search term keywords for: "${productName}"\nCategory: ${category}\nCompetitors/alternatives: ${competitors || 'N/A'}\n\nReturn JSON: { "backendKeywords": "space-separated string <=249 chars", "keywordGroups": { "synonyms": [], "useCases": [], "audience": [], "misspellings": [] }, "notToInclude": ["words already in title/bullets"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'amazon-keywords', productName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 43: Amazon Sponsored Brand Headline */
+router.post('/amazon/brand-headline', async (req, res) => {
+  try {
+    const { brand, productLine = '', tagline = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!brand) return res.status(400).json({ ok: false, error: 'brand required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write Amazon Sponsored Brand ad headlines for brand: "${brand}"\nProduct line: ${productLine}\nCore tagline/value prop: ${tagline || 'N/A'}\n\nReturn JSON: { "headlines": ["headline 1 (<=50 chars)", "headline 2", "headline 3", "headline 4", "headline 5"], "callouts": ["short callout 1 (<=30 chars)", "callout 2", "callout 3"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 400,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'amazon-brand-headline', brand, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY J — COPYWRITING FRAMEWORKS (7)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 44: AIDA Framework */
+router.post('/copy/aida', async (req, res) => {
+  try {
+    const { product, audience = '', benefit = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write AIDA framework copy for: "${product}"\nTarget audience: ${audience || 'general'}\nKey benefit: ${benefit || 'not specified'}\n\nReturn JSON: { "attention": "hook sentence (1-2 sentences that grab attention)", "interest": "build curiosity paragraph (2-3 sentences)", "desire": "create desire paragraph (2-4 sentences — benefits, social proof, transformation)", "action": "CTA (1-2 sentences with clear next step)", "combined": "full AIDA copy as one flowing piece", "headline": "punchy headline for this copy" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-aida', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 45: PAS Framework */
+router.post('/copy/pas', async (req, res) => {
+  try {
+    const { product, painPoint = '', solution = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write Pain-Agitate-Solution (PAS) copy for: "${product}"\nMain pain point: ${painPoint || 'derive from product'}\nSolution it provides: ${solution || 'derive from product'}\n\nReturn JSON: { "pain": "...(identify the pain clearly, 1-3 sentences)", "agitate": "...(twist the knife — make pain feel urgent, 2-4 sentences)", "solution": "...(present product as the relief, 2-4 sentences)", "combined": "full PAS piece as flowing copy", "headline": "headline that leads with the pain" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-pas', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 46: BAB Framework (Before-After-Bridge) */
+router.post('/copy/bab', async (req, res) => {
+  try {
+    const { product, transformation = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write Before-After-Bridge (BAB) copy for: "${product}"\nTransformation it delivers: ${transformation || 'derive from product'}\n\nReturn JSON: { "before": "...(paint the painful before state, 2-3 sentences)", "after": "...(paint the desired after state vividly, 2-3 sentences)", "bridge": "...(present the product as the bridge, 2-3 sentences)", "combined": "full BAB copy", "headline": "headline using this framework" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-bab', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 47: Feature-to-Benefit Converter */
+router.post('/copy/feature-to-benefit', async (req, res) => {
+  try {
+    const { features = [], productName = '', audience = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!features.length) return res.status(400).json({ ok: false, error: 'features array required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Convert product features into customer benefits for: "${productName}"\nTarget audience: ${audience || 'general consumer'}\n\nFeatures:\n${features.map((f, i) => `${i + 1}. ${f}`).join('\n')}\n\nReturn JSON: { "conversions": [{ "feature": "...", "benefit": "...", "emotionalBenefit": "...", "copySnippet": "one sentence combining both" }], "heroStatement": "single most powerful benefit statement combining top 1-2 benefits" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 800,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-feature-to-benefit', productName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 48: Sentence Expander */
+router.post('/copy/sentence-expander', async (req, res) => {
+  try {
+    const { text, targetLength = 'paragraph', tone = 'professional', model = 'gpt-4o-mini' } = req.body || {};
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Expand the following short copy into ${targetLength} form.\nTone: ${tone}\nOriginal: "${text}"\n\nReturn JSON: { "expanded": "...(full expanded version)", "wordCount": 0, "alternativeVersions": ["alt version 1 (different angle)", "alt version 2 (different angle)"] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-expander', text: text.slice(0, 60), result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 49: Content Shortener */
+router.post('/copy/content-shortener', async (req, res) => {
+  try {
+    const { content, targetWords = 50, model = 'gpt-4o-mini' } = req.body || {};
+    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Condense the following content to approximately ${targetWords} words while preserving the key message and call to action.\n\nContent:\n"${content.slice(0, 2000)}"\n\nReturn JSON: { "condensed": "...(~${targetWords} words)", "wordCount": 0, "keyPointsKept": ["point 1", "point 2"], "whatWasCut": "brief note on what was removed" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-shortener', result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 50: Paraphrase & Tone Rewriter */
+router.post('/copy/paraphrase', async (req, res) => {
+  try {
+    const { content, targetTone = 'professional', numberOfVersions = 3, model = 'gpt-4o-mini' } = req.body || {};
+    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Rewrite/paraphrase the following content in ${numberOfVersions} different ways.\nTarget tone: ${targetTone}\n\nOriginal:\n"${content.slice(0, 1500)}"\n\nReturn JSON: { "versions": [{ "version": 1, "tone": "...", "rewrite": "..." }], "toneBreakdown": { "original": "detected tone", "target": "${targetTone}" } }` }],
+      response_format: { type: 'json_object' }, max_tokens: 900,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'copy-paraphrase', result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY K — BUSINESS COPY (8)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 51: Product Name Generator */
+router.post('/business/product-name', async (req, res) => {
+  try {
+    const { description, industry = '', style = 'modern', model = 'gpt-4o-mini' } = req.body || {};
+    if (!description) return res.status(400).json({ ok: false, error: 'description required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate product/brand names for: "${description}"\nIndustry: ${industry || 'general'}\nNaming style: ${style} (e.g. modern, playful, premium, minimal, descriptive)\n\nReturn JSON: { "names": [{ "name": "...", "rationale": "why this works", "availability": "likely available / check trademark", "category": "invented|descriptive|metaphorical|compound" }], "topPick": 0, "domainSuggestions": [".com domain ideas"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-product-name', description: description.slice(0, 60), result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 52: Tagline & Slogan Generator */
+router.post('/business/tagline', async (req, res) => {
+  try {
+    const { brandName, valueProposition = '', audience = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate taglines and slogans for brand: "${brandName}"\nValue proposition: ${valueProposition || 'N/A'}\nTarget audience: ${audience || 'general'}\n\nReturn JSON: { "taglines": [{ "tagline": "...(3-8 words)", "style": "aspirational|functional|emotional|humorous|premium", "explanation": "why it works" }], "slogans": ["longer slogan 1", "longer slogan 2"], "topPick": 0 }` }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-tagline', brandName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 53: Press Release Generator */
+router.post('/business/press-release', async (req, res) => {
+  try {
+    const { headline, summary, companyName = '', date = '', quote = '', model = 'gpt-4o' } = req.body || {};
+    if (!headline || !summary) return res.status(400).json({ ok: false, error: 'headline and summary required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write a professional press release.\nHeadline: "${headline}"\nSummary: "${summary}"\nCompany: ${companyName}\nDate: ${date || new Date().toLocaleDateString()}\nKey quote to include: "${quote || 'generate an appropriate quote'}"\n\nReturn JSON: { "pressRelease": "full formatted press release (600-800 words) with FOR IMMEDIATE RELEASE header, dateline, intro para, body, quote section, boilerplate, contact section", "subject": "email subject line for sending to media", "tweetThread": ["tweet 1 (280 chars)", "tweet 2", "tweet 3"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 1200,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-press-release', headline, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 54: Mission & Vision Statement */
+router.post('/business/mission-vision', async (req, res) => {
+  try {
+    const { companyName, industry = '', values = [], whatYouDo = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!companyName) return res.status(400).json({ ok: false, error: 'companyName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write mission and vision statements for: "${companyName}"\nIndustry: ${industry}\nCore values: ${values.join(', ') || 'N/A'}\nWhat you do: ${whatYouDo || 'N/A'}\n\nReturn JSON: { "mission": { "statement": "...(1-2 sentences, present tense, what you do and why)", "variants": ["shorter version", "longer version"] }, "vision": { "statement": "...(1-2 sentences, future tense, where you're going)", "variants": ["shorter version", "more inspiring version"] }, "valuesStatements": [{ "value": "...", "statement": "1 sentence for this value" }] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-mission-vision', companyName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 55: About Page Writer */
+router.post('/business/about-page', async (req, res) => {
+  try {
+    const { companyName, story = '', mission = '', team = '', tone = 'authentic', model = 'gpt-4o' } = req.body || {};
+    if (!companyName) return res.status(400).json({ ok: false, error: 'companyName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write an About Page for: "${companyName}"\nBrand story/origin: ${story || 'N/A'}\nMission: ${mission || 'N/A'}\nTeam info: ${team || 'N/A'}\nTone: ${tone}\n\nReturn JSON: { "headline": "About page headline (punchy, 5-10 words)", "subheadline": "subheadline sentence", "storySection": "origin story paragraph (100-180 words)", "missionSection": "mission paragraph (60-100 words)", "whyUsSection": "why choose us bullet list as text (3-5 points)", "ctaSection": "closing CTA paragraph (30-60 words)", "fullPage": "complete About page copy combined" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 1000,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-about-page', companyName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 56: Bio Generator */
+router.post('/business/bio', async (req, res) => {
+  try {
+    const { name, role = '', achievements = [], company = '', platform = 'general', model = 'gpt-4o-mini' } = req.body || {};
+    if (!name) return res.status(400).json({ ok: false, error: 'name required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write professional bios for: "${name}"\nRole: ${role}\nCompany: ${company}\nKey achievements: ${achievements.join(', ') || 'N/A'}\nPlatform: ${platform} (general / LinkedIn / Twitter / speaker intro)\n\nReturn JSON: { "short": "...(1-2 sentences, <=150 chars for social)", "medium": "...(50-80 words, 3rd person)", "long": "...(150-250 words, 3rd person, full bio)", "firstPerson": "...(medium length, 1st person I-voice)", "speakerIntro": "spoken intro someone reads aloud (60-90 words)" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 800,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-bio', name, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 57: Value Proposition Builder */
+router.post('/business/value-proposition', async (req, res) => {
+  try {
+    const { product, audience = '', competitors = '', painPoints = [], model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Build a compelling value proposition for: "${product}"\nTarget audience: ${audience}\nMain competitors: ${competitors || 'N/A'}\nCustomer pain points: ${painPoints.join(', ') || 'N/A'}\n\nReturn JSON: { "headline": "main value prop headline (clear benefit in <=12 words)", "subheadline": "2-3 sentence explanation of value", "bulletPoints": ["3 key differentiating benefits"], "genieStatement": "complete as a one-sentence formula: We help [audience] to [achieve outcome] by [unique mechanism]", "positioning": "1-line positioning statement for internal use" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-value-prop', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 58: Return & Shipping Policy Generator */
+router.post('/business/policy-copy', async (req, res) => {
+  try {
+    const { policyType = 'return', storeName = '', terms = {}, model = 'gpt-4o-mini' } = req.body || {};
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write a customer-friendly ${policyType} policy for store: "${storeName || 'our store'}"\nKey terms: ${JSON.stringify(terms)}\n\nMake it clear, friendly, and trustworthy (not just legal boilerplate).\n\nReturn JSON: { "headline": "policy page headline", "intro": "friendly intro paragraph (2-3 sentences)", "policyText": "full policy text with sections and clear plain English", "tldr": "3-bullet plain-English summary", "faqItems": [{ "q": "common customer question", "a": "answer" }] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 900,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'business-policy', policyType, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY L — EMAIL MARKETING (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 59: Cold Email Outreach Generator */
+router.post('/email/cold-outreach', async (req, res) => {
+  try {
+    const { recipientRole = '', product, painPoint = '', cta = '', sequences = 3, model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a ${sequences}-email cold outreach sequence.\nProduct/offer: "${product}"\nRecipient role: ${recipientRole}\nKey pain point to address: ${painPoint}\nCTA: ${cta || 'book a 15-min call'}\n\nReturn JSON: { "sequence": [{ "email": 1, "subjectLine": "...", "preview": "...(40 chars)", "body": "...(100-200 word email, personalizable with [FIRST_NAME] etc.)", "sendTiming": "Day X" }] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 1200,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'email-cold-outreach', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 60: Welcome Email Series */
+router.post('/email/welcome-series', async (req, res) => {
+  try {
+    const { brandName, product = '', audience = '', emails = 3, model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a ${emails}-email welcome series for: "${brandName}"\nProduct/service: ${product}\nAudience: ${audience || 'new subscribers'}\n\nReturn JSON: { "series": [{ "email": 1, "purpose": "...", "subjectLine": "...", "previewText": "...", "body": "...(150-250 words)", "sendTiming": "Immediately / Day 2 / etc", "cta": "..." }] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 1500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'email-welcome-series', brandName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 61: Post-Purchase Email */
+router.post('/email/post-purchase', async (req, res) => {
+  try {
+    const { brandName, productPurchased = '', crossSellProducts = [], model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a post-purchase thank you email for: "${brandName}"\nProduct purchased: ${productPurchased}\nCross-sell products: ${crossSellProducts.join(', ') || 'none'}\n\nReturn JSON: { "subjectLine": "...", "previewText": "...", "body": "...(150-200 word warm, genuine thank-you email with cross-sell if applicable)", "reviewRequest": "optional 2-sentence review request section", "socialShareAsk": "1 sentence asking to share on social" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'email-post-purchase', brandName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 62: Newsletter Generator */
+router.post('/email/newsletter', async (req, res) => {
+  try {
+    const { brandName, topic = '', audience = '', sections = ['update', 'tip', 'cta'], model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a newsletter for: "${brandName}"\nTopic/theme: ${topic || 'brand update / product news'}\nAudience: ${audience}\nSections to include: ${sections.join(', ')}\n\nReturn JSON: { "subjectLine": "...(curiosity-driven, <=50 chars)", "previewText": "...", "sections": [{ "type": "...", "headline": "...", "content": "...(80-150 words per section)" }], "cta": { "text": "...", "button": "...(button label)" }, "ps": "PS line (optional playful/personal note)" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 1200,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'email-newsletter', brandName, topic, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 63: Win-Back Campaign */
+router.post('/email/winback', async (req, res) => {
+  try {
+    const { brandName, inactiveDays = 90, incentive = '10% discount', model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a 3-email win-back campaign for: "${brandName}"\nInactive for: ${inactiveDays} days\nIncentive offered: ${incentive}\n\nReturn JSON: { "emails": [{ "email": 1, "angle": "...", "subjectLine": "...", "previewText": "...", "body": "...(100-150 words)", "cta": "..." }] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 1000,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'email-winback', brandName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY M — PLATFORM ADS EXTENDED (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 64: LinkedIn Ad Generator */
+router.post('/ads/linkedin', async (req, res) => {
+  try {
+    const { product, audience = '', goal = 'leads', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write LinkedIn ad copy for: "${product}"\nTarget audience (job title/industry): ${audience}\nCampaign goal: ${goal}\n\nReturn JSON: { "singleImage": { "headline": "...(<=70 chars)", "introText": "...(<=600 chars, shown above image)", "cta": "Learn More|Sign Up|Get Quote|Download|Register|Contact Us" }, "textAd": { "headline": "...(<=25 chars)", "description": "...(<=75 chars)" }, "messageAd": { "subject": "...", "body": "...(150-250 word InMail message, personalized)", "cta": "...", "footer": "legal/unsubscribe line" }, "carouselCards": [{ "headline": "...", "description": "..." }] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 800,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ads-linkedin', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 65: Pinterest Ad Copy */
+router.post('/ads/pinterest', async (req, res) => {
+  try {
+    const { product, targetAudience = '', visual = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write Pinterest ad copy for: "${product}"\nTarget audience: ${targetAudience || 'women 25-44 interested in home/fashion/beauty'}\nVisual description: ${visual || 'N/A'}\n\nReturn JSON: { "pinTitle": "...(<=100 chars, keyword-rich)", "pinDescription": "...(<=500 chars, keyword-rich, includes a discovery keyword like 'ideas for...')", "boardName": "ideal board name", "hashtags": ["5-10 relevant hashtags"], "imagePrompt": "ideal image description for this pin" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ads-pinterest', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 66: Google Display Ad Copy */
+router.post('/ads/google-display', async (req, res) => {
+  try {
+    const { product, landingPageUrl = '', audience = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write Google Display / Responsive Display Ad copy for: "${product}"\nLanding page URL: ${landingPageUrl}\nAudience: ${audience || 'general'}\n\nReturn JSON: { "headlines": ["headline 1 (<=30 chars)", "headline 2", "headline 3", "headline 4", "headline 5"], "longHeadlines": ["long headline 1 (<=90 chars)", "long headline 2"], "descriptions": ["description 1 (<=90 chars)", "description 2", "description 3"], "callToAction": "...", "businessName": "...(brand/store name)" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ads-google-display', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 67: Twitter/X Ad Copy */
+router.post('/ads/twitter', async (req, res) => {
+  try {
+    const { product, audience = '', goal = 'awareness', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write Twitter/X ad copy for: "${product}"\nTargeting: ${audience || 'general'}\nGoal: ${goal}\n\nReturn JSON: { "promotedTweets": ["tweet 1 (<=280 chars, no hashtag spam)", "tweet 2", "tweet 3"], "imageAdCopy": { "headline": "...(<=70 chars)", "cta": "..." }, "trendingAngle": "a topical/trending angle for this product", "hooks": ["attention hook 1 (<=15 words)", "hook 2", "hook 3"] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ads-twitter', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 68: Spotify / Audio Ad Script */
+router.post('/ads/audio-script', async (req, res) => {
+  try {
+    const { product, duration = 30, tone = 'upbeat', cta = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a ${duration}-second audio ad script for: "${product}"\nTone: ${tone}\nCTA: ${cta || 'visit our website'}\n\nNotes: At ~150 words/minute, ${duration}s = ~${Math.round(duration * 150 / 60)} words.\n\nReturn JSON: { "script": "full spoken script (~${Math.round(duration * 150 / 60)} words)", "wordCount": 0, "voiceDirection": "acting/tone notes for voice artist", "soundNotes": "suggested background music/sound effects", "productionNotes": "pacing, emphasis notes" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ads-audio-script', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY N — YOUTUBE & VIDEO COPY (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 69: YouTube Video Title Generator */
+router.post('/youtube/title', async (req, res) => {
+  try {
+    const { topic, keyword = '', style = 'educational', model = 'gpt-4o-mini' } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate YouTube video titles for: "${topic}"\nTarget keyword: ${keyword || 'N/A'}\nVideo style: ${style} (educational/review/tutorial/vlog/entertainment)\n\nReturn JSON: { "titles": [{ "title": "...", "style": "curiosity|how-to|listicle|challenge|story|question", "estimatedCTR": "high|medium" }], "topPick": 0, "avoidWords": ["click-bait phrases to avoid for this niche"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'youtube-title', topic, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 70: YouTube Description Generator */
+router.post('/youtube/description', async (req, res) => {
+  try {
+    const { videoTitle, summary = '', keywords = [], channelName = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!videoTitle) return res.status(400).json({ ok: false, error: 'videoTitle required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write a YouTube video description for: "${videoTitle}"\nChannel: ${channelName || 'N/A'}\nVideo summary: ${summary || 'N/A'}\nTarget keywords: ${keywords.join(', ') || 'N/A'}\n\nReturn JSON: { "description": "full YouTube description (300-500 words) with: hook paragraph, timestamps placeholder section, about section, links section, hashtags (3-5)", "firstLine": "first 100 chars shown in search (hook)", "tags": ["15-20 YouTube tags"], "chapters": [{ "time": "0:00", "title": "Chapter title" }] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 900,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'youtube-description', videoTitle, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 71: YouTube Long-form Script */
+router.post('/youtube/script', async (req, res) => {
+  try {
+    const { title, keyPoints = [], duration = 10, style = 'educational', model = 'gpt-4o' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a YouTube video script for: "${title}"\nKey points to cover: ${keyPoints.join(', ') || 'derive from title'}\nTarget duration: ${duration} minutes (~${duration * 130} words)\nStyle: ${style}\n\nReturn JSON: { "hook": "opening hook (first 30 seconds, very compelling)", "intro": "brief intro (60 seconds)", "sections": [{ "title": "section name", "content": "section script", "duration": "approx X mins" }], "outro": "outro and CTA (30-60 seconds)", "bRollNotes": "visual/B-roll suggestions per section", "fullScript": "complete script" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 2000,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'youtube-script', title, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 72: YouTube Shorts / Reels Script */
+router.post('/youtube/shorts-script', async (req, res) => {
+  try {
+    const { topic, hook = '', platform = 'YouTube Shorts', model = 'gpt-4o-mini' } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write a ${platform} short-form script (~60 seconds, ~130 words) for: "${topic}"\nHook idea: ${hook || 'generate a compelling hook'}\n\nReturn JSON: { "hook": "first 3 seconds — must grab attention immediately", "phases": [{ "phase": "Hook|Context|Value|CTA", "script": "...", "seconds": 0 }], "fullScript": "complete script", "visualNotes": "what to show on screen during each phase", "textOverlays": ["key text to overlay on screen"], "cta": "end call to action" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'youtube-shorts-script', topic, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 73: Video Hook Generator */
+router.post('/youtube/video-hooks', async (req, res) => {
+  try {
+    const { topic, audience = '', videoType = 'product review', model = 'gpt-4o-mini' } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate video hooks (first 5-10 seconds) for topic: "${topic}"\nAudience: ${audience || 'general'}\nVideo type: ${videoType}\n\nReturn JSON: { "hooks": [{ "hook": "...(1-2 sentences max, spoken)", "type": "question|statistic|bold-claim|story|controversy|curiosity-gap", "whyItWorks": "brief explanation" }], "thumbnailText": ["3-5 words for thumbnail overlay options"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'youtube-hooks', topic, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY O — LANDING PAGES & CONVERSION COPY (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 74: Landing Page Headline Generator */
+router.post('/landing/headline', async (req, res) => {
+  try {
+    const { product, audience = '', benefit = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Generate landing page headlines for: "${product}"\nTarget audience: ${audience}\nKey benefit: ${benefit || 'derive from product'}\n\nReturn JSON: { "headlines": [{ "headline": "...", "subheadline": "...(supporting sentence)", "type": "benefit|problem-solution|how-to|question|number", "framework": "AIDA|PAS|BAB" }], "abTestPairs": [{ "control": "...", "variant": "..." }] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'landing-headline', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 75: Full Landing Page Copy */
+router.post('/landing/full-page', async (req, res) => {
+  try {
+    const { product, audience = '', offer = '', testimonials = [], model = 'gpt-4o' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a complete landing page copy for: "${product}"\nTarget audience: ${audience}\nSpecial offer/CTA: ${offer || 'free trial / buy now'}\nTestimonials to weave in: ${testimonials.join('; ') || 'generate placeholder testimonials'}\n\nReturn JSON: { "sections": [{ "section": "HERO|PROBLEM|SOLUTION|FEATURES|SOCIAL_PROOF|OFFER|FAQ|CTA", "headline": "...", "copy": "...(full copy for section)" }], "primaryCTA": { "button": "...", "urgencyLine": "...(scarcity/urgency element)" }, "seoTitle": "...", "metaDescription": "..." }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 2500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'landing-full-page', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 76: CTA Button Copy */
+router.post('/landing/cta-copy', async (req, res) => {
+  try {
+    const { context, goal = 'signup', tone = 'direct', model = 'gpt-4o-mini' } = req.body || {};
+    if (!context) return res.status(400).json({ ok: false, error: 'context required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate CTA button copy for context: "${context}"\nGoal: ${goal}\nTone: ${tone}\n\nReturn JSON: { "buttons": [{ "text": "...(2-5 words max)", "style": "action|benefit|curiosity|urgency", "subtext": "optional supporting text below button" }], "urgencyLines": ["urgency/scarcity line 1", "line 2"], "guarantee": "optional trust/guarantee micro-copy" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'landing-cta', context: context.slice(0, 60), result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 77: Pricing Page Copy */
+router.post('/landing/pricing-page', async (req, res) => {
+  try {
+    const { productName, tiers = [], model = 'gpt-4o-mini' } = req.body || {};
+    if (!productName) return res.status(400).json({ ok: false, error: 'productName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Write pricing page copy for: "${productName}"\nTiers: ${JSON.stringify(tiers) || '[{ "name": "Basic", "price": "$29" }, { "name": "Pro", "price": "$79" }, { "name": "Enterprise", "price": "Custom" }]'}\n\nReturn JSON: { "pageHeadline": "...", "pageSubheadline": "...", "tiers": [{ "tierName": "...", "tagline": "...(who this is for)", "cta": "...", "mostPopularBadge": true|false }], "faq": [{ "q": "common pricing question", "a": "answer" }], "trustStatement": "money-back guarantee / no contract / cancel anytime copy" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 800,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'landing-pricing', productName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 78: A/B Headline Test Variants */
+router.post('/landing/ab-headlines', async (req, res) => {
+  try {
+    const { originalHeadline, product = '', audience = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!originalHeadline) return res.status(400).json({ ok: false, error: 'originalHeadline required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate A/B test variants for headline: "${originalHeadline}"\nProduct context: ${product}\nAudience: ${audience || 'general'}\n\nReturn JSON: { "original": { "headline": "${originalHeadline}", "type": "..." }, "variants": [{ "headline": "...", "changeType": "benefit-focused|shorter|question|number|emotional", "hypothesis": "why this might outperform", "subheadline": "..." }], "winnerPrediction": { "predicted": 0, "reasoning": "..." }, "testingTip": "how to properly run this A/B test" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'landing-ab-headline', originalHeadline, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY P — CONTENT UTILITIES (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 79: Keyword Extractor */
+router.post('/util/keyword-extractor', async (req, res) => {
+  try {
+    const { content, maxKeywords = 20, model = 'gpt-4o-mini' } = req.body || {};
+    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Extract top keywords and phrases from this content.\n\nContent:\n"${content.slice(0, 3000)}"\n\nReturn JSON: { "primaryKeywords": ["top ${Math.min(maxKeywords, 10)} single-word keywords by importance"], "longTailPhrases": ["up to 10 long-tail keyword phrases"], "topicClusters": [{ "cluster": "...", "keywords": [] }], "missingKeywords": ["important related keywords NOT in the content"], "densities": [{ "keyword": "...", "count": 0, "density": "0.0%" }] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'util-keyword-extractor', result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 80: Article Summarizer */
+router.post('/util/article-summarizer', async (req, res) => {
+  try {
+    const { content, url = '', summaryLength = 'medium', model = 'gpt-4o-mini' } = req.body || {};
+    if (!content && !url) return res.status(400).json({ ok: false, error: 'content or url required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Summarize the following content.\nTarget summary length: ${summaryLength} (short=50-80 words / medium=150-200 words / long=300-400 words)\n\nContent:\n"${(content || url).slice(0, 4000)}"\n\nReturn JSON: { "summary": "...(${summaryLength} summary)", "tldr": "1-sentence TL;DR", "keyPoints": ["up to 7 bullet point takeaways"], "headline": "article title if not obvious", "tags": ["5 topic tags"] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'util-summarizer', result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 81: Content Repurposer */
+router.post('/util/content-repurposer', async (req, res) => {
+  try {
+    const { content, sourceType = 'blog-post', targetFormats = ['twitter-thread', 'linkedin-post', 'instagram-caption'], model = 'gpt-4o-mini' } = req.body || {};
+    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Repurpose this ${sourceType} into multiple formats.\nSource content:\n"${content.slice(0, 2000)}"\n\nFormats needed: ${targetFormats.join(', ')}\n\nReturn JSON: { "repurposed": [{ "format": "...", "content": "...", "notes": "how to use this" }], "keyMessages": ["3-5 core messages extracted from source"] }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 1500,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'util-repurposer', sourceType, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 82: Listicle Ideas */
+router.post('/util/listicle-ideas', async (req, res) => {
+  try {
+    const { topic, audience = '', count = 10, model = 'gpt-4o-mini' } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Generate ${count} listicle article ideas for: "${topic}"\nTarget audience: ${audience || 'general'}\n\nReturn JSON: { "ideas": [{ "title": "...(The X Best/Ways/Tips...)", "angle": "unique angle", "estimatedEngagement": "high|medium", "cta": "what to include at end" }] }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'util-listicle', topic, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 83: Content Translator */
+router.post('/util/translate', async (req, res) => {
+  try {
+    const { content, targetLanguage, adaptCulture = true, contentType = 'product-copy', model = 'gpt-4o' } = req.body || {};
+    if (!content || !targetLanguage) return res.status(400).json({ ok: false, error: 'content and targetLanguage required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Translate this ${contentType} to ${targetLanguage}.\n${adaptCulture ? 'Adapt idioms, references, and cultural nuances for native speakers — not just literal translation.' : 'Literal translation only.'}\n\nOriginal content:\n"${content.slice(0, 2000)}"\n\nReturn JSON: { "translated": "...(full translated content)", "language": "${targetLanguage}", "adaptations": ["cultural adaptations made if any"], "backTranslation": "...(translated back to English for QA)", "qualityNotes": "any translation challenges or recommendations" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 1000,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'util-translate', targetLanguage, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY Q — E-COMMERCE SPECIFIC COPY (5)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 84: Flash Sale / Urgency Copy */
+router.post('/ecom/flash-sale', async (req, res) => {
+  try {
+    const { product, discount = '20% off', deadline = '24 hours', model = 'gpt-4o-mini' } = req.body || {};
+    if (!product) return res.status(400).json({ ok: false, error: 'product required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write flash sale / urgency copy for: "${product}"\nDiscount: ${discount}\nDeadline: ${deadline}\n\nReturn JSON: { "bannerHeadline": "...(short punchy banner text, caps ok)", "emailSubject": "...", "popupHeadline": "...", "popupBody": "...(2-3 sentences)", "smsText": "...(<=160 chars)", "countdown": "copy around the countdown timer", "socialPost": "...(organic post announcing the sale)", "pdpBadge": "...(product page badge text like FLASH SALE - 24HRS ONLY)" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ecom-flash-sale', product, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 85: Bundle & Kit Description */
+router.post('/ecom/bundle-description', async (req, res) => {
+  try {
+    const { bundleName, products = [], saving = '', audience = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!bundleName) return res.status(400).json({ ok: false, error: 'bundleName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write product bundle copy for: "${bundleName}"\nIncluded products: ${products.join(', ') || 'N/A'}\nCustomer saving: ${saving || 'N/A'}\nTarget audience: ${audience}\n\nReturn JSON: { "headline": "...", "description": "...(120-200 word bundle description emphasizing value and synergy)", "bulletPoints": ["4-5 bundle benefits"], "valueStack": "total value listed vs bundle price copy", "giftingAngle": "how to position this as a gift" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ecom-bundle', bundleName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 86: Loyalty Program Copy */
+router.post('/ecom/loyalty-program', async (req, res) => {
+  try {
+    const { brandName, programName = '', tiers = [], model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write loyalty program copy for: "${brandName}"\nProgram name: ${programName || brandName + ' Rewards'}\nTiers: ${tiers.join(', ') || 'Bronze, Silver, Gold'}\n\nReturn JSON: { "programName": "...", "tagline": "...(short, memorable)", "headline": "...", "howItWorks": "3-step explanation", "benefits": [{ "tier": "...", "perks": "..." }], "joinCTA": "...", "emailAnnouncementSubject": "...", "socialPost": "...(announce program launch)" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ecom-loyalty', brandName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 87: Seasonal Sale Campaign Copy */
+router.post('/ecom/seasonal-sale', async (req, res) => {
+  try {
+    const { season = 'Black Friday', brandName, discount = '30% off everything', model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a complete ${season} sale campaign for: "${brandName}"\nDiscount: ${discount}\n\nReturn JSON: { "heroHeadline": "...", "subheadline": "...", "emailSubjects": ["subject line 1 (teaser)", "subject line 2 (launch day)", "subject line 3 (last chance)"], "socialPosts": [{ "platform": "Instagram", "copy": "..." }, { "platform": "Facebook", "copy": "..." }], "smsMessages": ["SMS 1 (announcement)", "SMS 2 (reminder)"], "bannerCopy": "short banner ad text", "pdpBadge": "product page sale badge" }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 900,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ecom-seasonal', season, brandName, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 88: Gift Guide Copy */
+router.post('/ecom/gift-guide', async (req, res) => {
+  try {
+    const { theme = 'gifts for her', products = [], priceRange = '', model = 'gpt-4o-mini' } = req.body || {};
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: withBrandVoice(`Write a gift guide for: "${theme}"\nProducts to feature: ${products.join(', ') || 'our store bestsellers'}\nPrice range: ${priceRange || 'all budgets'}\n\nReturn JSON: { "guideTitle": "...", "intro": "...(60-100 word intro)", "sections": [{ "sectionTitle": "...(e.g. Under $50)", "picks": [{ "product": "...", "copySnippet": "1-2 sentences why it makes a great gift" }] }], "seoMetaTitle": "...", "seoMetaDescription": "..." }`) }],
+      response_format: { type: 'json_object' }, max_tokens: 900,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'ecom-gift-guide', theme, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CATEGORY R — CREATIVE SCORING EXTENDED (2)
+// ═══════════════════════════════════════════════════════════
+
+/* Feature 89: Ad Creative Pre-Launch Scorer */
+router.post('/analyze/ad-creative-score', async (req, res) => {
+  try {
+    const { headline, description = '', imageDescription = '', platform = 'Facebook', model = 'gpt-4o-mini' } = req.body || {};
+    if (!headline) return res.status(400).json({ ok: false, error: 'headline required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Score this ad creative before launch on ${platform}.\nHeadline: "${headline}"\nDescription: "${description}"\nImage/visual description: "${imageDescription}"\n\nReturn JSON: { "overallScore": 0-100, "grade": "A|B|C|D|F", "dimensions": { "clarity": 0-100, "relevance": 0-100, "emotionalAppeal": 0-100, "benefitFocus": 0-100, "cta": 0-100, "compliance": 0-100 }, "estimatedCTR": "low|medium|high", "topIssues": ["issue 1", "issue 2"], "improvements": ["specific improvement 1", "specific improvement 2"], "improvedHeadline": "...", "improvedDescription": "..." }` }],
+      response_format: { type: 'json_object' }, max_tokens: 700,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'analyze-ad-score', headline, result });
+    res.json({ ok: true, ...result });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* Feature 90: Tone of Voice Analyzer */
+router.post('/analyze/tone-of-voice', async (req, res) => {
+  try {
+    const { content, targetTone = '', model = 'gpt-4o-mini' } = req.body || {};
+    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+    const completion = await getOpenAI().chat.completions.create({
+      model, messages: [{ role: 'user', content: `Analyze the tone of voice in this content.\nContent: "${content.slice(0, 2000)}"\nTarget tone (if applicable): ${targetTone || 'N/A'}\n\nReturn JSON: { "detectedTone": "...(primary tone descriptors)", "toneProfile": { "formal": 0-100, "friendly": 0-100, "authoritative": 0-100, "playful": 0-100, "urgent": 0-100, "empathetic": 0-100 }, "sentimentScore": -100 to 100, "readingAge": 0, "brandPersonality": ["3 brand personality words matching this tone"], "toneGapAnalysis": "${targetTone ? 'gap analysis vs target tone' : 'no target provided'}", "rewriteSuggestion": "rewrite 1-2 weak sentences to better match target tone" }` }],
+      response_format: { type: 'json_object' }, max_tokens: 600,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    db.addHistory({ type: 'analyze-tone', result });
     res.json({ ok: true, ...result });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
