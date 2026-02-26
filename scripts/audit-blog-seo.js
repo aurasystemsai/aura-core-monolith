@@ -52,6 +52,24 @@ function extractFrontendCalls(src) {
     addCall(route, methodMatch ? methodMatch[1] : 'GET', m[1]);
   }
 
+  // Pattern 3: apiFetchJSON(`${API}/some/path`) — auto-parsed variant
+  const re3 = /apiFetchJSON\(`\$\{API\}\/([^`]+)`/g;
+  while ((m = re3.exec(src)) !== null) {
+    const route = m[1].replace(/\$\{[^}]+\}/g, ':param').replace(/`.*/, '').trim();
+    const context = src.slice(Math.max(0, m.index - 100), m.index + 300);
+    const methodMatch = context.match(/method:\s*['"]([A-Z]+)['"]/);
+    addCall(route, methodMatch ? methodMatch[1] : 'GET', m[1]);
+  }
+
+  // Pattern 4: apiFetchJSON("/api/blog-seo/some/path") — hardcoded absolute paths
+  const re4 = /apiFetchJSON\(["'`]\/api\/blog-seo\/([^"'`?]+)/g;
+  while ((m = re4.exec(src)) !== null) {
+    const route = m[1].replace(/\$\{[^}]+\}/g, ':param').trim();
+    const context = src.slice(Math.max(0, m.index - 100), m.index + 300);
+    const methodMatch = context.match(/method:\s*['"]([A-Z]+)['"]/);
+    addCall(route, methodMatch ? methodMatch[1] : 'GET', m[1]);
+  }
+
   return calls;
 }
 
