@@ -383,8 +383,6 @@ export default function BlogSEO() {
   const [howtoResult, setHowtoResult] = useState(null);
   const [howtoLoading, setHowtoLoading] = useState(false);
 
-  const [videoSchemaResult, setVideoSchemaResult] = useState(null);
-  const [videoSchemaLoading, setVideoSchemaLoading] = useState(false);
 
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState("4.8");
@@ -426,9 +424,6 @@ export default function BlogSEO() {
   const [sectionWcResult, setSectionWcResult] = useState(null);
   const [sectionWcLoading, setSectionWcLoading] = useState(false);
 
-  const [paaKw, setPaaKw] = useState("");
-  const [paaResult, setPaaResult] = useState(null);
-  const [paaLoading, setPaaLoading] = useState(false);
 
   const [entityResult, setEntityResult] = useState(null);
   const [entityLoading, setEntityLoading] = useState(false);
@@ -619,7 +614,6 @@ export default function BlogSEO() {
 
   /* -- BATCH 4: CONTENT EXTRAS ------------------------------------------- */
   const [freshnessResult, setFreshnessResult] = useState(null); const [freshnessLoading, setFreshnessLoading] = useState(false);
-  const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperKeyword, setSkyscraperKeyword] = useState("");
   const [relunchResult, setRelunchResult] = useState(null); const [relunchLoading, setRelunchLoading] = useState(false); const [relunchKeyword, setRelunchKeyword] = useState("");
   const [semanticEnrichResult, setSemanticEnrichResult] = useState(null); const [semanticEnrichLoading, setSemanticEnrichLoading] = useState(false); const [semanticEnrichKeyword, setSemanticEnrichKeyword] = useState("");
 
@@ -718,7 +712,91 @@ export default function BlogSEO() {
   const [themeResult, setThemeResult] = useState(null); const [themeLoading, setThemeLoading] = useState(false); const [themeName, setThemeName] = useState('Dawn');
   const [speedResult, setSpeedResult] = useState(null); const [speedLoading, setSpeedLoading] = useState(false); const [speedDomain, setSpeedDomain] = useState('');
 
-  /* -- ANALYZER ----------------------------------------------------------- */
+  /* -- Batch 3 state vars -- */
+  // AI Create
+  const [atomizeResult, setAtomizeResult] = useState(null); const [atomizeLoading, setAtomizeLoading] = useState(false); const [atomizeInput, setAtomizeInput] = useState('');
+  const [caseStudyResult, setCaseStudyResult] = useState(null); const [caseStudyLoading, setCaseStudyLoading] = useState(false); const [caseStudyTopic, setCaseStudyTopic] = useState('');
+  const [humanizerResult, setHumanizerResult] = useState(null); const [humanizerLoading, setHumanizerLoading] = useState(false); const [humanizerText, setHumanizerText] = useState('');
+  const [fullBlogResult, setFullBlogResult] = useState(null); const [fullBlogLoading, setFullBlogLoading] = useState(false); const [fullBlogTopic, setFullBlogTopic] = useState('');
+  const [linkedinResult, setLinkedinResult] = useState(null); const [linkedinLoading, setLinkedinLoading] = useState(false); const [linkedinTopic, setLinkedinTopic] = useState('');
+  const [listicleResult, setListicleResult] = useState(null); const [listicleLoading, setListicleLoading] = useState(false); const [listicleTopic, setListicleTopic] = useState('');
+  const [newsletterResult, setNewsletterResult] = useState(null); const [newsletterLoading, setNewsletterLoading] = useState(false); const [newsletterTopic, setNewsletterTopic] = useState('');
+  const [xThreadResult, setXThreadResult] = useState(null); const [xThreadLoading, setXThreadLoading] = useState(false); const [xThreadTopic, setXThreadTopic] = useState('');
+  const [videoSchemaResult, setVideoSchemaResult] = useState(null); const [videoSchemaLoading, setVideoSchemaLoading] = useState(false); const [videoSchemaUrl, setVideoSchemaUrl] = useState('');
+  const [ytResult, setYtResult] = useState(null); const [ytLoading, setYtLoading] = useState(false); const [ytVideoUrl, setYtVideoUrl] = useState('');
+  // Backlinks
+  const [prPitchResult, setPrPitchResult] = useState(null); const [prPitchLoading, setPrPitchLoading] = useState(false); const [prPitchTopic, setPrPitchTopic] = useState('');
+  const [expertQAResult, setExpertQAResult] = useState(null); const [expertQALoading, setExpertQALoading] = useState(false); const [expertQATopic, setExpertQATopic] = useState('');
+  const [guestPostResult, setGuestPostResult] = useState(null); const [guestPostLoading, setGuestPostLoading] = useState(false); const [guestPostNiche, setGuestPostNiche] = useState('');
+  const [resourcePageResult, setResourcePageResult] = useState(null); const [resourcePageLoading, setResourcePageLoading] = useState(false); const [resourcePageTopic, setResourcePageTopic] = useState('');
+  const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperUrl, setSkyscraperUrl] = useState('');
+  // Site Crawl
+  const [crawlDupResult, setCrawlDupResult] = useState(null); const [crawlDupLoading, setCrawlDupLoading] = useState(false);
+  const [crawlExportLoading, setCrawlExportLoading] = useState(false);
+  // GEO & LLM
+  const [brandSentimentResult, setBrandSentimentResult] = useState(null); const [brandSentimentLoading, setBrandSentimentLoading] = useState(false); const [brandSentimentQuery, setBrandSentimentQuery] = useState('');
+  const [citationGapResult, setCitationGapResult] = useState(null); const [citationGapLoading, setCitationGapLoading] = useState(false);
+  const [citationContentResult, setCitationContentResult] = useState(null); const [citationContentLoading, setCitationContentLoading] = useState(false); const [citationContentTopic, setCitationContentTopic] = useState('');
+  const [faqLlmResult, setFaqLlmResult] = useState(null); const [faqLlmLoading, setFaqLlmLoading] = useState(false); const [faqLlmUrl, setFaqLlmUrl] = useState('');
+  const [llmVisAuditResult, setLlmVisAuditResult] = useState(null); const [llmVisAuditLoading, setLlmVisAuditLoading] = useState(false);
+  const [mentionGapResult, setMentionGapResult] = useState(null); const [mentionGapLoading, setMentionGapLoading] = useState(false);
+  const [nosnippetResult, setNosnippetResult] = useState(null); const [nosnippetLoading, setNosnippetLoading] = useState(false);
+  // Keywords
+  const [serpClusterResult, setSerpClusterResult] = useState(null); const [serpClusterLoading, setSerpClusterLoading] = useState(false); const [serpClusterKw, setSerpClusterKw] = useState('');
+  const [intentMatrixResult, setIntentMatrixResult] = useState(null); const [intentMatrixLoading, setIntentMatrixLoading] = useState(false); const [intentMatrixKws, setIntentMatrixKws] = useState('');
+  const [kwMappingResult, setKwMappingResult] = useState(null); const [kwMappingLoading, setKwMappingLoading] = useState(false);
+  const [kgrResult, setKgrResult] = useState(null); const [kgrLoading, setKgrLoading] = useState(false); const [kgrKw, setKgrKw] = useState(''); const [kgrSearchVol, setKgrSearchVol] = useState(''); const [kgrAllInTitle, setKgrAllInTitle] = useState('');
+  const [sovResult, setSovResult] = useState(null); const [sovLoading, setSovLoading] = useState(false); const [sovKeywords, setSovKeywords] = useState('');
+  // Rank Tracker
+  const [cannibLiveResult, setCannibLiveResult] = useState(null); const [cannibLiveLoading, setCannibLiveLoading] = useState(false);
+  const [compCompareResult, setCompCompareResult] = useState(null); const [compCompareLoading, setCompCompareLoading] = useState(false); const [compCompareUrl, setCompCompareUrl] = useState('');
+  const [deviceSplitResult, setDeviceSplitResult] = useState(null); const [deviceSplitLoading, setDeviceSplitLoading] = useState(false);
+  const [kwVelocityResult, setKwVelocityResult] = useState(null); const [kwVelocityLoading, setKwVelocityLoading] = useState(false);
+  const [posAlertResult, setPosAlertResult] = useState(null); const [posAlertLoading, setPosAlertLoading] = useState(false); const [posAlertKw, setPosAlertKw] = useState(''); const [posAlertThreshold, setPosAlertThreshold] = useState('10');
+  const [yoyResult, setYoyResult] = useState(null); const [yoyLoading, setYoyLoading] = useState(false);
+  const [addAlertResult, setAddAlertResult] = useState(null); const [addAlertLoading, setAddAlertLoading] = useState(false); const [alertKw, setAlertKw] = useState(''); const [alertThreshold, setAlertThreshold] = useState('10');
+  const [alertsResult, setAlertsResult] = useState(null); const [alertsLoading, setAlertsLoading] = useState(false);
+  // Schema & Links
+  const [datasetSchemaResult, setDatasetSchemaResult] = useState(null); const [datasetSchemaLoading, setDatasetSchemaLoading] = useState(false); const [datasetTitle, setDatasetTitle] = useState('');
+  const [factCheckResult, setFactCheckResult] = useState(null); const [factCheckLoading, setFactCheckLoading] = useState(false); const [factCheckClaim, setFactCheckClaim] = useState('');
+  const [podcastSchemaResult, setPodcastSchemaResult] = useState(null); const [podcastSchemaLoading, setPodcastSchemaLoading] = useState(false); const [podcastTitle, setPodcastTitle] = useState('');
+  // SERP & CTR
+  const [intentEvolResult, setIntentEvolResult] = useState(null); const [intentEvolLoading, setIntentEvolLoading] = useState(false); const [intentEvolKw, setIntentEvolKw] = useState('');
+  const [splitSigResult, setSplitSigResult] = useState(null); const [splitSigLoading, setSplitSigLoading] = useState(false);
+  const [top10Result, setTop10Result] = useState(null); const [top10Loading, setTop10Loading] = useState(false); const [top10Kw, setTop10Kw] = useState('');
+  const [volatilityResult, setVolatilityResult] = useState(null); const [volatilityLoading, setVolatilityLoading] = useState(false);
+  const [featSnipResult, setFeatSnipResult] = useState(null); const [featSnipLoading, setFeatSnipLoading] = useState(false); const [featSnipUrl, setFeatSnipUrl] = useState('');
+  const [knowledgePanelResult, setKnowledgePanelResult] = useState(null); const [knowledgePanelLoading, setKnowledgePanelLoading] = useState(false);
+  const [paaResult, setPaaResult] = useState(null); const [paaLoading, setPaaLoading] = useState(false); const [paaKw, setPaaKw] = useState('');
+  // Shopify SEO batch 3
+  const [blogTmplAuditResult, setBlogTmplAuditResult] = useState(null); const [blogTmplAuditLoading, setBlogTmplAuditLoading] = useState(false);
+  const [collSeoResult, setCollSeoResult] = useState(null); const [collSeoLoading, setCollSeoLoading] = useState(false); const [collSeoHandle, setCollSeoHandle] = useState('');
+  const [collSeoAuditResult, setCollSeoAuditResult] = useState(null); const [collSeoAuditLoading, setCollSeoAuditLoading] = useState(false);
+  const [hreflangGenResult, setHreflangGenResult] = useState(null); const [hreflangGenLoading, setHreflangGenLoading] = useState(false); const [hreflangLocales, setHreflangLocales] = useState('');
+  const [metafieldSeoResult, setMetafieldSeoResult] = useState(null); const [metafieldSeoLoading, setMetafieldSeoLoading] = useState(false);
+  const [prodBlogLinksResult, setProdBlogLinksResult] = useState(null); const [prodBlogLinksLoading, setProdBlogLinksLoading] = useState(false);
+  const [prodSchemaBulkResult, setProdSchemaBulkResult] = useState(null); const [prodSchemaBulkLoading, setProdSchemaBulkLoading] = useState(false);
+  const [sitemapEnhResult, setSitemapEnhResult] = useState(null); const [sitemapEnhLoading, setSitemapEnhLoading] = useState(false);
+  // Technical+ batch 3
+  const [robotsTxtResult, setRobotsTxtResult] = useState(null); const [robotsTxtLoading, setRobotsTxtLoading] = useState(false);
+  const [indexNowResult, setIndexNowResult] = useState(null); const [indexNowLoading, setIndexNowLoading] = useState(false); const [indexNowUrls, setIndexNowUrls] = useState('');
+  const [inpResult, setInpResult] = useState(null); const [inpLoading, setInpLoading] = useState(false);
+  const [mcpSchemaResult, setMcpSchemaResult] = useState(null); const [mcpSchemaLoading, setMcpSchemaLoading] = useState(false);
+  const [paginationResult, setPaginationResult] = useState(null); const [paginationLoading, setPaginationLoading] = useState(false);
+  const [redirectChainResult, setRedirectChainResult] = useState(null); const [redirectChainLoading, setRedirectChainLoading] = useState(false); const [redirectChainUrl, setRedirectChainUrl] = useState('');
+  const [secHeadersResult, setSecHeadersResult] = useState(null); const [secHeadersLoading, setSecHeadersLoading] = useState(false);
+  // Trend Scout
+  const [compVelocityResult, setCompVelocityResult] = useState(null); const [compVelocityLoading, setCompVelocityLoading] = useState(false); const [compVelocityCompetitor, setCompVelocityCompetitor] = useState('');
+  const [firstMoverResult, setFirstMoverResult] = useState(null); const [firstMoverLoading, setFirstMoverLoading] = useState(false); const [firstMoverTopic, setFirstMoverTopic] = useState('');
+  const [investSignalResult, setInvestSignalResult] = useState(null); const [investSignalLoading, setInvestSignalLoading] = useState(false);
+  const [newsjackResult, setNewsjackResult] = useState(null); const [newsjackLoading, setNewsjackLoading] = useState(false); const [newsjackTopic, setNewsjackTopic] = useState('');
+  const [trendRptResult, setTrendRptResult] = useState(null); const [trendRptLoading, setTrendRptLoading] = useState(false); const [trendRptNiche, setTrendRptNiche] = useState('');
+  // Misc
+  const [pdfReportResult, setPdfReportResult] = useState(null); const [pdfReportLoading, setPdfReportLoading] = useState(false);
+  const [contentApprovalResult, setContentApprovalResult] = useState(null); const [contentApprovalLoading, setContentApprovalLoading] = useState(false); const [approvalTitle, setApprovalTitle] = useState(''); const [approvalContent, setApprovalContent] = useState('');
+  const [voiceProfileResult, setVoiceProfileResult] = useState(null); const [voiceProfileLoading, setVoiceProfileLoading] = useState(false);
+
+    /* -- ANALYZER ----------------------------------------------------------- */
   const runScan = useCallback(async () => {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null); setAiAnalysis(null);
@@ -4957,6 +5035,57 @@ export default function BlogSEO() {
               </div>}
             </div>
 
+            {/* === SERP Cluster === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔵 SERP Cluster</div>
+                <button style={S.btn(serpClusterResult?undefined:'primary')} onClick={async()=>{setSerpClusterLoading(true);setSerpClusterResult(null);try{const r=await apiFetch(`${API}/keywords/cluster-by-serp`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:serpClusterKw,shop:shopDomain})});const d=await r.json();setSerpClusterResult(d);}catch(e){setSerpClusterResult({ok:false,error:e.message});}finally{setSerpClusterLoading(false);}}} disabled={serpClusterLoading}>{serpClusterLoading?<><span style={S.spinner}/> Clustering...</>:'Cluster'}</button>
+              </div>
+              <input style={S.input} placeholder="Seed keyword..." value={serpClusterKw} onChange={e=>setSerpClusterKw(e.target.value)}/>
+              {serpClusterResult&&!serpClusterResult.ok&&<div style={S.err}>{serpClusterResult.error}</div>}
+              {serpClusterResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(serpClusterResult,null,2)}</pre></div>}
+            </div>
+            {/* === Intent Matrix === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🗂️ Intent Matrix</div>
+                <button style={S.btn(intentMatrixResult?undefined:'primary')} onClick={async()=>{setIntentMatrixLoading(true);setIntentMatrixResult(null);try{const r=await apiFetch(`${API}/keywords/intent-matrix`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keywords:intentMatrixKws,shop:shopDomain})});const d=await r.json();setIntentMatrixResult(d);}catch(e){setIntentMatrixResult({ok:false,error:e.message});}finally{setIntentMatrixLoading(false);}}} disabled={intentMatrixLoading}>{intentMatrixLoading?<><span style={S.spinner}/> Building...</>:'Build'}</button>
+              </div>
+              <textarea style={{...S.input,height:60,resize:'vertical'}} placeholder="Keywords (comma-separated)..." value={intentMatrixKws} onChange={e=>setIntentMatrixKws(e.target.value)}/>
+              {intentMatrixResult&&!intentMatrixResult.ok&&<div style={S.err}>{intentMatrixResult.error}</div>}
+              {intentMatrixResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(intentMatrixResult,null,2)}</pre></div>}
+            </div>
+            {/* === Keyword Mapping === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🗺️ Keyword Mapping</div>
+                <button style={S.btn(kwMappingResult?undefined:'primary')} onClick={async()=>{setKwMappingLoading(true);setKwMappingResult(null);try{const r=await apiFetch(`${API}/keywords/keyword-mapping`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setKwMappingResult(d);}catch(e){setKwMappingResult({ok:false,error:e.message});}finally{setKwMappingLoading(false);}}} disabled={kwMappingLoading}>{kwMappingLoading?<><span style={S.spinner}/> Mapping...</>:'Map'}</button>
+              </div>
+              {kwMappingResult&&!kwMappingResult.ok&&<div style={S.err}>{kwMappingResult.error}</div>}
+              {kwMappingResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(kwMappingResult,null,2)}</pre></div>}
+            </div>
+            {/* === KGR Calculator === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🧮 KGR Calculator</div>
+                <button style={S.btn(kgrResult?undefined:'primary')} onClick={async()=>{setKgrLoading(true);setKgrResult(null);try{const r=await apiFetch(`${API}/keywords/kgr-calculator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:kgrKw,searchVolume:kgrSearchVol,allInTitle:kgrAllInTitle,shop:shopDomain})});const d=await r.json();setKgrResult(d);}catch(e){setKgrResult({ok:false,error:e.message});}finally{setKgrLoading(false);}}} disabled={kgrLoading}>{kgrLoading?<><span style={S.spinner}/> Calculating...</>:'Calculate'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword..." value={kgrKw} onChange={e=>setKgrKw(e.target.value)}/>
+              <input style={{...S.input,marginTop:6}} placeholder="Monthly search volume..." value={kgrSearchVol} onChange={e=>setKgrSearchVol(e.target.value)}/>
+              <input style={{...S.input,marginTop:6}} placeholder="AllInTitle count..." value={kgrAllInTitle} onChange={e=>setKgrAllInTitle(e.target.value)}/>
+              {kgrResult&&!kgrResult.ok&&<div style={S.err}>{kgrResult.error}</div>}
+              {kgrResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(kgrResult,null,2)}</pre></div>}
+            </div>
+            {/* === Share of Voice === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📊 Share of Voice</div>
+                <button style={S.btn(sovResult?undefined:'primary')} onClick={async()=>{setSovLoading(true);setSovResult(null);try{const r=await apiFetch(`${API}/keywords/share-of-voice`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keywords:sovKeywords,shop:shopDomain})});const d=await r.json();setSovResult(d);}catch(e){setSovResult({ok:false,error:e.message});}finally{setSovLoading(false);}}} disabled={sovLoading}>{sovLoading?<><span style={S.spinner}/> Calculating...</>:'Calculate'}</button>
+              </div>
+              <textarea style={{...S.input,height:60,resize:'vertical'}} placeholder="Keywords (comma-separated)..." value={sovKeywords} onChange={e=>setSovKeywords(e.target.value)}/>
+              {sovResult&&!sovResult.ok&&<div style={S.err}>{sovResult.error}</div>}
+              {sovResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(sovResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -5098,6 +5227,71 @@ export default function BlogSEO() {
                   {httpsStatusResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>?? {httpsStatusResult.tip}</div>}
                 </div>
               )}
+            </div>
+            {/* === Generate Robots.txt === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🤖 Generate Robots.txt</div>
+                <button style={S.btn(robotsTxtResult?undefined:'primary')} onClick={async()=>{setRobotsTxtLoading(true);setRobotsTxtResult(null);try{const r=await apiFetch(`${API}/technical/generate-robots-txt`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setRobotsTxtResult(d);}catch(e){setRobotsTxtResult({ok:false,error:e.message});}finally{setRobotsTxtLoading(false);}}} disabled={robotsTxtLoading}>{robotsTxtLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              {robotsTxtResult&&!robotsTxtResult.ok&&<div style={S.err}>{robotsTxtResult.error}</div>}
+              {robotsTxtResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(robotsTxtResult,null,2)}</pre></div>}
+            </div>
+            {/* === IndexNow Submit === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⚡ IndexNow Submit</div>
+                <button style={S.btn(indexNowResult?undefined:'primary')} onClick={async()=>{setIndexNowLoading(true);setIndexNowResult(null);try{const r=await apiFetch(`${API}/technical/indexnow-submit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:indexNowUrls,shop:shopDomain})});const d=await r.json();setIndexNowResult(d);}catch(e){setIndexNowResult({ok:false,error:e.message});}finally{setIndexNowLoading(false);}}} disabled={indexNowLoading}>{indexNowLoading?<><span style={S.spinner}/> Submitting...</>:'Submit'}</button>
+              </div>
+              <textarea style={{...S.input,height:60,resize:'vertical'}} placeholder="URLs (one per line)..." value={indexNowUrls} onChange={e=>setIndexNowUrls(e.target.value)}/>
+              {indexNowResult&&!indexNowResult.ok&&<div style={S.err}>{indexNowResult.error}</div>}
+              {indexNowResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(indexNowResult,null,2)}</pre></div>}
+            </div>
+            {/* === INP Advisor === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⏱️ INP Advisor</div>
+                <button style={S.btn(inpResult?undefined:'primary')} onClick={async()=>{setInpLoading(true);setInpResult(null);try{const r=await apiFetch(`${API}/technical/inp-advisor`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setInpResult(d);}catch(e){setInpResult({ok:false,error:e.message});}finally{setInpLoading(false);}}} disabled={inpLoading}>{inpLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {inpResult&&!inpResult.ok&&<div style={S.err}>{inpResult.error}</div>}
+              {inpResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(inpResult,null,2)}</pre></div>}
+            </div>
+            {/* === MCP Schema Generator === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🧩 MCP Schema Generator</div>
+                <button style={S.btn(mcpSchemaResult?undefined:'primary')} onClick={async()=>{setMcpSchemaLoading(true);setMcpSchemaResult(null);try{const r=await apiFetch(`${API}/technical/mcp-schema-generator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setMcpSchemaResult(d);}catch(e){setMcpSchemaResult({ok:false,error:e.message});}finally{setMcpSchemaLoading(false);}}} disabled={mcpSchemaLoading}>{mcpSchemaLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              {mcpSchemaResult&&!mcpSchemaResult.ok&&<div style={S.err}>{mcpSchemaResult.error}</div>}
+              {mcpSchemaResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(mcpSchemaResult,null,2)}</pre></div>}
+            </div>
+            {/* === Pagination SEO === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📄 Pagination SEO</div>
+                <button style={S.btn(paginationResult?undefined:'primary')} onClick={async()=>{setPaginationLoading(true);setPaginationResult(null);try{const r=await apiFetch(`${API}/technical/pagination-seo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setPaginationResult(d);}catch(e){setPaginationResult({ok:false,error:e.message});}finally{setPaginationLoading(false);}}} disabled={paginationLoading}>{paginationLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {paginationResult&&!paginationResult.ok&&<div style={S.err}>{paginationResult.error}</div>}
+              {paginationResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(paginationResult,null,2)}</pre></div>}
+            </div>
+            {/* === Redirect Chain Mapper === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔀 Redirect Chain Mapper</div>
+                <button style={S.btn(redirectChainResult?undefined:'primary')} onClick={async()=>{setRedirectChainLoading(true);setRedirectChainResult(null);try{const r=await apiFetch(`${API}/technical/redirect-chain-mapper`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:redirectChainUrl,shop:shopDomain})});const d=await r.json();setRedirectChainResult(d);}catch(e){setRedirectChainResult({ok:false,error:e.message});}finally{setRedirectChainLoading(false);}}} disabled={redirectChainLoading}>{redirectChainLoading?<><span style={S.spinner}/> Mapping...</>:'Map'}</button>
+              </div>
+              <input style={S.input} placeholder="URL to trace..." value={redirectChainUrl} onChange={e=>setRedirectChainUrl(e.target.value)}/>
+              {redirectChainResult&&!redirectChainResult.ok&&<div style={S.err}>{redirectChainResult.error}</div>}
+              {redirectChainResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(redirectChainResult,null,2)}</pre></div>}
+            </div>
+            {/* === Security Headers === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔒 Security Headers</div>
+                <button style={S.btn(secHeadersResult?undefined:'primary')} onClick={async()=>{setSecHeadersLoading(true);setSecHeadersResult(null);try{const r=await apiFetch(`${API}/technical/security-headers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setSecHeadersResult(d);}catch(e){setSecHeadersResult({ok:false,error:e.message});}finally{setSecHeadersLoading(false);}}} disabled={secHeadersLoading}>{secHeadersLoading?<><span style={S.spinner}/> Checking...</>:'Check'}</button>
+              </div>
+              {secHeadersResult&&!secHeadersResult.ok&&<div style={S.err}>{secHeadersResult.error}</div>}
+              {secHeadersResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(secHeadersResult,null,2)}</pre></div>}
             </div>
           </>
         )}
@@ -5731,6 +5925,135 @@ export default function BlogSEO() {
               </div>}
             </div>
 
+            {/* === Atomize === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⚛️ Atomize Content</div>
+                <button style={S.btn(atomizeResult?undefined:'primary')} onClick={async()=>{setAtomizeLoading(true);setAtomizeResult(null);try{const r=await apiFetch(`${API}/ai/atomize`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:atomizeInput,shop:shopDomain})});const d=await r.json();setAtomizeResult(d);}catch(e){setAtomizeResult({ok:false,error:e.message});}finally{setAtomizeLoading(false);}}} disabled={atomizeLoading}>{atomizeLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <textarea style={{...S.input,height:60,resize:'vertical'}} placeholder="Paste content to atomize..." value={atomizeInput} onChange={e=>setAtomizeInput(e.target.value)}/>
+              {atomizeResult&&!atomizeResult.ok&&<div style={S.err}>{atomizeResult.error}</div>}
+              {atomizeResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(atomizeResult,null,2)}</pre></div>}
+            </div>
+            {/* === Case Study Writer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📖 Case Study Writer</div>
+                <button style={S.btn(caseStudyResult?undefined:'primary')} onClick={async()=>{setCaseStudyLoading(true);setCaseStudyResult(null);try{const r=await apiFetch(`${API}/ai/case-study-writer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:caseStudyTopic,shop:shopDomain})});const d=await r.json();setCaseStudyResult(d);}catch(e){setCaseStudyResult({ok:false,error:e.message});}finally{setCaseStudyLoading(false);}}} disabled={caseStudyLoading}>{caseStudyLoading?<><span style={S.spinner}/> Writing...</>:'Write'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={caseStudyTopic} onChange={e=>setCaseStudyTopic(e.target.value)}/>
+              {caseStudyResult&&!caseStudyResult.ok&&<div style={S.err}>{caseStudyResult.error}</div>}
+              {caseStudyResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(caseStudyResult,null,2)}</pre></div>}
+            </div>
+            {/* === Content Humanizer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🧑 Content Humanizer</div>
+                <button style={S.btn(humanizerResult?undefined:'primary')} onClick={async()=>{setHumanizerLoading(true);setHumanizerResult(null);try{const r=await apiFetch(`${API}/ai/content-humanizer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:humanizerText,shop:shopDomain})});const d=await r.json();setHumanizerResult(d);}catch(e){setHumanizerResult({ok:false,error:e.message});}finally{setHumanizerLoading(false);}}} disabled={humanizerLoading}>{humanizerLoading?<><span style={S.spinner}/> Humanizing...</>:'Humanize'}</button>
+              </div>
+              <textarea style={{...S.input,height:60,resize:'vertical'}} placeholder="Paste AI text to humanize..." value={humanizerText} onChange={e=>setHumanizerText(e.target.value)}/>
+              {humanizerResult&&!humanizerResult.ok&&<div style={S.err}>{humanizerResult.error}</div>}
+              {humanizerResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(humanizerResult,null,2)}</pre></div>}
+            </div>
+            {/* === Full Blog Writer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>✍️ Full Blog Writer</div>
+                <button style={S.btn(fullBlogResult?undefined:'primary')} onClick={async()=>{setFullBlogLoading(true);setFullBlogResult(null);try{const r=await apiFetch(`${API}/ai/full-blog-writer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:fullBlogTopic,shop:shopDomain})});const d=await r.json();setFullBlogResult(d);}catch(e){setFullBlogResult({ok:false,error:e.message});}finally{setFullBlogLoading(false);}}} disabled={fullBlogLoading}>{fullBlogLoading?<><span style={S.spinner}/> Writing...</>:'Write'}</button>
+              </div>
+              <input style={S.input} placeholder="Blog topic..." value={fullBlogTopic} onChange={e=>setFullBlogTopic(e.target.value)}/>
+              {fullBlogResult&&!fullBlogResult.ok&&<div style={S.err}>{fullBlogResult.error}</div>}
+              {fullBlogResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(fullBlogResult,null,2)}</pre></div>}
+            </div>
+            {/* === LinkedIn Article === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>💼 LinkedIn Article</div>
+                <button style={S.btn(linkedinResult?undefined:'primary')} onClick={async()=>{setLinkedinLoading(true);setLinkedinResult(null);try{const r=await apiFetch(`${API}/ai/linkedin-article`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:linkedinTopic,shop:shopDomain})});const d=await r.json();setLinkedinResult(d);}catch(e){setLinkedinResult({ok:false,error:e.message});}finally{setLinkedinLoading(false);}}} disabled={linkedinLoading}>{linkedinLoading?<><span style={S.spinner}/> Writing...</>:'Write'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={linkedinTopic} onChange={e=>setLinkedinTopic(e.target.value)}/>
+              {linkedinResult&&!linkedinResult.ok&&<div style={S.err}>{linkedinResult.error}</div>}
+              {linkedinResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(linkedinResult,null,2)}</pre></div>}
+            </div>
+            {/* === Listicle Writer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📋 Listicle Writer</div>
+                <button style={S.btn(listicleResult?undefined:'primary')} onClick={async()=>{setListicleLoading(true);setListicleResult(null);try{const r=await apiFetch(`${API}/ai/listicle-writer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:listicleTopic,shop:shopDomain})});const d=await r.json();setListicleResult(d);}catch(e){setListicleResult({ok:false,error:e.message});}finally{setListicleLoading(false);}}} disabled={listicleLoading}>{listicleLoading?<><span style={S.spinner}/> Writing...</>:'Write'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={listicleTopic} onChange={e=>setListicleTopic(e.target.value)}/>
+              {listicleResult&&!listicleResult.ok&&<div style={S.err}>{listicleResult.error}</div>}
+              {listicleResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(listicleResult,null,2)}</pre></div>}
+            </div>
+            {/* === Newsletter Digest === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📧 Newsletter Digest</div>
+                <button style={S.btn(newsletterResult?undefined:'primary')} onClick={async()=>{setNewsletterLoading(true);setNewsletterResult(null);try{const r=await apiFetch(`${API}/ai/newsletter-digest`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:newsletterTopic,shop:shopDomain})});const d=await r.json();setNewsletterResult(d);}catch(e){setNewsletterResult({ok:false,error:e.message});}finally{setNewsletterLoading(false);}}} disabled={newsletterLoading}>{newsletterLoading?<><span style={S.spinner}/> Writing...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic or theme..." value={newsletterTopic} onChange={e=>setNewsletterTopic(e.target.value)}/>
+              {newsletterResult&&!newsletterResult.ok&&<div style={S.err}>{newsletterResult.error}</div>}
+              {newsletterResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(newsletterResult,null,2)}</pre></div>}
+            </div>
+            {/* === X Thread Writer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>𝕏 X Thread Writer</div>
+                <button style={S.btn(xThreadResult?undefined:'primary')} onClick={async()=>{setXThreadLoading(true);setXThreadResult(null);try{const r=await apiFetch(`${API}/ai/x-thread`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:xThreadTopic,shop:shopDomain})});const d=await r.json();setXThreadResult(d);}catch(e){setXThreadResult({ok:false,error:e.message});}finally{setXThreadLoading(false);}}} disabled={xThreadLoading}>{xThreadLoading?<><span style={S.spinner}/> Writing...</>:'Write'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={xThreadTopic} onChange={e=>setXThreadTopic(e.target.value)}/>
+              {xThreadResult&&!xThreadResult.ok&&<div style={S.err}>{xThreadResult.error}</div>}
+              {xThreadResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(xThreadResult,null,2)}</pre></div>}
+            </div>
+            {/* === Video Schema Generator === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🎬 Video Schema Generator</div>
+                <button style={S.btn(videoSchemaResult?undefined:'primary')} onClick={async()=>{setVideoSchemaLoading(true);setVideoSchemaResult(null);try{const r=await apiFetch(`${API}/video/video-schema-generator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:videoSchemaUrl,shop:shopDomain})});const d=await r.json();setVideoSchemaResult(d);}catch(e){setVideoSchemaResult({ok:false,error:e.message});}finally{setVideoSchemaLoading(false);}}} disabled={videoSchemaLoading}>{videoSchemaLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Video URL..." value={videoSchemaUrl} onChange={e=>setVideoSchemaUrl(e.target.value)}/>
+              {videoSchemaResult&&!videoSchemaResult.ok&&<div style={S.err}>{videoSchemaResult.error}</div>}
+              {videoSchemaResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(videoSchemaResult,null,2)}</pre></div>}
+            </div>
+            {/* === YouTube Optimizer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>▶️ YouTube Optimizer</div>
+                <button style={S.btn(ytResult?undefined:'primary')} onClick={async()=>{setYtLoading(true);setYtResult(null);try{const r=await apiFetch(`${API}/video/youtube-optimizer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({videoUrl:ytVideoUrl,shop:shopDomain})});const d=await r.json();setYtResult(d);}catch(e){setYtResult({ok:false,error:e.message});}finally{setYtLoading(false);}}} disabled={ytLoading}>{ytLoading?<><span style={S.spinner}/> Optimizing...</>:'Optimize'}</button>
+              </div>
+              <input style={S.input} placeholder="YouTube video URL..." value={ytVideoUrl} onChange={e=>setYtVideoUrl(e.target.value)}/>
+              {ytResult&&!ytResult.ok&&<div style={S.err}>{ytResult.error}</div>}
+              {ytResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(ytResult,null,2)}</pre></div>}
+            </div>
+            {/* === Generate PDF Report === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📄 Generate PDF Report</div>
+                <button style={S.btn(pdfReportResult?undefined:'primary')} onClick={async()=>{setPdfReportLoading(true);setPdfReportResult(null);try{const r=await apiFetch(`${API}/reports/generate-pdf`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setPdfReportResult(d);}catch(e){setPdfReportResult({ok:false,error:e.message});}finally{setPdfReportLoading(false);}}} disabled={pdfReportLoading}>{pdfReportLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              {pdfReportResult&&!pdfReportResult.ok&&<div style={S.err}>{pdfReportResult.error}</div>}
+              {pdfReportResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(pdfReportResult,null,2)}</pre></div>}
+            </div>
+            {/* === Content Approval === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>✔️ Content Approval</div>
+                <button style={S.btn(contentApprovalResult?undefined:'primary')} onClick={async()=>{setContentApprovalLoading(true);setContentApprovalResult(null);try{const r=await apiFetch(`${API}/workflow/content-approval`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:contentApprovalTitle,content:contentApprovalContent,shop:shopDomain})});const d=await r.json();setContentApprovalResult(d);}catch(e){setContentApprovalResult({ok:false,error:e.message});}finally{setContentApprovalLoading(false);}}} disabled={contentApprovalLoading}>{contentApprovalLoading?<><span style={S.spinner}/> Submitting...</>:'Submit'}</button>
+              </div>
+              <input style={S.input} placeholder="Content title..." value={contentApprovalTitle} onChange={e=>setContentApprovalTitle(e.target.value)}/>
+              <textarea style={{...S.input,height:60,resize:'vertical',marginTop:6}} placeholder="Content..." value={contentApprovalContent} onChange={e=>setContentApprovalContent(e.target.value)}/>
+              {contentApprovalResult&&!contentApprovalResult.ok&&<div style={S.err}>{contentApprovalResult.error}</div>}
+              {contentApprovalResult?.ok&&<div style={{color:'#4ade80',fontSize:13,marginTop:8}}>✓ Submitted for approval</div>}
+            </div>
+            {/* === Voice Profile === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🎤 Voice Profile</div>
+                <button style={S.btn(voiceProfileResult?undefined:'primary')} onClick={async()=>{setVoiceProfileLoading(true);setVoiceProfileResult(null);try{const r=await apiFetch(`${API}/voice-profile`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setVoiceProfileResult(d);}catch(e){setVoiceProfileResult({ok:false,error:e.message});}finally{setVoiceProfileLoading(false);}}} disabled={voiceProfileLoading}>{voiceProfileLoading?<><span style={S.spinner}/> Loading...</>:'Load'}</button>
+              </div>
+              {voiceProfileResult&&!voiceProfileResult.ok&&<div style={S.err}>{voiceProfileResult.error}</div>}
+              {voiceProfileResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(voiceProfileResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -5914,6 +6237,36 @@ export default function BlogSEO() {
                   {citationCheckResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>?? {citationCheckResult.tip}</div>}
                 </div>
               )}
+            </div>
+            {/* === Dataset Schema === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📂 Dataset Schema</div>
+                <button style={S.btn(datasetSchemaResult?undefined:'primary')} onClick={async()=>{setDatasetSchemaLoading(true);setDatasetSchemaResult(null);try{const r=await apiFetch(`${API}/schema/dataset`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:datasetSchemaTitle,shop:shopDomain})});const d=await r.json();setDatasetSchemaResult(d);}catch(e){setDatasetSchemaResult({ok:false,error:e.message});}finally{setDatasetSchemaLoading(false);}}} disabled={datasetSchemaLoading}>{datasetSchemaLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Dataset title..." value={datasetSchemaTitle} onChange={e=>setDatasetSchemaTitle(e.target.value)}/>
+              {datasetSchemaResult&&!datasetSchemaResult.ok&&<div style={S.err}>{datasetSchemaResult.error}</div>}
+              {datasetSchemaResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(datasetSchemaResult,null,2)}</pre></div>}
+            </div>
+            {/* === Fact Check Schema === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>✅ Fact Check Schema</div>
+                <button style={S.btn(factCheckResult?undefined:'primary')} onClick={async()=>{setFactCheckLoading(true);setFactCheckResult(null);try{const r=await apiFetch(`${API}/schema/fact-check`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({claim:factCheckClaim,shop:shopDomain})});const d=await r.json();setFactCheckResult(d);}catch(e){setFactCheckResult({ok:false,error:e.message});}finally{setFactCheckLoading(false);}}} disabled={factCheckLoading}>{factCheckLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Claim to fact-check..." value={factCheckClaim} onChange={e=>setFactCheckClaim(e.target.value)}/>
+              {factCheckResult&&!factCheckResult.ok&&<div style={S.err}>{factCheckResult.error}</div>}
+              {factCheckResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(factCheckResult,null,2)}</pre></div>}
+            </div>
+            {/* === Podcast Episode Schema === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🎙️ Podcast Episode Schema</div>
+                <button style={S.btn(podcastSchemaResult?undefined:'primary')} onClick={async()=>{setPodcastSchemaLoading(true);setPodcastSchemaResult(null);try{const r=await apiFetch(`${API}/schema/podcast-episode`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:podcastSchemaTitle,shop:shopDomain})});const d=await r.json();setPodcastSchemaResult(d);}catch(e){setPodcastSchemaResult({ok:false,error:e.message});}finally{setPodcastSchemaLoading(false);}}} disabled={podcastSchemaLoading}>{podcastSchemaLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Episode title..." value={podcastSchemaTitle} onChange={e=>setPodcastSchemaTitle(e.target.value)}/>
+              {podcastSchemaResult&&!podcastSchemaResult.ok&&<div style={S.err}>{podcastSchemaResult.error}</div>}
+              {podcastSchemaResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(podcastSchemaResult,null,2)}</pre></div>}
             </div>
           </>
         )}
@@ -6313,6 +6666,73 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+            {/* === Intent Evolution === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔄 Intent Evolution</div>
+                <button style={S.btn(intentEvolResult?undefined:'primary')} onClick={async()=>{setIntentEvolLoading(true);setIntentEvolResult(null);try{const r=await apiFetch(`${API}/serp/intent-evolution`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:intentEvolKw,shop:shopDomain})});const d=await r.json();setIntentEvolResult(d);}catch(e){setIntentEvolResult({ok:false,error:e.message});}finally{setIntentEvolLoading(false);}}} disabled={intentEvolLoading}>{intentEvolLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword..." value={intentEvolKw} onChange={e=>setIntentEvolKw(e.target.value)}/>
+              {intentEvolResult&&!intentEvolResult.ok&&<div style={S.err}>{intentEvolResult.error}</div>}
+              {intentEvolResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(intentEvolResult,null,2)}</pre></div>}
+            </div>
+            {/* === SplitSignal === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📊 SplitSignal A/B Analysis</div>
+                <button style={S.btn(splitSigResult?undefined:'primary')} onClick={async()=>{setSplitSigLoading(true);setSplitSigResult(null);try{const r=await apiFetch(`${API}/serp/splitsignal`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setSplitSigResult(d);}catch(e){setSplitSigResult({ok:false,error:e.message});}finally{setSplitSigLoading(false);}}} disabled={splitSigLoading}>{splitSigLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {splitSigResult&&!splitSigResult.ok&&<div style={S.err}>{splitSigResult.error}</div>}
+              {splitSigResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(splitSigResult,null,2)}</pre></div>}
+            </div>
+            {/* === Top 10 Insights === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🏆 Top 10 Insights</div>
+                <button style={S.btn(top10Result?undefined:'primary')} onClick={async()=>{setTop10Loading(true);setTop10Result(null);try{const r=await apiFetch(`${API}/serp/top10-insights`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:top10Kw,shop:shopDomain})});const d=await r.json();setTop10Result(d);}catch(e){setTop10Result({ok:false,error:e.message});}finally{setTop10Loading(false);}}} disabled={top10Loading}>{top10Loading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword..." value={top10Kw} onChange={e=>setTop10Kw(e.target.value)}/>
+              {top10Result&&!top10Result.ok&&<div style={S.err}>{top10Result.error}</div>}
+              {top10Result?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(top10Result,null,2)}</pre></div>}
+            </div>
+            {/* === Volatility Monitor === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📉 Volatility Monitor</div>
+                <button style={S.btn(volatilityResult?undefined:'primary')} onClick={async()=>{setVolatilityLoading(true);setVolatilityResult(null);try{const r=await apiFetch(`${API}/serp/volatility-monitor`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setVolatilityResult(d);}catch(e){setVolatilityResult({ok:false,error:e.message});}finally{setVolatilityLoading(false);}}} disabled={volatilityLoading}>{volatilityLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {volatilityResult&&!volatilityResult.ok&&<div style={S.err}>{volatilityResult.error}</div>}
+              {volatilityResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(volatilityResult,null,2)}</pre></div>}
+            </div>
+            {/* === Featured Snippet Optimizer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⭐ Featured Snippet Optimizer</div>
+                <button style={S.btn(featSnipResult?undefined:'primary')} onClick={async()=>{setFeatSnipLoading(true);setFeatSnipResult(null);try{const r=await apiFetch(`${API}/zero-click/featured-snippet-optimizer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:featSnipUrl,shop:shopDomain})});const d=await r.json();setFeatSnipResult(d);}catch(e){setFeatSnipResult({ok:false,error:e.message});}finally{setFeatSnipLoading(false);}}} disabled={featSnipLoading}>{featSnipLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Page URL..." value={featSnipUrl} onChange={e=>setFeatSnipUrl(e.target.value)}/>
+              {featSnipResult&&!featSnipResult.ok&&<div style={S.err}>{featSnipResult.error}</div>}
+              {featSnipResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(featSnipResult,null,2)}</pre></div>}
+            </div>
+            {/* === Knowledge Panel Push === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🎯 Knowledge Panel Push</div>
+                <button style={S.btn(knowledgePanelResult?undefined:'primary')} onClick={async()=>{setKnowledgePanelLoading(true);setKnowledgePanelResult(null);try{const r=await apiFetch(`${API}/zero-click/knowledge-panel-push`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setKnowledgePanelResult(d);}catch(e){setKnowledgePanelResult({ok:false,error:e.message});}finally{setKnowledgePanelLoading(false);}}} disabled={knowledgePanelLoading}>{knowledgePanelLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {knowledgePanelResult&&!knowledgePanelResult.ok&&<div style={S.err}>{knowledgePanelResult.error}</div>}
+              {knowledgePanelResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(knowledgePanelResult,null,2)}</pre></div>}
+            </div>
+            {/* === PAA Dominator === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>❓ PAA Dominator</div>
+                <button style={S.btn(paaResult?undefined:'primary')} onClick={async()=>{setPaaLoading(true);setPaaResult(null);try{const r=await apiFetch(`${API}/zero-click/paa-dominator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:paaKw,shop:shopDomain})});const d=await r.json();setPaaResult(d);}catch(e){setPaaResult({ok:false,error:e.message});}finally{setPaaLoading(false);}}} disabled={paaLoading}>{paaLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword..." value={paaKw} onChange={e=>setPaaKw(e.target.value)}/>
+              {paaResult&&!paaResult.ok&&<div style={S.err}>{paaResult.error}</div>}
+              {paaResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(paaResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -6693,6 +7113,56 @@ export default function BlogSEO() {
                   {linkVelocityResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>� {a}</div>)}
                 </div>
               )}
+            </div>
+            {/* === Digital PR Pitch === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📣 Digital PR Pitch</div>
+                <button style={S.btn(prPitchResult?undefined:'primary')} onClick={async()=>{setPrPitchLoading(true);setPrPitchResult(null);try{const r=await apiFetch(`${API}/backlinks/digital-pr-pitch`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:prPitchTopic,shop:shopDomain})});const d=await r.json();setPrPitchResult(d);}catch(e){setPrPitchResult({ok:false,error:e.message});}finally{setPrPitchLoading(false);}}} disabled={prPitchLoading}>{prPitchLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Pitch topic..." value={prPitchTopic} onChange={e=>setPrPitchTopic(e.target.value)}/>
+              {prPitchResult&&!prPitchResult.ok&&<div style={S.err}>{prPitchResult.error}</div>}
+              {prPitchResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(prPitchResult,null,2)}</pre></div>}
+            </div>
+            {/* === Expert Q&A Pipeline === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🎤 Expert Q&amp;A Pipeline</div>
+                <button style={S.btn(expertQAResult?undefined:'primary')} onClick={async()=>{setExpertQALoading(true);setExpertQAResult(null);try{const r=await apiFetch(`${API}/backlinks/expert-qa-pipeline`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:expertQATopic,shop:shopDomain})});const d=await r.json();setExpertQAResult(d);}catch(e){setExpertQAResult({ok:false,error:e.message});}finally{setExpertQALoading(false);}}} disabled={expertQALoading}>{expertQALoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={expertQATopic} onChange={e=>setExpertQATopic(e.target.value)}/>
+              {expertQAResult&&!expertQAResult.ok&&<div style={S.err}>{expertQAResult.error}</div>}
+              {expertQAResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(expertQAResult,null,2)}</pre></div>}
+            </div>
+            {/* === Guest Post Finder === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>✍️ Guest Post Finder</div>
+                <button style={S.btn(guestPostResult?undefined:'primary')} onClick={async()=>{setGuestPostLoading(true);setGuestPostResult(null);try{const r=await apiFetch(`${API}/backlinks/guest-post-finder`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({niche:guestPostNiche,shop:shopDomain})});const d=await r.json();setGuestPostResult(d);}catch(e){setGuestPostResult({ok:false,error:e.message});}finally{setGuestPostLoading(false);}}} disabled={guestPostLoading}>{guestPostLoading?<><span style={S.spinner}/> Searching...</>:'Search'}</button>
+              </div>
+              <input style={S.input} placeholder="Niche..." value={guestPostNiche} onChange={e=>setGuestPostNiche(e.target.value)}/>
+              {guestPostResult&&!guestPostResult.ok&&<div style={S.err}>{guestPostResult.error}</div>}
+              {guestPostResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(guestPostResult,null,2)}</pre></div>}
+            </div>
+            {/* === Resource Page Builder === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📚 Resource Page Builder</div>
+                <button style={S.btn(resourcePageResult?undefined:'primary')} onClick={async()=>{setResourcePageLoading(true);setResourcePageResult(null);try{const r=await apiFetch(`${API}/backlinks/resource-page-builder`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:resourcePageTopic,shop:shopDomain})});const d=await r.json();setResourcePageResult(d);}catch(e){setResourcePageResult({ok:false,error:e.message});}finally{setResourcePageLoading(false);}}} disabled={resourcePageLoading}>{resourcePageLoading?<><span style={S.spinner}/> Building...</>:'Build'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={resourcePageTopic} onChange={e=>setResourcePageTopic(e.target.value)}/>
+              {resourcePageResult&&!resourcePageResult.ok&&<div style={S.err}>{resourcePageResult.error}</div>}
+              {resourcePageResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(resourcePageResult,null,2)}</pre></div>}
+            </div>
+            {/* === Skyscraper Prospector === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🏗️ Skyscraper Prospector</div>
+                <button style={S.btn(skyscraperResult?undefined:'primary')} onClick={async()=>{setSkyscraperLoading(true);setSkyscraperResult(null);try{const r=await apiFetch(`${API}/backlinks/skyscraper-prospector`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:skyscraperUrl,shop:shopDomain})});const d=await r.json();setSkyscraperResult(d);}catch(e){setSkyscraperResult({ok:false,error:e.message});}finally{setSkyscraperLoading(false);}}} disabled={skyscraperLoading}>{skyscraperLoading?<><span style={S.spinner}/> Prospecting...</>:'Prospect'}</button>
+              </div>
+              <input style={S.input} placeholder="Competitor URL..." value={skyscraperUrl} onChange={e=>setSkyscraperUrl(e.target.value)}/>
+              {skyscraperResult&&!skyscraperResult.ok&&<div style={S.err}>{skyscraperResult.error}</div>}
+              {skyscraperResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(skyscraperResult,null,2)}</pre></div>}
             </div>
           </>
         )}
@@ -7770,6 +8240,80 @@ export default function BlogSEO() {
                 {(speedResult.quickWins||[]).slice(0,5).map((w,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a',color:'#d4d4d8'}}>● {w}</div>)}
               </div>}
             </div>
+            {/* === Blog Template Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📝 Blog Template Audit</div>
+                <button style={S.btn(blogTmplAuditResult?undefined:'primary')} onClick={async()=>{setBlogTmplAuditLoading(true);setBlogTmplAuditResult(null);try{const r=await apiFetch(`${API}/shopify/blog-template-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setBlogTmplAuditResult(d);}catch(e){setBlogTmplAuditResult({ok:false,error:e.message});}finally{setBlogTmplAuditLoading(false);}}} disabled={blogTmplAuditLoading}>{blogTmplAuditLoading?<><span style={S.spinner}/> Auditing...</>:'Audit'}</button>
+              </div>
+              {blogTmplAuditResult&&!blogTmplAuditResult.ok&&<div style={S.err}>{blogTmplAuditResult.error}</div>}
+              {blogTmplAuditResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(blogTmplAuditResult,null,2)}</pre></div>}
+            </div>
+            {/* === Collection SEO === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🗂️ Collection SEO</div>
+                <button style={S.btn(collSeoResult?undefined:'primary')} onClick={async()=>{setCollSeoLoading(true);setCollSeoResult(null);try{const r=await apiFetch(`${API}/shopify/collection-seo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({handle:collSeoHandle,shop:shopDomain})});const d=await r.json();setCollSeoResult(d);}catch(e){setCollSeoResult({ok:false,error:e.message});}finally{setCollSeoLoading(false);}}} disabled={collSeoLoading}>{collSeoLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Collection handle..." value={collSeoHandle} onChange={e=>setCollSeoHandle(e.target.value)}/>
+              {collSeoResult&&!collSeoResult.ok&&<div style={S.err}>{collSeoResult.error}</div>}
+              {collSeoResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(collSeoResult,null,2)}</pre></div>}
+            </div>
+            {/* === Collection SEO Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔎 Collection SEO Audit</div>
+                <button style={S.btn(collSeoAuditResult?undefined:'primary')} onClick={async()=>{setCollSeoAuditLoading(true);setCollSeoAuditResult(null);try{const r=await apiFetch(`${API}/shopify/collection-seo-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setCollSeoAuditResult(d);}catch(e){setCollSeoAuditResult({ok:false,error:e.message});}finally{setCollSeoAuditLoading(false);}}} disabled={collSeoAuditLoading}>{collSeoAuditLoading?<><span style={S.spinner}/> Auditing...</>:'Audit'}</button>
+              </div>
+              {collSeoAuditResult&&!collSeoAuditResult.ok&&<div style={S.err}>{collSeoAuditResult.error}</div>}
+              {collSeoAuditResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(collSeoAuditResult,null,2)}</pre></div>}
+            </div>
+            {/* === Hreflang Generator === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🌍 Hreflang Generator</div>
+                <button style={S.btn(hreflangGenResult?undefined:'primary')} onClick={async()=>{setHreflangGenLoading(true);setHreflangGenResult(null);try{const r=await apiFetch(`${API}/shopify/hreflang-generator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({locales:hreflangGenLocales,shop:shopDomain})});const d=await r.json();setHreflangGenResult(d);}catch(e){setHreflangGenResult({ok:false,error:e.message});}finally{setHreflangGenLoading(false);}}} disabled={hreflangGenLoading}>{hreflangGenLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Locales (e.g. en-US,fr-FR)..." value={hreflangGenLocales} onChange={e=>setHreflangGenLocales(e.target.value)}/>
+              {hreflangGenResult&&!hreflangGenResult.ok&&<div style={S.err}>{hreflangGenResult.error}</div>}
+              {hreflangGenResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(hreflangGenResult,null,2)}</pre></div>}
+            </div>
+            {/* === Metafield SEO === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🏷️ Metafield SEO</div>
+                <button style={S.btn(metafieldSeoResult?undefined:'primary')} onClick={async()=>{setMetafieldSeoLoading(true);setMetafieldSeoResult(null);try{const r=await apiFetch(`${API}/shopify/metafield-seo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setMetafieldSeoResult(d);}catch(e){setMetafieldSeoResult({ok:false,error:e.message});}finally{setMetafieldSeoLoading(false);}}} disabled={metafieldSeoLoading}>{metafieldSeoLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {metafieldSeoResult&&!metafieldSeoResult.ok&&<div style={S.err}>{metafieldSeoResult.error}</div>}
+              {metafieldSeoResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(metafieldSeoResult,null,2)}</pre></div>}
+            </div>
+            {/* === Product Blog Links === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔗 Product Blog Links</div>
+                <button style={S.btn(prodBlogLinksResult?undefined:'primary')} onClick={async()=>{setProdBlogLinksLoading(true);setProdBlogLinksResult(null);try{const r=await apiFetch(`${API}/shopify/product-blog-links`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setProdBlogLinksResult(d);}catch(e){setProdBlogLinksResult({ok:false,error:e.message});}finally{setProdBlogLinksLoading(false);}}} disabled={prodBlogLinksLoading}>{prodBlogLinksLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {prodBlogLinksResult&&!prodBlogLinksResult.ok&&<div style={S.err}>{prodBlogLinksResult.error}</div>}
+              {prodBlogLinksResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(prodBlogLinksResult,null,2)}</pre></div>}
+            </div>
+            {/* === Product Schema Bulk === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📦 Product Schema Bulk</div>
+                <button style={S.btn(prodSchemaBulkResult?undefined:'primary')} onClick={async()=>{setProdSchemaBulkLoading(true);setProdSchemaBulkResult(null);try{const r=await apiFetch(`${API}/shopify/product-schema-bulk`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setProdSchemaBulkResult(d);}catch(e){setProdSchemaBulkResult({ok:false,error:e.message});}finally{setProdSchemaBulkLoading(false);}}} disabled={prodSchemaBulkLoading}>{prodSchemaBulkLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              {prodSchemaBulkResult&&!prodSchemaBulkResult.ok&&<div style={S.err}>{prodSchemaBulkResult.error}</div>}
+              {prodSchemaBulkResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(prodSchemaBulkResult,null,2)}</pre></div>}
+            </div>
+            {/* === Sitemap Enhancer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🗺️ Sitemap Enhancer</div>
+                <button style={S.btn(sitemapEnhResult?undefined:'primary')} onClick={async()=>{setSitemapEnhLoading(true);setSitemapEnhResult(null);try{const r=await apiFetch(`${API}/shopify/sitemap-enhancer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setSitemapEnhResult(d);}catch(e){setSitemapEnhResult({ok:false,error:e.message});}finally{setSitemapEnhLoading(false);}}} disabled={sitemapEnhLoading}>{sitemapEnhLoading?<><span style={S.spinner}/> Enhancing...</>:'Enhance'}</button>
+              </div>
+              {sitemapEnhResult&&!sitemapEnhResult.ok&&<div style={S.err}>{sitemapEnhResult.error}</div>}
+              {sitemapEnhResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(sitemapEnhResult,null,2)}</pre></div>}
+            </div>
          </>
         )}
 
@@ -8555,6 +9099,83 @@ export default function BlogSEO() {
                 )}
               </div>
             )}
+            {/* === Cannibalization Live === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⚔️ Cannibalization Live</div>
+                <button style={S.btn(cannibLiveResult?undefined:'primary')} onClick={async()=>{setCannibLiveLoading(true);setCannibLiveResult(null);try{const r=await apiFetch(`${API}/rank/cannibalization-live`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setCannibLiveResult(d);}catch(e){setCannibLiveResult({ok:false,error:e.message});}finally{setCannibLiveLoading(false);}}} disabled={cannibLiveLoading}>{cannibLiveLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {cannibLiveResult&&!cannibLiveResult.ok&&<div style={S.err}>{cannibLiveResult.error}</div>}
+              {cannibLiveResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(cannibLiveResult,null,2)}</pre></div>}
+            </div>
+            {/* === Competitor Compare === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🆚 Competitor Compare</div>
+                <button style={S.btn(compCompareResult?undefined:'primary')} onClick={async()=>{setCompCompareLoading(true);setCompCompareResult(null);try{const r=await apiFetch(`${API}/rank/competitor-compare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:compCompareUrl,shop:shopDomain})});const d=await r.json();setCompCompareResult(d);}catch(e){setCompCompareResult({ok:false,error:e.message});}finally{setCompCompareLoading(false);}}} disabled={compCompareLoading}>{compCompareLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Competitor URL..." value={compCompareUrl} onChange={e=>setCompCompareUrl(e.target.value)}/>
+              {compCompareResult&&!compCompareResult.ok&&<div style={S.err}>{compCompareResult.error}</div>}
+              {compCompareResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(compCompareResult,null,2)}</pre></div>}
+            </div>
+            {/* === Device Split === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📱 Device Split</div>
+                <button style={S.btn(deviceSplitResult?undefined:'primary')} onClick={async()=>{setDeviceSplitLoading(true);setDeviceSplitResult(null);try{const r=await apiFetch(`${API}/rank/device-split`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setDeviceSplitResult(d);}catch(e){setDeviceSplitResult({ok:false,error:e.message});}finally{setDeviceSplitLoading(false);}}} disabled={deviceSplitLoading}>{deviceSplitLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {deviceSplitResult&&!deviceSplitResult.ok&&<div style={S.err}>{deviceSplitResult.error}</div>}
+              {deviceSplitResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(deviceSplitResult,null,2)}</pre></div>}
+            </div>
+            {/* === Keyword Velocity === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⚡ Keyword Velocity</div>
+                <button style={S.btn(kwVelocityResult?undefined:'primary')} onClick={async()=>{setKwVelocityLoading(true);setKwVelocityResult(null);try{const r=await apiFetch(`${API}/rank/keyword-velocity`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setKwVelocityResult(d);}catch(e){setKwVelocityResult({ok:false,error:e.message});}finally{setKwVelocityLoading(false);}}} disabled={kwVelocityLoading}>{kwVelocityLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {kwVelocityResult&&!kwVelocityResult.ok&&<div style={S.err}>{kwVelocityResult.error}</div>}
+              {kwVelocityResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(kwVelocityResult,null,2)}</pre></div>}
+            </div>
+            {/* === Position Alert === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔔 Position Alert</div>
+                <button style={S.btn(posAlertResult?undefined:'primary')} onClick={async()=>{setPosAlertLoading(true);setPosAlertResult(null);try{const r=await apiFetch(`${API}/rank/position-alert`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:posAlertKw,threshold:posAlertThreshold,shop:shopDomain})});const d=await r.json();setPosAlertResult(d);}catch(e){setPosAlertResult({ok:false,error:e.message});}finally{setPosAlertLoading(false);}}} disabled={posAlertLoading}>{posAlertLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword..." value={posAlertKw} onChange={e=>setPosAlertKw(e.target.value)}/>
+              <input style={{...S.input,marginTop:6}} placeholder="Position threshold (e.g. 10)..." value={posAlertThreshold} onChange={e=>setPosAlertThreshold(e.target.value)}/>
+              {posAlertResult&&!posAlertResult.ok&&<div style={S.err}>{posAlertResult.error}</div>}
+              {posAlertResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(posAlertResult,null,2)}</pre></div>}
+            </div>
+            {/* === YoY Comparison === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📅 Year-on-Year Comparison</div>
+                <button style={S.btn(yoyResult?undefined:'primary')} onClick={async()=>{setYoyLoading(true);setYoyResult(null);try{const r=await apiFetch(`${API}/rank/yoy-comparison`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setYoyResult(d);}catch(e){setYoyResult({ok:false,error:e.message});}finally{setYoyLoading(false);}}} disabled={yoyLoading}>{yoyLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {yoyResult&&!yoyResult.ok&&<div style={S.err}>{yoyResult.error}</div>}
+              {yoyResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(yoyResult,null,2)}</pre></div>}
+            </div>
+            {/* === Add Alert === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>➕ Add Monitoring Alert</div>
+                <button style={S.btn(addAlertResult?undefined:'primary')} onClick={async()=>{setAddAlertLoading(true);setAddAlertResult(null);try{const r=await apiFetch(`${API}/monitoring/add-alert`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:addAlertKw,threshold:addAlertThreshold,shop:shopDomain})});const d=await r.json();setAddAlertResult(d);}catch(e){setAddAlertResult({ok:false,error:e.message});}finally{setAddAlertLoading(false);}}} disabled={addAlertLoading}>{addAlertLoading?<><span style={S.spinner}/> Saving...</>:'Add Alert'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword..." value={addAlertKw} onChange={e=>setAddAlertKw(e.target.value)}/>
+              <input style={{...S.input,marginTop:6}} placeholder="Threshold position..." value={addAlertThreshold} onChange={e=>setAddAlertThreshold(e.target.value)}/>
+              {addAlertResult&&!addAlertResult.ok&&<div style={S.err}>{addAlertResult.error}</div>}
+              {addAlertResult?.ok&&<div style={{color:'#4ade80',fontSize:13,marginTop:8}}>✓ Alert added</div>}
+            </div>
+            {/* === View Alerts === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📋 View Monitoring Alerts</div>
+                <button style={S.btn(alertsResult?undefined:'primary')} onClick={async()=>{setAlertsLoading(true);setAlertsResult(null);try{const r=await apiFetch(`${API}/monitoring/alerts`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setAlertsResult(d);}catch(e){setAlertsResult({ok:false,error:e.message});}finally{setAlertsLoading(false);}}} disabled={alertsLoading}>{alertsLoading?<><span style={S.spinner}/> Loading...</>:'Load Alerts'}</button>
+              </div>
+              {alertsResult&&!alertsResult.ok&&<div style={S.err}>{alertsResult.error}</div>}
+              {alertsResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(alertsResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
         {/* SITE CRAWL TAB */}
@@ -8656,6 +9277,22 @@ export default function BlogSEO() {
                 {crawlSnapshots.map((s, i) => <div key={i} style={S.issueRow}><span style={{ fontSize:12 }}>{new Date(s.createdAt).toLocaleDateString()} � {s.totalPages} pages</span></div>)}
               </div>
             )}
+            {/* === Duplicate Detector === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔁 Duplicate Detector</div>
+                <button style={S.btn(crawlDupResult?undefined:'primary')} onClick={async()=>{setCrawlDupLoading(true);setCrawlDupResult(null);try{const r=await apiFetch(`${API}/crawl/duplicate-detector`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setCrawlDupResult(d);}catch(e){setCrawlDupResult({ok:false,error:e.message});}finally{setCrawlDupLoading(false);}}} disabled={crawlDupLoading}>{crawlDupLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {crawlDupResult&&!crawlDupResult.ok&&<div style={S.err}>{crawlDupResult.error}</div>}
+              {crawlDupResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(crawlDupResult,null,2)}</pre></div>}
+            </div>
+            {/* === Export CSV === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⬇️ Export Crawl CSV</div>
+                <button style={S.btn('primary')} onClick={async()=>{setCrawlExportLoading(true);try{const r=await apiFetch(`${API}/crawl/export-csv`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='crawl-export.csv';a.click();}catch(e){alert(e.message);}finally{setCrawlExportLoading(false);}}} disabled={crawlExportLoading}>{crawlExportLoading?<><span style={S.spinner}/> Exporting...</>:'Export CSV'}</button>
+              </div>
+            </div>
           </>
         )}
 
@@ -8765,6 +9402,72 @@ export default function BlogSEO() {
                 )}
               </div>
             )}
+            {/* === Brand Sentiment AI === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🧠 Brand Sentiment AI</div>
+                <button style={S.btn(brandSentimentResult?undefined:'primary')} onClick={async()=>{setBrandSentimentLoading(true);setBrandSentimentResult(null);try{const r=await apiFetch(`${API}/geo/brand-sentiment-ai`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:brandSentimentQuery,shop:shopDomain})});const d=await r.json();setBrandSentimentResult(d);}catch(e){setBrandSentimentResult({ok:false,error:e.message});}finally{setBrandSentimentLoading(false);}}} disabled={brandSentimentLoading}>{brandSentimentLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Brand or query..." value={brandSentimentQuery} onChange={e=>setBrandSentimentQuery(e.target.value)}/>
+              {brandSentimentResult&&!brandSentimentResult.ok&&<div style={S.err}>{brandSentimentResult.error}</div>}
+              {brandSentimentResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(brandSentimentResult,null,2)}</pre></div>}
+            </div>
+            {/* === Citation Gap Analysis === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔍 Citation Gap Analysis</div>
+                <button style={S.btn(citationGapResult?undefined:'primary')} onClick={async()=>{setCitationGapLoading(true);setCitationGapResult(null);try{const r=await apiFetch(`${API}/geo/citation-gap-analysis`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setCitationGapResult(d);}catch(e){setCitationGapResult({ok:false,error:e.message});}finally{setCitationGapLoading(false);}}} disabled={citationGapLoading}>{citationGapLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {citationGapResult&&!citationGapResult.ok&&<div style={S.err}>{citationGapResult.error}</div>}
+              {citationGapResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(citationGapResult,null,2)}</pre></div>}
+            </div>
+            {/* === Content for Citation === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>✍️ Content for Citation</div>
+                <button style={S.btn(citationContentResult?undefined:'primary')} onClick={async()=>{setCitationContentLoading(true);setCitationContentResult(null);try{const r=await apiFetch(`${API}/geo/content-for-citation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:citationContentTopic,shop:shopDomain})});const d=await r.json();setCitationContentResult(d);}catch(e){setCitationContentResult({ok:false,error:e.message});}finally{setCitationContentLoading(false);}}} disabled={citationContentLoading}>{citationContentLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={citationContentTopic} onChange={e=>setCitationContentTopic(e.target.value)}/>
+              {citationContentResult&&!citationContentResult.ok&&<div style={S.err}>{citationContentResult.error}</div>}
+              {citationContentResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(citationContentResult,null,2)}</pre></div>}
+            </div>
+            {/* === FAQ for LLM === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>❓ FAQ for LLM</div>
+                <button style={S.btn(faqLlmResult?undefined:'primary')} onClick={async()=>{setFaqLlmLoading(true);setFaqLlmResult(null);try{const r=await apiFetch(`${API}/geo/faq-for-llm`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:faqLlmUrl,shop:shopDomain})});const d=await r.json();setFaqLlmResult(d);}catch(e){setFaqLlmResult({ok:false,error:e.message});}finally{setFaqLlmLoading(false);}}} disabled={faqLlmLoading}>{faqLlmLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Page URL..." value={faqLlmUrl} onChange={e=>setFaqLlmUrl(e.target.value)}/>
+              {faqLlmResult&&!faqLlmResult.ok&&<div style={S.err}>{faqLlmResult.error}</div>}
+              {faqLlmResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(faqLlmResult,null,2)}</pre></div>}
+            </div>
+            {/* === LLM Visibility Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>👁️ LLM Visibility Audit</div>
+                <button style={S.btn(llmVisAuditResult?undefined:'primary')} onClick={async()=>{setLlmVisAuditLoading(true);setLlmVisAuditResult(null);try{const r=await apiFetch(`${API}/geo/llm-visibility-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setLlmVisAuditResult(d);}catch(e){setLlmVisAuditResult({ok:false,error:e.message});}finally{setLlmVisAuditLoading(false);}}} disabled={llmVisAuditLoading}>{llmVisAuditLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {llmVisAuditResult&&!llmVisAuditResult.ok&&<div style={S.err}>{llmVisAuditResult.error}</div>}
+              {llmVisAuditResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(llmVisAuditResult,null,2)}</pre></div>}
+            </div>
+            {/* === Mention Gap === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📡 Mention Gap</div>
+                <button style={S.btn(mentionGapResult?undefined:'primary')} onClick={async()=>{setMentionGapLoading(true);setMentionGapResult(null);try{const r=await apiFetch(`${API}/geo/mention-gap`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setMentionGapResult(d);}catch(e){setMentionGapResult({ok:false,error:e.message});}finally{setMentionGapLoading(false);}}} disabled={mentionGapLoading}>{mentionGapLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {mentionGapResult&&!mentionGapResult.ok&&<div style={S.err}>{mentionGapResult.error}</div>}
+              {mentionGapResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(mentionGapResult,null,2)}</pre></div>}
+            </div>
+            {/* === No-Snippet Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🚫 No-Snippet Audit</div>
+                <button style={S.btn(nosnippetResult?undefined:'primary')} onClick={async()=>{setNosnippetLoading(true);setNosnippetResult(null);try{const r=await apiFetch(`${API}/geo/nosnippet-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setNosnippetResult(d);}catch(e){setNosnippetResult({ok:false,error:e.message});}finally{setNosnippetLoading(false);}}} disabled={nosnippetLoading}>{nosnippetLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {nosnippetResult&&!nosnippetResult.ok&&<div style={S.err}>{nosnippetResult.error}</div>}
+              {nosnippetResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(nosnippetResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -8865,6 +9568,55 @@ export default function BlogSEO() {
                 ))}
               </div>
             )}
+            {/* === Competitor Velocity === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📈 Competitor Velocity</div>
+                <button style={S.btn(compVelocityResult?undefined:'primary')} onClick={async()=>{setCompVelocityLoading(true);setCompVelocityResult(null);try{const r=await apiFetch(`${API}/trends/competitor-velocity`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({competitor:compVelocityCompetitor,shop:shopDomain})});const d=await r.json();setCompVelocityResult(d);}catch(e){setCompVelocityResult({ok:false,error:e.message});}finally{setCompVelocityLoading(false);}}} disabled={compVelocityLoading}>{compVelocityLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Competitor domain..." value={compVelocityCompetitor} onChange={e=>setCompVelocityCompetitor(e.target.value)}/>
+              {compVelocityResult&&!compVelocityResult.ok&&<div style={S.err}>{compVelocityResult.error}</div>}
+              {compVelocityResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(compVelocityResult,null,2)}</pre></div>}
+            </div>
+            {/* === First Mover Brief === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🚀 First Mover Brief</div>
+                <button style={S.btn(firstMoverResult?undefined:'primary')} onClick={async()=>{setFirstMoverLoading(true);setFirstMoverResult(null);try{const r=await apiFetch(`${API}/trends/first-mover-brief`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:firstMoverTopic,shop:shopDomain})});const d=await r.json();setFirstMoverResult(d);}catch(e){setFirstMoverResult({ok:false,error:e.message});}finally{setFirstMoverLoading(false);}}} disabled={firstMoverLoading}>{firstMoverLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={firstMoverTopic} onChange={e=>setFirstMoverTopic(e.target.value)}/>
+              {firstMoverResult&&!firstMoverResult.ok&&<div style={S.err}>{firstMoverResult.error}</div>}
+              {firstMoverResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(firstMoverResult,null,2)}</pre></div>}
+            </div>
+            {/* === Investment Signal Tracker === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>💹 Investment Signal Tracker</div>
+                <button style={S.btn(investSignalResult?undefined:'primary')} onClick={async()=>{setInvestSignalLoading(true);setInvestSignalResult(null);try{const r=await apiFetch(`${API}/trends/investment-signal-tracker`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setInvestSignalResult(d);}catch(e){setInvestSignalResult({ok:false,error:e.message});}finally{setInvestSignalLoading(false);}}} disabled={investSignalLoading}>{investSignalLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              {investSignalResult&&!investSignalResult.ok&&<div style={S.err}>{investSignalResult.error}</div>}
+              {investSignalResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(investSignalResult,null,2)}</pre></div>}
+            </div>
+            {/* === Newsjack Ideas === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📰 Newsjack Ideas</div>
+                <button style={S.btn(newsjackResult?undefined:'primary')} onClick={async()=>{setNewsjackLoading(true);setNewsjackResult(null);try{const r=await apiFetch(`${API}/trends/newsjack-ideas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:newsjackTopic,shop:shopDomain})});const d=await r.json();setNewsjackResult(d);}catch(e){setNewsjackResult({ok:false,error:e.message});}finally{setNewsjackLoading(false);}}} disabled={newsjackLoading}>{newsjackLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic or industry..." value={newsjackTopic} onChange={e=>setNewsjackTopic(e.target.value)}/>
+              {newsjackResult&&!newsjackResult.ok&&<div style={S.err}>{newsjackResult.error}</div>}
+              {newsjackResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(newsjackResult,null,2)}</pre></div>}
+            </div>
+            {/* === Trend Report === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📊 Trend Report</div>
+                <button style={S.btn(trendRptResult?undefined:'primary')} onClick={async()=>{setTrendRptLoading(true);setTrendRptResult(null);try{const r=await apiFetch(`${API}/trends/trend-report`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({niche:trendRptNiche,shop:shopDomain})});const d=await r.json();setTrendRptResult(d);}catch(e){setTrendRptResult({ok:false,error:e.message});}finally{setTrendRptLoading(false);}}} disabled={trendRptLoading}>{trendRptLoading?<><span style={S.spinner}/> Running...</>:'Run'}</button>
+              </div>
+              <input style={S.input} placeholder="Niche..." value={trendRptNiche} onChange={e=>setTrendRptNiche(e.target.value)}/>
+              {trendRptResult&&!trendRptResult.ok&&<div style={S.err}>{trendRptResult.error}</div>}
+              {trendRptResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(trendRptResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
         {/* ================================================================
