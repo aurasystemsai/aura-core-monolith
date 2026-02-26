@@ -45,7 +45,7 @@ const S = {
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
 };
 
-const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "Shopify SEO", "History"];
+const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "Shopify SEO", "AI Growth", "History"];
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
@@ -136,6 +136,12 @@ const SECTIONS = [
     color: "#6d28d9", level: "advanced",
     tabs: ["Voice & AI Search"], tabLabels: { "Voice & AI Search": "Voice" },
   },
+  {
+    id: "AIGrowth", icon: "🚀", title: "AI Growth Tools",
+    desc: "Content calendar, pillar pages, programmatic SEO, ROI estimator, competitor audits and semantic clusters.",
+    color: "#0f766e", level: "advanced",
+    tabs: ["AI Growth"], tabLabels: { "AI Growth": "AI Growth" },
+  },
 ];
 
 export default function BlogSEO() {
@@ -199,6 +205,21 @@ export default function BlogSEO() {
   const [shopifyMetafieldResult, setShopifyMetafieldResult] = useState(null);
   const [shopifyMetafieldLoading, setShopifyMetafieldLoading] = useState(false);
   const [shopifyMetafieldErr, setShopifyMetafieldErr] = useState("");
+
+  /* ── AI Growth state ── */
+  const [calNiche, setCalNiche] = useState(""); const [calAudience, setCalAudience] = useState(""); const [calWeeks, setCalWeeks] = useState(4); const [calPpw, setCalPpw] = useState(3); const [calResult, setCalResult] = useState(null); const [calLoading, setCalLoading] = useState(false); const [calErr, setCalErr] = useState("");
+  const [pillarTopic, setPillarTopic] = useState(""); const [pillarAudience, setPillarAudience] = useState(""); const [pillarResult, setPillarResult] = useState(null); const [pillarLoading, setPillarLoading] = useState(false); const [pillarErr, setPillarErr] = useState("");
+  const [progCategory, setProgCategory] = useState(""); const [progVars, setProgVars] = useState("city, product, year"); const [progResult, setProgResult] = useState(null); const [progLoading, setProgLoading] = useState(false); const [progErr, setProgErr] = useState("");
+  const [roiKw, setRoiKw] = useState(""); const [roiVol, setRoiVol] = useState(""); const [roiPos, setRoiPos] = useState(3); const [roiCvr, setRoiCvr] = useState(2); const [roiAov, setRoiAov] = useState(50); const [roiResult, setRoiResult] = useState(null); const [roiLoading, setRoiLoading] = useState(false); const [roiErr, setRoiErr] = useState("");
+  const [sgeContent, setSgeContent] = useState(""); const [sgeKw, setSgeKw] = useState(""); const [sgeEngine, setSgeEngine] = useState("google-aio"); const [sgeResult, setSgeResult] = useState(null); const [sgeLoading, setSgeLoading] = useState(false); const [sgeErr, setSgeErr] = useState("");
+  const [minerNiche, setMinerNiche] = useState(""); const [minerAudience, setMinerAudience] = useState(""); const [minerResult, setMinerResult] = useState(null); const [minerLoading, setMinerLoading] = useState(false); const [minerErr, setMinerErr] = useState("");
+  const [socialTitle, setSocialTitle] = useState(""); const [socialDesc, setSocialDesc] = useState(""); const [socialContent, setSocialContent] = useState(""); const [socialResult, setSocialResult] = useState(null); const [socialLoading, setSocialLoading] = useState(false); const [socialErr, setSocialErr] = useState("");
+  const [compUrl, setCompUrl] = useState(""); const [compNiche, setCompNiche] = useState(""); const [compResult, setCompResult] = useState(null); const [compLoading, setCompLoading] = useState(false); const [compErr, setCompErr] = useState("");
+  const [reclaimBrand, setReclaimBrand] = useState(""); const [reclaimSite, setReclaimSite] = useState(""); const [reclaimNiche, setReclaimNiche] = useState(""); const [reclaimResult, setReclaimResult] = useState(null); const [reclaimLoading, setReclaimLoading] = useState(false); const [reclaimErr, setReclaimErr] = useState("");
+  const [gnUrl, setGnUrl] = useState(""); const [gnResult, setGnResult] = useState(null); const [gnLoading, setGnLoading] = useState(false); const [gnErr, setGnErr] = useState("");
+  const [predTitle, setPredTitle] = useState(""); const [predKw, setPredKw] = useState(""); const [predWords, setPredWords] = useState(1500); const [predType, setPredType] = useState("guide"); const [predResult, setPredResult] = useState(null); const [predLoading, setPredLoading] = useState(false); const [predErr, setPredErr] = useState("");
+  const [semTopic, setSemTopic] = useState(""); const [semIndustry, setSemIndustry] = useState(""); const [semResult, setSemResult] = useState(null); const [semLoading, setSemLoading] = useState(false); const [semErr, setSemErr] = useState("");
+  const [growthSub, setGrowthSub] = useState("calendar");
   const [schemaGenLoading, setSchemaGenLoading] = useState(false);
   const [generatedSchema, setGeneratedSchema] = useState(null);
   const [schemaAuthorName, setSchemaAuthorName] = useState("");
@@ -7152,6 +7173,681 @@ export default function BlogSEO() {
           </>
         )}
 
+
+        {/* ================================================================
+            AI GROWTH TAB
+            ================================================================ */}
+        {tab === "AI Growth" && (
+          <>
+            <div style={{ fontSize: 13, color: "#71717a", marginTop: 16, marginBottom: 16 }}>
+              Next-generation AI growth tools — content calendars, pillar pages, programmatic SEO, ROI estimation, competitor audits, AI Overview optimisation, semantic cluster mapping, and more.
+            </div>
+
+            {/* Sub-tab nav */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+              {[
+                { id: "calendar", label: "📅 Content Calendar" },
+                { id: "pillar", label: "🏛️ Pillar Page" },
+                { id: "programmatic", label: "⚡ Programmatic SEO" },
+                { id: "roi", label: "💰 Content ROI" },
+                { id: "sge", label: "🤖 SGE / AI Overview" },
+                { id: "miner", label: "🔍 Topic Miner" },
+                { id: "social", label: "📣 Social SEO Score" },
+                { id: "competitor", label: "🕵️ Competitor Audit" },
+                { id: "reclaim", label: "🔗 Link Reclamation" },
+                { id: "gnews", label: "📰 Google News" },
+                { id: "predictor", label: "🎯 Performance Predictor" },
+                { id: "semantic", label: "🧠 Semantic Clusters" },
+              ].map(s => (
+                <button key={s.id} style={{ ...S.btn(growthSub === s.id ? "primary" : undefined), fontSize: 12, padding: "6px 14px" }} onClick={() => setGrowthSub(s.id)}>{s.label}</button>
+              ))}
+            </div>
+
+            {/* 1. Content Calendar */}
+            {growthSub === "calendar" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>📅 Content Calendar Generator <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 3 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Build a 30/90-day editorial calendar with themes, post types and strategic priorities for your niche.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 220px" }} placeholder="Niche (e.g. sustainable homewares) *" value={calNiche} onChange={e => setCalNiche(e.target.value)} />
+                  <input style={{ ...S.input, flex: "2 1 200px" }} placeholder="Target audience" value={calAudience} onChange={e => setCalAudience(e.target.value)} />
+                  <select style={{ ...S.input, flex: "1 1 120px" }} value={calWeeks} onChange={e => setCalWeeks(parseInt(e.target.value))}>
+                    <option value={4}>4 weeks</option><option value={8}>8 weeks</option><option value={12}>12 weeks</option><option value={13}>13 weeks (90 days)</option>
+                  </select>
+                  <select style={{ ...S.input, flex: "1 1 120px" }} value={calPpw} onChange={e => setCalPpw(parseInt(e.target.value))}>
+                    <option value={2}>2 posts/week</option><option value={3}>3 posts/week</option><option value={4}>4 posts/week</option><option value={5}>5 posts/week</option>
+                  </select>
+                </div>
+                <button style={S.btn("primary")} disabled={calLoading || !calNiche.trim()} onClick={async () => {
+                  setCalLoading(true); setCalErr(""); setCalResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/content-calendar`, { method: "POST", body: JSON.stringify({ niche: calNiche, audience: calAudience, duration: calWeeks * 7, postsPerWeek: calPpw }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setCalResult(r);
+                  } catch (e) { setCalErr(e.message); } finally { setCalLoading(false); }
+                }}>
+                  {calLoading ? <><span style={S.spinner} /> Generating…</> : "🤖 Build Calendar (3 credits)"}
+                </button>
+                {calErr && <div style={S.err}>{calErr}</div>}
+                {calResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ background: "#0f2027", border: "1px solid #0e7490", borderRadius: 8, padding: "10px 16px", marginBottom: 14, color: "#67e8f9", fontSize: 13 }}>{calResult.summary}</div>
+                    {calResult.weeks?.map((w, wi) => (
+                      <div key={wi} style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#a1a1aa", marginBottom: 6 }}>Week {w.week} — <span style={{ color: "#e4e4e7" }}>{w.theme}</span></div>
+                        {w.posts?.map((p, pi) => (
+                          <div key={pi} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 6, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
+                            <div style={{ flex: 1, minWidth: 200 }}>
+                              <div style={{ fontWeight: 600, color: "#fafafa", fontSize: 13 }}>{p.title}</div>
+                              <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>{p.day} · {p.targetKeyword} · ~{p.estimatedWordCount} words</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                              <span style={{ ...S.pill(p.priority === "high" ? "high" : p.priority === "medium" ? "medium" : "low"), fontSize: 10 }}>{p.type}</span>
+                              <span style={{ ...S.pill(p.priority === "high" ? "high" : p.priority === "medium" ? "medium" : "low"), fontSize: 10 }}>{p.priority}</span>
+                              <span style={{ ...S.pill("low"), fontSize: 10 }}>{p.searchIntent}</span>
+                            </div>
+                            {p.notes && <div style={{ width: "100%", fontSize: 11, color: "#71717a" }}>{p.notes}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                    {calResult.quickWins && <><div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", textTransform: "uppercase", marginBottom: 6 }}>⚡ Quick Wins</div>{calResult.quickWins.map((q, i) => <div key={i} style={{ color: "#d4d4d8", fontSize: 13, padding: "4px 0" }}>• {q}</div>)}</>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 2. Pillar Page Builder */}
+            {growthSub === "pillar" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🏛️ Pillar Page & Cluster Builder <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 3 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Design a complete content hub — pillar page structure plus all supporting cluster articles to dominate topical authority.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 240px" }} placeholder="Main topic (e.g. coffee brewing methods) *" value={pillarTopic} onChange={e => setPillarTopic(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 180px" }} placeholder="Target audience" value={pillarAudience} onChange={e => setPillarAudience(e.target.value)} />
+                </div>
+                <button style={S.btn("primary")} disabled={pillarLoading || !pillarTopic.trim()} onClick={async () => {
+                  setPillarLoading(true); setPillarErr(""); setPillarResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/pillar-page`, { method: "POST", body: JSON.stringify({ topic: pillarTopic, audience: pillarAudience }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setPillarResult(r);
+                  } catch (e) { setPillarErr(e.message); } finally { setPillarLoading(false); }
+                }}>
+                  {pillarLoading ? <><span style={S.spinner} /> Building…</> : "🤖 Build Pillar Hub (3 credits)"}
+                </button>
+                {pillarErr && <div style={S.err}>{pillarErr}</div>}
+                {pillarResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ background: "#1c1917", border: "1px solid #a16207", borderRadius: 10, padding: 16, marginBottom: 14 }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "#fbbf24" }}>{pillarResult.pillarTitle}</div>
+                      <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>/{pillarResult.pillarSlug} · ~{pillarResult.pillarWordCount} words · Coverage score: <span style={{ color: "#22c55e" }}>{pillarResult.topicalCoverageScore}%</span></div>
+                      <div style={{ marginTop: 10 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#71717a", textTransform: "uppercase", marginBottom: 4 }}>Outline</div>
+                        {pillarResult.pillarOutline?.map((h, i) => <div key={i} style={{ color: "#d4d4d8", fontSize: 13, padding: "2px 0" }}>└ {h}</div>)}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#a1a1aa", marginBottom: 8 }}>Cluster Articles ({pillarResult.clusterTopics?.length})</div>
+                    {pillarResult.clusterTopics?.map((c, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                          <div style={{ fontWeight: 600, color: "#fafafa", fontSize: 13 }}>{c.title}</div>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <span style={S.pill(c.difficulty === "hard" ? "high" : c.difficulty === "medium" ? "medium" : "low")}>{c.difficulty}</span>
+                            <span style={S.pill("low")}>{c.searchVolume} vol</span>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>{c.targetKeyword} · /{c.slug} · ~{c.wordCount} words</div>
+                        <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>{c.angle}</div>
+                        <div style={{ fontSize: 11, color: "#818cf8", marginTop: 3 }}>Link anchor: "{c.linkAnchor}"</div>
+                      </div>
+                    ))}
+                    {pillarResult.gaps?.length > 0 && <><div style={{ fontSize: 12, fontWeight: 700, color: "#f87171", textTransform: "uppercase", marginTop: 12, marginBottom: 6 }}>Coverage Gaps</div>{pillarResult.gaps.map((g, i) => <div key={i} style={{ color: "#d4d4d8", fontSize: 13, padding: "3px 0" }}>• {g}</div>)}</>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 3. Programmatic SEO */}
+            {growthSub === "programmatic" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>⚡ Programmatic SEO Templates <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 3 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Create scalable content templates for data-driven pages — city+product combinations, comparison pages, directory listings and more.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 240px" }} placeholder="Category (e.g. best restaurants in {city}) *" value={progCategory} onChange={e => setProgCategory(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 200px" }} placeholder="Data variables (e.g. city, product, year)" value={progVars} onChange={e => setProgVars(e.target.value)} />
+                </div>
+                <button style={S.btn("primary")} disabled={progLoading || !progCategory.trim()} onClick={async () => {
+                  setProgLoading(true); setProgErr(""); setProgResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/programmatic-seo`, { method: "POST", body: JSON.stringify({ category: progCategory, dataVariables: progVars.split(",").map(v => v.trim()).filter(Boolean) }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setProgResult(r);
+                  } catch (e) { setProgErr(e.message); } finally { setProgLoading(false); }
+                }}>
+                  {progLoading ? <><span style={S.spinner} /> Building…</> : "🤖 Generate Templates (3 credits)"}
+                </button>
+                {progErr && <div style={S.err}>{progErr}</div>}
+                {progResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 14, marginBottom: 12 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24", marginBottom: 6 }}>Title Formula</div>
+                      <code style={{ color: "#86efac", fontFamily: "'Fira Code',monospace", fontSize: 13 }}>{progResult.titleFormula}</code>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24", marginTop: 10, marginBottom: 4 }}>Meta Description Formula</div>
+                      <code style={{ color: "#86efac", fontFamily: "'Fira Code',monospace", fontSize: 12 }}>{progResult.metaDescFormula}</code>
+                    </div>
+                    {progResult.sections?.map((s, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12, marginBottom: 8 }}>
+                        <div style={{ fontWeight: 600, color: "#e4e4e7", fontSize: 13, marginBottom: 4 }}>{s.heading}</div>
+                        <div style={{ color: "#a1a1aa", fontSize: 12, marginBottom: 4 }}>{s.contentTemplate}</div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                          <span style={S.pill("low")}>{s.wordCount} words</span>
+                          <span style={{ fontSize: 11, color: "#71717a" }}>{s.purpose}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
+                      <div style={{ background: "#14532d22", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#86efac", marginBottom: 4 }}>Est. Pages</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: "#22c55e" }}>{progResult.estimatedPages?.toLocaleString()}</div>
+                      </div>
+                      <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", flex: 3 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", marginBottom: 4 }}>Traffic Potential</div>
+                        <div style={{ fontSize: 13, color: "#d4d4d8" }}>{progResult.trafficPotential}</div>
+                      </div>
+                    </div>
+                    {progResult.warnings?.length > 0 && <><div style={{ fontSize: 12, fontWeight: 700, color: "#f87171", textTransform: "uppercase", marginTop: 12, marginBottom: 4 }}>⚠️ Risks</div>{progResult.warnings.map((w, i) => <div key={i} style={{ color: "#fca5a5", fontSize: 12, padding: "2px 0" }}>• {w}</div>)}</>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 4. Content ROI Estimator */}
+            {growthSub === "roi" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>💰 Content ROI Estimator <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Predict the traffic, leads and revenue value of planned content before you write a single word.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 220px" }} placeholder="Target keyword *" value={roiKw} onChange={e => setRoiKw(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 140px" }} placeholder="Monthly search volume" type="number" value={roiVol} onChange={e => setRoiVol(e.target.value)} />
+                  <select style={{ ...S.input, flex: "1 1 130px" }} value={roiPos} onChange={e => setRoiPos(parseInt(e.target.value))}>
+                    {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>Target pos #{n}</option>)}
+                  </select>
+                  <input style={{ ...S.input, flex: "1 1 120px" }} placeholder="CVR %" type="number" value={roiCvr} onChange={e => setRoiCvr(parseFloat(e.target.value))} />
+                  <input style={{ ...S.input, flex: "1 1 120px" }} placeholder="Avg order $" type="number" value={roiAov} onChange={e => setRoiAov(parseFloat(e.target.value))} />
+                </div>
+                <button style={S.btn("primary")} disabled={roiLoading || !roiKw.trim()} onClick={async () => {
+                  setRoiLoading(true); setRoiErr(""); setRoiResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/content-roi`, { method: "POST", body: JSON.stringify({ keyword: roiKw, monthlySearchVolume: parseInt(roiVol) || undefined, targetPosition: roiPos, conversionRate: roiCvr, avgOrderValue: roiAov }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setRoiResult(r);
+                  } catch (e) { setRoiErr(e.message); } finally { setRoiLoading(false); }
+                }}>
+                  {roiLoading ? <><span style={S.spinner} /> Calculating…</> : "🤖 Estimate ROI (2 credits)"}
+                </button>
+                {roiErr && <div style={S.err}>{roiErr}</div>}
+                {roiResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+                      {[
+                        { label: "Monthly Clicks", val: roiResult.estMonthlyClicks?.toLocaleString(), color: "#818cf8" },
+                        { label: "Monthly Leads", val: roiResult.estLeads?.toLocaleString(), color: "#6ee7b7" },
+                        { label: "Monthly Revenue", val: roiResult.estMonthlyRevenue ? `$${roiResult.estMonthlyRevenue.toLocaleString()}` : "—", color: "#fbbf24" },
+                        { label: "Opp. Score", val: roiResult.contentOpportunityScore, color: roiResult.contentOpportunityScore >= 70 ? "#22c55e" : "#eab308" },
+                      ].map((m, i) => (
+                        <div key={i} style={{ flex: "1 1 120px", background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 16px", textAlign: "center" }}>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: m.color }}>{m.val}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: "#71717a", textTransform: "uppercase", marginTop: 2 }}>{m.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 16px", marginBottom: 10 }}>
+                      <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+                        <div><div style={{ fontSize: 11, color: "#71717a" }}>Time to rank</div><div style={{ color: "#d4d4d8", fontSize: 13 }}>{roiResult.ttRank}</div></div>
+                        <div><div style={{ fontSize: 11, color: "#71717a" }}>Competition</div><div style={{ color: "#d4d4d8", fontSize: 13 }}>{roiResult.competitionLevel}</div></div>
+                        <div><div style={{ fontSize: 11, color: "#71717a" }}>Effort</div><div style={{ color: "#d4d4d8", fontSize: 13 }}>{roiResult.effortEstimate}</div></div>
+                        <div><div style={{ fontSize: 11, color: "#71717a" }}>Content type</div><div style={{ color: "#d4d4d8", fontSize: 13 }}>{roiResult.contentType}</div></div>
+                        <div><div style={{ fontSize: 11, color: "#71717a" }}>Word count</div><div style={{ color: "#d4d4d8", fontSize: 13 }}>{roiResult.wordCount?.toLocaleString()}</div></div>
+                      </div>
+                    </div>
+                    <div style={{ background: "#1c1917", border: "1px solid #a16207", borderRadius: 8, padding: "10px 14px", color: "#fbbf24", fontSize: 13 }}>{roiResult.verdict}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 5. SGE / AI Overview Optimizer */}
+            {growthSub === "sge" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🤖 SGE / AI Overview Optimizer <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Optimize your content to be cited in Google AI Overviews, Perplexity, Bing Copilot and ChatGPT Browse.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <select style={{ ...S.input, flex: "1 1 160px" }} value={sgeEngine} onChange={e => setSgeEngine(e.target.value)}>
+                    <option value="google-aio">Google AI Overview</option>
+                    <option value="perplexity">Perplexity AI</option>
+                    <option value="chatgpt">ChatGPT Browse</option>
+                    <option value="bing-copilot">Bing Copilot</option>
+                  </select>
+                  <input style={{ ...S.input, flex: "1 1 180px" }} placeholder="Target keyword" value={sgeKw} onChange={e => setSgeKw(e.target.value)} />
+                </div>
+                <textarea style={{ ...S.textarea, minHeight: 120 }} placeholder="Paste your content here *" value={sgeContent} onChange={e => setSgeContent(e.target.value)} />
+                <button style={S.btn("primary")} disabled={sgeLoading || !sgeContent.trim()} onClick={async () => {
+                  setSgeLoading(true); setSgeErr(""); setSgeResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/sge-optimizer`, { method: "POST", body: JSON.stringify({ content: sgeContent, keyword: sgeKw, aiEngine: sgeEngine }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setSgeResult(r);
+                  } catch (e) { setSgeErr(e.message); } finally { setSgeLoading(false); }
+                }}>
+                  {sgeLoading ? <><span style={S.spinner} /> Analyzing…</> : "🤖 Optimize for AI Search (2 credits)"}
+                </button>
+                {sgeErr && <div style={S.err}>{sgeErr}</div>}
+                {sgeResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+                      <div style={{ textAlign: "center", flex: 1, minWidth: 100 }}>
+                        <div style={{ fontSize: 36, fontWeight: 800, color: sgeResult.aioScore >= 70 ? "#22c55e" : sgeResult.aioScore >= 50 ? "#eab308" : "#ef4444" }}>{sgeResult.aioScore}</div>
+                        <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase" }}>AIO Score</div>
+                      </div>
+                      <div style={{ flex: 2, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#71717a", textTransform: "uppercase", marginBottom: 4 }}>Citation Likelihood</div>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: sgeResult.citationLikelihood === "high" ? "#22c55e" : sgeResult.citationLikelihood === "medium" ? "#eab308" : "#ef4444" }}>{sgeResult.citationLikelihood?.toUpperCase()}</div>
+                      </div>
+                    </div>
+                    {sgeResult.idealFirstParagraph && (
+                      <div style={{ background: "#0f2027", border: "1px solid #0e7490", borderRadius: 8, padding: 14, marginBottom: 12 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#67e8f9", marginBottom: 6 }}>✨ Ideal First Paragraph (AI-optimized)</div>
+                        <div style={{ color: "#e4e4e7", fontSize: 13, lineHeight: 1.6 }}>{sgeResult.idealFirstParagraph}</div>
+                      </div>
+                    )}
+                    {sgeResult.optimizations?.map((o, i) => (
+                      <div key={i} style={{ background: "#09090b", border: `1px solid ${o.impact === "high" ? "#7f1d1d" : "#27272a"}`, borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                          <span style={{ fontWeight: 600, color: "#e4e4e7", fontSize: 13 }}>{o.type?.replace(/-/g, " ")}</span>
+                          <span style={S.pill(o.impact === "high" ? "high" : o.impact === "medium" ? "medium" : "low")}>{o.impact}</span>
+                        </div>
+                        <div style={{ color: "#a1a1aa", fontSize: 12, marginBottom: 4 }}>{o.description}</div>
+                        {o.example && <div style={{ color: "#67e8f9", fontSize: 12, fontStyle: "italic" }}>"{o.example}"</div>}
+                      </div>
+                    ))}
+                    {sgeResult.suggestedFAQs?.length > 0 && (
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginBottom: 8 }}>Suggested FAQs to Add</div>
+                        {sgeResult.suggestedFAQs.map((f, i) => (
+                          <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}>
+                            <div style={{ fontWeight: 600, color: "#fbbf24", fontSize: 13 }}>Q: {f.question}</div>
+                            <div style={{ color: "#d4d4d8", fontSize: 13, marginTop: 4 }}>A: {f.answer}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 6. Topic Miner */}
+            {growthSub === "miner" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🔍 Forum / Reddit Topic Miner <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Discover authentic blog topics from real community discussions on Reddit, Quora, and niche forums.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 220px" }} placeholder="Niche (e.g. home brewing, keto diet) *" value={minerNiche} onChange={e => setMinerNiche(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 180px" }} placeholder="Target audience" value={minerAudience} onChange={e => setMinerAudience(e.target.value)} />
+                </div>
+                <button style={S.btn("primary")} disabled={minerLoading || !minerNiche.trim()} onClick={async () => {
+                  setMinerLoading(true); setMinerErr(""); setMinerResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/topic-miner`, { method: "POST", body: JSON.stringify({ niche: minerNiche, targetAudience: minerAudience }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setMinerResult(r);
+                  } catch (e) { setMinerErr(e.message); } finally { setMinerLoading(false); }
+                }}>
+                  {minerLoading ? <><span style={S.spinner} /> Mining…</> : "🤖 Mine Topics (2 credits)"}
+                </button>
+                {minerErr && <div style={S.err}>{minerErr}</div>}
+                {minerResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginBottom: 8 }}>Top Community Discussions</div>
+                    {minerResult.topDiscussions?.slice(0, 5).map((d, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
+                          <span style={S.pill("low")}>{d.source}</span>
+                          <span style={{ fontSize: 11, color: "#71717a" }}>r/{d.community} · {d.upvotes?.toLocaleString()} upvotes</span>
+                        </div>
+                        <div style={{ fontWeight: 600, color: "#e4e4e7", fontSize: 13 }}>{d.question}</div>
+                        <div style={{ color: "#71717a", fontSize: 12, marginTop: 3 }}>{d.insight}</div>
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginTop: 14, marginBottom: 8 }}>Blog Ideas</div>
+                    {minerResult.blogIdeas?.map((b, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                          <div style={{ fontWeight: 600, color: "#fafafa", fontSize: 13 }}>{b.title}</div>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <span style={S.pill("low")}>{b.searchVolume} vol</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#22c55e" }}>{b.opportunityScore}/100</span>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 3 }}>{b.angle}</div>
+                        {b.hook && <div style={{ fontSize: 12, color: "#818cf8", marginTop: 3, fontStyle: "italic" }}>"{b.hook}"</div>}
+                      </div>
+                    ))}
+                    {minerResult.contentGaps?.length > 0 && <><div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", marginTop: 14, marginBottom: 6 }}>🎯 Content Gaps</div>{minerResult.contentGaps.map((g, i) => <div key={i} style={{ color: "#d4d4d8", fontSize: 13, padding: "2px 0" }}>• {g}</div>)}</>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 7. Social SEO Score */}
+            {growthSub === "social" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>📣 Social SEO Signal Scorer <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 1 credit</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Score the social sharing potential of your content and get platform-specific copy to maximize backlinks and brand signals.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 220px" }} placeholder="Title *" value={socialTitle} onChange={e => setSocialTitle(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 180px" }} placeholder="Meta description" value={socialDesc} onChange={e => setSocialDesc(e.target.value)} />
+                </div>
+                <textarea style={{ ...S.textarea, minHeight: 80 }} placeholder="Content excerpt (optional)" value={socialContent} onChange={e => setSocialContent(e.target.value)} />
+                <button style={S.btn("primary")} disabled={socialLoading || !socialTitle.trim()} onClick={async () => {
+                  setSocialLoading(true); setSocialErr(""); setSocialResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/social/seo-score`, { method: "POST", body: JSON.stringify({ title: socialTitle, description: socialDesc, content: socialContent }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setSocialResult(r);
+                  } catch (e) { setSocialErr(e.message); } finally { setSocialLoading(false); }
+                }}>
+                  {socialLoading ? <><span style={S.spinner} /> Scoring…</> : "🤖 Score Social SEO (1 credit)"}
+                </button>
+                {socialErr && <div style={S.err}>{socialErr}</div>}
+                {socialResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                      {Object.entries(socialResult.scores || {}).map(([k, v]) => (
+                        <div key={k} style={{ flex: "1 1 110px", background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", textAlign: "center" }}>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: v >= 70 ? "#22c55e" : v >= 50 ? "#eab308" : "#ef4444" }}>{v}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: "#71717a", textTransform: "uppercase" }}>{k.replace(/([A-Z])/g, " $1").trim()}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {socialResult.platforms?.map((p, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 16px", marginBottom: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                          <span style={{ fontWeight: 700, color: "#e4e4e7", fontSize: 14 }}>{p.platform}</span>
+                          <span style={{ fontWeight: 800, fontSize: 15, color: p.score >= 70 ? "#22c55e" : p.score >= 50 ? "#eab308" : "#ef4444" }}>{p.score}</span>
+                        </div>
+                        {p.idealPost && <div style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 12px", color: "#d4d4d8", fontSize: 13, lineHeight: 1.6 }}>{p.idealPost}</div>}
+                        {p.improvements?.length > 0 && <div style={{ marginTop: 6 }}>{p.improvements.map((imp, j) => <div key={j} style={{ color: "#f87171", fontSize: 11 }}>↳ {imp}</div>)}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 8. Competitor Full Audit */}
+            {growthSub === "competitor" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🕵️ Competitor Blog Full Audit <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 5 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Deep AI analysis of a competitor's entire blog strategy — their content gaps, weaknesses, keyword opportunities and exactly how to outrank them.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 240px" }} placeholder="Competitor blog URL *" value={compUrl} onChange={e => setCompUrl(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 180px" }} placeholder="Your niche" value={compNiche} onChange={e => setCompNiche(e.target.value)} />
+                </div>
+                <button style={S.btn("primary")} disabled={compLoading || !compUrl.trim()} onClick={async () => {
+                  setCompLoading(true); setCompErr(""); setCompResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/competitor/full-audit`, { method: "POST", body: JSON.stringify({ competitorUrl: compUrl, yourNiche: compNiche }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setCompResult(r);
+                  } catch (e) { setCompErr(e.message); } finally { setCompLoading(false); }
+                }}>
+                  {compLoading ? <><span style={S.spinner} /> Auditing…</> : "🤖 Full Competitor Audit (5 credits)"}
+                </button>
+                {compErr && <div style={S.err}>{compErr}</div>}
+                {compResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+                      {[
+                        { label: "Strength", val: compResult.overallStrength, color: compResult.overallStrength === "dominant" ? "#ef4444" : compResult.overallStrength === "strong" ? "#f97316" : "#eab308" },
+                        { label: "Domain Auth.", val: compResult.domainAuthority, color: "#818cf8" },
+                        { label: "Content Quality", val: compResult.contentStrategy?.contentQuality, color: "#6ee7b7" },
+                        { label: "Publish Freq.", val: compResult.contentStrategy?.publishingFrequency, color: "#a1a1aa" },
+                      ].map((m, i) => (
+                        <div key={i} style={{ flex: "1 1 120px", background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", textAlign: "center" }}>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: m.color }}>{m.val}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: "#71717a", textTransform: "uppercase", marginTop: 2 }}>{m.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {compResult.topicGaps?.length > 0 && <><div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", textTransform: "uppercase", marginBottom: 6 }}>🎯 Topic Gaps to Exploit</div>{compResult.topicGaps.map((g, i) => <div key={i} style={{ color: "#d4d4d8", fontSize: 13, padding: "3px 0" }}>• {g}</div>)}</>}
+                    {compResult.keywordOpportunities?.length > 0 && (
+                      <><div style={{ fontSize: 12, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", marginTop: 14, marginBottom: 8 }}>Keyword Opportunities</div>
+                      {compResult.keywordOpportunities.map((k, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 6, padding: "8px 12px", marginBottom: 4, display: "flex", gap: 12, alignItems: "center" }}>
+                          <span style={{ flex: 1, color: "#e4e4e7", fontSize: 13 }}>{k.keyword}</span>
+                          <span style={S.pill(k.difficulty === "hard" ? "high" : k.difficulty === "medium" ? "medium" : "low")}>{k.difficulty}</span>
+                          <span style={{ color: "#71717a", fontSize: 12 }}>{k.rationale}</span>
+                        </div>
+                      ))}</>
+                    )}
+                    {compResult.battlePlan?.length > 0 && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", marginBottom: 8 }}>⚔️ Battle Plan</div>
+                        {compResult.battlePlan.map((b, i) => (
+                          <div key={i} style={{ display: "flex", gap: 10, padding: "6px 0", borderBottom: "1px solid #1e1e22" }}>
+                            <span style={{ width: 22, height: 22, borderRadius: "50%", background: "#4f46e5", color: "#fff", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                            <span style={{ color: "#d4d4d8", fontSize: 13 }}>{b}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 9. Link Reclamation */}
+            {growthSub === "reclaim" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🔗 Link Reclamation Finder <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Find unlinked brand and topic mentions across the web and get outreach templates to convert them into backlinks.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 200px" }} placeholder="Brand / site name *" value={reclaimBrand} onChange={e => setReclaimBrand(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 160px" }} placeholder="Your website URL" value={reclaimSite} onChange={e => setReclaimSite(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 160px" }} placeholder="Niche" value={reclaimNiche} onChange={e => setReclaimNiche(e.target.value)} />
+                </div>
+                <button style={S.btn("primary")} disabled={reclaimLoading || !reclaimBrand.trim()} onClick={async () => {
+                  setReclaimLoading(true); setReclaimErr(""); setReclaimResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/backlinks/link-reclamation`, { method: "POST", body: JSON.stringify({ brandName: reclaimBrand, siteUrl: reclaimSite, niche: reclaimNiche }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setReclaimResult(r);
+                  } catch (e) { setReclaimErr(e.message); } finally { setReclaimLoading(false); }
+                }}>
+                  {reclaimLoading ? <><span style={S.spinner} /> Searching…</> : "🤖 Find Link Opportunities (2 credits)"}
+                </button>
+                {reclaimErr && <div style={S.err}>{reclaimErr}</div>}
+                {reclaimResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginBottom: 8 }}>Search Strings</div>
+                    {reclaimResult.searchStrings?.map((s, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 6, padding: "8px 12px", marginBottom: 4 }}>
+                        <code style={{ color: "#86efac", fontSize: 12, fontFamily: "'Fira Code',monospace" }}>{s.query}</code>
+                        <div style={{ color: "#71717a", fontSize: 11, marginTop: 2 }}>{s.intent}</div>
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginTop: 14, marginBottom: 8 }}>Outreach Templates</div>
+                    {reclaimResult.outreachTemplates?.map((t, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 14, marginBottom: 8 }}>
+                        <div style={{ fontSize: 11, color: "#818cf8", marginBottom: 4 }}>{t.scenario}</div>
+                        <div style={{ fontWeight: 600, color: "#fbbf24", marginBottom: 6 }}>Subject: {t.subject}</div>
+                        <pre style={{ color: "#d4d4d8", fontSize: 12, whiteSpace: "pre-wrap", margin: 0, fontFamily: "inherit", lineHeight: 1.6 }}>{t.body}</pre>
+                      </div>
+                    ))}
+                    {reclaimResult.estimatedLinks && <div style={{ background: "#14532d22", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", color: "#86efac", fontSize: 13 }}>📈 Estimated links/month: {reclaimResult.estimatedLinks}</div>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 10. Google News SEO */}
+            {growthSub === "gnews" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>📰 Google News SEO Checker <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 1 credit</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Check if your content meets Google News Publisher inclusion criteria and get a step-by-step fix plan.</div>
+                <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+                  <input style={S.input} placeholder="Article URL *" value={gnUrl} onChange={e => setGnUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && !gnLoading && gnUrl.trim() && document.getElementById("gnBtn").click()} />
+                  <button id="gnBtn" style={S.btn("primary")} disabled={gnLoading || !gnUrl.trim()} onClick={async () => {
+                    setGnLoading(true); setGnErr(""); setGnResult(null);
+                    try {
+                      const r = await apiFetch(`${API}/technical/google-news`, { method: "POST", body: JSON.stringify({ url: gnUrl }) });
+                      if (!r.ok) throw new Error(r.error || "Failed"); setGnResult(r);
+                    } catch (e) { setGnErr(e.message); } finally { setGnLoading(false); }
+                  }}>
+                    {gnLoading ? <><span style={S.spinner} /> Checking…</> : "Check"}
+                  </button>
+                </div>
+                {gnErr && <div style={S.err}>{gnErr}</div>}
+                {gnResult && (
+                  <div style={{ marginTop: 14 }}>
+                    <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 14 }}>
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: 36, fontWeight: 800, color: gnResult.eligibilityScore >= 70 ? "#22c55e" : gnResult.eligibilityScore >= 50 ? "#eab308" : "#ef4444" }}>{gnResult.eligibilityScore}</div>
+                        <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase" }}>News Score</div>
+                      </div>
+                      <div style={{ background: gnResult.isEligible ? "#14532d22" : "#450a0a22", border: `1px solid ${gnResult.isEligible ? "#166534" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 20 }}>{gnResult.isEligible ? "✅" : "❌"}</span>
+                        <span style={{ fontWeight: 700, color: gnResult.isEligible ? "#86efac" : "#fca5a5" }}>{gnResult.isEligible ? "Eligible for Google News" : "Not yet eligible"}</span>
+                      </div>
+                    </div>
+                    {gnResult.criteria?.map((c, i) => (
+                      <div key={i} style={{ background: c.pass ? "#09090b" : "#450a0a22", border: `1px solid ${c.pass ? "#27272a" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <span>{c.pass ? "✅" : "❌"}</span>
+                          <span style={{ fontWeight: 600, color: c.pass ? "#d4d4d8" : "#fca5a5", fontSize: 13 }}>{c.name}</span>
+                        </div>
+                        {!c.pass && c.fix && <div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>💡 {c.fix}</div>}
+                      </div>
+                    ))}
+                    {gnResult.criticalIssues?.length > 0 && <><div style={{ fontSize: 12, fontWeight: 700, color: "#f87171", textTransform: "uppercase", marginTop: 12, marginBottom: 6 }}>Critical Issues</div>{gnResult.criticalIssues.map((issue, i) => <div key={i} style={{ color: "#fca5a5", fontSize: 13, padding: "2px 0" }}>• {issue}</div>)}</>}
+                    {gnResult.estimatedTimeToApproval && <div style={{ marginTop: 12, background: "#1c1917", border: "1px solid #a16207", borderRadius: 8, padding: "10px 14px", color: "#fbbf24", fontSize: 13 }}>⏱ {gnResult.estimatedTimeToApproval}</div>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 11. Performance Predictor */}
+            {growthSub === "predictor" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🎯 Content Performance Predictor <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Predict traffic, ranking position and revenue before publishing — so you can optimize before you write.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 240px" }} placeholder="Planned post title *" value={predTitle} onChange={e => setPredTitle(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 180px" }} placeholder="Target keyword" value={predKw} onChange={e => setPredKw(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 120px" }} type="number" placeholder="Word count" value={predWords} onChange={e => setPredWords(parseInt(e.target.value))} />
+                  <select style={{ ...S.input, flex: "1 1 130px" }} value={predType} onChange={e => setPredType(e.target.value)}>
+                    <option value="guide">Guide</option><option value="listicle">Listicle</option><option value="how-to">How-to</option>
+                    <option value="comparison">Comparison</option><option value="case-study">Case Study</option><option value="roundup">Roundup</option>
+                  </select>
+                </div>
+                <button style={S.btn("primary")} disabled={predLoading || !predTitle.trim()} onClick={async () => {
+                  setPredLoading(true); setPredErr(""); setPredResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/performance-predictor`, { method: "POST", body: JSON.stringify({ title: predTitle, targetKeyword: predKw, wordCount: predWords, contentType: predType }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setPredResult(r);
+                  } catch (e) { setPredErr(e.message); } finally { setPredLoading(false); }
+                }}>
+                  {predLoading ? <><span style={S.spinner} /> Predicting…</> : "🤖 Predict Performance (2 credits)"}
+                </button>
+                {predErr && <div style={S.err}>{predErr}</div>}
+                {predResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+                      {[
+                        { label: "Score", val: predResult.overallScore, color: predResult.overallScore >= 70 ? "#22c55e" : "#eab308" },
+                        { label: "Target Pos.", val: `#${predResult.rankingPrediction?.targetPosition}`, color: "#818cf8" },
+                        { label: "Time to Rank", val: predResult.rankingPrediction?.timeToRank, color: "#a1a1aa" },
+                        { label: "Snippet Chance", val: `${predResult.rankingPrediction?.featuredSnippetChance}%`, color: "#fbbf24" },
+                      ].map((m, i) => (
+                        <div key={i} style={{ flex: "1 1 120px", background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", textAlign: "center" }}>
+                          <div style={{ fontSize: i === 0 ? 30 : 16, fontWeight: 800, color: m.color }}>{m.val}</div>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: "#71717a", textTransform: "uppercase", marginTop: 2 }}>{m.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                      {Object.entries(predResult.trafficPrediction || {}).map(([k, v]) => (
+                        <div key={k} style={{ flex: "1 1 100px", background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12, textAlign: "center" }}>
+                          <div style={{ fontSize: 20, fontWeight: 800, color: "#818cf8" }}>{v.visits?.toLocaleString()}</div>
+                          <div style={{ fontSize: 10, color: "#71717a", textTransform: "uppercase" }}>{k} visits</div>
+                          <div style={{ fontSize: 10, color: "#3f3f46" }}>conf: {v.confidence}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {predResult.prePublishOptimizations?.length > 0 && (
+                      <><div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginBottom: 8 }}>Pre-Publish Optimisations</div>
+                      {predResult.prePublishOptimizations.map((o, i) => (
+                        <div key={i} style={{ background: "#09090b", border: `1px solid ${o.impact === "high" ? "#7f1d1d" : "#27272a"}`, borderRadius: 8, padding: "8px 14px", marginBottom: 6 }}>
+                          <div style={{ display: "flex", gap: 8 }}><span style={S.pill(o.impact === "high" ? "high" : o.impact === "medium" ? "medium" : "low")}>{o.impact}</span><span style={{ color: "#d4d4d8", fontSize: 13 }}>{o.action}</span></div>
+                        </div>
+                      ))}</>
+                    )}
+                    <div style={{ background: "#1c1917", border: "1px solid #a16207", borderRadius: 8, padding: "10px 14px", color: "#fbbf24", fontSize: 13, marginTop: 8 }}>{predResult.verdict}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 12. Semantic Cluster Builder */}
+            {growthSub === "semantic" && (
+              <div style={S.card}>
+                <div style={S.cardTitle}>🧠 Semantic Cluster Builder <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Map every related keyword, entity and sub-topic Google associates with your seed topic to build comprehensive topical authority.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                  <input style={{ ...S.input, flex: "2 1 240px" }} placeholder="Seed topic (e.g. intermittent fasting) *" value={semTopic} onChange={e => setSemTopic(e.target.value)} />
+                  <input style={{ ...S.input, flex: "1 1 160px" }} placeholder="Industry" value={semIndustry} onChange={e => setSemIndustry(e.target.value)} />
+                </div>
+                <button style={S.btn("primary")} disabled={semLoading || !semTopic.trim()} onClick={async () => {
+                  setSemLoading(true); setSemErr(""); setSemResult(null);
+                  try {
+                    const r = await apiFetch(`${API}/ai/semantic-clusters`, { method: "POST", body: JSON.stringify({ seedTopic: semTopic, industry: semIndustry }) });
+                    if (!r.ok) throw new Error(r.error || "Failed"); setSemResult(r);
+                  } catch (e) { setSemErr(e.message); } finally { setSemLoading(false); }
+                }}>
+                  {semLoading ? <><span style={S.spinner} /> Mapping…</> : "🤖 Build Semantic Map (2 credits)"}
+                </button>
+                {semErr && <div style={S.err}>{semErr}</div>}
+                {semResult && (
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                      <div style={{ flex: 1, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12, textAlign: "center" }}>
+                        <div style={{ fontSize: 26, fontWeight: 800, color: "#818cf8" }}>{semResult.clusters?.length}</div>
+                        <div style={{ fontSize: 10, color: "#71717a", textTransform: "uppercase" }}>Clusters</div>
+                      </div>
+                      <div style={{ flex: 1, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12, textAlign: "center" }}>
+                        <div style={{ fontSize: 26, fontWeight: 800, color: "#22c55e" }}>{semResult.coverageGrade}</div>
+                        <div style={{ fontSize: 10, color: "#71717a", textTransform: "uppercase" }}>Coverage Grade</div>
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", marginBottom: 6 }}>Core Entities</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{semResult.coreEntities?.map((e, i) => <span key={i} style={{ ...S.pill("low"), fontSize: 11 }}>{e}</span>)}</div>
+                    </div>
+                    {semResult.clusters?.map((c, i) => (
+                      <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                          <span style={{ fontWeight: 700, color: "#e4e4e7", fontSize: 13 }}>{c.clusterName}</span>
+                          <span style={{ fontSize: 11, color: "#818cf8" }}>{c.semanticRelationship}</span>
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>{c.keywords?.map((k, j) => <span key={j} style={{ background: "#1e1b40", color: "#c4b5fd", fontSize: 10, padding: "2px 8px", borderRadius: 999, fontWeight: 600 }}>{k}</span>)}</div>
+                        <div style={{ fontSize: 12, color: "#71717a" }}>💡 {c.contentIdea}</div>
+                      </div>
+                    ))}
+                    {semResult.topicalDepth?.mustCover?.length > 0 && (
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", textTransform: "uppercase", marginBottom: 6 }}>Must Cover (required for authority)</div>
+                        {semResult.topicalDepth.mustCover.map((t, i) => <div key={i} style={{ color: "#d4d4d8", fontSize: 13, padding: "2px 0" }}>• {t}</div>)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
 
         {/* ================================================================
             HISTORY TAB

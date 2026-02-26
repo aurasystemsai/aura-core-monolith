@@ -5680,6 +5680,586 @@ Respond ONLY as JSON:
   }
 });
 
+/* =========================================================================
+   AI GROWTH — 12 next-generation AI-powered SEO growth tools
+   ========================================================================= */
+
+/* 1. Content Calendar Generator — AI builds a 30/90-day editorial calendar (3 credits) */
+router.post('/ai/content-calendar', async (req, res) => {
+  try {
+    const { niche, audience, goals = [], duration = 30, postsPerWeek = 3, existingTopics = [], model = 'gpt-4o-mini' } = req.body || {};
+    if (!niche) return res.status(400).json({ ok: false, error: 'niche is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a content strategy expert. Build a ${duration}-day editorial calendar for a blog in the "${niche}" niche.
+Target audience: ${audience || 'general audience'}
+Publishing frequency: ${postsPerWeek} posts/week
+Goals: ${goals.length ? goals.join(', ') : 'organic traffic, authority building'}
+${existingTopics.length ? `Existing topics to avoid duplicating: ${existingTopics.join(', ')}` : ''}
+
+Create a detailed editorial calendar. Respond ONLY as JSON:
+{
+  "summary": "brief strategy overview",
+  "weeks": [
+    {
+      "week": 1,
+      "theme": "weekly theme/focus",
+      "posts": [
+        {
+          "day": "Monday",
+          "title": "blog post title",
+          "type": "pillar|cluster|list|how-to|roundup|news|comparison|case-study",
+          "targetKeyword": "primary keyword",
+          "searchIntent": "informational|commercial|navigational|transactional",
+          "estimatedWordCount": 1500,
+          "priority": "high|medium|low",
+          "notes": "brief notes on angle or approach"
+        }
+      ]
+    }
+  ],
+  "contentMix": { "pillar": 20, "cluster": 40, "list": 20, "howTo": 20 },
+  "quickWins": ["3 easy first posts to publish for fast rankings"],
+  "longTermBets": ["2 high-effort posts with high payoff potential"]
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, niche, duration, postsPerWeek, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 2. Pillar Page Builder — content hub + cluster topic map (3 credits) */
+router.post('/ai/pillar-page', async (req, res) => {
+  try {
+    const { topic, audience, depth = 'comprehensive', model = 'gpt-4o-mini' } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a topical authority expert. Build a complete pillar page content hub for the topic: "${topic}"
+Target audience: ${audience || 'general'}
+Depth: ${depth}
+
+Design the pillar page structure and all supporting cluster articles to build topical authority.
+Respond ONLY as JSON:
+{
+  "pillarTitle": "exact title for the pillar page",
+  "pillarSlug": "url-slug",
+  "pillarWordCount": 4500,
+  "pillarOutline": ["H2 sections array"],
+  "targetKeywords": { "primary": "string", "secondary": ["array"] },
+  "clusterTopics": [
+    {
+      "title": "cluster post title",
+      "slug": "url-slug",
+      "angle": "specific angle that differentiates from pillar",
+      "targetKeyword": "primary keyword",
+      "searchVolume": "high|medium|low",
+      "difficulty": "easy|medium|hard",
+      "linkAnchor": "anchor text to use when linking from pillar",
+      "wordCount": 1200
+    }
+  ],
+  "internalLinkingMap": [
+    { "from": "pillar or cluster title", "to": "target title", "anchorText": "suggested anchor" }
+  ],
+  "topicalCoverageScore": 85,
+  "gaps": ["topics still needed to complete topical authority"]
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, topic, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 3. Programmatic SEO Templates — scalable content templates for data-driven pages (3 credits) */
+router.post('/ai/programmatic-seo', async (req, res) => {
+  try {
+    const { category, dataVariables = [], exampleRow = {}, targetPage = 'landing page', model = 'gpt-4o-mini' } = req.body || {};
+    if (!category) return res.status(400).json({ ok: false, error: 'category is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a programmatic SEO expert. Create scalable content templates for the category: "${category}"
+Data variables available: ${dataVariables.join(', ') || 'city, product, category, year'}
+Example row: ${JSON.stringify(exampleRow)}
+Target page type: ${targetPage}
+
+Generate a programmatic SEO template system. Respond ONLY as JSON:
+{
+  "templateTitle": "template name",
+  "titleFormula": "Title template using {variables} e.g. 'Best {product} in {city} ({year})'",
+  "metaDescFormula": "Meta description template with {variables}",
+  "h1Formula": "H1 formula",
+  "sections": [
+    {
+      "heading": "section heading formula",
+      "contentTemplate": "content block template using {variables}",
+      "wordCount": 120,
+      "purpose": "why this section helps SEO"
+    }
+  ],
+  "uniquenessStrategies": ["ways to ensure each page has unique value"],
+  "internalLinkingFormula": "how to interlink programmatic pages",
+  "schemaType": "most appropriate schema markup type",
+  "estimatedPages": 500,
+  "trafficPotential": "description of traffic potential",
+  "warnings": ["risks or pitfalls to avoid"]
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, category, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 4. Content ROI Estimator — predict traffic & revenue value of planned content (2 credits) */
+router.post('/ai/content-roi', async (req, res) => {
+  try {
+    const { keyword, monthlySearchVolume, currentPosition = 'not ranking', targetPosition = 3, conversionRate = 2, avgOrderValue = 50, model = 'gpt-4o-mini' } = req.body || {};
+    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword is required' });
+    const openai = getOpenAI();
+    const ctrMap = { 1: 0.279, 2: 0.152, 3: 0.105, 4: 0.078, 5: 0.061, 6: 0.046, 7: 0.038, 8: 0.035, 9: 0.032, 10: 0.025 };
+    const targetCtr = ctrMap[targetPosition] || 0.03;
+    const estMonthlyClicks = Math.round((monthlySearchVolume || 1000) * targetCtr);
+    const estLeads = Math.round(estMonthlyClicks * (conversionRate / 100));
+    const estRevenue = estLeads * avgOrderValue;
+    const prompt = `You are a content ROI analyst. Estimate the business value of creating content targeting: "${keyword}"
+Monthly search volume: ${monthlySearchVolume || 'unknown'}
+Current position: ${currentPosition}
+Target position: ${targetPosition}
+Estimated monthly clicks at target: ${estMonthlyClicks}
+Conversion rate: ${conversionRate}%
+AOV: $${avgOrderValue}
+
+Provide an ROI analysis. Respond ONLY as JSON:
+{
+  "contentOpportunityScore": 78,
+  "ttRank": "estimated months to reach target position",
+  "competitionLevel": "low|medium|high",
+  "effortEstimate": "estimated hours to create quality content",
+  "contentType": "recommended content format (guide, listicle, comparison, etc.)",
+  "wordCount": 2000,
+  "risks": ["potential risks"],
+  "boostStrategies": ["ways to accelerate ranking"],
+  "similarKeywords": ["3-5 semantically related keywords to also target"],
+  "verdict": "short recommendation paragraph"
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, monthlySearchVolume, targetPosition, estMonthlyClicks, estLeads, estMonthlyRevenue: estRevenue, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 5. SGE / AI Overview Optimizer — optimize content for Google AI Overviews & Perplexity (2 credits) */
+router.post('/ai/sge-optimizer', async (req, res) => {
+  try {
+    const { content, url, keyword, aiEngine = 'google-aio', model = 'gpt-4o-mini' } = req.body || {};
+    if (!content && !url) return res.status(400).json({ ok: false, error: 'content or url required' });
+    const openai = getOpenAI();
+    const engineNames = { 'google-aio': 'Google AI Overview', 'perplexity': 'Perplexity AI', 'chatgpt': 'ChatGPT Browse', 'bing-copilot': 'Bing Copilot' };
+    const prompt = `You are an AI search optimization expert. Analyze and optimize this content for inclusion in ${engineNames[aiEngine] || 'AI search engines'}.
+Target keyword: ${keyword || 'not specified'}
+Content (first 3000 chars): ${(content || '').slice(0, 3000)}
+
+Evaluate and provide optimization guidance. Respond ONLY as JSON:
+{
+  "aioScore": 72,
+  "citationLikelihood": "high|medium|low",
+  "currentStrengths": ["what the content does well for AI visibility"],
+  "weaknesses": ["what's holding it back"],
+  "optimizations": [
+    {
+      "type": "add-definition|improve-structure|add-faq|improve-entity-coverage|add-statistics|improve-first-paragraph",
+      "description": "what to do",
+      "example": "concrete example of the improvement",
+      "impact": "high|medium|low"
+    }
+  ],
+  "idealFirstParagraph": "rewritten first paragraph optimized for AI citation",
+  "suggestedFAQs": [
+    { "question": "string", "answer": "concise direct answer (40-60 words)" }
+  ],
+  "entityGaps": ["important entities/concepts missing from the content"],
+  "structureRecommendations": ["structural changes to improve AI parsing"]
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, aiEngine, keyword, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 6. Forum / Reddit Topic Miner — discover real audience questions for blog ideas (2 credits) */
+router.post('/ai/topic-miner', async (req, res) => {
+  try {
+    const { niche, targetAudience, painPoints = [], sources = ['reddit', 'quora', 'forums'], model = 'gpt-4o-mini' } = req.body || {};
+    if (!niche) return res.status(400).json({ ok: false, error: 'niche is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a content research expert who mines online communities for authentic blog topics. Research the "${niche}" niche for ${targetAudience || 'general audience'}.
+Pain points: ${painPoints.join(', ') || 'Not specified'}
+Sources to simulate: ${sources.join(', ')}
+
+Simulate what real people in this niche discuss online and generate blog ideas from those discussions. Respond ONLY as JSON:
+{
+  "topDiscussions": [
+    {
+      "source": "reddit|quora|forum",
+      "community": "subreddit or community name",
+      "question": "the actual question/discussion topic",
+      "upvotes": 847,
+      "sentiment": "frustrated|curious|excited|confused",
+      "insight": "what this reveals about audience needs"
+    }
+  ],
+  "blogIdeas": [
+    {
+      "title": "blog post title",
+      "angle": "unique angle derived from the community discussions",
+      "targetKeyword": "primary keyword",
+      "searchVolume": "high|medium|low",
+      "opportunityScore": 82,
+      "hook": "first sentence to grab the reader",
+      "source": "which discussion inspired this"
+    }
+  ],
+  "audienceInsights": ["key insights about what this audience truly cares about"],
+  "contentGaps": ["topics the audience needs but can't find good answers to"],
+  "toneRecommendations": "recommended tone and voice based on community style"
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 7. Social SEO Signal Scorer — score social sharing potential & SEO signal strength (1 credit) */
+router.post('/social/seo-score', async (req, res) => {
+  try {
+    const { title, description, url, content, model = 'gpt-4o-mini' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a social media SEO specialist. Score the social sharing potential and SEO signal strength of this content.
+Title: ${title}
+Description: ${description || ''}
+URL: ${url || ''}
+Content excerpt: ${(content || '').slice(0, 1500)}
+
+Analyze social SEO signals. Respond ONLY as JSON:
+{
+  "overallScore": 74,
+  "scores": {
+    "shareability": 80,
+    "clickability": 75,
+    "emotionalResonance": 70,
+    "ogOptimization": 65,
+    "twitterCardScore": 72,
+    "linkBaitPotential": 68
+  },
+  "platforms": [
+    {
+      "platform": "Twitter/X|LinkedIn|Facebook|Pinterest|Reddit",
+      "score": 78,
+      "strengths": ["what works"],
+      "improvements": ["what to fix"],
+      "idealPost": "ready-to-use social post copy for this platform"
+    }
+  ],
+  "ogSuggestions": {
+    "idealOgTitle": "optimized OG title",
+    "idealOgDescription": "optimized OG description",
+    "imageRecommendation": "image type that would maximize CTR"
+  },
+  "viralTriggers": ["emotional/psychological triggers present in content"],
+  "missingTriggers": ["triggers that could be added to boost sharing"]
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, title, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 8. Competitor Blog Full Audit — deep AI analysis of competitor blog strategy (5 credits) */
+router.post('/competitor/full-audit', async (req, res) => {
+  try {
+    const { competitorUrl, yourNiche, yourAudience, model = 'gpt-4o-mini' } = req.body || {};
+    if (!competitorUrl) return res.status(400).json({ ok: false, error: 'competitorUrl is required' });
+    const openai = getOpenAI();
+    // Try to fetch competitor page
+    let competitorData = {};
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      const resp = await fetch(competitorUrl, { signal: ctrl.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEOBot/1.0)' } });
+      clearTimeout(t);
+      const html = await resp.text();
+      const cheerio = require('cheerio');
+      const $ = cheerio.load(html);
+      $('script,style,noscript').remove();
+      competitorData = {
+        title: $('title').text().trim(),
+        h1: $('h1').first().text().trim(),
+        metaDesc: $('meta[name="description"]').attr('content') || '',
+        wordCount: $('body').text().split(/\s+/).length,
+        h2s: $('h2').map((_, el) => $(el).text().trim()).get().slice(0, 10),
+        links: $('a[href]').length,
+        images: $('img').length,
+      };
+    } catch (_) { /* proceed without live data */ }
+
+    const prompt = `You are a competitive intelligence expert for SEO. Audit this competitor's blog strategy.
+URL: ${competitorUrl}
+Niche: ${yourNiche || 'general'}
+${Object.keys(competitorData).length ? `Live page data:\n${JSON.stringify(competitorData, null, 2)}` : ''}
+
+Provide a comprehensive competitive audit. Respond ONLY as JSON:
+{
+  "overallStrength": "weak|moderate|strong|dominant",
+  "domainAuthority": "estimated low|medium|high|very-high",
+  "contentStrategy": {
+    "primaryTopics": ["main topics they cover"],
+    "contentTypes": ["blog types they use"],
+    "publishingFrequency": "estimated posts/month",
+    "avgWordCount": 1800,
+    "contentQuality": "thin|standard|comprehensive|exceptional"
+  },
+  "seoStrengths": ["what they do well"],
+  "seoWeaknesses": ["gaps and weaknesses to exploit"],
+  "topicGaps": ["topics they don't cover well that you should own"],
+  "keywordOpportunities": [
+    { "keyword": "string", "difficulty": "easy|medium|hard", "rationale": "why it's an opportunity" }
+  ],
+  "contentAngleOpportunities": ["specific angles you could use to out-rank them"],
+  "linkBuildingInsights": ["observations about their link profile"],
+  "battlePlan": ["5 prioritized actions to outrank this competitor"]
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, competitorUrl, liveData: competitorData, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 9. Link Reclamation Finder — find unlinked brand/topic mentions to convert to links (2 credits) */
+router.post('/backlinks/link-reclamation', async (req, res) => {
+  try {
+    const { brandName, siteUrl, niche, model = 'gpt-4o-mini' } = req.body || {};
+    if (!brandName) return res.status(400).json({ ok: false, error: 'brandName is required' });
+    const openai = getOpenAI();
+    const prompt = `You are an expert in link reclamation and digital PR. Help find and reclaim unlinked mentions for: "${brandName}"
+Website: ${siteUrl || 'not provided'}
+Niche: ${niche || 'general'}
+
+Generate a comprehensive link reclamation strategy. Respond ONLY as JSON:
+{
+  "searchStrings": [
+    { "query": "exact Google search string to find unlinked mentions", "intent": "what this finds" }
+  ],
+  "likelyMentionSources": [
+    {
+      "sourceType": "news|blog|directory|forum|social|podcast",
+      "description": "where mentions are likely to appear",
+      "priority": "high|medium|low",
+      "tipToFind": "how to discover these mentions"
+    }
+  ],
+  "outreachTemplates": [
+    {
+      "scenario": "mention type (e.g. brand mention without link)",
+      "subject": "email subject line",
+      "body": "email template with [placeholders]"
+    }
+  ],
+  "monitoringSetup": {
+    "googleAlerts": ["recommended Google Alert queries"],
+    "tools": ["recommended monitoring tools"],
+    "frequency": "how often to check"
+  },
+  "reclamationPriority": "how to prioritize which mentions to pursue first",
+  "estimatedLinks": "realistic estimate of links recovereable per month"
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, brandName, siteUrl, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 10. Google News SEO Checker — eligibility & optimisation for Google News (1 credit) */
+router.post('/technical/google-news', async (req, res) => {
+  try {
+    const { url, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url is required' });
+    const openai = getOpenAI();
+    let pageData = {};
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 12000);
+      const resp = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEOBot/1.0)' } });
+      clearTimeout(t);
+      const html = await resp.text();
+      const cheerio = require('cheerio');
+      const $ = cheerio.load(html);
+      pageData = {
+        title: $('title').text().trim(),
+        h1: $('h1').first().text().trim(),
+        metaDesc: $('meta[name="description"]').attr('content') || '',
+        author: $('meta[name="author"]').attr('content') || $('[rel="author"]').first().text().trim() || '',
+        datePublished: $('meta[property="article:published_time"]').attr('content') || $('time').first().attr('datetime') || '',
+        hasNewsKeywords: !!$('meta[name="news_keywords"]').attr('content'),
+        newsKeywords: $('meta[name="news_keywords"]').attr('content') || '',
+        hasArticleSchema: html.includes('"NewsArticle"') || html.includes('"Article"'),
+        wordCount: $('article, main, [role="main"]').text().split(/\s+/).length || $('body').text().split(/\s+/).length,
+        hasImages: $('article img, main img').length > 0,
+        byline: $('[itemprop="author"], .author, .byline').first().text().trim(),
+      };
+    } catch (_) { /* proceed */ }
+
+    const prompt = `You are a Google News SEO specialist. Evaluate this URL for Google News inclusion eligibility.
+URL: ${url}
+Page data: ${JSON.stringify(pageData)}
+
+Evaluate all Google News Publisher criteria and technical requirements. Respond ONLY as JSON:
+{
+  "eligibilityScore": 72,
+  "isEligible": true,
+  "criteria": [
+    {
+      "name": "criterion name",
+      "pass": true,
+      "current": "current state",
+      "required": "what Google News requires",
+      "fix": "how to fix if failing"
+    }
+  ],
+  "criticalIssues": ["blockers that prevent Google News inclusion"],
+  "quickWins": ["easy fixes to improve eligibility"],
+  "newsKeywordsOptimized": ["recommended news_keywords meta values"],
+  "publisherRequirements": ["editorial standards and policies to ensure compliance"],
+  "technicalChecklist": ["technical SEO items needed for News eligibility"],
+  "estimatedTimeToApproval": "rough estimate once issues are fixed"
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, pageData, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 11. Content Performance Predictor — predict traffic potential before publishing (2 credits) */
+router.post('/ai/performance-predictor', async (req, res) => {
+  try {
+    const { title, outline, targetKeyword, wordCount = 1500, contentType = 'guide', model = 'gpt-4o-mini' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a data-driven content strategy expert. Predict the SEO performance of this planned content BEFORE it is published.
+Title: ${title}
+Target keyword: ${targetKeyword || 'not specified'}
+Content type: ${contentType}
+Planned word count: ${wordCount}
+Outline: ${outline || 'not provided'}
+
+Based on patterns from successful content in this space, predict performance outcomes. Respond ONLY as JSON:
+{
+  "overallScore": 78,
+  "trafficPrediction": {
+    "month3": { "visits": 120, "confidence": "low" },
+    "month6": { "visits": 580, "confidence": "medium" },
+    "month12": { "visits": 1200, "confidence": "medium" }
+  },
+  "rankingPrediction": {
+    "targetPosition": 7,
+    "timeToRank": "4-8 months",
+    "featuredSnippetChance": 22
+  },
+  "strengthFactors": ["what makes this content likely to perform well"],
+  "riskFactors": ["what might limit performance"],
+  "prePublishOptimizations": [
+    {
+      "action": "specific improvement to make before publishing",
+      "impact": "high|medium|low",
+      "effort": "low|medium|high"
+    }
+  ],
+  "titleAlternatives": ["2 alternative title variations that could rank better"],
+  "competitionSnapshot": "brief overview of expected SERP competition",
+  "verdict": "one sentence overall prediction verdict"
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, title, targetKeyword, wordCount, contentType, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* 12. Semantic Cluster Builder — build a semantic keyword/entity cluster map (2 credits) */
+router.post('/ai/semantic-clusters', async (req, res) => {
+  try {
+    const { seedTopic, industry, depth = 2, model = 'gpt-4o-mini' } = req.body || {};
+    if (!seedTopic) return res.status(400).json({ ok: false, error: 'seedTopic is required' });
+    const openai = getOpenAI();
+    const prompt = `You are a semantic SEO expert. Build a comprehensive semantic keyword and entity cluster map for: "${seedTopic}"
+Industry: ${industry || 'general'}
+Cluster depth: ${depth} levels
+
+Map all semantically related topics, entities and keywords that Google associates with this topic.
+Respond ONLY as JSON:
+{
+  "coreTopic": "${seedTopic}",
+  "coreEntities": ["main named entities (people, places, organisations, concepts) Google associates with this topic"],
+  "clusters": [
+    {
+      "clusterName": "sub-topic cluster name",
+      "clusterKeyword": "primary keyword for this cluster",
+      "semanticRelationship": "how it relates to core topic",
+      "keywords": ["5-8 keywords in this cluster"],
+      "entities": ["entities in this cluster"],
+      "contentIdea": "blog post that covers this cluster well"
+    }
+  ],
+  "topicalDepth": {
+    "mustCover": ["topics essential for topical authority"],
+    "shouldCover": ["topics that would improve coverage"],
+    "couldCover": ["topics for maximum coverage"]
+  },
+  "entityRelationships": [
+    { "entity1": "string", "entity2": "string", "relationship": "description of relationship" }
+  ],
+  "coOccurrenceTerms": ["words/phrases that should naturally appear in content on this topic"],
+  "semanticScore": 0,
+  "coverageGrade": "A|B|C|D"
+}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, seedTopic, industry, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
 
 
