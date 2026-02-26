@@ -7807,12 +7807,12 @@ export default function BlogSEO() {
                 <div style={{ ...S.cardTitle, marginBottom: 0 }}>📥 Load Voice Profile</div>
                 <button style={{ ...S.btn, marginLeft: 'auto' }} disabled={vpLoadLoading} onClick={async () => {
                   setVpLoadLoading(true);
-                  try { const r = await apiFetch(`${API}/voice-profile/${vpLoadId || shopDomain}`); setVpLoadResult(r); } catch (e) { setVpLoadResult({ error: e.message }); }
+                  try { const endpoint = vpLoadId.trim() ? `${API}/voice-profile/${encodeURIComponent(vpLoadId.trim())}` : `${API}/voice-profile`; const r = await apiFetch(endpoint); setVpLoadResult(r); } catch (e) { setVpLoadResult({ error: e.message }); }
                   setVpLoadLoading(false);
                 }}>{vpLoadLoading ? 'Loading…' : 'Load'}</button>
               </div>
-              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Profile ID (leave blank for shop default)" value={vpLoadId} onChange={e => setVpLoadId(e.target.value)} />
-              {vpLoadResult && <div style={{ ...S.result, marginTop: 8 }}>{vpLoadResult.error ? <span style={{ color: '#f87171' }}>{vpLoadResult.error}</span> : <pre style={{ margin: 0, fontSize: 12, color: '#d4d4d8', whiteSpace: 'pre-wrap' }}>{JSON.stringify(vpLoadResult.profile || vpLoadResult, null, 2)}</pre>}</div>}
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Profile ID (leave blank to list all profiles)" value={vpLoadId} onChange={e => setVpLoadId(e.target.value)} />
+              {vpLoadResult && <div style={{ ...S.result, marginTop: 8 }}>{vpLoadResult.error ? <span style={{ color: '#f87171' }}>{vpLoadResult.error}</span> : vpLoadResult.profiles ? <div>{vpLoadResult.profiles.map((p,i)=><div key={i} style={{padding:'4px 0',borderBottom:'1px solid #27272a',fontSize:12,color:'#d4d4d8'}}><span style={{color:'#a78bfa',fontWeight:600}}>{p.name}</span> <span style={{color:'#71717a',fontSize:11}}>ID: {p.id}</span></div>)}</div> : <pre style={{ margin: 0, fontSize: 12, color: '#d4d4d8', whiteSpace: 'pre-wrap' }}>{JSON.stringify(vpLoadResult.profile || vpLoadResult, null, 2)}</pre>}</div>}
             </div>
           </>
         )}

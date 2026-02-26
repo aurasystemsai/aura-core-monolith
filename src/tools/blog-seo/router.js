@@ -6274,6 +6274,13 @@ router.post('/voice-profile/save', (req, res) => {
   res.json({ ok: true, profile });
 });
 
+router.get('/voice-profile/:id', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const profile = loadVoices(shop).find(p => p.id === req.params.id);
+  if (!profile) return res.status(404).json({ ok: false, error: 'Profile not found' });
+  res.json({ ok: true, profile });
+});
+
 router.delete('/voice-profile/:id', (req, res) => {
   const shop = req.headers['x-shopify-shop-domain'] || 'default';
   const profiles = loadVoices(shop).filter(p => p.id !== req.params.id);
