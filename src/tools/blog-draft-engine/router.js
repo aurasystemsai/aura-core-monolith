@@ -25,7 +25,7 @@ router.get('/health', (_req, res) => {
       ideation: 'active',
       brief: 'active',
       drafting: 'active',
-      seo: 'active',
+      seo: 'delegated → /api/blog-seo',
       distribution: 'active',
       collaboration: 'active',
       performance: 'active',
@@ -416,76 +416,18 @@ router.get('/drafts/stats', (_req, res) => {
 });
 
 // =============================================================================
-// SEO OPTIMIZER ENGINE (35+ endpoints)
+// NOTE: SEO analysis routes have been removed from this tool.
+// All SEO analysis is handled by the dedicated /api/blog-seo tool:
+//   POST /api/blog-seo/analyze              → page SEO analysis
+//   POST /api/blog-seo/metadata/analyze     → title/description audit
+//   POST /api/blog-seo/schema/generate      → schema markup
+//   POST /api/blog-seo/image-seo            → image audit
+//   POST /api/blog-seo/keywords/evaluate    → keyword density
+//   POST /api/blog-seo/links/internal-suggestions → internal link suggestions
+//   POST /api/blog-seo/content/advanced-readability → readability score
+//   POST /api/blog-seo/serp-features        → featured snippet optimisation
+//   POST /api/blog-seo/competitor-gap       → competitor analysis
 // =============================================================================
-
-// SEO Analysis
-router.post('/seo/analyze', (req, res) => {
-  const analysis = seoEngine.analyzeSEO(req.body);
-  res.json({ success: true, data: analysis });
-});
-
-router.post('/seo/metadata/optimize', (req, res) => {
-  const optimized = seoEngine.optimizeMetadata(req.body);
-  res.json({ success: true, data: optimized });
-});
-
-router.post('/seo/schema/generate', (req, res) => {
-  const schema = seoEngine.generateSchemaMarkup(req.body);
-  res.json({ success: true, data: schema });
-});
-
-router.post('/seo/images/audit', (req, res) => {
-  const audit = seoEngine.auditImages(req.body);
-  res.json({ success: true, data: audit });
-});
-
-router.post('/seo/keywords/analyze', (req, res) => {
-  const analysis = seoEngine.analyzeKeywordDensity(req.body.content, req.body.targetKeywords);
-  res.json({ success: true, data: analysis });
-});
-
-router.post('/seo/internal-links/suggest', (req, res) => {
-  const suggestions = seoEngine.suggestInternalLinks(req.body);
-  res.json({ success: true, data: suggestions });
-});
-
-router.post('/seo/readability/score', (req, res) => {
-  const score = seoEngine.calculateReadabilityScore(req.body.content);
-  res.json({ success: true, data: score });
-});
-
-router.post('/seo/featured-snippet/optimize', (req, res) => {
-  const optimized = seoEngine.optimizeForFeaturedSnippet(req.body);
-  res.json({ success: true, data: optimized });
-});
-
-router.post('/seo/competitors/analyze', (req, res) => {
-  const analysis = seoEngine.analyzeCompetitors(req.body);
-  res.json({ success: true, data: analysis });
-});
-
-// SEO Reports
-router.get('/seo/reports/:draftId', (req, res) => {
-  const report = seoEngine.generateSEOReport(req.params.draftId);
-  if (!report) return res.status(404).json({ success: false, error: 'Draft not found' });
-  res.json({ success: true, data: report });
-});
-
-router.get('/seo/recommendations/:draftId', (req, res) => {
-  const recommendations = seoEngine.generateRecommendations(req.params.draftId);
-  res.json({ success: true, data: recommendations });
-});
-
-router.get('/seo/stats', (_req, res) => {
-  const stats = {
-    totalAnalyses: seoEngine.seoAnalyses?.size || 0,
-    avgScore: 0,
-    topIssues: []
-  };
-  
-  res.json({ success: true, data: stats });
-});
 
 // =============================================================================
 // DISTRIBUTION CHANNELS ENGINE (40+ endpoints)
