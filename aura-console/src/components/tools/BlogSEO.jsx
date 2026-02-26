@@ -414,17 +414,11 @@ export default function BlogSEO() {
   const [metaOptResult, setMetaOptResult] = useState(null);
   const [metaOptLoading, setMetaOptLoading] = useState(false);
 
-  const [decayResult, setDecayResult] = useState(null);
-  const [decayLoading, setDecayLoading] = useState(false);
-
   const [compUrls, setCompUrls] = useState("");
 
   const [cannibUrls, setCannibUrls] = useState("");
   const [cannibResult, setCannibResult] = useState(null);
   const [cannibLoading, setCannibLoading] = useState(false);
-
-  const [anchorResult, setAnchorResult] = useState(null);
-  const [anchorLoading, setAnchorLoading] = useState(false);
 
   const [tocResult, setTocResult] = useState(null);
   const [tocLoading, setTocLoading] = useState(false);
@@ -504,9 +498,6 @@ export default function BlogSEO() {
   const [hreflangResult, setHreflangResult] = useState(null);
   const [hreflangLoading, setHreflangLoading] = useState(false);
   const [hreflangMarkets, setHreflangMarkets] = useState("");
-
-  const [ampResult, setAmpResult] = useState(null);
-  const [ampLoading, setAmpLoading] = useState(false);
 
   const [resourceHintsResult, setResourceHintsResult] = useState(null);
   const [resourceHintsLoading, setResourceHintsLoading] = useState(false);
@@ -696,6 +687,36 @@ export default function BlogSEO() {
   const [clickDepthResult, setClickDepthResult] = useState(null); const [clickDepthLoading, setClickDepthLoading] = useState(false);
   const [logFileResult, setLogFileResult] = useState(null); const [logFileLoading, setLogFileLoading] = useState(false); const [logSnippet, setLogSnippet] = useState("");
   const [intlSeoResult, setIntlSeoResult] = useState(null); const [intlSeoLoading, setIntlSeoLoading] = useState(false); const [intlSeoMarkets, setIntlSeoMarkets] = useState("");
+
+  /* -- Technical+ batch 2 state -- */
+  const [jsRenderResult, setJsRenderResult] = useState(null); const [jsRenderLoading, setJsRenderLoading] = useState(false); const [jsRenderErr, setJsRenderErr] = useState('');
+  const [searchPreviewResult, setSearchPreviewResult] = useState(null); const [searchPreviewLoading, setSearchPreviewLoading] = useState(false); const [spTitle, setSpTitle] = useState(''); const [spDesc, setSpDesc] = useState('');
+  const [lcpResult, setLcpResult] = useState(null); const [lcpLoading, setLcpLoading] = useState(false); const [lcpErr, setLcpErr] = useState('');
+  const [negSeoResult, setNegSeoResult] = useState(null); const [negSeoLoading, setNegSeoLoading] = useState(false); const [negSeoDomain, setNegSeoDomain] = useState('');
+  const [fontAuditResult, setFontAuditResult] = useState(null); const [fontAuditLoading, setFontAuditLoading] = useState(false);
+  const [ampResult, setAmpResult] = useState(null); const [ampLoading, setAmpLoading] = useState(false);
+  const [pwaResult, setPwaResult] = useState(null); const [pwaLoading, setPwaLoading] = useState(false); const [pwaDomain, setPwaDomain] = useState('');
+  const [botBlockerResult, setBotBlockerResult] = useState(null); const [botBlockerLoading, setBotBlockerLoading] = useState(false); const [botStrategy, setBotStrategy] = useState('balanced');
+  const [siteArchResult, setSiteArchResult] = useState(null); const [siteArchLoading, setSiteArchLoading] = useState(false); const [siteArchUrls, setSiteArchUrls] = useState('');
+  const [logAnalyseResult, setLogAnalyseResult] = useState(null); const [logAnalyseLoading, setLogAnalyseLoading] = useState(false); const [logSampleInput, setLogSampleInput] = useState('');
+  /* -- Content+ batch state -- */
+  const [helpfulContentResult, setHelpfulContentResult] = useState(null); const [helpfulContentLoading, setHelpfulContentLoading] = useState(false); const [helpfulContentText, setHelpfulContentText] = useState('');
+  const [decayResult, setDecayResult] = useState(null); const [decayLoading, setDecayLoading] = useState(false);
+  const [pageExpResult, setPageExpResult] = useState(null); const [pageExpLoading, setPageExpLoading] = useState(false);
+  /* -- Schema & Links batch state -- */
+  const [linkOppResult, setLinkOppResult] = useState(null); const [linkOppLoading, setLinkOppLoading] = useState(false); const [linkOppSource, setLinkOppSource] = useState('');
+  const [anchorResult, setAnchorResult] = useState(null); const [anchorLoading, setAnchorLoading] = useState(false);
+  /* -- Shopify SEO batch 2 state -- */
+  const [tagTaxResult, setTagTaxResult] = useState(null); const [tagTaxLoading, setTagTaxLoading] = useState(false); const [tagList, setTagList] = useState('');
+  const [blogLinksResult, setBlogLinksResult] = useState(null); const [blogLinksLoading, setBlogLinksLoading] = useState(false); const [blogLinksHandle, setBlogLinksHandle] = useState('news');
+  const [imgCompResult, setImgCompResult] = useState(null); const [imgCompLoading, setImgCompLoading] = useState(false);
+  const [dupProdResult, setDupProdResult] = useState(null); const [dupProdLoading, setDupProdLoading] = useState(false);
+  const [bcSchemaResult, setBcSchemaResult] = useState(null); const [bcSchemaLoading, setBcSchemaLoading] = useState(false);
+  const [revSchemaResult, setRevSchemaResult] = useState(null); const [revSchemaLoading, setRevSchemaLoading] = useState(false);
+  const [shopIntlResult, setShopIntlResult] = useState(null); const [shopIntlLoading, setShopIntlLoading] = useState(false); const [shopIntlMarkets, setShopIntlMarkets] = useState('');
+  const [collKwResult, setCollKwResult] = useState(null); const [collKwLoading, setCollKwLoading] = useState(false); const [collTitle, setCollTitle] = useState(''); const [collDesc, setCollDesc] = useState('');
+  const [themeResult, setThemeResult] = useState(null); const [themeLoading, setThemeLoading] = useState(false); const [themeName, setThemeName] = useState('Dawn');
+  const [speedResult, setSpeedResult] = useState(null); const [speedLoading, setSpeedLoading] = useState(false); const [speedDomain, setSpeedDomain] = useState('');
 
   /* -- ANALYZER ----------------------------------------------------------- */
   const runScan = useCallback(async () => {
@@ -4874,6 +4895,68 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+
+            {/* === Helpful Content Checker === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>✅ Helpful Content Checker</div>
+                <button style={S.btn(helpfulContentResult?undefined:'primary')}
+                  onClick={async()=>{setHelpfulContentLoading(true);setHelpfulContentResult(null);try{const r=await apiFetch(`${API}/helpful-content-check`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:helpfulContentText,url,shop:shopDomain})});const d=await r.json();setHelpfulContentResult(d);}catch(e){setHelpfulContentResult({ok:false,error:e.message});}finally{setHelpfulContentLoading(false);}}}
+                  disabled={helpfulContentLoading||(!helpfulContentText.trim()&&!url)}>
+                  {helpfulContentLoading?<><span style={S.spinner}/> Checking...</>:'Check Content'}
+                </button>
+              </div>
+              <textarea style={{...S.input,minHeight:80,resize:'vertical'}} placeholder="Paste content to check, or leave blank to use current URL" value={helpfulContentText} onChange={e=>setHelpfulContentText(e.target.value)}/>
+              {helpfulContentResult&&!helpfulContentResult.ok&&<div style={S.err}>{helpfulContentResult.error}</div>}
+              {helpfulContentResult&&helpfulContentResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:helpfulContentResult.helpfulnessScore>=75?'#22c55e':helpfulContentResult.helpfulnessScore>=50?'#eab308':'#ef4444'}}>Score: {helpfulContentResult.helpfulnessScore}/100</span>
+                  <span style={{color:'#818cf8'}}>E-E-A-T: {helpfulContentResult.eeaatScore}/100</span>
+                </div>
+                {(helpfulContentResult.recommendations||[]).slice(0,5).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Content Decay Finder === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>📉 Content Decay Finder</div>
+                <button style={S.btn(decayResult?undefined:'primary')}
+                  onClick={async()=>{setDecayLoading(true);setDecayResult(null);try{const r=await apiFetch(`${API}/content-decay-finder`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:shopDomain,urls:[],shop:shopDomain})});const d=await r.json();setDecayResult(d);}catch(e){setDecayResult({ok:false,error:e.message});}finally{setDecayLoading(false);}}}
+                  disabled={decayLoading}>
+                  {decayLoading?<><span style={S.spinner}/> Scanning...</>:'Find Decayed Content'}
+                </button>
+              </div>
+              {decayResult&&!decayResult.ok&&<div style={S.err}>{decayResult.error}</div>}
+              {decayResult&&decayResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{fontWeight:600,marginBottom:6}}>Decay risk: <span style={{color:decayResult.decayRisk==='high'?'#ef4444':decayResult.decayRisk==='medium'?'#eab308':'#22c55e'}}>{decayResult.decayRisk||'low'}</span></div>
+                {(decayResult.topDecayingPages||[]).slice(0,4).map((p,i)=><div key={i} style={{padding:'3px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>
+                  📉 {typeof p==='string'?p:(p.url||p.title||JSON.stringify(p))}
+                </div>)}
+                {(decayResult.refreshPriority||[]).slice(0,3).map((r,i)=><div key={i} style={{fontSize:12,color:'#71717a',marginTop:4}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Page Experience Checker === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🌟 Page Experience Checker</div>
+                <button style={S.btn(pageExpResult?undefined:'primary')}
+                  onClick={async()=>{setPageExpLoading(true);setPageExpResult(null);try{const r=await apiFetch(`${API}/page-experience-check`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,shop:shopDomain})});const d=await r.json();setPageExpResult(d);}catch(e){setPageExpResult({ok:false,error:e.message});}finally{setPageExpLoading(false);}}}
+                  disabled={pageExpLoading||!url}>
+                  {pageExpLoading?<><span style={S.spinner}/> Checking...</>:'Check Experience'}
+                </button>
+              </div>
+              {pageExpResult&&!pageExpResult.ok&&<div style={S.err}>{pageExpResult.error}</div>}
+              {pageExpResult&&pageExpResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:pageExpResult.coreWebVitals?.lcp<=2.5?'#22c55e':'#ef4444'}}>LCP: {pageExpResult.coreWebVitals?.lcp}s</span>
+                  <span style={{color:pageExpResult.coreWebVitals?.fid<=100?'#22c55e':'#ef4444'}}>FID: {pageExpResult.coreWebVitals?.fid}ms</span>
+                  <span style={{color:pageExpResult.coreWebVitals?.cls<=0.1?'#22c55e':'#ef4444'}}>CLS: {pageExpResult.coreWebVitals?.cls}</span>
+                  <span style={{color:pageExpResult.mobileScore>=75?'#22c55e':'#eab308'}}>Mobile: {pageExpResult.mobileScore}/100</span>
+                </div>
+                {(pageExpResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+
           </>
         )}
 
@@ -5438,6 +5521,216 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+
+            {/* === JS Rendering Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>⚙️ JS Rendering Audit</div>
+                <button style={S.btn(jsRenderResult?undefined:'primary')}
+                  onClick={async()=>{setJsRenderLoading(true);setJsRenderResult(null);try{const r=await apiFetch(`${API}/js-rendering-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,shop:shopDomain})});const d=await r.json();setJsRenderResult(d);}catch(e){setJsRenderResult({ok:false,error:e.message});}finally{setJsRenderLoading(false);}}}
+                  disabled={jsRenderLoading||!url}>
+                  {jsRenderLoading?<><span style={S.spinner}/> Auditing...</>:'Audit JS Rendering'}
+                </button>
+              </div>
+              {jsRenderResult&&!jsRenderResult.ok&&<div style={S.err}>{jsRenderResult.error}</div>}
+              {jsRenderResult&&jsRenderResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Rendering: {jsRenderResult.renderingType}</span>
+                  <span style={{color:jsRenderResult.jsBlockedResources?.length>0?'#ef4444':'#22c55e'}}>Blocked: {jsRenderResult.jsBlockedResources?.length||0}</span>
+                </div>
+                {(jsRenderResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Search Preview === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🔍 Search Preview Generator</div>
+                <button style={S.btn(searchPreviewResult?undefined:'primary')}
+                  onClick={async()=>{setSearchPreviewLoading(true);setSearchPreviewResult(null);try{const r=await apiFetch(`${API}/search-preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,title:spTitle,description:spDesc,shop:shopDomain})});const d=await r.json();setSearchPreviewResult(d);}catch(e){setSearchPreviewResult({ok:false,error:e.message});}finally{setSearchPreviewLoading(false);}}}
+                  disabled={searchPreviewLoading||!url}>
+                  {searchPreviewLoading?<><span style={S.spinner}/> Generating...</>:'Preview'}
+                </button>
+              </div>
+              <div style={S.row}>
+                <input style={{...S.input,flex:1}} placeholder="Title override (optional)" value={spTitle} onChange={e=>setSpTitle(e.target.value)}/>
+                <input style={{...S.input,flex:2}} placeholder="Meta description override (optional)" value={spDesc} onChange={e=>setSpDesc(e.target.value)}/>
+              </div>
+              {searchPreviewResult&&!searchPreviewResult.ok&&<div style={S.err}>{searchPreviewResult.error}</div>}
+              {searchPreviewResult&&searchPreviewResult.ok&&<div style={{marginTop:10}}>
+                <div style={{background:'#1a1a2e',border:'1px solid #3f3f46',borderRadius:6,padding:12}}>
+                  <div style={{color:'#818cf8',fontSize:14,fontWeight:600,marginBottom:4}}>{searchPreviewResult.preview?.title}</div>
+                  <div style={{color:'#22c55e',fontSize:11,marginBottom:4}}>{searchPreviewResult.preview?.url}</div>
+                  <div style={{color:'#d4d4d8',fontSize:12}}>{searchPreviewResult.preview?.description}</div>
+                </div>
+                {searchPreviewResult.titleIssues&&<div style={{fontSize:12,color:'#fbbf24',marginTop:6}}>Title: {searchPreviewResult.titleIssues}</div>}
+                {searchPreviewResult.descIssues&&<div style={{fontSize:12,color:'#fbbf24'}}>Desc: {searchPreviewResult.descIssues}</div>}
+              </div>}
+            </div>
+            {/* === LCP Deep Dive === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>⚡ LCP Deep Dive</div>
+                <button style={S.btn(lcpResult?undefined:'primary')}
+                  onClick={async()=>{setLcpLoading(true);setLcpResult(null);try{const r=await apiFetch(`${API}/lcp-deep-dive`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,shop:shopDomain})});const d=await r.json();setLcpResult(d);}catch(e){setLcpResult({ok:false,error:e.message});}finally{setLcpLoading(false);}}}
+                  disabled={lcpLoading||!url}>
+                  {lcpLoading?<><span style={S.spinner}/> Analysing...</>:'Analyse LCP'}
+                </button>
+              </div>
+              {lcpResult&&!lcpResult.ok&&<div style={S.err}>{lcpResult.error}</div>}
+              {lcpResult&&lcpResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>LCP Element: {lcpResult.lcpElement}</span>
+                  <span style={{color:parseFloat(lcpResult.estimatedLcp)<=2.5?'#22c55e':parseFloat(lcpResult.estimatedLcp)<=4?'#eab308':'#ef4444'}}>Est: {lcpResult.estimatedLcp}</span>
+                </div>
+                {(lcpResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Negative SEO Detector === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🛡️ Negative SEO Detector</div>
+                <button style={S.btn(negSeoResult?undefined:'primary')}
+                  onClick={async()=>{setNegSeoLoading(true);setNegSeoResult(null);try{const r=await apiFetch(`${API}/negative-seo-detector`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:negSeoDomain||shopDomain,shop:shopDomain})});const d=await r.json();setNegSeoResult(d);}catch(e){setNegSeoResult({ok:false,error:e.message});}finally{setNegSeoLoading(false);}}}
+                  disabled={negSeoLoading}>
+                  {negSeoLoading?<><span style={S.spinner}/> Scanning...</>:'Scan Threats'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Domain (or leave blank to use connected store)" value={negSeoDomain} onChange={e=>setNegSeoDomain(e.target.value)}/>
+              {negSeoResult&&!negSeoResult.ok&&<div style={S.err}>{negSeoResult.error}</div>}
+              {negSeoResult&&negSeoResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:negSeoResult.riskScore>=7?'#ef4444':negSeoResult.riskScore>=4?'#eab308':'#22c55e'}}>Risk: {negSeoResult.riskScore}/10</span>
+                  <span style={{color:'#818cf8'}}>Toxic links: {negSeoResult.toxicLinks?.length||0}</span>
+                </div>
+                {(negSeoResult.threats||[]).slice(0,4).map((t,i)=><div key={i} style={{padding:'2px 0',fontSize:12,color:'#fbbf24',borderBottom:'1px solid #27272a'}}>⚠ {typeof t==='string'?t:JSON.stringify(t)}</div>)}
+                {(negSeoResult.recommendations||[]).slice(0,2).map((r,i)=><div key={i} style={{fontSize:12,color:'#71717a',marginTop:4}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Font Performance Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🔤 Font Performance Audit</div>
+                <button style={S.btn(fontAuditResult?undefined:'primary')}
+                  onClick={async()=>{setFontAuditLoading(true);setFontAuditResult(null);try{const r=await apiFetch(`${API}/font-performance-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,shop:shopDomain})});const d=await r.json();setFontAuditResult(d);}catch(e){setFontAuditResult({ok:false,error:e.message});}finally{setFontAuditLoading(false);}}}
+                  disabled={fontAuditLoading||!url}>
+                  {fontAuditLoading?<><span style={S.spinner}/> Auditing...</>:'Audit Fonts'}
+                </button>
+              </div>
+              {fontAuditResult&&!fontAuditResult.ok&&<div style={S.err}>{fontAuditResult.error}</div>}
+              {fontAuditResult&&fontAuditResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Fonts found: {fontAuditResult.fontsFound?.length||0}</span>
+                  <span style={{color:fontAuditResult.hasFontDisplay?'#22c55e':'#ef4444'}}>font-display: {fontAuditResult.hasFontDisplay?'✓':'✗'}</span>
+                </div>
+                {(fontAuditResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === AMP Validator === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>⚡ AMP Validator</div>
+                <button style={S.btn(ampResult?undefined:'primary')}
+                  onClick={async()=>{setAmpLoading(true);setAmpResult(null);try{const r=await apiFetch(`${API}/amp-validator`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,shop:shopDomain})});const d=await r.json();setAmpResult(d);}catch(e){setAmpResult({ok:false,error:e.message});}finally{setAmpLoading(false);}}}
+                  disabled={ampLoading||!url}>
+                  {ampLoading?<><span style={S.spinner}/> Validating...</>:'Validate AMP'}
+                </button>
+              </div>
+              {ampResult&&!ampResult.ok&&<div style={S.err}>{ampResult.error}</div>}
+              {ampResult&&ampResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{marginBottom:6}}>
+                  <span style={{background:ampResult.ampDetected?'#14532d':'#1c1c2e',color:ampResult.ampDetected?'#22c55e':'#71717a',borderRadius:4,padding:'2px 8px',fontSize:12}}>AMP: {ampResult.ampDetected?'Detected':'Not detected'}</span>
+                </div>
+                {ampResult.errors?.length>0&&<div style={{color:'#ef4444',fontSize:12,marginBottom:4}}>Errors: {ampResult.errors.length}</div>}
+                {(ampResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === PWA Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>📱 PWA Audit</div>
+                <button style={S.btn(pwaResult?undefined:'primary')}
+                  onClick={async()=>{setPwaLoading(true);setPwaResult(null);try{const r=await apiFetch(`${API}/pwa-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:pwaDomain||shopDomain,shop:shopDomain})});const d=await r.json();setPwaResult(d);}catch(e){setPwaResult({ok:false,error:e.message});}finally{setPwaLoading(false);}}}
+                  disabled={pwaLoading}>
+                  {pwaLoading?<><span style={S.spinner}/> Auditing...</>:'Audit PWA'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Domain (or leave blank for connected store)" value={pwaDomain} onChange={e=>setPwaDomain(e.target.value)}/>
+              {pwaResult&&!pwaResult.ok&&<div style={S.err}>{pwaResult.error}</div>}
+              {pwaResult&&pwaResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Score: {pwaResult.pwaScore}/100</span>
+                  <span style={{color:pwaResult.serviceWorker?'#22c55e':'#ef4444'}}>SW: {pwaResult.serviceWorker?'✓':'✗'}</span>
+                  <span style={{color:pwaResult.manifestFile?'#22c55e':'#ef4444'}}>Manifest: {pwaResult.manifestFile?'✓':'✗'}</span>
+                </div>
+                {(pwaResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === AI Bot Blocker Config === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🤖 AI Bot Blocker Config</div>
+                <button style={S.btn(botBlockerResult?undefined:'primary')}
+                  onClick={async()=>{setBotBlockerLoading(true);setBotBlockerResult(null);try{const r=await apiFetch(`${API}/ai-bot-blocker-config`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:shopDomain,strategy:botStrategy,shop:shopDomain})});const d=await r.json();setBotBlockerResult(d);}catch(e){setBotBlockerResult({ok:false,error:e.message});}finally{setBotBlockerLoading(false);}}}
+                  disabled={botBlockerLoading}>
+                  {botBlockerLoading?<><span style={S.spinner}/> Generating...</>:'Generate Config'}
+                </button>
+              </div>
+              <select style={{...S.input,width:'auto'}} value={botStrategy} onChange={e=>setBotStrategy(e.target.value)}>
+                <option value="balanced">Balanced</option>
+                <option value="strict">Strict (block all AI)</option>
+                <option value="selective">Selective (allow search AI)</option>
+                <option value="permissive">Permissive</option>
+              </select>
+              {botBlockerResult&&!botBlockerResult.ok&&<div style={S.err}>{botBlockerResult.error}</div>}
+              {botBlockerResult&&botBlockerResult.ok&&<div style={{fontSize:13,marginTop:10}}>
+                <pre style={{background:'#09090b',border:'1px solid #27272a',padding:8,borderRadius:6,fontSize:11,overflowX:'auto',maxHeight:160,color:'#86efac'}}>{botBlockerResult.robotsTxtRules||''}</pre>
+                {botBlockerResult.metaTagsToAdd&&<div style={{marginTop:8,fontSize:12,color:'#818cf8'}}>Meta X-Robots: {botBlockerResult.metaTagsToAdd}</div>}
+              </div>}
+            </div>
+            {/* === Site Architecture === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🏗️ Site Architecture Analyser</div>
+                <button style={S.btn(siteArchResult?undefined:'primary')}
+                  onClick={async()=>{setSiteArchLoading(true);setSiteArchResult(null);try{const r=await apiFetch(`${API}/site-architecture`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({urls:siteArchUrls.split('\n').map(u=>u.trim()).filter(Boolean),domain:shopDomain,shop:shopDomain})});const d=await r.json();setSiteArchResult(d);}catch(e){setSiteArchResult({ok:false,error:e.message});}finally{setSiteArchLoading(false);}}}
+                  disabled={siteArchLoading}>
+                  {siteArchLoading?<><span style={S.spinner}/> Mapping...</>:'Map Architecture'}
+                </button>
+              </div>
+              <textarea style={{...S.input,minHeight:60,resize:'vertical',fontFamily:'monospace',fontSize:12}} placeholder="Paste URLs (one per line), or leave blank to use sitemap" value={siteArchUrls} onChange={e=>setSiteArchUrls(e.target.value)}/>
+              {siteArchResult&&!siteArchResult.ok&&<div style={S.err}>{siteArchResult.error}</div>}
+              {siteArchResult&&siteArchResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Depth: {siteArchResult.maxDepth}</span>
+                  <span style={{color:'#818cf8'}}>Orphaned: {siteArchResult.orphanedPages?.length||0}</span>
+                  <span style={{color:siteArchResult.score>=75?'#22c55e':'#eab308'}}>Score: {siteArchResult.score}/100</span>
+                </div>
+                {(siteArchResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Log File Analyser === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>📋 Log File Analyser</div>
+                <button style={S.btn(logAnalyseResult?undefined:'primary')}
+                  onClick={async()=>{setLogAnalyseLoading(true);setLogAnalyseResult(null);try{const r=await apiFetch(`${API}/log-analyser/upload`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({logSample:logSampleInput,shop:shopDomain})});const d=await r.json();setLogAnalyseResult(d);}catch(e){setLogAnalyseResult({ok:false,error:e.message});}finally{setLogAnalyseLoading(false);}}}
+                  disabled={logAnalyseLoading||!logSampleInput.trim()}>
+                  {logAnalyseLoading?<><span style={S.spinner}/> Analysing...</>:'Analyse Logs'}
+                </button>
+              </div>
+              <textarea style={{...S.input,minHeight:80,resize:'vertical',fontFamily:'monospace',fontSize:11}} placeholder="Paste a sample of your server access log lines here..." value={logSampleInput} onChange={e=>setLogSampleInput(e.target.value)}/>
+              {logAnalyseResult&&!logAnalyseResult.ok&&<div style={S.err}>{logAnalyseResult.error}</div>}
+              {logAnalyseResult&&logAnalyseResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Bot visits: {logAnalyseResult.botVisits}</span>
+                  <span style={{color:'#22c55e'}}>Crawl budget: {logAnalyseResult.crawlBudgetEfficiency}%</span>
+                  <span style={{color:'#fbbf24'}}>Errors: {logAnalyseResult.errors404?.length||0} 404s</span>
+                </div>
+                {(logAnalyseResult.topCrawledUrls||[]).slice(0,4).map((u,i)=><div key={i} style={{padding:'2px 0',fontSize:11,borderBottom:'1px solid #27272a',color:'#71717a'}}>{u}</div>)}
+                {(logAnalyseResult.recommendations||[]).slice(0,3).map((r,i)=><div key={i} style={{fontSize:12,color:'#d4d4d8',marginTop:4}}>▸ {r}</div>)}
+              </div>}
+            </div>
+
           </>
         )}
 
@@ -5722,6 +6015,50 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+
+            {/* === Internal Link Opportunities === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🔗 Internal Link Opportunities</div>
+                <button style={S.btn(linkOppResult?undefined:'primary')}
+                  onClick={async()=>{setLinkOppLoading(true);setLinkOppResult(null);try{const r=await apiFetch(`${API}/internal-link-opportunities`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sourceUrl:linkOppSource||url,shop:shopDomain})});const d=await r.json();setLinkOppResult(d);}catch(e){setLinkOppResult({ok:false,error:e.message});}finally{setLinkOppLoading(false);}}}
+                  disabled={linkOppLoading}>
+                  {linkOppLoading?<><span style={S.spinner}/> Finding...</>:'Find Opportunities'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Source URL (or leave blank to use current URL)" value={linkOppSource} onChange={e=>setLinkOppSource(e.target.value)}/>
+              {linkOppResult&&!linkOppResult.ok&&<div style={S.err}>{linkOppResult.error}</div>}
+              {linkOppResult&&linkOppResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{fontWeight:600,marginBottom:6,color:'#818cf8'}}>Link Score: {linkOppResult.linkScore}/100</div>
+                {(linkOppResult.opportunities||[]).slice(0,5).map((o,i)=><div key={i} style={{padding:'4px 0',borderBottom:'1px solid #27272a',fontSize:12}}>
+                  <span style={{color:'#22c55e'}}>▸</span> {typeof o==='string'?o:(o.targetUrl||o.anchor||JSON.stringify(o))}
+                </div>)}
+                {linkOppResult.orphanedPages?.length>0&&<div style={{color:'#fbbf24',marginTop:8,fontSize:12}}>Orphaned pages: {linkOppResult.orphanedPages.length}</div>}
+              </div>}
+            </div>
+            {/* === Anchor Text Analyser === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>⚓ Anchor Text Analyser</div>
+                <button style={S.btn(anchorResult?undefined:'primary')}
+                  onClick={async()=>{setAnchorLoading(true);setAnchorResult(null);try{const r=await apiFetch(`${API}/anchor-text-analyser`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetUrl:url,shop:shopDomain})});const d=await r.json();setAnchorResult(d);}catch(e){setAnchorResult({ok:false,error:e.message});}finally{setAnchorLoading(false);}}}
+                  disabled={anchorLoading||!url}>
+                  {anchorLoading?<><span style={S.spinner}/> Analysing...</>:'Analyse Anchors'}
+                </button>
+              </div>
+              {anchorResult&&!anchorResult.ok&&<div style={S.err}>{anchorResult.error}</div>}
+              {anchorResult&&anchorResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Diversity: {anchorResult.anchorDiversity}</span>
+                  <span style={{color:anchorResult.overOptimisedAnchors?.length>0?'#ef4444':'#22c55e'}}>Over-optimised: {anchorResult.overOptimisedAnchors?.length||0}</span>
+                </div>
+                {(anchorResult.distribution||[]).slice(0,5).map((d,i)=><div key={i} style={{fontSize:12,padding:'2px 0',borderBottom:'1px solid #27272a'}}>
+                  {d.text||d.anchor}: <span style={{color:'#818cf8'}}>{d.count||d.percentage}%</span>
+                </div>)}
+                {(anchorResult.recommendations||[]).slice(0,3).map((r,i)=><div key={i} style={{color:'#71717a',fontSize:12,marginTop:4}}>▸ {r}</div>)}
+              </div>}
+            </div>
+
           </>
         )}
 
@@ -7247,7 +7584,193 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
-          </>
+ 
+            {/* === Tag Taxonomy Optimiser === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🏷️ Tag Taxonomy Optimiser</div>
+                <button style={S.btn(tagTaxResult?undefined:'primary')}
+                  onClick={async()=>{setTagTaxLoading(true);setTagTaxResult(null);try{const r=await apiFetch(`${API}/shopify/tag-taxonomy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tags:tagList.split(',').map(t=>t.trim()).filter(Boolean),shop:shopDomain})});const d=await r.json();setTagTaxResult(d);}catch(e){setTagTaxResult({ok:false,error:e.message});}finally{setTagTaxLoading(false);}}}
+                  disabled={tagTaxLoading||!tagList.trim()}>
+                  {tagTaxLoading?<><span style={S.spinner}/> Analysing...</>:'Optimise Tags'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="tag1, tag2, tag3..." value={tagList} onChange={e=>setTagList(e.target.value)}/>
+              {tagTaxResult&&!tagTaxResult.ok&&<div style={S.err}>{tagTaxResult.error}</div>}
+              {tagTaxResult&&tagTaxResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{color:'#22c55e',fontWeight:600,marginBottom:6}}>Optimised tags</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>{(tagTaxResult.seoFriendlyTags||[]).slice(0,10).map((t,i)=><span key={i} style={{background:'#1e1e2e',border:'1px solid #3f3f46',borderRadius:4,padding:'2px 8px',fontSize:12}}>{t}</span>)}</div>
+                {tagTaxResult.redundantTags?.length>0&&<div style={{marginTop:8,color:'#fbbf24',fontSize:12}}>Redundant: {tagTaxResult.redundantTags.join(', ')}</div>}
+              </div>}
+            </div>
+            {/* === Blog Internal Links Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🔗 Blog Internal Links Audit</div>
+                <button style={S.btn(blogLinksResult?undefined:'primary')}
+                  onClick={async()=>{setBlogLinksLoading(true);setBlogLinksResult(null);try{const r=await apiFetch(`${API}/shopify/blog-internal-links`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({blogHandle:blogLinksHandle,shop:shopDomain})});const d=await r.json();setBlogLinksResult(d);}catch(e){setBlogLinksResult({ok:false,error:e.message});}finally{setBlogLinksLoading(false);}}}
+                  disabled={blogLinksLoading}>
+                  {blogLinksLoading?<><span style={S.spinner}/> Auditing...</>:'Audit Links'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Blog handle (e.g. news)" value={blogLinksHandle} onChange={e=>setBlogLinksHandle(e.target.value)}/>
+              {blogLinksResult&&!blogLinksResult.ok&&<div style={S.err}>{blogLinksResult.error}</div>}
+              {blogLinksResult&&blogLinksResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{fontWeight:600,color:'#818cf8',marginBottom:4}}>Link Density Score: {blogLinksResult.linkDensityScore}/100</div>
+                {(blogLinksResult.crossLinkSuggestions||[]).slice(0,5).map((s,i)=><div key={i} style={{padding:'3px 0',borderBottom:'1px solid #27272a',fontSize:12}}>▸ {s}</div>)}
+              </div>}
+            </div>
+            {/* === Image Compression Advisor === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>📷 Image Compression Advisor</div>
+                <button style={S.btn(imgCompResult?undefined:'primary')}
+                  onClick={async()=>{setImgCompLoading(true);setImgCompResult(null);try{const r=await apiFetch(`${API}/shopify/image-compression`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain,productHandle:selectedProductId||''})});const d=await r.json();setImgCompResult(d);}catch(e){setImgCompResult({ok:false,error:e.message});}finally{setImgCompLoading(false);}}}
+                  disabled={imgCompLoading}>
+                  {imgCompLoading?<><span style={S.spinner}/> Analysing...</>:'Analyse Images'}
+                </button>
+              </div>
+              {imgCompResult&&!imgCompResult.ok&&<div style={S.err}>{imgCompResult.error}</div>}
+              {imgCompResult&&imgCompResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>Recommend: {(imgCompResult.formatRecommendations||['WebP'])[0]}</span>
+                  <span style={{color:imgCompResult.clsRisk==='Low'?'#22c55e':'#ef4444'}}>CLS Risk: {imgCompResult.clsRisk||'Low'}</span>
+                  <span style={{color:imgCompResult.score>=75?'#22c55e':'#eab308'}}>Score: {imgCompResult.score}/100</span>
+                </div>
+                {(imgCompResult.lazyLoadCandidates||[]).length>0&&<div style={{fontSize:12,color:'#71717a'}}>Lazy-load candidates: {imgCompResult.lazyLoadCandidates.length}</div>}
+              </div>}
+            </div>
+            {/* === Duplicate Product Detector === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>📊 Duplicate Product Detector</div>
+                <button style={S.btn(dupProdResult?undefined:'primary')}
+                  onClick={async()=>{setDupProdLoading(true);setDupProdResult(null);try{const r=await apiFetch(`${API}/shopify/duplicate-products`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({products:shopifyProducts.slice(0,20).map(p=>({title:p.title,handle:p.handle,description:p.description||''})),shop:shopDomain})});const d=await r.json();setDupProdResult(d);}catch(e){setDupProdResult({ok:false,error:e.message});}finally{setDupProdLoading(false);}}}
+                  disabled={dupProdLoading}>
+                  {dupProdLoading?<><span style={S.spinner}/> Scanning...</>:'Scan Products'}
+                </button>
+              </div>
+              {dupProdResult&&!dupProdResult.ok&&<div style={S.err}>{dupProdResult.error}</div>}
+              {dupProdResult&&dupProdResult.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:10}}>
+                <span style={{background:dupProdResult.riskLevel==='high'?'#7f1d1d':dupProdResult.riskLevel==='medium'?'#78350f':'#14532d',color:'#fafafa',borderRadius:4,padding:'2px 8px',fontSize:12}}>{dupProdResult.riskLevel||'low'} risk</span>
+                <div style={{marginTop:8}}>{(dupProdResult.duplicatePairs||[]).slice(0,4).map((p,i)=><div key={i} style={{padding:'3px 0',color:'#fbbf24',fontSize:12}}>⚠ {typeof p==='string'?p:JSON.stringify(p)}</div>)}</div>
+                {(dupProdResult.recommendations||[]).slice(0,2).map((r,i)=><div key={i} style={{fontSize:12,color:'#71717a'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Breadcrumb Schema Bulk === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🗺️ Breadcrumb Schema Bulk Generator</div>
+                <button style={S.btn(bcSchemaResult?undefined:'primary')}
+                  onClick={async()=>{setBcSchemaLoading(true);setBcSchemaResult(null);try{const r=await apiFetch(`${API}/shopify/breadcrumb-schema`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pages:shopifyArticles.map(a=>({url:a.handle,title:a.title})).slice(0,10),shop:shopDomain})});const d=await r.json();setBcSchemaResult(d);}catch(e){setBcSchemaResult({ok:false,error:e.message});}finally{setBcSchemaLoading(false);}}}
+                  disabled={bcSchemaLoading}>
+                  {bcSchemaLoading?<><span style={S.spinner}/> Generating...</>:'Generate Schemas'}
+                </button>
+              </div>
+              {bcSchemaResult&&!bcSchemaResult.ok&&<div style={S.err}>{bcSchemaResult.error}</div>}
+              {bcSchemaResult&&bcSchemaResult.ok&&<div style={{fontSize:13,marginTop:10}}>
+                <div style={{fontWeight:600,marginBottom:4,color:'#22c55e'}}>Coverage: {bcSchemaResult.coverageScore}%</div>
+                {bcSchemaResult.liquidSnippet&&<pre style={{background:'#09090b',border:'1px solid #27272a',padding:8,borderRadius:6,fontSize:11,overflowX:'auto',maxHeight:140,color:'#86efac'}}>{bcSchemaResult.liquidSnippet}</pre>}
+              </div>}
+            </div>
+            {/* === Review Schema Bulk === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>⭐ Review Schema Bulk Generator</div>
+                <button style={S.btn(revSchemaResult?undefined:'primary')}
+                  onClick={async()=>{setRevSchemaLoading(true);setRevSchemaResult(null);try{const r=await apiFetch(`${API}/shopify/review-schema-bulk`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({products:shopifyProducts.slice(0,10).map(p=>({title:p.title,handle:p.handle})),shop:shopDomain})});const d=await r.json();setRevSchemaResult(d);}catch(e){setRevSchemaResult({ok:false,error:e.message});}finally{setRevSchemaLoading(false);}}}
+                  disabled={revSchemaLoading}>
+                  {revSchemaLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}
+                </button>
+              </div>
+              {revSchemaResult&&!revSchemaResult.ok&&<div style={S.err}>{revSchemaResult.error}</div>}
+              {revSchemaResult&&revSchemaResult.ok&&<div style={{fontSize:13,marginTop:10}}>
+                <div style={{marginBottom:6,color:'#d4d4d8'}}>Generated for {(revSchemaResult.schemas||[]).length} products</div>
+                {revSchemaResult.liquidTemplate&&<pre style={{background:'#09090b',border:'1px solid #27272a',padding:8,borderRadius:6,fontSize:11,overflowX:'auto',maxHeight:140,color:'#86efac'}}>{revSchemaResult.liquidTemplate}</pre>}
+              </div>}
+            </div>
+            {/* === International SEO (Shopify) === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🌐 International SEO (hreflang)</div>
+                <button style={S.btn(shopIntlResult?undefined:'primary')}
+                  onClick={async()=>{setShopIntlLoading(true);setShopIntlResult(null);try{const r=await apiFetch(`${API}/shopify/international-seo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:shopDomain,markets:shopIntlMarkets.split(',').map(m=>m.trim()).filter(Boolean),shop:shopDomain})});const d=await r.json();setShopIntlResult(d);}catch(e){setShopIntlResult({ok:false,error:e.message});}finally{setShopIntlLoading(false);}}}
+                  disabled={shopIntlLoading}>
+                  {shopIntlLoading?<><span style={S.spinner}/> Checking...</>:'Check hreflang'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Markets, e.g. UK, DE, FR" value={shopIntlMarkets} onChange={e=>setShopIntlMarkets(e.target.value)}/>
+              {shopIntlResult&&!shopIntlResult.ok&&<div style={S.err}>{shopIntlResult.error}</div>}
+              {shopIntlResult&&shopIntlResult.ok&&<div style={{fontSize:13,marginTop:10,color:'#d4d4d8'}}>
+                <div style={{fontWeight:600,marginBottom:4}}>hreflang: {shopIntlResult.hreflangImplementation}</div>
+                {(shopIntlResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Collection Keyword Gaps === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🔍 Collection Keyword Gaps</div>
+                <button style={S.btn(collKwResult?undefined:'primary')}
+                  onClick={async()=>{setCollKwLoading(true);setCollKwResult(null);try{const r=await apiFetch(`${API}/shopify/collection-keyword-gaps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collectionTitle:collTitle,collectionDesc:collDesc,shop:shopDomain})});const d=await r.json();setCollKwResult(d);}catch(e){setCollKwResult({ok:false,error:e.message});}finally{setCollKwLoading(false);}}}
+                  disabled={collKwLoading||!collTitle.trim()}>
+                  {collKwLoading?<><span style={S.spinner}/> Scanning...</>:'Find Gaps'}
+                </button>
+              </div>
+              <div style={S.row}>
+                <input style={{...S.input,flex:1}} placeholder="Collection title" value={collTitle} onChange={e=>setCollTitle(e.target.value)}/>
+                <input style={{...S.input,flex:2}} placeholder="Description (optional)" value={collDesc} onChange={e=>setCollDesc(e.target.value)}/>
+              </div>
+              {collKwResult&&!collKwResult.ok&&<div style={S.err}>{collKwResult.error}</div>}
+              {collKwResult&&collKwResult.ok&&<div style={{fontSize:13,marginTop:10}}>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
+                  {(collKwResult.missingKeywords||[]).slice(0,8).map((k,i)=><span key={i} style={{background:'#1e1b4b',color:'#c4b5fd',border:'1px solid #4f46e5',borderRadius:4,padding:'2px 8px',fontSize:12}}>{k}</span>)}
+                </div>
+                {(collKwResult.headingOpportunities||[]).slice(0,3).map((h,i)=><div key={i} style={{fontSize:12,color:'#71717a'}}>H2: {h}</div>)}
+              </div>}
+            </div>
+            {/* === Theme SEO Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🎨 Theme SEO Audit</div>
+                <button style={S.btn(themeResult?undefined:'primary')}
+                  onClick={async()=>{setThemeLoading(true);setThemeResult(null);try{const r=await apiFetch(`${API}/shopify/theme-seo-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({themeName,shop:shopDomain})});const d=await r.json();setThemeResult(d);}catch(e){setThemeResult({ok:false,error:e.message});}finally{setThemeLoading(false);}}}
+                  disabled={themeLoading||!themeName.trim()}>
+                  {themeLoading?<><span style={S.spinner}/> Auditing...</>:'Audit Theme'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Theme name (e.g. Dawn)" value={themeName} onChange={e=>setThemeName(e.target.value)}/>
+              {themeResult&&!themeResult.ok&&<div style={S.err}>{themeResult.error}</div>}
+              {themeResult&&themeResult.ok&&<div style={{fontSize:13,marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>H-Score: {themeResult.headingHierarchyScore}</span>
+                  <span style={{color:themeResult.jsonLdPresent?'#22c55e':'#ef4444'}}>Schema: {themeResult.jsonLdPresent?'✓ Present':'✗ Missing'}</span>
+                  <span style={{color:themeResult.score>=75?'#22c55e':themeResult.score>=50?'#eab308':'#ef4444'}}>Score: {themeResult.score}/100</span>
+                </div>
+                {(themeResult.recommendations||[]).slice(0,4).map((r,i)=><div key={i} style={{padding:'2px 0',fontSize:12,color:'#d4d4d8'}}>▸ {r}</div>)}
+              </div>}
+            </div>
+            {/* === Shop Speed Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row, alignItems:'center', marginBottom:8}}>
+                <div style={{...S.cardTitle, marginBottom:0}}>🚀 Shop Speed Audit</div>
+                <button style={S.btn(speedResult?undefined:'primary')}
+                  onClick={async()=>{setSpeedLoading(true);setSpeedResult(null);try{const r=await apiFetch(`${API}/shopify/speed-audit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domain:speedDomain||shopDomain,shop:shopDomain})});const d=await r.json();setSpeedResult(d);}catch(e){setSpeedResult({ok:false,error:e.message});}finally{setSpeedLoading(false);}}}
+                  disabled={speedLoading}>
+                  {speedLoading?<><span style={S.spinner}/> Auditing...</>:'Audit Speed'}
+                </button>
+              </div>
+              <input style={S.input} placeholder="Shop domain (or leave blank to use connected store)" value={speedDomain} onChange={e=>setSpeedDomain(e.target.value)}/>
+              {speedResult&&!speedResult.ok&&<div style={S.err}>{speedResult.error}</div>}
+              {speedResult&&speedResult.ok&&<div style={{fontSize:13,marginTop:10}}>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>
+                  <span style={{color:'#818cf8'}}>LCP: {speedResult.estimatedLcp}</span>
+                  <span style={{color:'#818cf8'}}>CLS: {speedResult.estimatedCls}</span>
+                  <span style={{color:'#22c55e'}}>+{speedResult.estimatedScoreGain} score gain</span>
+                </div>
+                {(speedResult.quickWins||[]).slice(0,5).map((w,i)=><div key={i} style={{padding:'2px 0',fontSize:12,borderBottom:'1px solid #27272a',color:'#d4d4d8'}}>● {w}</div>)}
+              </div>}
+            </div>
+         </>
         )}
 
 
