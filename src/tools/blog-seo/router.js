@@ -6679,7 +6679,7 @@ router.post('/crawl/duplicate-detector', (req, res) => {
 
 
 /* =========================================================================
-   GEO & LLM — Generative Engine Optimisation
+   GEO & LLM ï¿½ Generative Engine Optimisation
    ========================================================================= */
 function getGeoPath(shop) { return path.join(__dirname, '../../../data', `geo-tracker-${shop}.json`); }
 function loadGeoData(shop) { try { return JSON.parse(fs.readFileSync(getGeoPath(shop), 'utf8')); } catch { return { platformHistory: [], alerts: [] }; } }
@@ -6704,7 +6704,7 @@ router.post('/geo/geo-health-score', async (req, res) => {
     const understanding = Math.min(100, (hasStructuredData?30:0) + (hasFaq?20:0) + (hasSpeakable?25:0) + (hasDate?15:0) + 10);
     const inclusion = Math.min(100, (hasAuthor?20:0) + (hasCitations>2?25:0) + (wordCount>1000?20:0) + (hasFaq?20:0) + 15);
     const overall = Math.round((discovery + understanding + inclusion) / 3);
-    res.json({ ok: true, url, topic, overallScore: overall, pillars: { discovery: { score: discovery, label: 'Can AI find your content?' }, understanding: { score: understanding, label: 'Can AI parse your content?' }, inclusion: { score: inclusion, label: 'Will AI cite your content?' } }, signals: { hasStructuredData, hasFaq, hasSpeakable, hasLlmsTxt, hasAuthor, hasDate, citationLinks: hasCitations, wordCount }, recommendations: [...(!hasStructuredData?['Add JSON-LD structured data (Article, FAQ, Speakable)']:[]), ...(!hasFaq?['Add FAQ section with Question/Answer schema']:[]), ...(!hasSpeakable?['Add Speakable schema to mark key quotable paragraphs']:[]), ...(!hasAuthor?['Add visible author bio with credentials']:[]), ...(hasCitations<3?['Add citations to authoritative external sources']:[]), ...(wordCount<800?['Increase content length — AI prefers comprehensive, in-depth answers']:[])] });
+    res.json({ ok: true, url, topic, overallScore: overall, pillars: { discovery: { score: discovery, label: 'Can AI find your content?' }, understanding: { score: understanding, label: 'Can AI parse your content?' }, inclusion: { score: inclusion, label: 'Will AI cite your content?' } }, signals: { hasStructuredData, hasFaq, hasSpeakable, hasLlmsTxt, hasAuthor, hasDate, citationLinks: hasCitations, wordCount }, recommendations: [...(!hasStructuredData?['Add JSON-LD structured data (Article, FAQ, Speakable)']:[]), ...(!hasFaq?['Add FAQ section with Question/Answer schema']:[]), ...(!hasSpeakable?['Add Speakable schema to mark key quotable paragraphs']:[]), ...(!hasAuthor?['Add visible author bio with credentials']:[]), ...(hasCitations<3?['Add citations to authoritative external sources']:[]), ...(wordCount<800?['Increase content length ï¿½ AI prefers comprehensive, in-depth answers']:[])] });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
@@ -6842,7 +6842,7 @@ router.post('/geo/nosnippet-audit', async (req, res) => {
     const hasNoai = robotsMeta.includes('noai') || robotsMeta.includes('noimageai');
     const hasMaxSnippet = robotsMeta.match(/max-snippet:(-?\d+)/);
     const maxSnippetValue = hasMaxSnippet ? parseInt(hasMaxSnippet[1]) : null;
-    res.json({ ok: true, url, robotsMeta, hasNosnippet, hasNoai, maxSnippetValue, aiOverviewEligible: !hasNosnippet && !hasNoai, recommendations: [...(hasNosnippet ? ['Remove nosnippet directive to allow AI Overview extraction'] : []), ...(hasNoai ? ['Remove noai directive — this blocks AI search engines from using your content'] : []), ...(maxSnippetValue !== null && maxSnippetValue < 150 ? ['Increase or remove max-snippet limit — low values prevent AI from showing enough context'] : [])] });
+    res.json({ ok: true, url, robotsMeta, hasNosnippet, hasNoai, maxSnippetValue, aiOverviewEligible: !hasNosnippet && !hasNoai, recommendations: [...(hasNosnippet ? ['Remove nosnippet directive to allow AI Overview extraction'] : []), ...(hasNoai ? ['Remove noai directive ï¿½ this blocks AI search engines from using your content'] : []), ...(maxSnippetValue !== null && maxSnippetValue < 150 ? ['Increase or remove max-snippet limit ï¿½ low values prevent AI from showing enough context'] : [])] });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
@@ -7658,6 +7658,339 @@ router.post('/analytics/ross', async (req, res) => {
     const parsed = JSON.parse(r.choices[0].message.content);
     res.json({ ok: true, organicRevenue, seoSpend, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+
+/* ================================================================
+   TECHNICAL+ BATCH 2 â€” JS Rendering, LCP, Font, AMP, PWA, Bots
+   ================================================================ */
+
+// JS Rendering Audit
+router.post('/js-rendering-audit', async (req, res) => {
+  try {
+    const { url, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a technical SEO expert specialising in JavaScript rendering.' }, { role: 'user', content: `Analyse JS rendering SEO issues for: ${url}. Return JSON: { renderingType, googleBotCompatible, issuesSsr, clientSideProblems, recommendations, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Search Preview
+router.post('/search-preview', async (req, res) => {
+  try {
+    const { url, title, metaDesc, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You generate accurate Google SERP preview data.' }, { role: 'user', content: `Generate SERP preview for: title="${title}", metaDesc="${metaDesc}", url="${url}". Return JSON: { desktopPreview: { displayUrl, title, snippet }, mobilePreview: { displayUrl, title, snippet }, titleLength, descLength, titleIssues, descIssues, ctrScore, improvements }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// LCP Deep Dive
+router.post('/lcp-deep-dive', async (req, res) => {
+  try {
+    const { url, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Core Web Vitals expert.' }, { role: 'user', content: `Analyse Largest Contentful Paint for: ${url}. Return JSON: { lcpElement, estimatedMs, rating, causes, themeImpact, imageLazyLoad, criticalCss, fixes, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Negative SEO Detector
+router.post('/negative-seo-detector', async (req, res) => {
+  try {
+    const { domain, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a negative SEO attack detection expert.' }, { role: 'user', content: `Assess negative SEO risk for domain: ${domain}. Return JSON: { riskLevel, spamyLinksRisk, contentScrapingRisk, cloakingRisk, reviewBombingRisk, recommendations, monitoringChecklist }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Font Performance Audit
+router.post('/font-performance-audit', async (req, res) => {
+  try {
+    const { url, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a web performance expert focused on font loading.' }, { role: 'user', content: `Audit font performance for: ${url}. Return JSON: { fontsDetected, loadStrategy, foutRisk, clsRisk, recommendations, preloadCandidates, subsettingOpportunity, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// AMP Validator
+router.post('/amp-validator', async (req, res) => {
+  try {
+    const { url, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an AMP and mobile SEO expert.' }, { role: 'user', content: `Assess AMP viability for Shopify blog post: ${url}. Return JSON: { ampViable, currentAmpStatus, issues, shopifyAmpSupport, alternatives, mobileScoreEstimate, recommendations }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// PWA Audit
+router.post('/pwa-audit', async (req, res) => {
+  try {
+    const { domain, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Progressive Web App and SEO specialist.' }, { role: 'user', content: `Audit PWA readiness for Shopify store: ${domain}. Return JSON: { manifestStatus, serviceWorkerStatus, httpsStatus, installability, offlineCapability, seoImpact, shopifyLimitations, recommendations }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// AI Bot Blocker Config
+router.post('/ai-bot-blocker-config', async (req, res) => {
+  try {
+    const { domain, allowBots, strategy, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an AI crawl management and GEO SEO expert.' }, { role: 'user', content: `Generate AI bot management config for: ${domain}. Strategy: ${strategy || 'balanced'}. AllowBots: ${allowBots || 'googlebot,bingbot'}. Return JSON: { robotsTxtRules, geoBotStrategy, llmCrawlerList, blockRecommendations, allowRecommendations, seoImpact, geoVisibilityImpact }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+
+/* ================================================================
+   SHOPIFY SEO BATCH 2 â€” Tags, Images, Duplicate, Breadcrumb, etc.
+   ================================================================ */
+
+// Tag Taxonomy Optimiser
+router.post('/shopify/tag-taxonomy', async (req, res) => {
+  try {
+    const { tags, productType, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Shopify taxonomy and SEO expert.' }, { role: 'user', content: `Optimise tag taxonomy for Shopify store. Current tags: ${JSON.stringify(tags)}. Product type: ${productType}. Return JSON: { redundantTags, suggestedConsolidation, seoFriendlyTags, hierarchyStructure, facetedNavTips, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Blog Internal Links Audit
+router.post('/shopify/blog-internal-links', async (req, res) => {
+  try {
+    const { blogHandle, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an internal linking SEO specialist for Shopify blogs.' }, { role: 'user', content: `Audit internal linking strategy for Shopify blog: ${blogHandle}. Return JSON: { orphanRisk, linkDensityScore, topicClusterGaps, pillarPageOpportunities, crossLinkSuggestions, anchorTextDiversity, recommendations }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Image Compression Advisor
+router.post('/shopify/image-compression', async (req, res) => {
+  try {
+    const { productHandle, images, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an image optimisation and Core Web Vitals expert for Shopify.' }, { role: 'user', content: `Advise on image optimisation for Shopify product: ${productHandle}. Images: ${JSON.stringify(images || [])}. Return JSON: { estimatedSavings, formatRecommendations, lazyLoadStrategy, altTextScore, webpSupport, clisTips, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Duplicate Product Detector
+router.post('/shopify/duplicate-products', async (req, res) => {
+  try {
+    const { products, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Shopify SEO expert specialising in duplicate content.' }, { role: 'user', content: `Detect duplicate content issues across products: ${JSON.stringify((products || []).slice(0, 20))}. Return JSON: { duplicatePairs, canonicalisationNeeded, variantIssues, handles, fixes, riskLevel }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Breadcrumb Schema Bulk
+router.post('/shopify/breadcrumb-schema', async (req, res) => {
+  try {
+    const { pages, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a schema markup and structured data expert.' }, { role: 'user', content: `Generate BreadcrumbList schema for pages: ${JSON.stringify((pages || []).slice(0, 10))}. Return JSON: { schemas: [{ url, breadcrumbSchema }], coverageScore, missingPages, liquidSnippet }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Review Schema Bulk Generator
+router.post('/shopify/review-schema-bulk', async (req, res) => {
+  try {
+    const { products, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a structured data expert for e-commerce.' }, { role: 'user', content: `Generate AggregateRating schema snippets for products: ${JSON.stringify((products || []).slice(0, 10))}. Return JSON: { schemas: [{ productTitle, handle, schema }], liquidTemplate, appIntegrations, ratingGapProducts }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// International SEO (hreflang)
+router.post('/shopify/international-seo', async (req, res) => {
+  try {
+    const { domain, markets, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an international SEO expert for Shopify Markets.' }, { role: 'user', content: `Analyse international SEO for domain: ${domain}, markets: ${JSON.stringify(markets || [])}. Return JSON: { hreflangImplementation, marketSubfolders, canonicalIssues, currencyHreflang, shopifyMarketsSetup, recommendations, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Collection Keyword Gaps
+router.post('/shopify/collection-keyword-gaps', async (req, res) => {
+  try {
+    const { collectionTitle, collectionDesc, targetKeywords, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Shopify collection SEO expert.' }, { role: 'user', content: `Find keyword gaps for collection: "${collectionTitle}". Description: "${collectionDesc}". Targets: ${JSON.stringify(targetKeywords || [])}. Return JSON: { missingKeywords, headingOpportunities, descriptionImprovements, internalLinkAnchors, competitorVsStore, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Theme SEO Audit
+router.post('/shopify/theme-seo-audit', async (req, res) => {
+  try {
+    const { themeName, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Shopify theme SEO expert.' }, { role: 'user', content: `Audit Shopify theme for SEO: theme="${themeName}". Return JSON: { headingHierarchyScore, canonicalTagPresent, ogTagsPresent, jsonLdPresent, lazyLoadImages, mobileFriendly, pageSpeedImpact, liquidIssues, recommendations, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Shop Speed Audit
+router.post('/shopify/speed-audit', async (req, res) => {
+  try {
+    const { domain, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Shopify performance and Core Web Vitals expert.' }, { role: 'user', content: `Audit speed and Core Web Vitals for Shopify store: ${domain}. Return JSON: { estimatedLcp, estimatedFid, estimatedCls, appImpact, thirdPartyScripts, fontOptimisation, imageOptimisation, quickWins, estimatedScoreGain }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+
+/* ================================================================
+   CONTENT+ â€” Helpful Content, Decay, Page Experience, E-E-A-T
+   ================================================================ */
+
+// Helpful Content Checklist
+router.post('/helpful-content-check', async (req, res) => {
+  try {
+    const { url, content, keyword, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Google Helpful Content specialist.' }, { role: 'user', content: `Assess helpful content compliance for post "${keyword}" at ${url}. Content preview: "${(content || '').slice(0, 500)}". Return JSON: { peopleFirstScore, uniqueInsights, expertiseSignals, firsthandExperience, satisfiesIntent, notAiSpun, passesHelpfulContent, issues, recommendations, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Content Decay Finder
+router.post('/content-decay-finder', async (req, res) => {
+  try {
+    const { posts, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a content decay and content refresh specialist.' }, { role: 'user', content: `Identify content decay risk for posts: ${JSON.stringify((posts || []).slice(0, 15))}. Return JSON: { highDecayRisk: [], mediumDecayRisk: [], refreshPriority: [], estimatedTrafficRecovery, quickWins, evergreen }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Page Experience Checker
+router.post('/page-experience-check', async (req, res) => {
+  try {
+    const { url, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a Page Experience Signals expert.' }, { role: 'user', content: `Evaluate page experience signals for: ${url}. Return JSON: { cwvStatus, mobileUsability, httpsStatus, noIntrusiveInterstitials, safeBrowsing, overallScore, passed, failed, recommendations }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+/* ================================================================
+   LOG FILE ANALYSER â€” Parse & Analyse Server Log Data
+   ================================================================ */
+const logStore = new Map();
+
+router.post('/log-analyser/upload', async (req, res) => {
+  try {
+    const { logSample, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a server log file SEO analyst.' }, { role: 'user', content: `Analyse this server log sample for SEO insights: "${(logSample || '').slice(0, 1000)}". Return JSON: { crawlBudgetWaste, botDistribution, errorUrls, topCrawledUrls, redirectChains, crawlFrequency, recommendations, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    const id = `log_${shop}_${Date.now()}`;
+    logStore.set(id, { ...data, ts: Date.now(), shop });
+    res.json({ ok: true, id, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.get('/log-analyser/history', async (req, res) => {
+  try {
+    const shop = req.query.shop || req.headers['x-shopify-shop-domain'] || '';
+    const items = Array.from(logStore.values()).filter(i => i.shop === shop).slice(-10);
+    res.json({ ok: true, items });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+/* ================================================================
+   INTERNAL LINKING INTELLIGENCE
+   ================================================================ */
+
+// Internal Link Opportunity Finder
+router.post('/internal-link-opportunities', async (req, res) => {
+  try {
+    const { sourceUrl, targetPosts, keyword, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an internal linking SEO strategist.' }, { role: 'user', content: `Find internal linking opportunities. Source: ${sourceUrl}. Keyword: ${keyword}. Target posts: ${JSON.stringify((targetPosts || []).slice(0, 15))}. Return JSON: { topOpportunities: [{ targetUrl, anchorText, relevanceScore, context }], linkGap, anchorDiversity, pillarLinks, orphanFix, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Anchor Text Analyser
+router.post('/anchor-text-analyser', async (req, res) => {
+  try {
+    const { url, anchors, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are an anchor text optimisation expert.' }, { role: 'user', content: `Analyse anchor text profile for: ${url}. Anchors: ${JSON.stringify(anchors || [])}. Return JSON: { diversityScore, exactMatchRatio, brandedRatio, genericRatio, recommendations, topAnchors, riskyAnchors, naturalAnchors }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Site Architecture Analyser
+router.post('/site-architecture', async (req, res) => {
+  try {
+    const { domain, sampleUrls, shop } = req.body;
+    const ai = getOpenAI();
+    const resp = await ai.chat.completions.create({ model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: 'You are a site architecture and information architecture SEO expert.' }, { role: 'user', content: `Analyse site architecture for: ${domain}. Sample URLs: ${JSON.stringify((sampleUrls || []).slice(0, 20))}. Return JSON: { depth, flatness, siteMapScore, urlStructure, categoryOrganisation, crawlability, pageRankFlow, recommendations, score }` }] });
+    const data = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...data });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 module.exports = router;

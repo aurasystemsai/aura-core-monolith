@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
+import { DOCS, MISSIONS, GLOSSARY } from "./BlogSEODocs";
 
 const API = "/api/blog-seo";
 
@@ -46,6 +47,7 @@ const S = {
 };
 
 const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "Shopify SEO", "AI Growth", "Rank Tracker", "Site Crawl", "GEO & LLM", "Trend Scout", "History"];
+const TOOL_TAB_MAP = { analyzer:"Analyzer", "keyword-density":"Keywords", "meta-description-optimizer":"Content+", "ai-rewrite":"AI Create", "schema-generator":"Schema & Links", "bulk-scan":"Bulk Scan", "rank-tracker":"Rank Tracker", "site-crawl":"Site Crawl", "content-brief":"Content Brief", "content-decay":"A/B & Refresh", "geo-health-score":"GEO & LLM", "ai-platform-tracker":"GEO & LLM", "llms-txt-generator":"GEO & LLM", "cluster-by-intent":"Keywords", "alphabet-soup":"Keyword+", "question-explorer":"Keyword+", "algo-impact-check":"AI Growth", "content-vs-top10":"SERP & CTR", "anchor-text-audit":"Backlinks", "orphan-finder":"Schema & Links", "links-auto-inserter":"Schema & Links", "speakable-schema":"Voice & AI Search" };
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
@@ -2178,14 +2180,56 @@ export default function BlogSEO() {
   return (
     <div style={S.page}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <div style={S.topBar}>
+            <div style={S.topBar}>
+        <button style={{ ...S.btn(), padding: "7px 10px", borderRadius: 8, lineHeight: 1, fontSize: 16, flexShrink: 0 }} onClick={() => setSidebarOpen(o => !o)} title="Toggle sidebar">&#9776;</button>
         <BackButton />
         <span style={S.title}>Blog SEO Engine</span>
-        {activeSec && <><span style={{ color: "#3f3f46", fontSize: 18 }}>�</span><span style={{ ...S.title, fontWeight: 500 }}>{activeSec.icon} {activeSec.title}</span></>}
+        {activeSec && <><span style={{ color: "#3f3f46", fontSize: 18 }}>&#8250;</span><span style={{ ...S.title, fontWeight: 500 }}>{activeSec.icon} {activeSec.title}</span></>}
         <span style={S.badge}>AI-Powered</span>
+        <div style={{ flex: 1 }} />
+        <div style={{ display: "flex", background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: 3, gap: 3 }}>
+          <button style={{ padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: mode === "beginner" ? "#4f46e5" : "transparent", color: mode === "beginner" ? "#fff" : "#71717a" }} onClick={() => setModePersist("beginner")}>Beginner</button>
+          <button style={{ padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: mode === "advanced" ? "#7c3aed" : "transparent", color: mode === "advanced" ? "#fff" : "#71717a" }} onClick={() => setModePersist("advanced")}>Advanced</button>
+        </div>
+        <button style={{ ...S.btn(), padding: "7px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { setCmdOpen(true); setCmdQuery(""); setCmdIdx(0); }} title="Ctrl+K">Search</button>
+        <button style={{ ...S.btn(), padding: "7px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => setHelpOpen(h => !h)}>Help</button>
+        {activeMission !== null && <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>Mission: {MISSIONS[activeMission]?.title}</span>}
       </div>
 
-      <div style={S.body}>
+      <div style={S.layout}>
+        {/* Sidebar Navigation */}
+        {sidebarOpen && (
+          <nav style={S.sidebar}>
+            <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#71717a" }}>NAVIGATION</span>
+              <button style={{ ...S.btn(), fontSize: 11, padding: "3px 8px" }} onClick={() => setSection(null)}>Home</button>
+            </div>
+            {SECTIONS.filter(s => mode === "advanced" || s.level === "beginner").map(s => (
+              <div key={s.id} style={S.sidebarItem(section === s.id)}
+                onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
+                <span style={{ fontSize: 16 }}>{s.icon}</span>
+                <span>{s.title}</span>
+              </div>
+            ))}
+            <div style={S.sidebarSection}>Missions</div>
+            {MISSIONS.map((m, i) => (
+              <div key={m.id} style={S.sidebarItem(activeMission === i)}
+                onClick={() => { setActiveMission(i); setMissionStep(0); setTab(TOOL_TAB_MAP[MISSIONS[i].steps[0].toolId] || TABS[0]); }}>
+                <span style={{ fontSize: 13 }}>&#9654;</span>
+                <span style={{ fontSize: 12 }}>{m.title}</span>
+              </div>
+            ))}
+            <div style={S.sidebarSection}>Quick help</div>
+            {DOCS.slice(0, 5).map(d => (
+              <div key={d.id} style={S.sidebarItem(helpTopic === d.id)}
+                onClick={() => { setHelpTopic(d.id); setHelpOpen(true); }}>
+                <span style={{ fontSize: 12 }}>?</span>
+                <span style={{ fontSize: 12 }}>{d.title}</span>
+              </div>
+            ))}
+          </nav>
+        )}
+        <div style={S.mainContent}>
 
         {/* ================================================================
             HOME DASHBOARD (section === null)
@@ -8336,7 +8380,160 @@ export default function BlogSEO() {
 
           </>
         )}
+        </div>
       </div>
+
+      {/* ================================================================
+          CMD+K COMMAND PALETTE
+          ================================================================ */}
+      {cmdOpen && (
+        <div style={S.overlay} onClick={() => setCmdOpen(false)}>
+          <div style={S.palette} onClick={e => e.stopPropagation()}>
+            <input ref={cmdRef} style={S.paletteInput} placeholder="Search tools, tabs, actions... (Esc to close)" value={cmdQuery} onChange={e => { setCmdQuery(e.target.value); setCmdIdx(0); }}
+              onKeyDown={e => { const items = SECTIONS.filter(s => !cmdQuery || s.title.toLowerCase().includes(cmdQuery.toLowerCase()) || s.desc.toLowerCase().includes(cmdQuery.toLowerCase())); if (e.key === "ArrowDown") { e.preventDefault(); setCmdIdx(i => Math.min(i + 1, items.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setCmdIdx(i => Math.max(i - 1, 0)); } else if (e.key === "Enter" && items[cmdIdx]) { setSection(items[cmdIdx].id); setTab(items[cmdIdx].tabs[0]); setCmdOpen(false); } }} />
+            <div style={{ maxHeight: 340, overflowY: "auto" }}>
+              {SECTIONS.filter(s => !cmdQuery || s.title.toLowerCase().includes(cmdQuery.toLowerCase()) || s.desc.toLowerCase().includes(cmdQuery.toLowerCase())).map((s, i) => (
+                <div key={s.id} style={S.paletteItem(i === cmdIdx)} onMouseEnter={() => setCmdIdx(i)}
+                  onClick={() => { setSection(s.id); setTab(s.tabs[0]); setCmdOpen(false); }}>
+                  <span style={{ fontSize: 18 }}>{s.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: "#71717a" }}>{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+              {SECTIONS.filter(s => !cmdQuery || s.title.toLowerCase().includes(cmdQuery.toLowerCase()) || s.desc.toLowerCase().includes(cmdQuery.toLowerCase())).length === 0 && (
+                <div style={{ padding: "20px", textAlign: "center", color: "#71717a", fontSize: 13 }}>No results for "{cmdQuery}"</div>
+              )}
+            </div>
+            <div style={{ padding: "10px 20px", borderTop: "1px solid #27272a", fontSize: 11, color: "#3f3f46", display: "flex", gap: 16 }}>
+              <span>&#8593;&#8595; navigate</span><span>&#9166; select</span><span>Esc close</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================
+          WELCOME WIZARD (first visit)
+          ================================================================ */}
+      {!seenWelcome && (
+        <div style={S.wizardOverlay}>
+          <div style={S.wizardBox}>
+            {wizardStep === 0 && (
+              <>
+                <div style={{ fontSize: 32, marginBottom: 16 }}>&#128640;</div>
+                <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Welcome to Blog SEO Engine</div>
+                <div style={{ fontSize: 14, color: "#a1a1aa", lineHeight: 1.7, marginBottom: 28 }}>
+                  Your all-in-one AI-powered SEO platform for Shopify stores. Scan pages, generate content, track rankings, analyse competitors and grow organic traffic — all from one place.
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button style={{ ...S.btn("primary"), flex: 1, padding: "12px 0", fontSize: 14 }} onClick={() => setWizardStep(1)}>Get started &#8594;</button>
+                  <button style={{ ...S.btn(), padding: "12px 20px", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch {} }}>Skip</button>
+                </div>
+              </>
+            )}
+            {wizardStep === 1 && (
+              <>
+                <div style={{ fontSize: 32, marginBottom: 16 }}>&#9881;</div>
+                <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Choose your experience</div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 24 }}>You can switch anytime from the header.</div>
+                <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+                  <div style={{ ...S.card, flex: 1, cursor: "pointer", borderColor: mode === "beginner" ? "#4f46e5" : "#27272a" }} onClick={() => setModePersist("beginner")}>
+                    <div style={{ fontSize: 24, marginBottom: 8 }}>&#128218;</div>
+                    <div style={{ fontWeight: 700, marginBottom: 4 }}>Beginner</div>
+                    <div style={{ fontSize: 12, color: "#71717a" }}>Guided tools, auto-fill from your store, clear explanations.</div>
+                  </div>
+                  <div style={{ ...S.card, flex: 1, cursor: "pointer", borderColor: mode === "advanced" ? "#7c3aed" : "#27272a" }} onClick={() => setModePersist("advanced")}>
+                    <div style={{ fontSize: 24, marginBottom: 8 }}>&#9889;</div>
+                    <div style={{ fontWeight: 700, marginBottom: 4 }}>Advanced</div>
+                    <div style={{ fontSize: 12, color: "#71717a" }}>All 23 tools, technical audit, schema, backlinks, AI batch ops.</div>
+                  </div>
+                </div>
+                <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => setWizardStep(2)}>Next &#8594;</button>
+              </>
+            )}
+            {wizardStep === 2 && (
+              <>
+                <div style={{ fontSize: 32, marginBottom: 16 }}>&#127919;</div>
+                <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Your first mission</div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 20 }}>Start with a guided walkthrough — we'll take you step by step.</div>
+                <div style={{ marginBottom: 24 }}>
+                  {MISSIONS.slice(0, 3).map((m, i) => (
+                    <div key={m.id} style={{ ...S.missionCard(activeMission === i), marginBottom: 8 }}
+                      onClick={() => { setActiveMission(i); setMissionStep(0); }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{m.title}</div>
+                      <div style={{ fontSize: 12, color: "#71717a", marginTop: 4 }}>{m.description}</div>
+                    </div>
+                  ))}
+                </div>
+                <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch {} if (activeMission !== null) { setSection(MISSIONS[activeMission].steps[0].section || null); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[0].toolId] || TABS[0]); } }}>
+                  {activeMission !== null ? "Start mission &#9654;" : "Explore tools"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================
+          HELP DRAWER (slide-in from right)
+          ================================================================ */}
+      {helpOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 39 }} onClick={() => setHelpOpen(false)}>
+          <div style={S.drawer} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <span style={{ fontSize: 16, fontWeight: 700 }}>&#10067; Help &amp; Docs</span>
+              <button style={{ ...S.btn(), padding: "5px 12px", fontSize: 12 }} onClick={() => setHelpOpen(false)}>&#10005; Close</button>
+            </div>
+            {/* Topic list / topic detail */}
+            {!helpTopic ? (
+              <div>
+                <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Select a topic to read about it.</div>
+                {DOCS.map(d => (
+                  <div key={d.id} style={{ padding: "10px 14px", borderBottom: "1px solid #1e1e22", cursor: "pointer", borderRadius: 8, marginBottom: 4 }}
+                    onMouseOver={e => e.currentTarget.style.background = "#18181b"} onMouseOut={e => e.currentTarget.style.background = "transparent"}
+                    onClick={() => setHelpTopic(d.id)}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#fafafa" }}>{d.title}</div>
+                    <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>{d.summary || d.content?.slice(0, 80)}...</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div>
+                <button style={{ ...S.btn(), padding: "5px 12px", fontSize: 12, marginBottom: 16 }} onClick={() => setHelpTopic(null)}>&#8592; Back</button>
+                {(() => { const doc = DOCS.find(d => d.id === helpTopic); return doc ? (
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 10 }}>{doc.title}</div>
+                    <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{doc.content}</div>
+                  </div>
+                ) : null; })()}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================
+          GUIDED MISSIONS stepper (floating bar when active)
+          ================================================================ */}
+      {activeMission !== null && MISSIONS[activeMission] && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 35, background: "#1e1b4b", border: "1px solid #4f46e5", borderRadius: 16, padding: "14px 24px", display: "flex", alignItems: "center", gap: 16, boxShadow: "0 8px 32px rgba(79,70,229,.4)", maxWidth: 600, width: "calc(100% - 48px)" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: "#818cf8", fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>Mission: {MISSIONS[activeMission].title}</div>
+            <div style={{ fontSize: 13, color: "#c7d2fe" }}>
+              Step {missionStep + 1}/{MISSIONS[activeMission].steps.length}: {MISSIONS[activeMission].steps[missionStep]?.description || MISSIONS[activeMission].steps[missionStep]?.label}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            {missionStep > 0 && <button style={{ ...S.btn(), padding: "6px 14px", fontSize: 12 }} onClick={() => { setMissionStep(s => s - 1); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[missionStep - 1].toolId] || TABS[0]); }}>&#8592; Back</button>}
+            {missionStep < MISSIONS[activeMission].steps.length - 1
+              ? <button style={{ ...S.btn("primary"), padding: "6px 14px", fontSize: 12 }} onClick={() => { setMissionStep(s => s + 1); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[missionStep + 1].toolId] || TABS[0]); }}>Next &#8594;</button>
+              : <button style={{ ...S.btn("success"), padding: "6px 14px", fontSize: 12 }} onClick={() => { setActiveMission(null); setMissionStep(0); }}>&#10003; Complete</button>}
+            <button style={{ ...S.btn("danger"), padding: "6px 10px", fontSize: 12 }} onClick={() => { setActiveMission(null); setMissionStep(0); }}>&#10005;</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
