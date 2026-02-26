@@ -754,6 +754,21 @@ export default function BlogSEO() {
   const [kwVelocityResult, setKwVelocityResult] = useState(null); const [kwVelocityLoading, setKwVelocityLoading] = useState(false);
   const [posAlertResult, setPosAlertResult] = useState(null); const [posAlertLoading, setPosAlertLoading] = useState(false); const [posAlertKw, setPosAlertKw] = useState(''); const [posAlertThreshold, setPosAlertThreshold] = useState('10');
   const [yoyResult, setYoyResult] = useState(null); const [yoyLoading, setYoyLoading] = useState(false);
+  // --- newly wired routes ---
+  const [rankHistoryResult, setRankHistoryResult] = useState(null); const [rankHistoryLoading, setRankHistoryLoading] = useState(false); const [rankHistoryKwId, setRankHistoryKwId] = useState('');
+  const [rossResult, setRossResult] = useState(null); const [rossLoading, setRossLoading] = useState(false);
+  const [metadataAnResult, setMetadataAnResult] = useState(null); const [metadataAnLoading, setMetadataAnLoading] = useState(false);
+  const [researchScoreResult, setResearchScoreResult] = useState(null); const [researchScoreLoading, setResearchScoreLoading] = useState(false); const [researchScoreKw, setResearchScoreKw] = useState('');
+  const [vpSaveResult, setVpSaveResult] = useState(null); const [vpSaveLoading, setVpSaveLoading] = useState(false);
+  const [vpLoadId, setVpLoadId] = useState(''); const [vpLoadResult, setVpLoadResult] = useState(null); const [vpLoadLoading, setVpLoadLoading] = useState(false);
+  const [kwAlphabetResult, setKwAlphabetResult] = useState(null); const [kwAlphabetLoading, setKwAlphabetLoading] = useState(false); const [kwAlphabetSeed, setKwAlphabetSeed] = useState('');
+  const [kwEvalResult, setKwEvalResult] = useState(null); const [kwEvalLoading, setKwEvalLoading] = useState(false); const [kwEvalKeywords, setKwEvalKeywords] = useState('');
+  const [kwQuestResult, setKwQuestResult] = useState(null); const [kwQuestLoading, setKwQuestLoading] = useState(false); const [kwQuestTopic, setKwQuestTopic] = useState('');
+  const [carouselResult, setCarouselResult] = useState(null); const [carouselLoading, setCarouselLoading] = useState(false); const [carouselItems, setCarouselItems] = useState('');
+  const [contentVsResult, setContentVsResult] = useState(null); const [contentVsLoading, setContentVsLoading] = useState(false); const [contentVsKw, setContentVsKw] = useState('');
+  const [serpPreviewApiResult, setSerpPreviewApiResult] = useState(null); const [serpPreviewApiLoading, setSerpPreviewApiLoading] = useState(false);
+  const [algoImpactResult, setAlgoImpactResult] = useState(null); const [algoImpactLoading, setAlgoImpactLoading] = useState(false);
+  const [crawlCompResult, setCrawlCompResult] = useState(null); const [crawlCompLoading, setCrawlCompLoading] = useState(false);
   const [addAlertResult, setAddAlertResult] = useState(null); const [addAlertLoading, setAddAlertLoading] = useState(false); const [alertKw, setAlertKw] = useState(''); const [alertThreshold, setAlertThreshold] = useState('10');
   const [alertsResult, setAlertsResult] = useState(null); const [alertsLoading, setAlertsLoading] = useState(false);
   // Schema & Links
@@ -4415,6 +4430,16 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+            {/* === Metadata Audit === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🏷️ Metadata Audit</div>
+                <button style={S.btn(metadataAnResult?undefined:'primary')} onClick={async()=>{setMetadataAnLoading(true);setMetadataAnResult(null);try{const r=await apiFetch(`${API}/metadata/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url.trim(),keywords:kwInput.trim()})});const d=await r.json();setMetadataAnResult(d);}catch(e){setMetadataAnResult({ok:false,error:e.message});}finally{setMetadataAnLoading(false);}}} disabled={metadataAnLoading||!url.trim()}>{metadataAnLoading?<><span style={S.spinner}/> Auditing...</>:'Audit Metadata'}</button>
+              </div>
+              <p style={{fontSize:12,color:'#71717a',marginBottom:8}}>Deep-audit title, meta description, Open Graph and Twitter Card tags.</p>
+              {metadataAnResult&&!metadataAnResult.ok&&<div style={S.err}>{metadataAnResult.error}</div>}
+              {metadataAnResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(metadataAnResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -4850,6 +4875,16 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+            {/* === Research Score === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔬 Research Score</div>
+                <button style={S.btn(researchScoreResult?undefined:'primary')} onClick={async()=>{setResearchScoreLoading(true);setResearchScoreResult(null);try{const r=await apiFetch(`${API}/research/score`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:researchScoreKw.trim(),shop:shopDomain})});const d=await r.json();setResearchScoreResult(d);}catch(e){setResearchScoreResult({ok:false,error:e.message});}finally{setResearchScoreLoading(false);}}} disabled={researchScoreLoading||!researchScoreKw.trim()}>{researchScoreLoading?<><span style={S.spinner}/> Scoring...</>:'Score'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword to score..." value={researchScoreKw} onChange={e=>setResearchScoreKw(e.target.value)}/>
+              {researchScoreResult&&!researchScoreResult.ok&&<div style={S.err}>{researchScoreResult.error}</div>}
+              {researchScoreResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(researchScoreResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -5085,6 +5120,36 @@ export default function BlogSEO() {
               <textarea style={{...S.input,height:60,resize:'vertical'}} placeholder="Keywords (comma-separated)..." value={sovKeywords} onChange={e=>setSovKeywords(e.target.value)}/>
               {sovResult&&!sovResult.ok&&<div style={S.err}>{sovResult.error}</div>}
               {sovResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(sovResult,null,2)}</pre></div>}
+            </div>
+            {/* === Alphabet Soup Keywords === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔤 Alphabet Soup</div>
+                <button style={S.btn(kwAlphabetResult?undefined:'primary')} onClick={async()=>{setKwAlphabetLoading(true);setKwAlphabetResult(null);try{const r=await apiFetch(`${API}/keywords/alphabet-soup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seed:kwAlphabetSeed.trim(),shop:shopDomain})});const d=await r.json();setKwAlphabetResult(d);}catch(e){setKwAlphabetResult({ok:false,error:e.message});}finally{setKwAlphabetLoading(false);}}} disabled={kwAlphabetLoading||!kwAlphabetSeed.trim()}>{kwAlphabetLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <input style={S.input} placeholder="Seed keyword..." value={kwAlphabetSeed} onChange={e=>setKwAlphabetSeed(e.target.value)}/>
+              {kwAlphabetResult&&!kwAlphabetResult.ok&&<div style={S.err}>{kwAlphabetResult.error}</div>}
+              {kwAlphabetResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(kwAlphabetResult,null,2)}</pre></div>}
+            </div>
+            {/* === Keyword Evaluate === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📊 Keyword Evaluate</div>
+                <button style={S.btn(kwEvalResult?undefined:'primary')} onClick={async()=>{setKwEvalLoading(true);setKwEvalResult(null);try{const r=await apiFetch(`${API}/keywords/evaluate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keywords:kwEvalKeywords.split(',').map(k=>k.trim()).filter(Boolean),shop:shopDomain})});const d=await r.json();setKwEvalResult(d);}catch(e){setKwEvalResult({ok:false,error:e.message});}finally{setKwEvalLoading(false);}}} disabled={kwEvalLoading||!kwEvalKeywords.trim()}>{kwEvalLoading?<><span style={S.spinner}/> Evaluating...</>:'Evaluate'}</button>
+              </div>
+              <textarea style={{...S.input,height:54,resize:'vertical'}} placeholder="Keywords (comma-separated)..." value={kwEvalKeywords} onChange={e=>setKwEvalKeywords(e.target.value)}/>
+              {kwEvalResult&&!kwEvalResult.ok&&<div style={S.err}>{kwEvalResult.error}</div>}
+              {kwEvalResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(kwEvalResult,null,2)}</pre></div>}
+            </div>
+            {/* === Question Explorer === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>❓ Question Explorer</div>
+                <button style={S.btn(kwQuestResult?undefined:'primary')} onClick={async()=>{setKwQuestLoading(true);setKwQuestResult(null);try{const r=await apiFetch(`${API}/keywords/question-explorer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:kwQuestTopic.trim(),shop:shopDomain})});const d=await r.json();setKwQuestResult(d);}catch(e){setKwQuestResult({ok:false,error:e.message});}finally{setKwQuestLoading(false);}}} disabled={kwQuestLoading||!kwQuestTopic.trim()}>{kwQuestLoading?<><span style={S.spinner}/> Exploring...</>:'Explore'}</button>
+              </div>
+              <input style={S.input} placeholder="Topic..." value={kwQuestTopic} onChange={e=>setKwQuestTopic(e.target.value)}/>
+              {kwQuestResult&&!kwQuestResult.ok&&<div style={S.err}>{kwQuestResult.error}</div>}
+              {kwQuestResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(kwQuestResult,null,2)}</pre></div>}
             </div>
           </>
         )}
@@ -6368,8 +6433,18 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+            {/* === Carousel Schema === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🎠 Carousel Schema</div>
+                <button style={S.btn(carouselResult?undefined:'primary')} onClick={async()=>{setCarouselLoading(true);setCarouselResult(null);try{const r=await apiFetch(`${API}/schema/carousel`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:carouselItems.split('\n').map(i=>i.trim()).filter(Boolean),url:url.trim(),shop:shopDomain})});const d=await r.json();setCarouselResult(d);}catch(e){setCarouselResult({ok:false,error:e.message});}finally{setCarouselLoading(false);}}} disabled={carouselLoading}>{carouselLoading?<><span style={S.spinner}/> Generating...</>:'Generate'}</button>
+              </div>
+              <textarea style={{...S.input,height:70,resize:'vertical'}} placeholder="Items (one per line: Name | URL | Image)..." value={carouselItems} onChange={e=>setCarouselItems(e.target.value)}/>
+              {carouselResult&&!carouselResult.ok&&<div style={S.err}>{carouselResult.error}</div>}
+              {carouselResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(carouselResult,null,2)}</pre></div>}
+            </div>
 
-            {/* === Internal Link Opportunities === */}
+            {/* === Internal Link Opportunities === */}}
             <div style={S.card}>
               <div style={{...S.row, alignItems:'center', marginBottom:8}}>
                 <div style={{...S.cardTitle, marginBottom:0}}>🔗 Internal Link Opportunities</div>
@@ -6703,6 +6778,27 @@ export default function BlogSEO() {
               </div>
               {volatilityResult&&!volatilityResult.ok&&<div style={S.err}>{volatilityResult.error}</div>}
               {volatilityResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(volatilityResult,null,2)}</pre></div>}
+            </div>
+            {/* === SERP Preview (API) === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔍 SERP Preview (Live)</div>
+                <button style={S.btn(serpPreviewApiResult?undefined:'primary')} onClick={async()=>{setSerpPreviewApiLoading(true);setSerpPreviewApiResult(null);try{const r=await apiFetch(`${API}/serp/preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url.trim(),keyword:kwInput.trim(),shop:shopDomain})});const d=await r.json();setSerpPreviewApiResult(d);}catch(e){setSerpPreviewApiResult({ok:false,error:e.message});}finally{setSerpPreviewApiLoading(false);}}} disabled={serpPreviewApiLoading||!url.trim()}>{serpPreviewApiLoading?<><span style={S.spinner}/> Loading...</>:'Load Preview'}</button>
+              </div>
+              <p style={{fontSize:12,color:'#71717a',marginBottom:8}}>Fetch live SERP data for this URL — title, description, position, and rich result eligibility.</p>
+              {serpPreviewApiResult&&!serpPreviewApiResult.ok&&<div style={S.err}>{serpPreviewApiResult.error}</div>}
+              {serpPreviewApiResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(serpPreviewApiResult,null,2)}</pre></div>}
+            </div>
+            {/* === Content vs Top 10 === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🏆 Content vs Top 10</div>
+                <button style={S.btn(contentVsResult?undefined:'primary')} onClick={async()=>{setContentVsLoading(true);setContentVsResult(null);try{const r=await apiFetch(`${API}/serp/content-vs-top10`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:contentVsKw.trim(),url:url.trim(),shop:shopDomain})});const d=await r.json();setContentVsResult(d);}catch(e){setContentVsResult({ok:false,error:e.message});}finally{setContentVsLoading(false);}}} disabled={contentVsLoading||!contentVsKw.trim()}>{contentVsLoading?<><span style={S.spinner}/> Analysing...</>:'Analyse'}</button>
+              </div>
+              <input style={S.input} placeholder="Target keyword..." value={contentVsKw} onChange={e=>setContentVsKw(e.target.value)}/>
+              <p style={{fontSize:12,color:'#71717a',marginTop:6}}>Compare your page content depth vs average top-10 ranking pages.</p>
+              {contentVsResult&&!contentVsResult.ok&&<div style={S.err}>{contentVsResult.error}</div>}
+              {contentVsResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(contentVsResult,null,2)}</pre></div>}
             </div>
             {/* === Featured Snippet Optimizer === */}
             <div style={S.card}>
@@ -7689,6 +7785,34 @@ export default function BlogSEO() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* === Voice Profile Save === */}
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>💾 Save Voice Profile</div>
+                <button style={{ ...S.btn, marginLeft: 'auto' }} disabled={vpSaveLoading} onClick={async () => {
+                  setVpSaveLoading(true);
+                  try { const r = await apiFetch(`${API}/voice-profile/save`, { method: 'POST', body: JSON.stringify({ shop: shopDomain }) }); setVpSaveResult(r); } catch (e) { setVpSaveResult({ error: e.message }); }
+                  setVpSaveLoading(false);
+                }}>{vpSaveLoading ? 'Saving…' : 'Save Profile'}</button>
+              </div>
+              <div style={{ fontSize: 12, color: '#a1a1aa' }}>Persist the current voice & AI search settings as a named profile for this shop.</div>
+              {vpSaveResult && <div style={{ ...S.result, marginTop: 8 }}>{vpSaveResult.error ? <span style={{ color: '#f87171' }}>{vpSaveResult.error}</span> : <span style={{ color: '#4ade80' }}>Profile saved: {vpSaveResult.profileId || 'ok'}</span>}</div>}
+            </div>
+
+            {/* === Voice Profile Load === */}
+            <div style={S.card}>
+              <div style={{ ...S.row, alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 0 }}>📥 Load Voice Profile</div>
+                <button style={{ ...S.btn, marginLeft: 'auto' }} disabled={vpLoadLoading} onClick={async () => {
+                  setVpLoadLoading(true);
+                  try { const r = await apiFetch(`${API}/voice-profile/${vpLoadId || shopDomain}`); setVpLoadResult(r); } catch (e) { setVpLoadResult({ error: e.message }); }
+                  setVpLoadLoading(false);
+                }}>{vpLoadLoading ? 'Loading…' : 'Load'}</button>
+              </div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Profile ID (leave blank for shop default)" value={vpLoadId} onChange={e => setVpLoadId(e.target.value)} />
+              {vpLoadResult && <div style={{ ...S.result, marginTop: 8 }}>{vpLoadResult.error ? <span style={{ color: '#f87171' }}>{vpLoadResult.error}</span> : <pre style={{ margin: 0, fontSize: 12, color: '#d4d4d8', whiteSpace: 'pre-wrap' }}>{JSON.stringify(vpLoadResult.profile || vpLoadResult, null, 2)}</pre>}</div>}
             </div>
           </>
         )}
@@ -8990,6 +9114,16 @@ export default function BlogSEO() {
                 )}
               </div>
             )}
+            {/* === Algorithm Impact Check === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>⚠️ Algorithm Impact Check</div>
+                <button style={S.btn(algoImpactResult?undefined:'primary')} onClick={async()=>{setAlgoImpactLoading(true);setAlgoImpactResult(null);try{const r=await apiFetch(`${API}/technical/algo-impact-check`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url.trim(),shop:shopDomain})});const d=await r.json();setAlgoImpactResult(d);}catch(e){setAlgoImpactResult({ok:false,error:e.message});}finally{setAlgoImpactLoading(false);}}} disabled={algoImpactLoading||!url.trim()}>{algoImpactLoading?<><span style={S.spinner}/> Checking...</>:'Check'}</button>
+              </div>
+              <p style={{fontSize:12,color:'#71717a',marginBottom:8}}>Assess whether recent Google algorithm updates (HCU, Spam, Core) have impacted this page.</p>
+              {algoImpactResult&&!algoImpactResult.ok&&<div style={S.err}>{algoImpactResult.error}</div>}
+              {algoImpactResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(algoImpactResult,null,2)}</pre></div>}
+            </div>
           </>
         )}
 
@@ -9156,7 +9290,27 @@ export default function BlogSEO() {
               {yoyResult&&!yoyResult.ok&&<div style={S.err}>{yoyResult.error}</div>}
               {yoyResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(yoyResult,null,2)}</pre></div>}
             </div>
-            {/* === Add Alert === */}
+            {/* === Rank History === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>📈 Rank History</div>
+                <button style={S.btn(rankHistoryResult?undefined:'primary')} onClick={async()=>{setRankHistoryLoading(true);setRankHistoryResult(null);try{const kwId=rankHistoryKwId.trim()||'latest';const r=await apiFetch(`${API}/rank/history/${kwId}`,{method:'GET',headers:{'Content-Type':'application/json'}});const d=await r.json();setRankHistoryResult(d);}catch(e){setRankHistoryResult({ok:false,error:e.message});}finally{setRankHistoryLoading(false);}}} disabled={rankHistoryLoading}>{rankHistoryLoading?<><span style={S.spinner}/> Loading...</>:'Load History'}</button>
+              </div>
+              <input style={S.input} placeholder="Keyword ID (leave blank for latest)" value={rankHistoryKwId} onChange={e=>setRankHistoryKwId(e.target.value)}/>
+              {rankHistoryResult&&!rankHistoryResult.ok&&<div style={S.err}>{rankHistoryResult.error}</div>}
+              {rankHistoryResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(rankHistoryResult,null,2)}</pre></div>}
+            </div>
+            {/* === ROSS Analytics === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>💰 ROSS Analytics</div>
+                <button style={S.btn(rossResult?undefined:'primary')} onClick={async()=>{setRossLoading(true);setRossResult(null);try{const r=await apiFetch(`${API}/analytics/ross`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setRossResult(d);}catch(e){setRossResult({ok:false,error:e.message});}finally{setRossLoading(false);}}} disabled={rossLoading}>{rossLoading?<><span style={S.spinner}/> Calculating...</>:'Calculate ROSS'}</button>
+              </div>
+              <p style={{fontSize:12,color:'#71717a',marginBottom:8}}>Return on Search Spend — estimates SEO ROI across your tracked keywords.</p>
+              {rossResult&&!rossResult.ok&&<div style={S.err}>{rossResult.error}</div>}
+              {rossResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(rossResult,null,2)}</pre></div>}
+            </div>
+            {/* === Add Alert === */}}
             <div style={S.card}>
               <div style={{...S.row,alignItems:'center',marginBottom:8}}>
                 <div style={{...S.cardTitle,marginBottom:0}}>➕ Add Monitoring Alert</div>
@@ -9277,6 +9431,16 @@ export default function BlogSEO() {
                 {crawlSnapshots.map((s, i) => <div key={i} style={S.issueRow}><span style={{ fontSize:12 }}>{new Date(s.createdAt).toLocaleDateString()} � {s.totalPages} pages</span></div>)}
               </div>
             )}
+            {/* === Snapshot Diff (crawl/compare) === */}
+            <div style={S.card}>
+              <div style={{...S.row,alignItems:'center',marginBottom:8}}>
+                <div style={{...S.cardTitle,marginBottom:0}}>🔄 Compare Snapshots</div>
+                <button style={S.btn(crawlCompResult?undefined:'primary')} onClick={async()=>{setCrawlCompLoading(true);setCrawlCompResult(null);try{const r=await apiFetch(`${API}/crawl/compare`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shopDomain})});const d=await r.json();setCrawlCompResult(d);}catch(e){setCrawlCompResult({ok:false,error:e.message});}finally{setCrawlCompLoading(false);}}} disabled={crawlCompLoading}>{crawlCompLoading?<><span style={S.spinner}/> Comparing...</>:'Compare'}</button>
+              </div>
+              <p style={{fontSize:12,color:'#71717a',marginBottom:8}}>Diff the two most recent crawl snapshots — new issues, fixed issues, changed URLs.</p>
+              {crawlCompResult&&!crawlCompResult.ok&&<div style={S.err}>{crawlCompResult.error}</div>}
+              {crawlCompResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(crawlCompResult,null,2)}</pre></div>}
+            </div>
             {/* === Duplicate Detector === */}
             <div style={S.card}>
               <div style={{...S.row,alignItems:'center',marginBottom:8}}>

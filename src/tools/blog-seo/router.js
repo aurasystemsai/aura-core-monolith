@@ -609,28 +609,7 @@ router.post('/ai/fix-code', async (req, res) => {
   }
 });
 
-/* =========================================================================
-   AI: INTERNAL LINK SUGGESTIONS
-   ========================================================================= */
-router.post('/ai/internal-links', async (req, res) => {
-  try {
-    const { url, title, headings, internalLinkDetails, keywords } = req.body || {};
-    const systemPrompt = `You are an internal linking strategist for Shopify blogs. Analyze the blog post and suggest internal linking improvements. Return JSON with: { currentLinkCount: number, idealLinkCount: number, suggestions: [{ anchorText: string, targetPage: string, section: string, reason: string, priority: "high"|"medium"|"low" }], orphanedRisk: boolean, siloPlan: string, hubPageSuggestion: string }`;
-    const userPrompt = `Analyze internal links for:\nURL: ${url}\nTitle: ${title}\nHeadings: ${JSON.stringify((headings || []).slice(0, 15))}\nCurrent Internal Links: ${JSON.stringify((internalLinkDetails || []).slice(0, 20))}\nKeywords: ${keywords || 'none'}`;
-
-    const completion = await getOpenAI().chat.completions.create({
-      model: req.body.model || 'gpt-4o-mini',
-      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-      temperature: 0.4,
-      response_format: { type: 'json_object' },
-    });
-    const raw = completion.choices[0]?.message?.content || '{}';
-    let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
-    res.json({ ok: true, links: raw, structured });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
+// NOTE: AI internal-link suggestions → use /api/internal-link-optimizer/ai/suggest
 
 /* =========================================================================
    AI: CHAT — blog SEO assistant
@@ -7254,18 +7233,7 @@ router.post('/keywords/cluster-by-serp', async (req, res) => {
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-router.post('/keywords/cluster-by-intent', async (req, res) => {
-  const { keywords = [] } = req.body;
-  if (keywords.length === 0) return res.status(400).json({ ok: false, error: 'keywords array required' });
-  try {
-    const openai = getOpenAI();
-    const prompt = `Cluster these keywords by search intent: ${keywords.join(', ')}. Return JSON: {"informational": {"keywords": ["string"], "contentType": "string"}, "transactional": {"keywords": ["string"], "contentType": "string"}, "commercial": {"keywords": ["string"], "contentType": "string"}, "navigational": {"keywords": ["string"], "contentType": "string"}, "mixed": ["string"], "strategy": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
-    const parsed = JSON.parse(r.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
-    res.json({ ok: true, ...parsed });
-  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
+// NOTE: keywords/cluster-by-intent → use /api/keyword-research-suite/cluster/intent
 
 router.post('/keywords/kgr-calculator', async (req, res) => {
   const { keywords = [] } = req.body;
