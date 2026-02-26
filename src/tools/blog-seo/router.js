@@ -6260,6 +6260,1406 @@ Respond ONLY as JSON:
   }
 });
 
+
+/* =========================================================================
+   BRAND VOICE LIBRARY
+   ========================================================================= */
+const fs = require('fs');
+const path = require('path');
+
+function getVoicePath(shop) {
+  return path.join(__dirname, '../../../data', `voice-profiles-${shop}.json`);
+}
+function loadVoices(shop) {
+  try { return JSON.parse(fs.readFileSync(getVoicePath(shop), 'utf8')); } catch { return []; }
+}
+function saveVoices(shop, data) {
+  fs.writeFileSync(getVoicePath(shop), JSON.stringify(data, null, 2));
+}
+
+router.get('/voice-profile', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  res.json({ ok: true, profiles: loadVoices(shop) });
+});
+
+router.post('/voice-profile/save', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { id, name, tone, vocabulary, rules, sample, avoid } = req.body;
+  if (!name) return res.status(400).json({ ok: false, error: 'name required' });
+  const profiles = loadVoices(shop);
+  const existing = id ? profiles.findIndex(p => p.id === id) : -1;
+  const profile = { id: id || `vp_${Date.now()}`, name, tone: tone || '', vocabulary: vocabulary || '', rules: rules || '', sample: sample || '', avoid: avoid || '', updatedAt: new Date().toISOString() };
+  if (existing >= 0) profiles[existing] = profile;
+  else profiles.push(profile);
+  saveVoices(shop, profiles);
+  res.json({ ok: true, profile });
+});
+
+router.delete('/voice-profile/:id', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const profiles = loadVoices(shop).filter(p => p.id !== req.params.id);
+  saveVoices(shop, profiles);
+  res.json({ ok: true });
+});
+
+
+/* =========================================================================
+   RANK TRACKER
+   ========================================================================= */
+function getRankPath(shop) { return path.join(__dirname, '../../../data', `rank-tracker-${shop}.json`); }
+function loadRankData(shop) { try { return JSON.parse(fs.readFileSync(getRankPath(shop), 'utf8')); } catch { return { keywords: [], history: {} }; } }
+function saveRankData(shop, data) { fs.writeFileSync(getRankPath(shop), JSON.stringify(data, null, 2)); }
+
+router.post('/rank/add-keyword', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { keyword, targetUrl, tags } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  const data = loadRankData(shop);
+  const entry = { id: `rk_${Date.now()}`, keyword, targetUrl: targetUrl || '', tags: tags || [], addedAt: new Date().toISOString(), currentPosition: null, previousPosition: null };
+  data.keywords.push(entry);
+  saveRankData(shop, data);
+  res.json({ ok: true, entry });
+});
+
+router.get('/rank/list', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadRankData(shop);
+  res.json({ ok: true, keywords: data.keywords, total: data.keywords.length });
+});
+
+router.delete('/rank/keyword/:id', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadRankData(shop);
+  data.keywords = data.keywords.filter(k => k.id !== req.params.id);
+  delete data.history[req.params.id];
+  saveRankData(shop, data);
+  res.json({ ok: true });
+});
+
+router.post('/rank/check-position', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { keyword, targetUrl, engine = 'google' } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `You are a SERP estimation tool. For the keyword "${keyword}", estimate the likely search engine ranking position (1-100) for the URL "${targetUrl || 'unknown'}". Consider typical competitive patterns. Return JSON: {"estimatedPosition": number, "positionRange": "e.g. 1-3", "confidence": "high|medium|low", "topCompetitors": ["domain1","domain2","domain3"], "pageOneLikelihood": "percentage string", "notes": "brief reasoning"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    const data = loadRankData(shop);
+    const kw = data.keywords.find(k => k.keyword === keyword);
+    if (kw) { kw.previousPosition = kw.currentPosition; kw.currentPosition = parsed.estimatedPosition; kw.lastChecked = new Date().toISOString(); if (!data.history[kw.id]) data.history[kw.id] = []; data.history[kw.id].push({ date: new Date().toISOString(), position: parsed.estimatedPosition }); saveRankData(shop, data); }
+    res.json({ ok: true, keyword, ...parsed, source: 'ai-estimate', note: 'Import GSC CSV for verified data' });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.get('/rank/history/:keywordId', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadRankData(shop);
+  const history = data.history[req.params.keywordId] || [];
+  res.json({ ok: true, history });
+});
+
+router.post('/rank/bulk-check', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { keywordIds } = req.body;
+  const data = loadRankData(shop);
+  const targets = keywordIds ? data.keywords.filter(k => keywordIds.includes(k.id)) : data.keywords.slice(0, 20);
+  if (!targets.length) return res.json({ ok: true, results: [], message: 'No keywords to check' });
+  try {
+    const openai = getOpenAI();
+    const kwList = targets.map(k => `${k.keyword} (URL: ${k.targetUrl || 'any'})`).join('\n');
+    const prompt = `Estimate ranking positions for these keywords. Return JSON: {"results": [{"keyword": "string", "estimatedPosition": number, "trend": "rising|stable|falling", "notes": "brief"}]}. Keywords:\n${kwList}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    parsed.results.forEach(result => {
+      const kw = data.keywords.find(k => k.keyword === result.keyword);
+      if (kw) { kw.previousPosition = kw.currentPosition; kw.currentPosition = result.estimatedPosition; kw.lastChecked = new Date().toISOString(); if (!data.history[kw.id]) data.history[kw.id] = []; data.history[kw.id].push({ date: new Date().toISOString(), position: result.estimatedPosition }); }
+    });
+    saveRankData(shop, data);
+    res.json({ ok: true, checked: parsed.results.length, results: parsed.results });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/rank/competitor-compare', async (req, res) => {
+  const { keyword, yourUrl, competitors = [] } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Compare estimated SERP positions for keyword "${keyword}". Your URL: ${yourUrl || 'unknown'}. Competitors: ${competitors.join(', ') || 'top competitors'}. Return JSON: {"yourPosition": number, "competitorPositions": [{"domain": "string", "position": number, "strengths": ["string"]}], "gapAnalysis": "string", "recommendations": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/rank/position-alert', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { keywordId, threshold = 5, direction = 'down', notifyEmail } = req.body;
+  const data = loadRankData(shop);
+  const kw = data.keywords.find(k => k.id === keywordId);
+  if (!kw) return res.status(404).json({ ok: false, error: 'keyword not found' });
+  kw.alert = { threshold, direction, notifyEmail, enabled: true };
+  saveRankData(shop, data);
+  res.json({ ok: true, alert: kw.alert });
+});
+
+router.post('/rank/ai-forecast', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { keywordId } = req.body;
+  const data = loadRankData(shop);
+  const kw = data.keywords.find(k => k.id === keywordId);
+  if (!kw) return res.status(404).json({ ok: false, error: 'keyword not found' });
+  const history = (data.history[keywordId] || []).slice(-30);
+  try {
+    const openai = getOpenAI();
+    const prompt = `Based on ranking history for keyword "${kw.keyword}": ${JSON.stringify(history)}. Forecast the likely position in 30, 60, and 90 days. Return JSON: {"forecast30": number, "forecast60": number, "forecast90": number, "trend": "improving|declining|stable", "confidence": "high|medium|low", "keyFactors": ["string"], "actionItems": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword: kw.keyword, currentPosition: kw.currentPosition, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/rank/yoy-comparison', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadRankData(shop);
+  const now = new Date(); const lastYear = new Date(now); lastYear.setFullYear(lastYear.getFullYear() - 1);
+  const results = data.keywords.map(kw => {
+    const hist = data.history[kw.id] || [];
+    const yearAgoEntry = hist.find(h => { const d = new Date(h.date); return Math.abs(d - lastYear) < 30 * 24 * 60 * 60 * 1000; });
+    return { keyword: kw.keyword, currentPosition: kw.currentPosition, yearAgoPosition: yearAgoEntry ? yearAgoEntry.position : null, change: kw.currentPosition && yearAgoEntry ? yearAgoEntry.position - kw.currentPosition : null };
+  });
+  res.json({ ok: true, results, generatedAt: now.toISOString() });
+});
+
+router.post('/rank/keyword-velocity', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadRankData(shop);
+  const results = data.keywords.map(kw => {
+    const hist = (data.history[kw.id] || []).slice(-14);
+    if (hist.length < 2) return { keyword: kw.keyword, velocity: 0, trend: 'insufficient data' };
+    const first = hist[0].position; const last = hist[hist.length - 1].position;
+    const velocity = (first - last) / hist.length;
+    return { keyword: kw.keyword, velocity: Math.round(velocity * 10) / 10, trend: velocity > 0.5 ? 'rising fast' : velocity > 0 ? 'rising' : velocity < -0.5 ? 'falling fast' : velocity < 0 ? 'falling' : 'stable', currentPosition: kw.currentPosition };
+  });
+  results.sort((a, b) => b.velocity - a.velocity);
+  res.json({ ok: true, results });
+});
+
+router.post('/rank/device-split', async (req, res) => {
+  const { keyword, targetUrl } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Estimate mobile vs desktop SERP position differences for keyword "${keyword}", URL: ${targetUrl || 'unknown'}. Return JSON: {"desktopPosition": number, "mobilePosition": number, "divergence": number, "mobileIntent": "string", "mobileTips": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/rank/cannibalization-live', async (req, res) => {
+  const { keyword, siteUrl } = req.body;
+  if (!keyword || !siteUrl) return res.status(400).json({ ok: false, error: 'keyword and siteUrl required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse keyword cannibalization risk for "${keyword}" on site "${siteUrl}". Return JSON: {"cannibalizationRisk": "high|medium|low", "likelyUrls": ["url1","url2"], "primaryUrl": "string", "recommendation": "string", "consolidationStrategy": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, siteUrl, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/gsc/import-csv', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { csvData } = req.body;
+  if (!csvData) return res.status(400).json({ ok: false, error: 'csvData required' });
+  try {
+    const lines = csvData.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+    const rows = lines.slice(1).map(line => { const vals = line.split(','); return Object.fromEntries(headers.map((h, i) => [h, (vals[i] || '').trim().replace(/"/g, '')])); });
+    const data = loadRankData(shop);
+    let imported = 0;
+    rows.forEach(row => {
+      const query = row['top queries'] || row['query'] || row['keyword'];
+      const position = parseFloat(row['position'] || row['avg. position'] || '0');
+      if (!query || !position) return;
+      const existing = data.keywords.find(k => k.keyword.toLowerCase() === query.toLowerCase());
+      if (existing) { existing.currentPosition = Math.round(position); existing.gscVerified = true; existing.lastChecked = new Date().toISOString(); if (!data.history[existing.id]) data.history[existing.id] = []; data.history[existing.id].push({ date: new Date().toISOString(), position: Math.round(position), source: 'gsc' }); imported++; }
+      else { const id = `rk_${Date.now()}_${imported}`; data.keywords.push({ id, keyword: query, targetUrl: row['landing page'] || '', currentPosition: Math.round(position), gscVerified: true, addedAt: new Date().toISOString(), lastChecked: new Date().toISOString() }); data.history[id] = [{ date: new Date().toISOString(), position: Math.round(position), source: 'gsc' }]; imported++; }
+    });
+    saveRankData(shop, data);
+    res.json({ ok: true, imported, total: rows.length });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.get('/gsc/summary', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadRankData(shop);
+  const kws = data.keywords;
+  const pos1_3 = kws.filter(k => k.currentPosition >= 1 && k.currentPosition <= 3).length;
+  const pos4_10 = kws.filter(k => k.currentPosition >= 4 && k.currentPosition <= 10).length;
+  const pos11_20 = kws.filter(k => k.currentPosition >= 11 && k.currentPosition <= 20).length;
+  const pos21plus = kws.filter(k => k.currentPosition > 20).length;
+  const avgPos = kws.filter(k => k.currentPosition).reduce((s, k) => s + k.currentPosition, 0) / (kws.filter(k => k.currentPosition).length || 1);
+  res.json({ ok: true, total: kws.length, avgPosition: Math.round(avgPos * 10) / 10, breakdown: { pos1_3, pos4_10, pos11_20, pos21plus }, gscVerified: kws.filter(k => k.gscVerified).length });
+});
+
+
+/* =========================================================================
+   SITE CRAWL
+   ========================================================================= */
+const http = require('http');
+const https = require('https');
+function getCrawlPath(shop) { return path.join(__dirname, '../../../data', `crawl-${shop}.json`); }
+function loadCrawlData(shop) { try { return JSON.parse(fs.readFileSync(getCrawlPath(shop), 'utf8')); } catch { return { snapshots: [], active: null }; } }
+function saveCrawlData(shop, data) { fs.writeFileSync(getCrawlPath(shop), JSON.stringify(data, null, 2)); }
+
+const crawlStore = new Map();
+
+router.post('/crawl/start', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { url, maxPages = 200, userAgent = 'AURABot/1.0' } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  const crawlId = `crawl_${Date.now()}`;
+  const crawlState = { id: crawlId, startUrl: url, status: 'running', progress: 0, pagesFound: 0, issuesFound: 0, startedAt: new Date().toISOString(), pages: [], issues: [] };
+  crawlStore.set(`${shop}_active`, crawlState);
+  res.json({ ok: true, crawlId, message: 'Crawl started', status: 'running' });
+  setImmediate(async () => {
+    const visited = new Set(); const toVisit = [url]; const baseUrl = new URL(url).origin;
+    while (toVisit.length && visited.size < maxPages) {
+      const current = toVisit.shift();
+      if (visited.has(current)) continue;
+      visited.add(current);
+      try {
+        const proto = current.startsWith('https') ? https : http;
+        const pageData = await new Promise((resolve, reject) => {
+          const reqObj = proto.get(current, { headers: { 'User-Agent': userAgent }, timeout: 8000 }, (resp) => {
+            let body = '';
+            resp.on('data', d => body += d);
+            resp.on('end', () => resolve({ status: resp.statusCode, headers: resp.headers, body, finalUrl: current }));
+          });
+          reqObj.on('error', reject); reqObj.on('timeout', () => { reqObj.destroy(); reject(new Error('timeout')); });
+        });
+        const $ = cheerio.load(pageData.body);
+        const title = $('title').text().trim();
+        const meta = $('meta[name="description"]').attr('content') || '';
+        const h1s = $('h1').map((_, el) => $(el).text().trim()).get();
+        const canonical = $('link[rel="canonical"]').attr('href') || '';
+        const robots = $('meta[name="robots"]').attr('content') || '';
+        const noindex = robots.includes('noindex');
+        const internalLinks = [];
+        $('a[href]').each((_, el) => { const href = $(el).attr('href'); if (href && (href.startsWith('/') || href.startsWith(baseUrl))) { const full = href.startsWith('/') ? baseUrl + href : href; const clean = full.split('?')[0].split('#')[0]; if (!visited.has(clean)) { internalLinks.push(clean); if (!toVisit.includes(clean)) toVisit.push(clean); } } });
+        const pageIssues = [];
+        if (!title) pageIssues.push({ type: 'missing-title', severity: 'high', message: 'Page has no title tag' });
+        if (title && title.length > 60) pageIssues.push({ type: 'title-too-long', severity: 'medium', message: `Title is ${title.length} chars (max 60)` });
+        if (!meta) pageIssues.push({ type: 'missing-meta', severity: 'medium', message: 'No meta description' });
+        if (h1s.length === 0) pageIssues.push({ type: 'missing-h1', severity: 'high', message: 'No H1 tag' });
+        if (h1s.length > 1) pageIssues.push({ type: 'multiple-h1', severity: 'medium', message: `${h1s.length} H1 tags found` });
+        if (noindex) pageIssues.push({ type: 'noindex', severity: 'low', message: 'Page is set to noindex' });
+        if (pageData.status >= 400) pageIssues.push({ type: 'error-status', severity: 'high', message: `HTTP ${pageData.status}` });
+        crawlState.pages.push({ url: current, status: pageData.status, title, meta, h1s, canonical, noindex, internalLinkCount: internalLinks.length, issues: pageIssues });
+        crawlState.issues.push(...pageIssues.map(i => ({ ...i, url: current })));
+        crawlState.pagesFound = visited.size;
+        crawlState.issuesFound = crawlState.issues.length;
+        crawlState.progress = Math.round((visited.size / maxPages) * 100);
+      } catch {}
+    }
+    crawlState.status = 'complete';
+    crawlState.completedAt = new Date().toISOString();
+    crawlState.progress = 100;
+    crawlStore.set(`${shop}_active`, crawlState);
+    const data = loadCrawlData(shop);
+    data.snapshots.push({ id: crawlId, date: new Date().toISOString(), pagesFound: crawlState.pagesFound, issuesFound: crawlState.issuesFound, pages: crawlState.pages, issues: crawlState.issues });
+    if (data.snapshots.length > 10) data.snapshots = data.snapshots.slice(-10);
+    saveCrawlData(shop, data);
+  });
+});
+
+router.get('/crawl/status', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const state = crawlStore.get(`${shop}_active`);
+  if (!state) return res.json({ ok: true, status: 'idle', message: 'No active crawl' });
+  res.json({ ok: true, status: state.status, progress: state.progress, pagesFound: state.pagesFound, issuesFound: state.issuesFound, crawlId: state.id });
+});
+
+router.get('/crawl/results', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const state = crawlStore.get(`${shop}_active`);
+  if (state && state.pages) return res.json({ ok: true, ...state });
+  const data = loadCrawlData(shop);
+  const latest = data.snapshots[data.snapshots.length - 1];
+  if (!latest) return res.json({ ok: true, status: 'no data', pages: [], issues: [] });
+  res.json({ ok: true, status: 'complete', ...latest });
+});
+
+router.post('/crawl/ai-summary', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const model = req.body.model || 'gpt-4o-mini';
+  const state = crawlStore.get(`${shop}_active`);
+  const data = loadCrawlData(shop);
+  const latest = (state && state.pages && state.pages.length) ? state : (data.snapshots[data.snapshots.length - 1]);
+  if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data. Run a crawl first.' });
+  try {
+    const openai = getOpenAI();
+    const issueBreakdown = {};
+    (latest.issues || []).forEach(i => { issueBreakdown[i.type] = (issueBreakdown[i.type] || 0) + 1; });
+    const prompt = `You are an SEO expert. Summarise these site crawl results and provide a prioritised action plan. Pages crawled: ${latest.pagesFound || latest.pages?.length}. Issues: ${JSON.stringify(issueBreakdown)}. Return JSON: {"executiveSummary": "string", "overallHealthScore": number, "criticalIssues": [{"issue": "string", "count": number, "impact": "string", "fix": "string"}], "quickWins": ["string"], "priorityOrder": ["string"], "estimatedFixTime": "string"}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/crawl/orphan-finder', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
+  if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
+  const allUrls = new Set(latest.pages.map(p => p.url));
+  const linked = new Set();
+  latest.pages.forEach(p => { (p.internalLinks || []).forEach(l => linked.add(l)); });
+  const orphans = [...allUrls].filter(u => !linked.has(u) && u !== latest.startUrl);
+  res.json({ ok: true, orphanCount: orphans.length, orphans: orphans.slice(0, 100) });
+});
+
+router.get('/crawl/export-csv', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
+  if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
+  const rows = [['URL','Status','Title','Meta','H1 Count','Noindex','Issue Count','Issues']];
+  latest.pages.forEach(p => { rows.push([p.url, p.status, (p.title||'').replace(/,/g,''), (p.meta||'').replace(/,/g,'').substring(0,100), p.h1s?.length||0, p.noindex||false, p.issues?.length||0, (p.issues||[]).map(i=>i.type).join('|')]); });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv'); res.setHeader('Content-Disposition', 'attachment; filename="crawl-results.csv"');
+  res.send(csv);
+});
+
+router.post('/crawl/compare', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { snapshotId1, snapshotId2 } = req.body;
+  const data = loadCrawlData(shop);
+  const s1 = snapshotId1 ? data.snapshots.find(s => s.id === snapshotId1) : data.snapshots[data.snapshots.length - 2];
+  const s2 = snapshotId2 ? data.snapshots.find(s => s.id === snapshotId2) : data.snapshots[data.snapshots.length - 1];
+  if (!s1 || !s2) return res.status(400).json({ ok: false, error: 'Need at least 2 snapshots to compare' });
+  const urls1 = new Set((s1.pages||[]).map(p => p.url));
+  const urls2 = new Set((s2.pages||[]).map(p => p.url));
+  const newPages = [...urls2].filter(u => !urls1.has(u));
+  const removedPages = [...urls1].filter(u => !urls2.has(u));
+  const issues1 = {}; (s1.issues||[]).forEach(i => { issues1[i.type] = (issues1[i.type]||0) + 1; });
+  const issues2 = {}; (s2.issues||[]).forEach(i => { issues2[i.type] = (issues2[i.type]||0) + 1; });
+  const newIssueTypes = Object.keys(issues2).filter(t => !issues1[t]);
+  const resolvedIssueTypes = Object.keys(issues1).filter(t => !issues2[t]);
+  res.json({ ok: true, snapshot1: { id: s1.id, date: s1.date, pages: s1.pagesFound, issues: s1.issuesFound }, snapshot2: { id: s2.id, date: s2.date, pages: s2.pagesFound, issues: s2.issuesFound }, newPages: newPages.slice(0,50), removedPages: removedPages.slice(0,50), newIssueTypes, resolvedIssueTypes, issuesDelta: s2.issuesFound - s1.issuesFound });
+});
+
+router.get('/crawl/snapshots', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadCrawlData(shop);
+  res.json({ ok: true, snapshots: data.snapshots.map(s => ({ id: s.id, date: s.date, pagesFound: s.pagesFound, issuesFound: s.issuesFound })) });
+});
+
+router.post('/crawl/duplicate-detector', (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
+  if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
+  const titleMap = {}; const metaMap = {};
+  (latest.pages||[]).forEach(p => {
+    if (p.title) { if (!titleMap[p.title]) titleMap[p.title] = []; titleMap[p.title].push(p.url); }
+    if (p.meta) { const key = p.meta.substring(0,80); if (!metaMap[key]) metaMap[key] = []; metaMap[key].push(p.url); }
+  });
+  const dupTitles = Object.entries(titleMap).filter(([,urls]) => urls.length > 1).map(([title,urls]) => ({ title, urls }));
+  const dupMetas = Object.entries(metaMap).filter(([,urls]) => urls.length > 1).map(([meta,urls]) => ({ meta, urls }));
+  res.json({ ok: true, duplicateTitles: dupTitles, duplicateMetas: dupMetas, totalDupTitles: dupTitles.length, totalDupMetas: dupMetas.length });
+});
+
+
+/* =========================================================================
+   GEO & LLM — Generative Engine Optimisation
+   ========================================================================= */
+function getGeoPath(shop) { return path.join(__dirname, '../../../data', `geo-tracker-${shop}.json`); }
+function loadGeoData(shop) { try { return JSON.parse(fs.readFileSync(getGeoPath(shop), 'utf8')); } catch { return { platformHistory: [], alerts: [] }; } }
+function saveGeoData(shop, data) { fs.writeFileSync(getGeoPath(shop), JSON.stringify(data, null, 2)); }
+
+router.post('/geo/geo-health-score', async (req, res) => {
+  const { url, topic } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  try {
+    let pageHtml = '';
+    try { const proto = url.startsWith('https') ? https : http; pageHtml = await new Promise((resolve, reject) => { const r = proto.get(url, { timeout: 8000 }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(b)); }); r.on('error', reject); r.on('timeout', () => { r.destroy(); reject(new Error('timeout')); }); }); } catch {}
+    const $ = cheerio.load(pageHtml);
+    const hasStructuredData = $('script[type="application/ld+json"]').length > 0;
+    const hasFaq = pageHtml.toLowerCase().includes('"faqpage"') || pageHtml.toLowerCase().includes('"question"');
+    const hasSpeakable = pageHtml.toLowerCase().includes('"speakable"');
+    const hasLlmsTxt = false;
+    const wordCount = $('body').text().trim().split(/\s+/).length;
+    const hasAuthor = $('[rel="author"], .author, .byline').length > 0 || pageHtml.toLowerCase().includes('"author"');
+    const hasDate = $('time, [itemprop="datePublished"]').length > 0;
+    const hasCitations = $('a[href]').filter((_, el) => { const h = $(el).attr('href')||''; return h.startsWith('http') && !h.includes(new URL(url).hostname); }).length;
+    const discovery = Math.min(100, (hasStructuredData?25:0) + (hasLlmsTxt?25:0) + (wordCount>500?25:0) + 25);
+    const understanding = Math.min(100, (hasStructuredData?30:0) + (hasFaq?20:0) + (hasSpeakable?25:0) + (hasDate?15:0) + 10);
+    const inclusion = Math.min(100, (hasAuthor?20:0) + (hasCitations>2?25:0) + (wordCount>1000?20:0) + (hasFaq?20:0) + 15);
+    const overall = Math.round((discovery + understanding + inclusion) / 3);
+    res.json({ ok: true, url, topic, overallScore: overall, pillars: { discovery: { score: discovery, label: 'Can AI find your content?' }, understanding: { score: understanding, label: 'Can AI parse your content?' }, inclusion: { score: inclusion, label: 'Will AI cite your content?' } }, signals: { hasStructuredData, hasFaq, hasSpeakable, hasLlmsTxt, hasAuthor, hasDate, citationLinks: hasCitations, wordCount }, recommendations: [...(!hasStructuredData?['Add JSON-LD structured data (Article, FAQ, Speakable)']:[]), ...(!hasFaq?['Add FAQ section with Question/Answer schema']:[]), ...(!hasSpeakable?['Add Speakable schema to mark key quotable paragraphs']:[]), ...(!hasAuthor?['Add visible author bio with credentials']:[]), ...(hasCitations<3?['Add citations to authoritative external sources']:[]), ...(wordCount<800?['Increase content length — AI prefers comprehensive, in-depth answers']:[])] });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/llm-visibility-audit', async (req, res) => {
+  const { brandName, niche, competitors = [] } = req.body;
+  if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Perform a GEO (Generative Engine Optimisation) visibility audit for brand "${brandName}" in niche "${niche||'general'}". Competitors: ${competitors.join(', ')||'unknown'}. Return JSON: {"visibilityScore": number, "platformScores": {"chatgpt": number, "perplexity": number, "googleAiOverview": number, "gemini": number, "claude": number, "copilot": number, "grok": number, "deepseek": number}, "topCitedCompetitors": ["string"], "contentGaps": ["string"], "citations": ["string"], "recommendations": ["string"], "quickWins": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, brandName, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/prompt-simulation', async (req, res) => {
+  const { query, siteUrl, platform = 'ChatGPT' } = req.body;
+  if (!query) return res.status(400).json({ ok: false, error: 'query required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Simulate how ${platform} would respond to the query: "${query}". Consider whether the site "${siteUrl||'unknown'}" would likely be cited. Return JSON: {"simulatedAnswer": "string", "citationLikelihood": "high|medium|low", "citationScore": number, "wouldCiteSite": boolean, "reasonsFor": ["string"], "reasonsAgainst": ["string"], "contentImprovements": ["string"], "competitorsMentioned": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, query, platform, siteUrl, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/citation-gap-analysis', async (req, res) => {
+  const { brandName, niche, topics = [], competitors = [] } = req.body;
+  if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse citation gaps for brand "${brandName}" vs competitors [${competitors.join(', ')}] in niche "${niche||'general'}". Topics: ${topics.join(', ')||'general topics'}. Return JSON: {"citationGaps": [{"topic": "string", "competitorsCited": ["string"], "yourBrandCited": boolean, "opportunity": "high|medium|low", "contentToCreate": "string"}], "overallGapScore": number, "priorityTopics": ["string"], "actionPlan": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, brandName, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/ai-platform-tracker', async (req, res) => {
+  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const { brandName, queries = [], competitors = [] } = req.body;
+  if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Simulate tracking brand "${brandName}" visibility across 8 AI platforms for these queries: ${queries.slice(0,5).join('; ')||'general brand queries'}. Competitors: ${competitors.join(', ')||'none'}. Return JSON: {"platforms": {"chatgpt": {"mentioned": boolean, "sentiment": "positive|neutral|negative", "context": "string"}, "perplexity": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "googleAiOverview": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "gemini": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "claude": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "copilot": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "grok": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "deepseek": {"mentioned": boolean, "sentiment": "string", "context": "string"}}, "overallVisibilityScore": number, "competitorComparison": [{"competitor": "string", "visibilityScore": number}]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    const geoData = loadGeoData(shop);
+    geoData.platformHistory.push({ date: new Date().toISOString(), brandName, ...parsed });
+    if (geoData.platformHistory.length > 30) geoData.platformHistory = geoData.platformHistory.slice(-30);
+    saveGeoData(shop, geoData);
+    res.json({ ok: true, brandName, ...parsed, historySaved: true });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/mention-gap', async (req, res) => {
+  const { brandName, competitors = [], topic } = req.body;
+  if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Find AI mention gaps for brand "${brandName}" vs competitors [${competitors.join(', ')}] on topic "${topic||'general'}". Return JSON: {"gaps": [{"query": "string", "competitorsMentioned": ["string"], "brandMentioned": false, "priority": "high|medium|low", "contentSuggestion": "string"}], "totalGaps": number, "quickestWins": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, brandName, topic, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/brand-sentiment-ai', async (req, res) => {
+  const { brandName, niche } = req.body;
+  if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse how AI models likely perceive and describe brand "${brandName}" in niche "${niche||'general'}". Return JSON: {"overallSentiment": "positive|neutral|negative|mixed", "sentimentScore": number, "platformSentiments": {"chatgpt": "string", "perplexity": "string", "gemini": "string"}, "positiveSignals": ["string"], "negativeSignals": ["string"], "reputationRisks": ["string"], "improvementActions": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, brandName, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.get('/llms-txt/generate', async (req, res) => {
+  const { domain, sitemapUrl } = req.query;
+  if (!domain) return res.status(400).json({ ok: false, error: 'domain required' });
+  try {
+    let pages = [];
+    if (sitemapUrl) { try { const proto = sitemapUrl.startsWith('https') ? https : http; const xml = await new Promise((resolve, reject) => { const r = proto.get(sitemapUrl, { timeout: 8000 }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(b)); }); r.on('error', reject); }); const $ = cheerio.load(xml, { xmlMode: true }); $('url loc').each((_, el) => { pages.push($(el).text().trim()); }); } catch {} }
+    const llmsTxt = `# ${domain}\n\n> This file guides AI language models about the most important content on this site.\n\n## Important Pages\n\n${pages.slice(0,20).map(p => `- ${p}`).join('\n') || `- https://${domain}/\n- https://${domain}/blog/`}\n\n## About This Site\n\nThis site is hosted on ${domain}. It contains informational content, blog posts, and resources.\n\n## Content Permissions\n\nAI systems may use this content to answer user questions with proper attribution.\n\n## Contact\n\nFor questions about AI usage of this content, contact the site owner at ${domain}.`;
+    const llmsFullTxt = `${llmsTxt}\n\n## Full Sitemap\n\n${pages.map(p => `- ${p}`).join('\n') || `(add your sitemap URL as ?sitemapUrl=https://${domain}/sitemap.xml for full list)`}`;
+    res.json({ ok: true, domain, llmsTxt, llmsFullTxt, pageCount: pages.length, instruction: `Upload llmsTxt content as /llms.txt and llmsFullTxt as /llms-full.txt on your server` });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/faq-for-llm', async (req, res) => {
+  const { topic, url, targetPlatform = 'ChatGPT' } = req.body;
+  if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate FAQ content optimised to be cited by ${targetPlatform} for topic: "${topic}". Return JSON: {"faqs": [{"question": "string", "answer": "string", "citationLikelihood": "high|medium|low", "answerType": "definition|howto|list|comparison"}], "schemaSuggestion": "paste-ready JSON-LD FAQ schema", "tips": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, topic, targetPlatform, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/content-for-citation', async (req, res) => {
+  const { content, topic } = req.body;
+  if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Rewrite this content to maximise its likelihood of being cited by AI search engines (ChatGPT, Perplexity). Make it more direct, factual, citable, and structured. Topic: ${topic||'general'}. Original: ${content.substring(0,2000)}. Return JSON: {"rewrittenContent": "string", "changes": ["string"], "citationScore": number, "keyImprovements": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, topic, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/geo/nosnippet-audit', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  try {
+    let html = '';
+    try { const proto = url.startsWith('https') ? https : http; html = await new Promise((resolve, reject) => { const r = proto.get(url, { timeout: 8000 }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(b)); }); r.on('error', reject); }); } catch {}
+    const $ = cheerio.load(html);
+    const robotsMeta = $('meta[name="robots"]').attr('content') || '';
+    const xRobots = '';
+    const hasNosnippet = robotsMeta.includes('nosnippet');
+    const hasNoai = robotsMeta.includes('noai') || robotsMeta.includes('noimageai');
+    const hasMaxSnippet = robotsMeta.match(/max-snippet:(-?\d+)/);
+    const maxSnippetValue = hasMaxSnippet ? parseInt(hasMaxSnippet[1]) : null;
+    res.json({ ok: true, url, robotsMeta, hasNosnippet, hasNoai, maxSnippetValue, aiOverviewEligible: !hasNosnippet && !hasNoai, recommendations: [...(hasNosnippet ? ['Remove nosnippet directive to allow AI Overview extraction'] : []), ...(hasNoai ? ['Remove noai directive — this blocks AI search engines from using your content'] : []), ...(maxSnippetValue !== null && maxSnippetValue < 150 ? ['Increase or remove max-snippet limit — low values prevent AI from showing enough context'] : [])] });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/mcp-schema-generator', async (req, res) => {
+  const { siteName, siteUrl, description, tools = [] } = req.body;
+  if (!siteName || !siteUrl) return res.status(400).json({ ok: false, error: 'siteName and siteUrl required' });
+  const mcpConfig = { mcpServers: { [siteName.toLowerCase().replace(/\s+/g,'-')]: { command: 'npx', args: ['-y', '@modelcontextprotocol/server-fetch'], env: { SITE_URL: siteUrl, SITE_NAME: siteName, SITE_DESCRIPTION: description || '' } } } };
+  res.json({ ok: true, siteName, siteUrl, mcpConfig: JSON.stringify(mcpConfig, null, 2), instruction: 'Add this to your Claude Desktop claude_desktop_config.json or ChatGPT plugin manifest', pluginManifest: { schema_version: 'v1', name_for_human: siteName, name_for_model: siteName.toLowerCase().replace(/\s+/g,'_'), description_for_human: description || `Access ${siteName} content`, description_for_model: `Use this to retrieve content from ${siteUrl}`, api: { type: 'openapi', url: `${siteUrl}/openapi.json` }, auth: { type: 'none' } } });
+});
+
+
+/* =========================================================================
+   TREND SCOUT
+   ========================================================================= */
+router.post('/trends/rising-topics', async (req, res) => {
+  const { niche, industry, timeframe = '30 days' } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `You are a trend analysis expert. Identify rising topics and keywords in the "${niche}" niche for ${industry||'general'} industry over the last ${timeframe}. Return JSON: {"risingTopics": [{"topic": "string", "growthEstimate": "string", "searchVolumeRange": "string", "competition": "low|medium|high", "contentAngle": "string", "urgency": "act now|this month|this quarter", "why": "string"}], "emergingThemes": ["string"], "firstMoverOpportunities": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, industry, timeframe, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/seasonal-planner', async (req, res) => {
+  const { niche, industry, seedTopics = [] } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Create a 12-month seasonal content calendar for "${niche}" niche. Topics: ${seedTopics.join(', ')||'all relevant topics'}. Return JSON: {"calendar": {"january": [{"topic": "string", "peakMonth": "string", "publishBy": "string", "contentType": "string"}], "february": [], "march": [], "april": [], "may": [], "june": [], "july": [], "august": [], "september": [], "october": [], "november": [], "december": []}, "topSeasonalOpportunities": ["string"], "evergreen": ["string"], "note": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/micro-niche-finder', async (req, res) => {
+  const { broadNiche, industry } = req.body;
+  if (!broadNiche) return res.status(400).json({ ok: false, error: 'broadNiche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Find underserved micro-niches within "${broadNiche}" for ${industry||'general'} businesses. Return JSON: {"microNiches": [{"niche": "string", "audienceSize": "small|medium|large", "competition": "very low|low|medium", "monetisationPotential": "high|medium|low", "contentGap": "string", "entryStrategy": "string"}], "topPick": "string", "avoidNiches": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, broadNiche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/newsjack-ideas', async (req, res) => {
+  const { niche, currentEvents = [] } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate newsjacking content ideas for "${niche}" niche. Current events context: ${currentEvents.join(', ')||'current news cycle'}. Return JSON: {"opportunities": [{"headline": "string", "angle": "string", "urgency": "string", "contentFormat": "string", "targetKeyword": "string", "publishWindow": "string"}], "bestOpportunity": "string", "evergreens": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/keyword-surge-detector', async (req, res) => {
+  const { niche, timeframe = '60 days' } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Identify keywords in "${niche}" niche with 50%+ search volume surge in the last ${timeframe}. Return JSON: {"surges": [{"keyword": "string", "estimatedGrowth": "string", "currentVolume": "string", "trigger": "string", "longevity": "trend|fad|seasonal|structural", "contentOpportunity": "string"}], "totalSurges": number, "actionableNow": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, timeframe, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/first-mover-brief', async (req, res) => {
+  const { topic, niche } = req.body;
+  if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Create a first-mover content brief for trending topic "${topic}" in "${niche||'general'}" niche. This should capture early traffic before competition increases. Return JSON: {"title": "string", "targetKeyword": "string", "searchIntent": "string", "recommendedWordCount": number, "publishDeadline": "string", "outline": [{"heading": "string", "purpose": "string"}], "uniqueAngles": ["string"], "competitorsToWatch": ["string"], "estimatedTrafficPotential": "string", "monetisationHook": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, topic, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/competitor-velocity', async (req, res) => {
+  const { yourDomain, competitors = [], niche } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse content publishing velocity for competitors in "${niche}" niche. Your domain: ${yourDomain||'unknown'}. Competitors: ${competitors.join(', ')||'major players'}. Return JSON: {"velocityComparison": [{"domain": "string", "estimatedPostsPerMonth": number, "topicFocus": ["string"], "recentWins": ["string"]}], "yourVelocityAdvice": "string", "topicsToSteal": ["string"], "gapOpportunities": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/trend-report', async (req, res) => {
+  const { niche, period = 'Q1 2026' } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Write a comprehensive SEO trend report for "${niche}" for ${period}. Return JSON: {"reportTitle": "string", "executiveSummary": "string", "biggestTrends": [{"trend": "string", "impact": "high|medium|low", "opportunities": ["string"], "threats": ["string"]}], "keywordTrends": [{"keyword": "string", "direction": "rising|falling|stable", "notes": "string"}], "contentTypes": ["string"], "strategicRecommendations": ["string"], "outlook": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, period, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/trends/investment-signal-tracker', async (req, res) => {
+  const { niche } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Identify topics in "${niche}" niche that show early investment/funding signals before mainstream search volume peaks. Return JSON: {"earlySignals": [{"topic": "string", "signalType": "vc-funding|acquisition|patent|regulatory|media", "estimatedPeakMonths": number, "confidence": "high|medium|low", "contentStrategy": "string", "keywords": ["string"]}], "hottest": "string", "avoid": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+
+/* =========================================================================
+   SERP / CONTENT VS TOP 10 / ZERO-CLICK
+   ========================================================================= */
+router.post('/serp/content-vs-top10', async (req, res) => {
+  const { url, keyword, shop } = req.body;
+  if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `You are an expert content gap analyst. Compare content at ${url} targeting keyword "${keyword}" against typical top-10 SERP results. Identify gaps, missing sections, thin content, and improvement opportunities. Return JSON: {"overallScore": number, "wordCountVsTop10": {"yours": number, "top10Avg": number, "verdict": "string"}, "missingTopics": ["string"], "weakeragainst":["string"], "strongerThan": ["string"], "featuredSnippetOpportunity": boolean, "paaQuestions": ["string"], "entitiesMissing": ["string"], "contentStructureGaps": ["string"], "quickWins": ["string"], "estimatedRankPotential": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, url, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/serp/top10-insights', async (req, res) => {
+  const { keyword } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse the full SERP landscape for keyword "${keyword}". Return JSON: {"dominantContentTypes": ["string"], "averageWordCount": number, "commonHeadings": ["string"], "sharedEntities": ["string"], "backingAuthors": ["expert|brand|user-generated"], "formatsRanking": ["string"], "intentSignals": "informational|transactional|navigational|commercial", "contentGaps": ["string"], "recommendations": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/serp/volatility-monitor', async (req, res) => {
+  const { keywords = [], niche } = req.body;
+  if (!niche && keywords.length === 0) return res.status(400).json({ ok: false, error: 'niche or keywords required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse SERP volatility for ${keywords.length > 0 ? 'keywords: ' + keywords.join(', ') : niche + ' niche'}. Return JSON: {"volatilityIndex": number, "highlyVolatile": ["string"], "stable": ["string"], "recentFlips": [{"keyword": "string", "change": "string", "likely Cause": "string"}], "algorithmActivity": "high|medium|low", "advice": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/serp/intent-evolution', async (req, res) => {
+  const { keyword } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse how search intent has evolved for keyword "${keyword}" over the last 2 years. Return JSON: {"currentIntent": "string", "historicIntent": "string", "intentShift": "same|slight|major", "contentImplications": "string", "bestFormatNow": "string", "riskyApproaches": ["string"], "modernisationSteps": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/serp/splitsignal', async (req, res) => {
+  const { keyword, variant1, variant2 } = req.body;
+  if (!keyword || !variant1 || !variant2) return res.status(400).json({ ok: false, error: 'keyword, variant1, variant2 required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Compare two SEO title/meta variants for keyword "${keyword}": Variant A: "${variant1}" vs Variant B: "${variant2}". Predict which will get more clicks on SERPs. Return JSON: {"winner": "A|B", "winnerConfidence": "high|medium|low", "reasoning": "string", "ctrEstA": number, "ctrEstB": number, "improvementTips": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/zero-click/featured-snippet-optimizer', async (req, res) => {
+  const { url, keyword, content } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Optimise for featured snippet (Position 0) for keyword "${keyword}". ${content ? 'Current content excerpt: ' + content.slice(0, 800) : 'URL: ' + (url||'unknown')}. Return JSON: {"snippetType": "paragraph|list|table|none", "snippetParagraph": "string", "snippetList": ["string"], "snippetHeadingToUse": "string", "wordCount": number, "changes": ["string"], "forbiddenPatterns": ["string"], "confidence": "high|medium|low"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/zero-click/paa-dominator', async (req, res) => {
+  const { keyword, niche } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate all likely "People Also Ask" questions for keyword "${keyword}" in ${niche||'general'} niche. Return JSON: {"paaQuestions": [{"question": "string", "bestAnswer": "string", "wordCount": number, "answerFormat": "paragraph|list|table"}], "clusterThemes": ["string"], "implementationNote": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/zero-click/knowledge-panel-push', async (req, res) => {
+  const { brandName, url } = req.body;
+  if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Create a strategy to earn a Google Knowledge Panel for brand "${brandName}". URL: ${url||'unknown'}. Return JSON: {"eligibilityScore": number, "requiredActions": [{"action": "string", "effort": "low|medium|high", "impact": "high|medium|low", "platform": "string"}], "entityDefinition": "string", "wikiDataReady": boolean, "schemaCTA": "string", "estimatedTimeline": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, brandName, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+
+/* =========================================================================
+   AI CREATE EXPANSIONS
+   ========================================================================= */
+router.post('/ai/full-blog-writer', async (req, res) => {
+  const { title, keyword, outline = [], tone = 'professional', wordCount = 1800, niche } = req.body;
+  if (!title || !keyword) return res.status(400).json({ ok: false, error: 'title and keyword required' });
+  try {
+    const openai = getOpenAI();
+    const model = req.body.model || 'gpt-4o-mini';
+    const prompt = `Write a complete, publish-ready blog post:\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nWord count: ~${wordCount}\n${outline.length ? 'Follow this outline:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : ''}\n\nInclude: engaging intro with keyword naturally placed, H2/H3 headings, body paragraphs, internal linking opportunities [marked as {{IL:keyword}}], a FAQ section, conclusion with CTA. Return JSON: {"title": "string", "metaDescription": "string", "slug": "string", "fullArticle": "string", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqQuestions": ["string"]}`;
+    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/newsletter-digest', async (req, res) => {
+  const { blogPosts = [], niche, format = 'html' } = req.body;
+  if (blogPosts.length === 0 && !niche) return res.status(400).json({ ok: false, error: 'blogPosts or niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Transform these blog posts into a newsletter digest: ${blogPosts.map(p => p.title || p).join(', ')||niche+' weekly digest'}. Format: ${format}. Return JSON: {"subject": "string", "previewText": "string", "fullNewsletter": "string", "ctaText": "string", "estimatedReadTime": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/x-thread', async (req, res) => {
+  const { blogUrl, blogTitle, blogContent, keyword } = req.body;
+  if (!blogTitle && !blogContent) return res.status(400).json({ ok: false, error: 'blogTitle or blogContent required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Turn this blog post into a high-engagement X (Twitter) thread: Title: "${blogTitle||keyword}". ${blogContent ? 'Content excerpt: ' + blogContent.slice(0,1000) : ''}. Return JSON: {"threadTweets": [{"tweet": "string", "charCount": number}], "hookTweet": "string", "finalCTA": "string", "suggestedHashtags": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/linkedin-article', async (req, res) => {
+  const { blogTitle, blogContent, keyword, tone = 'thought-leader' } = req.body;
+  if (!blogTitle) return res.status(400).json({ ok: false, error: 'blogTitle required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Transform this blog into a LinkedIn article: "${blogTitle}". Keyword: ${keyword||''}. Tone: ${tone}. ${blogContent ? 'Based on: ' + blogContent.slice(0,800) : ''}. Return JSON: {"linkedinTitle": "string", "fullArticle": "string", "hook": "string", "ctaComment": "string", "emojis": "yes", "estimatedReach": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/atomize', async (req, res) => {
+  const { blogTitle, blogContent, keyword } = req.body;
+  if (!blogContent && !blogTitle) return res.status(400).json({ ok: false, error: 'blogContent or blogTitle required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `"Atomise" this blog post into micro-content assets. Blog: "${blogTitle||keyword}". Content: ${blogContent ? blogContent.slice(0,1200) : 'generate from title'}. Return JSON: {"xThread": ["string"], "linkedinPost": "string", "instagramCaption": "string", "emailSubject": "string", "emailBody": "string", "quoteTiles": ["string"], "tiktokScript": "string", "pinterestDescription": "string", "faqPairs": [{"q":"string","a":"string"}]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/content-humanizer', async (req, res) => {
+  const { content, targetReadingLevel = 'grade 8', tone = 'natural' } = req.body;
+  if (!content) return res.status(400).json({ ok: false, error: 'content required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Humanise this AI-generated content to pass AI detectors and feel naturally written. Reading level: ${targetReadingLevel}. Tone: ${tone}. Content:\n\n${content.slice(0,3000)}\n\nReturn JSON: {"humanizedContent": "string", "readabilityScore": number, "fleschKincaid": number, "changesApplied": ["string"], "aiDetectionRisk": "low|medium|high", "tips": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/listicle-writer', async (req, res) => {
+  const { topic, keyword, items = 10, niche } = req.body;
+  if (!topic || !keyword) return res.status(400).json({ ok: false, error: 'topic and keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Write a complete, SEO-optimised listicle: "${topic}". Keyword: "${keyword}". Niche: ${niche||'general'}. Items: ${items}. Return JSON: {"title": "string", "metaDescription": "string", "intro": "string", "listItems": [{"number": number, "heading": "string", "description": "string", "proTip": "string"}], "conclusion": "string", "totalWordCount": number}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/case-study-writer', async (req, res) => {
+  const { clientName, problem, solution, results, keyword, niche } = req.body;
+  if (!problem) return res.status(400).json({ ok: false, error: 'problem description required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Write an SEO-optimised case study. Client: ${clientName||'unnamed'}. Problem: ${problem}. Solution: ${solution||'our service'}. Results: ${results||'significant improvement'}. Keyword: ${keyword||''}. Return JSON: {"title": "string", "metaDescription": "string", "executiveSummary": "string", "challengeSection": "string", "solutionSection": "string", "resultsSection": "string", "testimonialsuggest": "string", "cta": "string", "totalWordCount": number}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/video/youtube-optimizer', async (req, res) => {
+  const { videoTopic, targetKeyword, niche, duration = '10 minutes' } = req.body;
+  if (!videoTopic || !targetKeyword) return res.status(400).json({ ok: false, error: 'videoTopic and targetKeyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Optimise a YouTube video for SEO. Topic: "${videoTopic}". Keyword: "${targetKeyword}". Niche: ${niche||'general'}. Duration: ${duration}. Return JSON: {"optimisedTitle": "string", "description": "string", "tags": ["string"], "chaptersTimestamps": [{"time": "string", "label": "string"}], "thumbnailTextIdeas": ["string"], "pinComment": "string", "cardText": "string", "endScreenCTA": "string", "expectedRankBoost": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, videoTopic, targetKeyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/video/video-schema-generator', async (req, res) => {
+  const { videoTitle, videoUrl, description, uploadDate, duration, thumbnailUrl } = req.body;
+  if (!videoTitle || !videoUrl) return res.status(400).json({ ok: false, error: 'videoTitle and videoUrl required' });
+  const schema = { '@context': 'https://schema.org', '@type': 'VideoObject', name: videoTitle, description: description||videoTitle, contentUrl: videoUrl, embedUrl: videoUrl, uploadDate: uploadDate||new Date().toISOString().split('T')[0], duration: duration||'PT10M', thumbnailUrl: thumbnailUrl||'' };
+  res.json({ ok: true, schema: JSON.stringify(schema, null, 2), instructions: 'Add inside a <script type="application/ld+json"> tag in the page <head>.' });
+});
+
+
+/* =========================================================================
+   KEYWORDS EXPANSIONS
+   ========================================================================= */
+router.post('/keywords/alphabet-soup', async (req, res) => {
+  const { seed } = req.body;
+  if (!seed) return res.status(400).json({ ok: false, error: 'seed keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate alphabet soup keyword expansions for seed keyword "${seed}". For each letter A-Z generate 2-3 long-tail questions/phrases starting with that letter. Return JSON: {"alphabetSoup": {"a": ["string"], "b": ["string"], "c": ["string"], "d": ["string"], "e": ["string"], "f": ["string"], "g": ["string"], "h": ["string"], "i": ["string"], "j": ["string"], "k": ["string"], "l": ["string"], "m": ["string"], "n": ["string"], "o": ["string"], "p": ["string"], "q": ["string"], "r": ["string"], "s": ["string"], "t": ["string"], "u": ["string"], "v": ["string"], "w": ["string"], "x": ["string"], "y": ["string"], "z": ["string"]}, "topOpportunities": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, seed, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/question-explorer', async (req, res) => {
+  const { seed, intent = 'all', count = 30 } = req.body;
+  if (!seed) return res.status(400).json({ ok: false, error: 'seed keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate ${count} question-based keywords for "${seed}" ${intent !== 'all' ? 'with ' + intent + ' intent' : ''}. Include what/why/how/when/where/who/which/can/does/is questions. Return JSON: {"questions": [{"question": "string", "intent": "informational|transactional|commercial|navigational", "difficulty": "low|medium|high", "quickAnswer": "string", "paaLikely": boolean}], "topQuestions": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, seed, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/cluster-by-serp', async (req, res) => {
+  const { keywords = [] } = req.body;
+  if (keywords.length === 0) return res.status(400).json({ ok: false, error: 'keywords array required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Cluster these keywords by SERP similarity (keywords that rank on same URLs should be in the same cluster): ${keywords.join(', ')}. Return JSON: {"clusters": [{"clusterName": "string", "parentUrl": "string", "keywords": ["string"], "intent": "string", "priority": "high|medium|low"}], "unclustered": ["string"], "totalClusters": number}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/cluster-by-intent', async (req, res) => {
+  const { keywords = [] } = req.body;
+  if (keywords.length === 0) return res.status(400).json({ ok: false, error: 'keywords array required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Cluster these keywords by search intent: ${keywords.join(', ')}. Return JSON: {"informational": {"keywords": ["string"], "contentType": "string"}, "transactional": {"keywords": ["string"], "contentType": "string"}, "commercial": {"keywords": ["string"], "contentType": "string"}, "navigational": {"keywords": ["string"], "contentType": "string"}, "mixed": ["string"], "strategy": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/kgr-calculator', async (req, res) => {
+  const { keywords = [] } = req.body;
+  if (keywords.length === 0) return res.status(400).json({ ok: false, error: 'keywords array required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Calculate estimated Keyword Golden Ratio (KGR = allintitle results / monthly searches) for these keywords: ${keywords.join(', ')}. KGR < 0.25 = golden. Return JSON: {"results": [{"keyword": "string", "estimatedSearchVolume": number, "estimatedAllintitle": number, "kgr": number, "verdict": "golden|good|competitive", "opportunity": "high|medium|low"}], "topGolden": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/keyword-mapping', async (req, res) => {
+  const { keywords = [], existingPages = [] } = req.body;
+  if (keywords.length === 0) return res.status(400).json({ ok: false, error: 'keywords array required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Map these keywords to appropriate pages. Keywords: ${keywords.join(', ')}. Existing pages: ${existingPages.join(', ')||'none provided, suggest new pages'}. Return JSON: {"mapping": [{"keyword": "string", "assignedPage": "string", "isNewPage": boolean, "pageType": "pillar|supporting|landing|blog", "reason": "string"}], "newPagesNeeded": ["string"], "cannibalizationRisks": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/share-of-voice', async (req, res) => {
+  const { brand, competitors = [], keywords = [], niche } = req.body;
+  if (!brand) return res.status(400).json({ ok: false, error: 'brand required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Estimate share of voice in SERPs for brand "${brand}" vs competitors: ${competitors.join(', ')||'top 4 competitors'}. Keywords: ${keywords.join(', ')||niche+' main keywords'}. Return JSON: {"shareOfVoice": {"${brand}": number, "competitors": [{"name": "string", "sharePercent": number}]}, "visibilityScore": number, "topKeywordsOwned": ["string"], "opportunities": ["string"], "trendDirection": "improving|declining|stable"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, brand, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/keywords/intent-matrix', async (req, res) => {
+  const { keywords = [] } = req.body;
+  if (keywords.length === 0) return res.status(400).json({ ok: false, error: 'keywords array required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Build a full intent matrix for these keywords: ${keywords.join(', ')}. Return JSON: {"matrix": [{"keyword": "string", "primaryIntent": "string", "microMoment": "know|go|do|buy", "buyerStage": "awareness|consideration|decision", "contentFormat": "string", "cta": "string", "conversionPotential": "high|medium|low"}], "summary": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+
+/* =========================================================================
+   BACKLINKS EXPANSIONS
+   ========================================================================= */
+router.post('/backlinks/digital-pr-pitch', async (req, res) => {
+  const { topic, brandName, niche, angle } = req.body;
+  if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Create digital PR pitch emails to earn backlinks for brand "${brandName||'our brand'}" around topic "${topic}" in ${niche||'general'} niche. Angle: ${angle||'auto'}. Return JSON: {"pitchEmail": "string", "subject": "string", "targetPublications": ["string"], "whyTheyWouldLink": "string", "assetRequired": "string", "followUpEmail": "string", "successRate": "estimated string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, topic, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/backlinks/guest-post-finder', async (req, res) => {
+  const { niche, domainAuthority = 20, topics = [] } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Find guest posting opportunities in "${niche}" niche for sites with DA ${domainAuthority}+. Topics: ${topics.join(', ')||'general'}. Return JSON: {"opportunities": [{"site": "string", "estimatedDA": number, "guestPostEmail": "string", "topicsTheyAccept": ["string"], "linkPolicy": "dofollow|mixed|nofollow", "prospectingTip": "string"}], "pitchTemplate": "string", "totalFound": number}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/backlinks/resource-page-builder', async (req, res) => {
+  const { niche, url, contentTitle } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Identify resource pages in "${niche}" niche that would link to content at ${url||'our URL'} titled "${contentTitle||'our resource'}". Return JSON: {"resourcePages": [{"searchQuery": "string", "likelyURL": "string", "contactMethod": "string", "pitchAngle": "string"}], "outreachTemplate": "string", "contentRequirements": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/backlinks/skyscraper-prospector', async (req, res) => {
+  const { competitorUrl, keyword, niche } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Apply skyscraper technique for keyword "${keyword}" in ${niche||'general'} niche. Competitor URL: ${competitorUrl||'top ranking page'}. Return JSON: {"topCompetitorAssets": [{"url": "string", "whyItRanks": "string", "estimatedBacklinks": number}], "skyscraperAngles": ["string"], "contentImprovements": ["string"], "outreachTargets": ["string"], "expectedSuccess": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/backlinks/expert-qa-pipeline', async (req, res) => {
+  const { brandName, expertName, niche, topics = [] } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Build an expert Q&A backlink pipeline. Brand: ${brandName||'our brand'}. Expert: ${expertName||'our expert'}. Niche: ${niche}. Topics: ${topics.join(', ')||'all relevant'}. Return JSON: {"qaOpportunities": [{"platform": "string", "questions": ["string"], "linkOpportunity": "string", "effortLevel": "low|medium|high"}], "haroAlternatives": ["string"], "responseTemplate": "string", "weeklyPlan": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+
+/* =========================================================================
+   TECHNICAL+ EXPANSIONS
+   ========================================================================= */
+router.post('/technical/inp-advisor', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Provide INP (Interaction to Next Paint) optimisation advice for ${url}. INP replaced FID in Core Web Vitals 2024. Return JSON: {"inpStatus": "good|needs improvement|poor", "estimatedINP": "string", "topCauses": ["string"], "fixes": [{"fix": "string", "effort": "low|medium|high", "impact": "high|medium|low", "codeExample": "string"}], "toolsToMeasure": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, url, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/redirect-chain-mapper', async (req, res) => {
+  const { urls = [] } = req.body;
+  if (urls.length === 0) return res.status(400).json({ ok: false, error: 'urls array required' });
+  // Actually follow redirects for real
+  const http = require('http');
+  const https = require('https');
+  const followRedirects = (url, depth = 0) => new Promise((resolve) => {
+    if (depth > 10) return resolve([{ url, status: 'loop', depth }]);
+    const mod = url.startsWith('https') ? https : http;
+    mod.get(url, { timeout: 5000 }, (res) => {
+      const status = res.statusCode;
+      const location = res.headers.location;
+      if ([301,302,307,308].includes(status) && location) {
+        const next = location.startsWith('http') ? location : new URL(location, url).href;
+        followRedirects(next, depth+1).then(chain => resolve([{ url, status, depth }, ...chain]));
+      } else { resolve([{ url, status, depth }]); }
+    }).on('error', () => resolve([{ url, status: 'error', depth }]));
+  });
+  try {
+    const results = await Promise.all(urls.map(u => followRedirects(u)));
+    const chains = results.map((chain, i) => ({ originalUrl: urls[i], chain, hops: chain.length - 1, hasChain: chain.length > 2 }));
+    res.json({ ok: true, chains, longChains: chains.filter(c => c.hops > 1).length });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/algo-impact-check', async (req, res) => {
+  const { domain, niche, dateSuspected } = req.body;
+  if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Diagnose if ${domain||'this site'} in "${niche}" niche was hit by a Google algorithm update around ${dateSuspected||'recently'}. Return JSON: {"likelyUpdate": "string", "updateName": "string", "updateDate": "string", "matchesSite": "yes|maybe|no", "victimFactors": ["string"], "recoverySteps": [{"step": "string", "effort": "low|medium|high", "timeline": "string"}], "preventionForFuture": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, domain, niche, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/generate-robots-txt', async (req, res) => {
+  const { siteType = 'ecommerce', crawlableDirectories = [], blockedDirectories = [], sitemapUrl } = req.body;
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate an optimised robots.txt for a "${siteType}" site. Allowed: ${crawlableDirectories.join(', ')||'/'}. Blocked: ${blockedDirectories.join(', ')||'/admin, /cart, /account, /checkout'}. Sitemap: ${sitemapUrl||'https://example.com/sitemap.xml'}. Return JSON: {"robotsTxt": "string", "explanation": ["string"], "googleBotDirectives": ["string"], "warnings": ["string"]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/indexnow-submit', async (req, res) => {
+  const { urls = [], apiKey, host } = req.body;
+  if (urls.length === 0 || !apiKey || !host) return res.status(400).json({ ok: false, error: 'urls, apiKey, and host required' });
+  try {
+    const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args)).catch(() => null);
+    const body = { host, key: apiKey, urlList: urls.slice(0, 10000), keyLocation: `https://${host}/${apiKey}.txt` };
+    let submitted = false;
+    try {
+      const resp = await (await fetch('https://api.indexnow.org/indexnow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
+      submitted = resp && resp.ok;
+    } catch(e) { submitted = false; }
+    res.json({ ok: true, submitted, urlsQueued: urls.length, note: submitted ? 'URLs submitted to IndexNow' : 'IndexNow API unavailable; verify key and retry' });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/pagination-seo', async (req, res) => {
+  const { url, paginationType = 'numbered' } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Audit pagination SEO for ${url} (type: ${paginationType}). Return JSON: {"currentIssues": ["string"], "relPrevNext": "present|missing|incorrect", "canonicalSetup": "correct|incorrect|missing", "recommendations": ["string"], "googleGuidance": "string", "infiniteScrollAdvice": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    res.json({ ok: true, url, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/technical/security-headers', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  try {
+    const https2 = require('https');
+    const http2 = require('http');
+    const mod = url.startsWith('https') ? https2 : http2;
+    let headers = {};
+    await new Promise((resolve) => {
+      mod.get(url, { timeout: 8000 }, (r) => { headers = r.headers; r.resume(); resolve(); }).on('error', resolve);
+    });
+    const secHeaders = ['strict-transport-security','content-security-policy','x-frame-options','x-content-type-options','referrer-policy','permissions-policy'];
+    const audit = secHeaders.map(h => ({ header: h, present: !!headers[h], value: headers[h]||null, seoImpact: h === 'strict-transport-security' ? 'high' : 'low' }));
+    res.json({ ok: true, url, audit, score: audit.filter(a => a.present).length * 17, recommendations: audit.filter(a => !a.present).map(a => `Add ${a.header}`) });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+
+/* =========================================================================
+   SCHEMA EXPANSIONS
+   ========================================================================= */
+router.post('/schema/carousel', async (req, res) => {
+  const { items = [] } = req.body;
+  if (items.length === 0) return res.status(400).json({ ok: false, error: 'items array required' });
+  const schema = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, name: item.name || item, url: item.url || '', image: item.image || '' })) };
+  res.json({ ok: true, schema: JSON.stringify(schema, null, 2), instructions: 'Add inside <script type="application/ld+json"> in <head>.' });
+});
+
+router.post('/schema/fact-check', async (req, res) => {
+  const { claimText, claimUrl, ratingValue, ratingExplanation, authorName, publishDate } = req.body;
+  if (!claimText) return res.status(400).json({ ok: false, error: 'claimText required' });
+  const schema = { '@context': 'https://schema.org', '@type': 'ClaimReview', url: claimUrl || '', claimReviewed: claimText, author: { '@type': 'Organization', name: authorName || 'Unknown' }, reviewRating: { '@type': 'Rating', ratingValue: ratingValue || 'False', bestRating: 'True', worstRating: 'False', alternateName: ratingExplanation || '' }, datePublished: publishDate || new Date().toISOString().split('T')[0] };
+  res.json({ ok: true, schema: JSON.stringify(schema, null, 2) });
+});
+
+router.post('/schema/dataset', async (req, res) => {
+  const { name, description, url, creator, keywords = [], license, datePublished } = req.body;
+  if (!name) return res.status(400).json({ ok: false, error: 'name required' });
+  const schema = { '@context': 'https://schema.org', '@type': 'Dataset', name, description: description || name, url: url || '', creator: { '@type': 'Person', name: creator || 'Unknown' }, keywords, license: license || '', datePublished: datePublished || new Date().toISOString().split('T')[0] };
+  res.json({ ok: true, schema: JSON.stringify(schema, null, 2) });
+});
+
+router.post('/schema/podcast-episode', async (req, res) => {
+  const { showName, episodeTitle, description, audioUrl, imageUrl, publishDate, duration, episodeNumber } = req.body;
+  if (!episodeTitle) return res.status(400).json({ ok: false, error: 'episodeTitle required' });
+  const schema = { '@context': 'https://schema.org', '@type': 'PodcastEpisode', partOfSeries: { '@type': 'PodcastSeries', name: showName || 'Podcast' }, name: episodeTitle, description: description || episodeTitle, audio: { '@type': 'AudioObject', contentUrl: audioUrl || '', duration: duration || 'PT30M' }, thumbnailUrl: imageUrl || '', datePublished: publishDate || new Date().toISOString().split('T')[0], episodeNumber: episodeNumber || 1 };
+  res.json({ ok: true, schema: JSON.stringify(schema, null, 2) });
+});
+
+router.post('/schema/speakable', async (req, res) => {
+  const { url, cssSelectors = [] } = req.body;
+  if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Suggest speakable markup selectors for a page at ${url} with CSS selectors: ${cssSelectors.join(', ')||'auto-detect common patterns'}. Return JSON: {"speakableSchema": "string", "recommendedSelectors": ["string"], "reasoning": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    const schema = { '@context': 'https://schema.org', '@type': 'WebPage', speakable: { '@type': 'SpeakableSpecification', cssSelector: cssSelectors.length ? cssSelectors : ['h1', 'p:first-of-type'] }, url };
+    res.json({ ok: true, url, schema: JSON.stringify(schema, null, 2), ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* =========================================================================
+   SHOPIFY SEO EXPANSIONS
+   ========================================================================= */
+router.post('/shopify/collection-seo-audit', async (req, res) => {
+  const { shopDomain, collectionHandle } = req.body;
+  if (!shopDomain) return res.status(400).json({ ok: false, error: 'shopDomain required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Audit Shopify collection SEO for "${collectionHandle||'all collections'}" on ${shopDomain}. Return JSON: {"issues": [{"issue": "string", "impact": "high|medium|low", "fix": "string"}], "titleOptimisation": "string", "descriptionOptimisation": "string", "breadcrumbAdvice": "string", "facetedNavAdvice": "string", "score": number}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    res.json({ ok: true, shopDomain, collectionHandle, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/shopify/product-schema-bulk', async (req, res) => {
+  const { products = [] } = req.body;
+  if (products.length === 0) return res.status(400).json({ ok: false, error: 'products array required' });
+  const schemas = products.map(p => JSON.stringify({ '@context': 'https://schema.org', '@type': 'Product', name: p.title || p.name, description: p.description || '', sku: p.sku || p.id || '', offers: { '@type': 'Offer', price: p.price || '0', priceCurrency: p.currency || 'USD', availability: 'https://schema.org/InStock', url: p.url || '' }, image: p.image || '' }, null, 2));
+  res.json({ ok: true, count: schemas.length, schemas });
+});
+
+router.post('/shopify/hreflang-generator', async (req, res) => {
+  const { pages = [], regions = ['en-US', 'en-GB', 'fr-FR'], baseUrl } = req.body;
+  if (!baseUrl) return res.status(400).json({ ok: false, error: 'baseUrl required' });
+  const hreflangTags = pages.map(page => {
+    const tags = regions.map(r => `<link rel="alternate" hreflang="${r}" href="${baseUrl}/${r.toLowerCase().split('-')[0]}/${page}" />`);
+    tags.push(`<link rel="alternate" hreflang="x-default" href="${baseUrl}/${page}" />`);
+    return { page, tags: tags.join('\n') };
+  });
+  res.json({ ok: true, hreflangTags, regions, note: 'Add inside <head> of each page variation.' });
+});
+
+router.post('/shopify/sitemap-enhancer', async (req, res) => {
+  const { shopDomain, priorityMap = {} } = req.body;
+  if (!shopDomain) return res.status(400).json({ ok: false, error: 'shopDomain required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Optimise XML sitemap strategy for Shopify store ${shopDomain}. Return JSON: {"sitemapStructure": ["string"], "priorityRecommendations": [{"urlPattern": "string", "priority": number, "changefreq": "string"}], "excludePatterns": ["string"], "imageSitemapAdvice": "string", "videoSitemapAdvice": "string", "maxUrls": number}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    res.json({ ok: true, shopDomain, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* =========================================================================
+   CROSS-CUTTING INFRASTRUCTURE
+   ========================================================================= */
+router.post('/workflow/content-approval', async (req, res) => {
+  const { shop, contentId, action, assignee, notes } = req.body;
+  if (!shop || !contentId) return res.status(400).json({ ok: false, error: 'shop and contentId required' });
+  const workflowPath = path.join(__dirname, '../../..', 'data', `approval-workflow-${shop.replace(/\./g,'_')}.json`);
+  let data = [];
+  try { data = JSON.parse(fs.readFileSync(workflowPath, 'utf8')); } catch(e) { data = []; }
+  const existing = data.find(d => d.contentId === contentId);
+  if (existing) { if (action) { existing.status = action; existing.history = existing.history||[]; existing.history.push({ action, assignee, notes, at: new Date().toISOString() }); } }
+  else { data.push({ contentId, status: action||'draft', assignee, notes, createdAt: new Date().toISOString(), history: [] }); }
+  fs.writeFileSync(workflowPath, JSON.stringify(data, null, 2));
+  res.json({ ok: true, contentId, status: (data.find(d => d.contentId === contentId)||{}).status });
+});
+
+router.get('/workflow/content-approval', async (req, res) => {
+  const shop = req.query.shop || req.headers['x-shopify-shop-domain'];
+  if (!shop) return res.status(400).json({ ok: false, error: 'shop required' });
+  const workflowPath = path.join(__dirname, '../../..', 'data', `approval-workflow-${shop.replace(/\./g,'_')}.json`);
+  let data = [];
+  try { data = JSON.parse(fs.readFileSync(workflowPath, 'utf8')); } catch(e) { data = []; }
+  res.json({ ok: true, items: data, total: data.length });
+});
+
+router.post('/reports/generate-pdf', async (req, res) => {
+  const { shop, reportType = 'seo-overview', sections = [] } = req.body;
+  if (!shop) return res.status(400).json({ ok: false, error: 'shop required' });
+  try {
+    const openai = getOpenAI();
+    const prompt = `Generate a professional SEO report for shop "${shop}". Report type: "${reportType}". Sections: ${sections.join(', ')||'executive summary, keyword rankings, technical health, backlinks, recommendations'}. Return JSON: {"reportTitle": "string", "generatedAt": "string", "executiveSummary": "string", "sections": [{"sectionTitle": "string", "content": "string", "keyMetrics": [{"metric": "string", "value": "string", "trend": "up|down|stable"}]}], "recommendations": [{"priority": "high|medium|low", "action": "string", "estimatedImpact": "string"}], "nextReportDate": "string"}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
+    res.json({ ok: true, shop, ...parsed, note: 'Use a client-side PDF library (jsPDF/html2pdf) to render this as a downloadable PDF.' });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/monitoring/add-alert', async (req, res) => {
+  const { shop, type, threshold, url, keyword, email } = req.body;
+  if (!shop || !type) return res.status(400).json({ ok: false, error: 'shop and type required' });
+  const alertsPath = path.join(__dirname, '../../..', 'data', `monitoring-alerts-${shop.replace(/\./g,'_')}.json`);
+  let alerts = [];
+  try { alerts = JSON.parse(fs.readFileSync(alertsPath, 'utf8')); } catch(e) { alerts = []; }
+  const alert = { id: Date.now().toString(), shop, type, threshold, url, keyword, email, createdAt: new Date().toISOString(), active: true };
+  alerts.push(alert);
+  fs.writeFileSync(alertsPath, JSON.stringify(alerts, null, 2));
+  res.json({ ok: true, alert });
+});
+
+router.get('/monitoring/alerts', async (req, res) => {
+  const shop = req.query.shop || req.headers['x-shopify-shop-domain'];
+  if (!shop) return res.status(400).json({ ok: false, error: 'shop required' });
+  const alertsPath = path.join(__dirname, '../../..', 'data', `monitoring-alerts-${shop.replace(/\./g,'_')}.json`);
+  let alerts = [];
+  try { alerts = JSON.parse(fs.readFileSync(alertsPath, 'utf8')); } catch(e) { alerts = []; }
+  res.json({ ok: true, alerts, total: alerts.length });
+});
+
+router.post('/analytics/ross', async (req, res) => {
+  const { organicSessions, organicRevenue, seoSpend, keywords = [] } = req.body;
+  if (!organicRevenue || !seoSpend) return res.status(400).json({ ok: false, error: 'organicRevenue and seoSpend required' });
+  const ross = ((organicRevenue - seoSpend) / seoSpend * 100).toFixed(2);
+  try {
+    const openai = getOpenAI();
+    const prompt = `Analyse Return on Organic Search Spend (ROSS): Revenue ${organicRevenue}, SEO Spend ${seoSpend}, ROSS: ${ross}%. Sessions: ${organicSessions||'unknown'}. Top keywords: ${keywords.join(', ')||'unknown'}. Return JSON: {"ross": ${ross}, "verdict": "string", "benchmark": "string", "improvements": ["string"], "roiProjections": [{"scenario": "string", "projectedROSS": number}]}`;
+    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    res.json({ ok: true, organicRevenue, seoSpend, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
 module.exports = router;
 
 
