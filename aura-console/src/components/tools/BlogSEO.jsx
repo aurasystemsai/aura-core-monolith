@@ -206,6 +206,7 @@ export default function BlogSEO() {
   const [rewriteField, setRewriteField] = useState(null);
   const [rewriteLoading, setRewriteLoading] = useState(false);
   const [rewriteResult, setRewriteResult] = useState(null);
+  const [rewriteErr, setRewriteErr] = useState(null);
   const [applyResult, setApplyResult] = useState({}); // tracks apply-to-shopify state per rewrite variant index
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
@@ -851,7 +852,7 @@ export default function BlogSEO() {
   const runScan = useCallback(async () => {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null); setAiAnalysis(null);
-    setRewriteResult(null); setFixes({}); setExpandedIssue(null);
+    setRewriteResult(null); setRewriteErr(null); setFixes({}); setExpandedIssue(null);
     try {
       const r = await apiFetchJSON(`${API}/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keywords: kwInput.trim() }) });
       if (!r.ok) throw new Error(r.error || "Scan failed");
@@ -2240,12 +2241,20 @@ export default function BlogSEO() {
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
-    setRewriteField(field); setRewriteLoading(true); setRewriteResult(null);
+    setRewriteField(field); setRewriteLoading(true); setRewriteResult(null); setRewriteErr(null);
     try {
       const currentValue = field === "title" ? scanResult.title : field === "metaDescription" ? scanResult.metaDescription : scanResult.h1;
-      const r = await apiFetchJSON(`${API}/ai/rewrite`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ field, currentValue, keywords: kwInput, url: scanResult.url }) });
-      if (r.ok) setRewriteResult(r.structured || JSON.parse(r.suggestions));
-    } catch {}
+      const r = await apiFetchJSON(`${API}/ai/rewrite`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ field, currentValue: currentValue || `(none — generate a ${field} from scratch)`, keywords: kwInput, url: scanResult.url }) });
+      if (r.ok) {
+        const parsed = r.structured || (r.suggestions ? (() => { try { return JSON.parse(r.suggestions); } catch { return null; } })() : null);
+        if (parsed) setRewriteResult(parsed);
+        else setRewriteErr("AI returned an unexpected format. Please try again.");
+      } else {
+        setRewriteErr(r.error || (r.credit_error ? `Not enough credits (need ${r.credits_needed}, have ${r.credits_available})` : "Request failed. Please try again."));
+      }
+    } catch (e) {
+      setRewriteErr(e.message || "Network error — please try again.");
+    }
     setRewriteLoading(false);
   }, [scanResult, kwInput]);
 
@@ -2692,12 +2701,54 @@ export default function BlogSEO() {
                 {/* AI Analysis button */}
                 <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <button style={S.btn("primary")} onClick={runAiAnalysis} disabled={aiAnalyzing}>
-                    {aiAnalyzing ? <><span style={S.spinner} /> Analyzing�</> : "🤖 AI Deep Analysis (1 credit)"}
+                    {aiAnalyzing ? <><span style={S.spinner} /> Analyzing&hellip;</> : "🤖 AI Deep Analysis (1 credit)"}
                   </button>
-                  <button style={S.btn()} onClick={() => runRewrite("title")}>💡 AI Rewrite Title</button>
-                  <button style={S.btn()} onClick={() => runRewrite("metaDescription")}>💡 AI Rewrite Description</button>
-                  <button style={S.btn()} onClick={() => runRewrite("h1")}>💡 AI Rewrite H1</button>
+                  <button style={S.btn()} onClick={() => runRewrite("title")} disabled={rewriteLoading}>💡 AI Rewrite Title</button>
+                  <button style={S.btn()} onClick={() => runRewrite("metaDescription")} disabled={rewriteLoading}>💡 AI Rewrite Description</button>
+                  <button style={S.btn()} onClick={() => runRewrite("h1")} disabled={rewriteLoading}>💡 AI Rewrite H1</button>
                 </div>
+
+                {/* Rewrite loading / error / results — directly below buttons */}
+                {rewriteLoading && (
+                  <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc" }}>
+                    <span style={S.spinner} /> Generating AI rewrites for <strong style={{ color: "#e0e7ff" }}>{rewriteField}</strong>&hellip;
+                  </div>
+                )}
+                {rewriteErr && !rewriteLoading && (
+                  <div style={{ ...S.card, borderColor: "#7f1d1d", background: "#1c0a0a" }}>
+                    <span style={{ fontSize: 13, color: "#f87171" }}>&#x26A0;&#xFE0F; {rewriteErr}</span>
+                    <button style={{ ...S.btn(), fontSize: 11, marginLeft: 12 }} onClick={() => setRewriteErr(null)}>Dismiss</button>
+                  </div>
+                )}
+                {rewriteResult && !rewriteLoading && (
+                  <div style={S.card}>
+                    <div style={{ ...S.cardTitle, marginBottom: 12 }}>💡 AI Rewrite Suggestions &mdash; {rewriteResult.field || rewriteField}</div>
+                    {(rewriteResult.variants || []).map((v, i) => (
+                      <div key={i} style={{ ...S.issueRow, justifyContent: "space-between", gap: 10, marginBottom: 8, paddingBottom: 8, borderBottom: i < (rewriteResult.variants.length - 1) ? "1px solid #27272a" : "none" }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, color: "#fafafa" }}>{v.text}</div>
+                          <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>{v.charCount} chars &middot; Keyword: {v.keywordPresent ? "✅" : "❌"} &middot; CTA: {v.ctaStrength}</div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                          <button style={{ ...S.btn("ghost"), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
+                          {selectedArticleId
+                            ? <button
+                                style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 10px" }}
+                                disabled={applyResult[i] === "loading"}
+                                onClick={() => applyRewrite(v.text, rewriteField, i)}>
+                                {applyResult[i] === "loading" ? <><span style={S.spinner}/> Applying...</>
+                                  : applyResult[i] === "ok" ? "✅ Applied!"
+                                  : "Apply to Post"}
+                              </button>
+                            : <span style={{ fontSize: 11, color: "#52525b", fontStyle: "italic" }}>Select post above to apply</span>}
+                          {typeof applyResult[i] === "string" && applyResult[i].startsWith("error:") && (
+                            <span style={{ fontSize: 11, color: "#f87171" }}>{applyResult[i].slice(7)}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* AI Analysis results */}
                 {aiAnalysis && (() => {
@@ -2799,37 +2850,6 @@ export default function BlogSEO() {
                   );
                 })()}
 
-                {/* Rewrite results */}
-                {rewriteLoading && <div style={S.card}><span style={S.spinner} /> Generating AI rewrites for <strong>{rewriteField}</strong>�</div>}
-                {rewriteResult && (
-                  <div style={S.card}>
-                    <div style={S.cardTitle}>💡 AI Rewrite Suggestions — {rewriteResult.field || rewriteField}</div>
-                    {(rewriteResult.variants || []).map((v, i) => (
-                      <div key={i} style={{ ...S.issueRow, justifyContent: "space-between", gap: 10 }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 14, color: "#fafafa" }}>{v.text}</div>
-                          <div style={{ fontSize: 11, color: "#71717a", marginTop: 2 }}>{v.charCount} chars · Keyword: {v.keywordPresent ? "✅" : "❌"} · CTA: {v.ctaStrength}</div>
-                        </div>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-                          <button style={{ ...S.btn("ghost"), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
-                          {selectedArticleId
-                            ? <button
-                                style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 10px" }}
-                                disabled={applyResult[i] === "loading"}
-                                onClick={() => applyRewrite(v.text, rewriteField, i)}>
-                                {applyResult[i] === "loading" ? <><span style={S.spinner}/> Applying...</>
-                                  : applyResult[i] === "ok" ? "Applied!"
-                                  : "Apply to Post"}
-                              </button>
-                            : <span style={{ fontSize: 11, color: "#52525b", fontStyle: "italic" }}>Select post above first</span>}
-                          {typeof applyResult[i] === "string" && applyResult[i].startsWith("error:") && (
-                            <span style={{ fontSize: 11, color: "#f87171" }}>{applyResult[i].slice(7)}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
                 {/* Meta details */}
                 <div style={S.card}>
                   <div style={S.cardTitle}>💡 Meta & Content Details</div>
