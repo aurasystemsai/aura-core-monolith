@@ -8019,6 +8019,39 @@ router.post('/implement-schema', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// Apply a rewrite suggestion directly to a Shopify article field
+router.post('/apply-field', async (req, res) => {
+  try {
+    const { articleId, blogId, field, value, shop } = req.body;
+    if (!articleId || !blogId || !field || !value) return res.status(400).json({ ok: false, error: 'Missing required fields' });
+    const shopTokens = require('../../core/shopTokens');
+    const resolvedShop = shop || req.headers['x-shopify-shop-domain'];
+    const token = await shopTokens.getToken(resolvedShop);
+    if (!token) return res.status(403).json({ ok: false, error: 'No Shopify token for this shop' });
+    const ver = '2023-10';
+    const headers = { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token };
+    const articleBase = `https://${resolvedShop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}`;
+    if (field === 'title' || field === 'h1') {
+      const r = await fetch(`${articleBase}.json`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ article: { id: articleId, title: value } }),
+      });
+      if (!r.ok) throw new Error(`Shopify update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'Title updated on post' });
+    }
+    if (field === 'metaDescription') {
+      // Update SEO meta description via metafields
+      const r = await fetch(`${articleBase}/metafields.json`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ metafield: { namespace: 'global', key: 'description_tag', value, type: 'single_line_text_field' } }),
+      });
+      if (!r.ok) throw new Error(`Shopify metafield update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'Meta description updated on post' });
+    }
+    return res.status(400).json({ ok: false, error: `Unsupported field: ${field}` });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 // Site Architecture Analyser
 router.post('/site-architecture', async (req, res) => {
   try {
