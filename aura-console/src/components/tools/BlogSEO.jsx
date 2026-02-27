@@ -185,6 +185,15 @@ export default function BlogSEO() {
   const [tab, setTab] = useState("Analyzer");
   const [section, setSection] = useState(null); // null = home dashboard
 
+  /* -- Toast notification state -- */
+  const [errToast, setErrToast] = useState(null);
+  const toastTimerRef = useRef(null);
+  const showToast = useCallback((msg) => {
+    setErrToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setErrToast(null), 4500);
+  }, []);
+
   /* -- Shopify store data (auto-fill) -- */
   const [shopifyArticles, setShopifyArticles] = useState([]);
   const [shopifyProducts, setShopifyProducts] = useState([]);
@@ -863,7 +872,7 @@ export default function BlogSEO() {
       if (!r.ok) throw new Error(r.error || "Scan failed");
       setScanResult(r);
       // Save to history
-      try { await apiFetch(`${API}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", url: r.url, title: r.title, score: r.scored?.overall, grade: r.scored?.grade, issueCount: r.scored?.issueCount }) }); } catch {}
+      try { await apiFetch(`${API}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", url: r.url, title: r.title, score: r.scored?.overall, grade: r.scored?.grade, issueCount: r.scored?.issueCount }) }); } catch(e) { showToast(e.message || "An error occurred"); }
     } catch (e) { setScanErr(e.message); }
     setScanning(false);
   }, [url, kwInput]);
@@ -985,7 +994,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/faq-schema/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ questionHeadings: scanResult.questionHeadings, useAI, url: scanResult.url }) });
       if (r.ok) setFaqSchemaResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setFaqSchemaLoading(false);
   }, [scanResult]);
 
@@ -1028,7 +1037,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/title/ctr-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: scanResult.title, keyword: kwInput.trim() }) });
       if (r.ok) setCtrSignals(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setCtrLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1049,7 +1058,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/content/advanced-readability`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setAdvReadability(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setAdvReadLoading(false);
   }, [scanResult]);
 
@@ -1093,7 +1102,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/title-h1-alignment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setTitleH1Result(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setTitleH1Loading(false);
   }, [scanResult]);
 
@@ -1103,7 +1112,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/heading-hierarchy`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setHeadingHierResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setHeadingHierLoading(false);
   }, [scanResult]);
 
@@ -1113,7 +1122,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/image-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setImageSeoResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setImageSeoLoading(false);
   }, [scanResult]);
 
@@ -1123,7 +1132,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/semantic-html`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setSemanticHtmlResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setSemanticHtmlLoading(false);
   }, [scanResult]);
 
@@ -1133,7 +1142,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/meta-description-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
       if (r.ok) setMetaDescAuditResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setMetaDescAuditLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1143,7 +1152,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/keyword-density`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
       if (r.ok) setKwDensityResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setKwDensityLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1153,7 +1162,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/index-directives`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setIndexDirectivesResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setIndexDirectivesLoading(false);
   }, [scanResult]);
 
@@ -1163,7 +1172,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/content-structure`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setContentStructResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setContentStructLoading(false);
   }, [scanResult]);
 
@@ -1173,7 +1182,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/author-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setAuthorAuthResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setAuthorAuthLoading(false);
   }, [scanResult]);
 
@@ -1183,7 +1192,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/sitemap-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setSitemapResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setSitemapLoading(false);
   }, [scanResult]);
 
@@ -1193,7 +1202,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/og-validator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setOgValidResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setOgValidLoading(false);
   }, [scanResult]);
 
@@ -1203,7 +1212,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/schema/breadcrumb`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setBreadcrumbResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setBreadcrumbLoading(false);
   }, [scanResult]);
 
@@ -1213,7 +1222,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/schema/howto`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: howtoTitle.trim() }) });
       if (r.ok) setHowtoResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setHowtoLoading(false);
   }, [howtoTitle]);
 
@@ -1223,7 +1232,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/schema/video`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setVideoSchemaResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setVideoSchemaLoading(false);
   }, [scanResult]);
 
@@ -1233,7 +1242,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/schema/review`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: reviewName.trim(), ratingValue: parseFloat(reviewRating), reviewCount: parseInt(reviewCount), url: scanResult?.url }) });
       if (r.ok) setReviewResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setReviewLoading(false);
   }, [reviewName, reviewRating, reviewCount, scanResult]);
 
@@ -1243,7 +1252,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/schema/organization`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), url: orgUrl.trim() || undefined }) });
       if (r.ok) setOrgResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setOrgLoading(false);
   }, [orgName, orgUrl]);
 
@@ -1253,7 +1262,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/schema/speakable`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setSpeakableResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setSpeakableLoading(false);
   }, [scanResult]);
 
@@ -1263,7 +1272,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/intent-classifier`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: intentKeyword.trim(), url: scanResult?.url }) });
       if (r.ok) setIntentResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setIntentLoading(false);
   }, [intentKeyword, scanResult]);
 
@@ -1273,7 +1282,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/ai-overview-eligibility`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
       if (r.ok) setAiOverviewResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setAiOverviewLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1283,7 +1292,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/topical-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: topicalKw.trim(), url: scanResult?.url }) });
       if (r.ok) setTopicalResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setTopicalLoading(false);
   }, [topicalKw, scanResult]);
 
@@ -1293,7 +1302,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/meta-description-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
       if (r.ok) setMetaOptResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setMetaOptLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1303,7 +1312,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/content-decay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
       if (r.ok) setDecayResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setDecayLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1326,7 +1335,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/cannibalization`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ urls, keyword: kwInput.trim() }) });
       if (r.ok) setCannibResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setCannibLoading(false);
   }, [cannibUrls, kwInput]);
 
@@ -1336,7 +1345,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/anchor-text-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setAnchorResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setAnchorLoading(false);
   }, [scanResult]);
 
@@ -1346,7 +1355,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/toc-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setTocResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setTocLoading(false);
   }, [scanResult]);
 
@@ -1356,7 +1365,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/section-word-count`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setSectionWcResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setSectionWcLoading(false);
   }, [scanResult]);
 
@@ -1366,7 +1375,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/people-also-ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: paaKw.trim(), url: scanResult?.url }) });
       if (r.ok) setPaaResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setPaaLoading(false);
   }, [paaKw, scanResult]);
 
@@ -1376,7 +1385,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/entity-detection`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
       if (r.ok) setEntityResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setEntityLoading(false);
   }, [scanResult]);
 
@@ -1386,7 +1395,7 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/serp-features`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
       if (r.ok) setSerpFeatResult(r);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setSerpFeatLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1394,238 +1403,238 @@ export default function BlogSEO() {
   const runSentenceVariety = useCallback(async () => {
     if (!scanResult?.url) return;
     setSentenceVarietyLoading(true); setSentenceVarietyResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/sentence-variety`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSentenceVarietyResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/sentence-variety`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSentenceVarietyResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSentenceVarietyLoading(false);
   }, [scanResult]);
 
   const runEmotionalTone = useCallback(async () => {
     if (!scanResult?.url) return;
     setEmotionalToneLoading(true); setEmotionalToneResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/emotional-tone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setEmotionalToneResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/emotional-tone`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setEmotionalToneResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setEmotionalToneLoading(false);
   }, [scanResult]);
 
   const runJargonDetector = useCallback(async () => {
     if (!scanResult?.url) return;
     setJargonLoading(true); setJargonResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/jargon-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setJargonResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/jargon-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setJargonResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setJargonLoading(false);
   }, [scanResult]);
 
   const runExpertiseSignals = useCallback(async () => {
     if (!scanResult?.url) return;
     setExpertiseLoading(true); setExpertiseResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/expertise-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setExpertiseResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/expertise-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setExpertiseResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setExpertiseLoading(false);
   }, [scanResult]);
 
   const runMultimediaScore = useCallback(async () => {
     if (!scanResult?.url) return;
     setMultimediaLoading(true); setMultimediaResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/multimedia-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setMultimediaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/multimedia-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setMultimediaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setMultimediaLoading(false);
   }, [scanResult]);
 
   const runQuestionsCount = useCallback(async () => {
     if (!scanResult?.url) return;
     setQuestionsLoading(true); setQuestionsResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/questions-count`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setQuestionsResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/questions-count`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setQuestionsResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setQuestionsLoading(false);
   }, [scanResult]);
 
   const runIntroQuality = useCallback(async () => {
     if (!scanResult?.url) return;
     setIntroQualityLoading(true); setIntroQualityResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/intro-quality`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setIntroQualityResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/intro-quality`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setIntroQualityResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setIntroQualityLoading(false);
   }, [scanResult]);
 
   const runCtaAudit = useCallback(async () => {
     if (!scanResult?.url) return;
     setCtaAuditLoading(true); setCtaAuditResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/cta-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setCtaAuditResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/cta-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setCtaAuditResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCtaAuditLoading(false);
   }, [scanResult]);
 
   const runFormattingScore = useCallback(async () => {
     if (!scanResult?.url) return;
     setFormattingLoading(true); setFormattingResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/formatting-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setFormattingResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/formatting-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setFormattingResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setFormattingLoading(false);
   }, [scanResult]);
 
   const runThinContent = useCallback(async () => {
     if (!scanResult?.url) return;
     setThinContentLoading(true); setThinContentResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/thin-content`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setThinContentResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/thin-content`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setThinContentResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setThinContentLoading(false);
   }, [scanResult, kwInput]);
 
   const runKwProminence = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setKwProminenceLoading(true); setKwProminenceResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/prominence`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setKwProminenceResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/prominence`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setKwProminenceResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setKwProminenceLoading(false);
   }, [scanResult, kwInput]);
 
   const runKwTfidf = useCallback(async () => {
     if (!scanResult?.url) return;
     setKwTfidfLoading(true); setKwTfidfResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/tfidf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setKwTfidfResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/tfidf`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setKwTfidfResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setKwTfidfLoading(false);
   }, [scanResult]);
 
   const runCoOccurrence = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setCoOccurrenceLoading(true); setCoOccurrenceResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/co-occurrence`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setCoOccurrenceResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/co-occurrence`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setCoOccurrenceResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCoOccurrenceLoading(false);
   }, [scanResult, kwInput]);
 
   const runSecondaryKw = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setSecondaryKwLoading(true); setSecondaryKwResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/secondary`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setSecondaryKwResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/secondary`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setSecondaryKwResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSecondaryKwLoading(false);
   }, [scanResult, kwInput]);
 
   const runVoiceSearch = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setVoiceSearchLoading(true); setVoiceSearchResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/voice-search`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setVoiceSearchResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/voice-search`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setVoiceSearchResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setVoiceSearchLoading(false);
   }, [scanResult, kwInput]);
 
   const runNegativeCheck = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setNegCheckLoading(true); setNegCheckResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/negative-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setNegCheckResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/negative-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setNegCheckResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setNegCheckLoading(false);
   }, [scanResult, kwInput]);
 
   const runFeatSnippet = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setFeatSnippetLoading(true); setFeatSnippetResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/featured-snippet`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setFeatSnippetResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/featured-snippet`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setFeatSnippetResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setFeatSnippetLoading(false);
   }, [scanResult, kwInput]);
 
   const runUrlAnalysis = useCallback(async () => {
     if (!url.trim()) return;
     setUrlAnalysisLoading(true); setUrlAnalysisResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/url-analysis`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setUrlAnalysisResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/url-analysis`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setUrlAnalysisResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setUrlAnalysisLoading(false);
   }, [url]);
 
   const runMobileSeo = useCallback(async () => {
     if (!scanResult?.url) return;
     setMobileSeoLoading(true); setMobileSeoResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/mobile-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setMobileSeoResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/mobile-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setMobileSeoResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setMobileSeoLoading(false);
   }, [scanResult]);
 
   const runHreflang = useCallback(async () => {
     if (!scanResult?.url) return;
     setHreflangLoading(true); setHreflangResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/hreflang`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setHreflangResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/hreflang`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setHreflangResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setHreflangLoading(false);
   }, [scanResult]);
 
   const runAmpCheck = useCallback(async () => {
     if (!scanResult?.url) return;
     setAmpLoading(true); setAmpResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/amp-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setAmpResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/amp-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setAmpResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setAmpLoading(false);
   }, [scanResult]);
 
   const runResourceHints = useCallback(async () => {
     if (!scanResult?.url) return;
     setResourceHintsLoading(true); setResourceHintsResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/resource-hints`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setResourceHintsResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/resource-hints`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setResourceHintsResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setResourceHintsLoading(false);
   }, [scanResult]);
 
   const runJsonLdLint = useCallback(async () => {
     if (!scanResult?.url) return;
     setJsonLdLintLoading(true); setJsonLdLintResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/json-ld-lint`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setJsonLdLintResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/json-ld-lint`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setJsonLdLintResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setJsonLdLintLoading(false);
   }, [scanResult]);
 
   const runOgImageDims = useCallback(async () => {
     if (!scanResult?.url) return;
     setOgImageDimsLoading(true); setOgImageDimsResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/og-image-dims`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setOgImageDimsResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/og-image-dims`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setOgImageDimsResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setOgImageDimsLoading(false);
   }, [scanResult]);
 
   const runHttpsStatus = useCallback(async () => {
     if (!url.trim()) return;
     setHttpsStatusLoading(true); setHttpsStatusResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/https-status`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setHttpsStatusResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/https-status`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setHttpsStatusResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setHttpsStatusLoading(false);
   }, [url]);
 
   const runBlogOutline = useCallback(async () => {
     if (!blogOutlineKw.trim()) return;
     setBlogOutlineLoading(true); setBlogOutlineResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: blogOutlineKw.trim(), audience: blogOutlineAudience }) }); if (r.ok) setBlogOutlineResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: blogOutlineKw.trim(), audience: blogOutlineAudience }) }); if (r.ok) setBlogOutlineResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setBlogOutlineLoading(false);
   }, [blogOutlineKw, blogOutlineAudience]);
 
   const runIntroGenerator = useCallback(async () => {
     if (!introGenKw.trim()) return;
     setIntroGenLoading(true); setIntroGenResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introGenKw.trim(), style: introGenStyle }) }); if (r.ok) setIntroGenResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introGenKw.trim(), style: introGenStyle }) }); if (r.ok) setIntroGenResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setIntroGenLoading(false);
   }, [introGenKw, introGenStyle]);
 
   const runTitleIdeas = useCallback(async () => {
     if (!titleIdeasKw.trim()) return;
     setTitleIdeasLoading(true); setTitleIdeasResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleIdeasKw.trim() }) }); if (r.ok) setTitleIdeasResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleIdeasKw.trim() }) }); if (r.ok) setTitleIdeasResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setTitleIdeasLoading(false);
   }, [titleIdeasKw]);
 
   const runCtaGenerator = useCallback(async () => {
     if (!ctaGenKw.trim()) return;
     setCtaGenLoading(true); setCtaGenResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/cta-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: ctaGenKw.trim(), goal: ctaGenGoal }) }); if (r.ok) setCtaGenResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/cta-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: ctaGenKw.trim(), goal: ctaGenGoal }) }); if (r.ok) setCtaGenResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCtaGenLoading(false);
   }, [ctaGenKw, ctaGenGoal]);
 
   const runKeyTakeaways = useCallback(async () => {
     if (!scanResult?.url) return;
     setKeyTakeawaysLoading(true); setKeyTakeawaysResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/key-takeaways`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setKeyTakeawaysResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/key-takeaways`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setKeyTakeawaysResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setKeyTakeawaysLoading(false);
   }, [scanResult]);
 
   const runSummaryGenerator = useCallback(async () => {
     if (!scanResult?.url) return;
     setSummaryGenLoading(true); setSummaryGenResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/summary-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSummaryGenResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/summary-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSummaryGenResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSummaryGenLoading(false);
   }, [scanResult]);
 
   const runToneAnalyzer = useCallback(async () => {
     if (!scanResult?.url) return;
     setToneAnalyzerLoading(true); setToneAnalyzerResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/tone-analyzer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setToneAnalyzerResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/tone-analyzer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setToneAnalyzerResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setToneAnalyzerLoading(false);
   }, [scanResult]);
 
   const runContentGrader = useCallback(async () => {
     if (!scanResult?.url) return;
     setContentGraderLoading(true); setContentGraderResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/content-grader`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setContentGraderResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/content-grader`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setContentGraderResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setContentGraderLoading(false);
   }, [scanResult, kwInput]);
 
   const runPullQuotes = useCallback(async () => {
     if (!scanResult?.url) return;
     setPullQuotesLoading(true); setPullQuotesResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/pull-quotes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setPullQuotesResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/pull-quotes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setPullQuotesResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPullQuotesLoading(false);
   }, [scanResult]);
 
@@ -1633,119 +1642,119 @@ export default function BlogSEO() {
     const h = headlineHookTitle || scanResult?.title;
     if (!h) return;
     setHeadlineHookLoading(true); setHeadlineHookResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/headline-hook`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ headline: h, keyword: kwInput.trim() }) }); if (r.ok) setHeadlineHookResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/headline-hook`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ headline: h, keyword: kwInput.trim() }) }); if (r.ok) setHeadlineHookResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setHeadlineHookLoading(false);
   }, [headlineHookTitle, scanResult, kwInput]);
 
   const runPassageOptimizer = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setPassageOptLoading(true); setPassageOptResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/passage-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setPassageOptResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/passage-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setPassageOptResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPassageOptLoading(false);
   }, [scanResult, kwInput]);
 
   const runRepurpose = useCallback(async () => {
     if (!scanResult?.url) return;
     setRepurposeLoading(true); setRepurposeResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/content-repurpose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setRepurposeResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/content-repurpose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setRepurposeResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setRepurposeLoading(false);
   }, [scanResult]);
 
   const runProductSchema = useCallback(async () => {
     if (!productName.trim()) return;
     setProductSchemaLoading(true); setProductSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/product`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: productName, price: productPrice, brand: productBrand, description: productDesc, image: productImage }) }); if (r.ok) setProductSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/product`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: productName, price: productPrice, brand: productBrand, description: productDesc, image: productImage }) }); if (r.ok) setProductSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setProductSchemaLoading(false);
   }, [productName, productPrice, productBrand, productDesc, productImage]);
 
   const runEventSchema = useCallback(async () => {
     if (!eventName.trim() || !eventDate.trim()) return;
     setEventSchemaLoading(true); setEventSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/event`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: eventName, date: eventDate, location: eventLocation, organizer: eventOrg }) }); if (r.ok) setEventSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/event`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: eventName, date: eventDate, location: eventLocation, organizer: eventOrg }) }); if (r.ok) setEventSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setEventSchemaLoading(false);
   }, [eventName, eventDate, eventLocation, eventOrg]);
 
   const runPersonSchema = useCallback(async () => {
     if (!personName.trim()) return;
     setPersonSchemaLoading(true); setPersonSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/person`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: personName, jobTitle: personJob, description: personDesc, sameAs: personSameAs }) }); if (r.ok) setPersonSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/person`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: personName, jobTitle: personJob, description: personDesc, sameAs: personSameAs }) }); if (r.ok) setPersonSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPersonSchemaLoading(false);
   }, [personName, personJob, personDesc, personSameAs]);
 
   const runCourseSchema = useCallback(async () => {
     if (!courseName.trim()) return;
     setCourseSchemaLoading(true); setCourseSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/course`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: courseName, provider: courseProvider, price: coursePrice, duration: courseDuration }) }); if (r.ok) setCourseSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/course`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: courseName, provider: courseProvider, price: coursePrice, duration: courseDuration }) }); if (r.ok) setCourseSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCourseSchemaLoading(false);
   }, [courseName, courseProvider, coursePrice, courseDuration]);
 
   const runRecipeSchema = useCallback(async () => {
     if (!recipeName.trim()) return;
     setRecipeSchemaLoading(true); setRecipeSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/recipe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: recipeName, author: recipeAuthorName, prepTime: recipePrepTime, cookTime: recipeCookTime, ingredients: recipeIngredients }) }); if (r.ok) setRecipeSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/recipe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: recipeName, author: recipeAuthorName, prepTime: recipePrepTime, cookTime: recipeCookTime, ingredients: recipeIngredients }) }); if (r.ok) setRecipeSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setRecipeSchemaLoading(false);
   }, [recipeName, recipeAuthorName, recipePrepTime, recipeCookTime, recipeIngredients]);
 
   const runSoftwareSchema = useCallback(async () => {
     if (!softwareName.trim()) return;
     setSoftwareSchemaLoading(true); setSoftwareSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/software`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: softwareName, description: softwareDesc, price: softwarePrice, category: softwareCategory }) }); if (r.ok) setSoftwareSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/software`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: softwareName, description: softwareDesc, price: softwarePrice, category: softwareCategory }) }); if (r.ok) setSoftwareSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSoftwareSchemaLoading(false);
   }, [softwareName, softwareDesc, softwarePrice, softwareCategory]);
 
   const runLocalBizSchema = useCallback(async () => {
     if (!bizName.trim()) return;
     setLocalBizSchemaLoading(true); setLocalBizSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/local-business`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: bizName, address: bizAddress, city: bizCity, phone: bizPhone, type: bizType }) }); if (r.ok) setLocalBizSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/local-business`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: bizName, address: bizAddress, city: bizCity, phone: bizPhone, type: bizType }) }); if (r.ok) setLocalBizSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLocalBizSchemaLoading(false);
   }, [bizName, bizAddress, bizCity, bizPhone, bizType]);
 
   const runExtLinkAuth = useCallback(async () => {
     if (!scanResult?.url) return;
     setExtLinkAuthLoading(true); setExtLinkAuthResult(null);
-    try { const r = await apiFetchJSON(`${API}/links/external-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setExtLinkAuthResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/links/external-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setExtLinkAuthResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setExtLinkAuthLoading(false);
   }, [scanResult]);
 
   const runLinkDensity = useCallback(async () => {
     if (!scanResult?.url) return;
     setLinkDensityLoading(true); setLinkDensityResult(null);
-    try { const r = await apiFetchJSON(`${API}/links/link-density`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setLinkDensityResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/links/link-density`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setLinkDensityResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLinkDensityLoading(false);
   }, [scanResult]);
 
   const runOutboundAudit = useCallback(async () => {
     if (!scanResult?.url) return;
     setOutboundAuditLoading(true); setOutboundAuditResult(null);
-    try { const r = await apiFetchJSON(`${API}/links/outbound-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setOutboundAuditResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/links/outbound-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setOutboundAuditResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setOutboundAuditLoading(false);
   }, [scanResult]);
 
   const runSocialProof = useCallback(async () => {
     if (!scanResult?.url) return;
     setSocialProofLoading(true); setSocialProofResult(null);
-    try { const r = await apiFetchJSON(`${API}/trust/social-proof`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSocialProofResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/trust/social-proof`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setSocialProofResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSocialProofLoading(false);
   }, [scanResult]);
 
   const runCitationCheck = useCallback(async () => {
     if (!scanResult?.url) return;
     setCitationCheckLoading(true); setCitationCheckResult(null);
-    try { const r = await apiFetchJSON(`${API}/trust/citation-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setCitationCheckResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/trust/citation-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) }); if (r.ok) setCitationCheckResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCitationCheckLoading(false);
   }, [scanResult]);
 
   const runPassageIndex = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setPassageIndexLoading(true); setPassageIndexResult(null);
-    try { const r = await apiFetchJSON(`${API}/passage-indexing`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setPassageIndexResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/passage-indexing`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setPassageIndexResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPassageIndexLoading(false);
   }, [scanResult, kwInput]);
 
   const runContentVisibility = useCallback(async () => {
     if (!scanResult?.url || !kwInput.trim()) return;
     setContentVisibilityLoading(true); setContentVisibilityResult(null);
-    try { const r = await apiFetchJSON(`${API}/ai/content-visibility`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setContentVisibilityResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ai/content-visibility`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) }); if (r.ok) setContentVisibilityResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setContentVisibilityLoading(false);
   }, [scanResult, kwInput]);
 
@@ -1753,70 +1762,70 @@ export default function BlogSEO() {
   const runCtrOptimizer = useCallback(async () => {
     if (!ctrTitle.trim()) return;
     setCtrOptimizerLoading(true); setCtrOptimizerResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/ctr-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: ctrTitle, metaDescription: ctrMeta, keyword: ctrKeyword }) }); if (r.ok) setCtrOptimizerResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/ctr-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: ctrTitle, metaDescription: ctrMeta, keyword: ctrKeyword }) }); if (r.ok) setCtrOptimizerResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCtrOptimizerLoading(false);
   }, [ctrTitle, ctrMeta, ctrKeyword]);
 
   const runIntentClassifier = useCallback(async () => {
     if (!intentKeyword.trim()) return;
     setIntentLoading(true); setIntentResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/intent-classifier`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: intentKeyword }) }); if (r.ok) setIntentResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/intent-classifier`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: intentKeyword }) }); if (r.ok) setIntentResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setIntentLoading(false);
   }, [intentKeyword]);
 
   const runSerpFeatureTargets = useCallback(async () => {
     if (!url.trim()) return;
     setSerpFeaturesLoading(true); setSerpFeaturesResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/feature-targets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: kwInput.trim() }) }); if (r.ok) setSerpFeaturesResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/feature-targets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: kwInput.trim() }) }); if (r.ok) setSerpFeaturesResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSerpFeaturesLoading(false);
   }, [url, kwInput]);
 
   const runPaaGenerator = useCallback(async () => {
     if (!paaGenKeyword.trim()) return;
     setPaaGenLoading(true); setPaaGenResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/paa-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: paaGenKeyword, niche: paaGenNiche }) }); if (r.ok) setPaaGenResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/paa-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: paaGenKeyword, niche: paaGenNiche }) }); if (r.ok) setPaaGenResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPaaGenLoading(false);
   }, [paaGenKeyword, paaGenNiche]);
 
   const runRichResultCheck = useCallback(async () => {
     if (!url.trim()) return;
     setRichResultCheckLoading(true); setRichResultCheckResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/rich-result-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRichResultCheckResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/rich-result-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRichResultCheckResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setRichResultCheckLoading(false);
   }, [url]);
 
   const runRankbrainAdvisor = useCallback(async () => {
     if (!url.trim()) return;
     setRankbrainLoading(true); setRankbrainResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/rankbrain-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRankbrainResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/rankbrain-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRankbrainResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setRankbrainLoading(false);
   }, [url]);
 
   const runLongtailEmbed = useCallback(async () => {
     if (!longtailTitle.trim() || !longtailPrimary.trim()) return;
     setLongtailEmbedLoading(true); setLongtailEmbedResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/longtail-embedder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: longtailTitle, primaryKeyword: longtailPrimary }) }); if (r.ok) setLongtailEmbedResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/longtail-embedder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: longtailTitle, primaryKeyword: longtailPrimary }) }); if (r.ok) setLongtailEmbedResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLongtailEmbedLoading(false);
   }, [longtailTitle, longtailPrimary]);
 
   const runMetaAbVariants = useCallback(async () => {
     if (!metaAbTitle.trim()) return;
     setMetaAbLoading(true); setMetaAbResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/meta-ab-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: metaAbTitle, keyword: metaAbKeyword }) }); if (r.ok) setMetaAbResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/meta-ab-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: metaAbTitle, keyword: metaAbKeyword }) }); if (r.ok) setMetaAbResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setMetaAbLoading(false);
   }, [metaAbTitle, metaAbKeyword]);
 
   const runDifficultyScore = useCallback(async () => {
     if (!diffKeyword.trim()) return;
     setDifficultyLoading(true); setDifficultyResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/difficulty-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: diffKeyword, niche: diffNiche }) }); if (r.ok) setDifficultyResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/difficulty-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: diffKeyword, niche: diffNiche }) }); if (r.ok) setDifficultyResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setDifficultyLoading(false);
   }, [diffKeyword, diffNiche]);
 
   const runCompetitorSnapshot = useCallback(async () => {
     if (!snapKeyword.trim()) return;
     setCompetitorSnapshotLoading(true); setCompetitorSnapshotResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/competitor-snapshot`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: snapKeyword, url: url.trim() }) }); if (r.ok) setCompetitorSnapshotResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/competitor-snapshot`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: snapKeyword, url: url.trim() }) }); if (r.ok) setCompetitorSnapshotResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCompetitorSnapshotLoading(false);
   }, [snapKeyword, url]);
 
@@ -1824,49 +1833,49 @@ export default function BlogSEO() {
   const runBacklinkOpps = useCallback(async () => {
     if (!backlinkNiche.trim()) return;
     setBacklinkOppsLoading(true); setBacklinkOppsResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/opportunity-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: backlinkNiche, url: url.trim() }) }); if (r.ok) setBacklinkOppsResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/opportunity-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: backlinkNiche, url: url.trim() }) }); if (r.ok) setBacklinkOppsResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setBacklinkOppsLoading(false);
   }, [backlinkNiche, url]);
 
   const runLinkGap = useCallback(async () => {
     if (!linkGapDomain.trim()) return;
     setLinkGapLoading(true); setLinkGapResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ yourDomain: linkGapDomain, competitor1: linkGapComp1, competitor2: linkGapComp2, niche: linkGapNiche }) }); if (r.ok) setLinkGapResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ yourDomain: linkGapDomain, competitor1: linkGapComp1, competitor2: linkGapComp2, niche: linkGapNiche }) }); if (r.ok) setLinkGapResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLinkGapLoading(false);
   }, [linkGapDomain, linkGapComp1, linkGapComp2, linkGapNiche]);
 
   const runOutreachGenerator = useCallback(async () => {
     if (!outreachContentTitle.trim()) return;
     setOutreachLoading(true); setOutreachResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/outreach-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetSite: outreachTarget, contentTitle: outreachContentTitle, outreachType }) }); if (r.ok) setOutreachResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/outreach-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetSite: outreachTarget, contentTitle: outreachContentTitle, outreachType }) }); if (r.ok) setOutreachResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setOutreachLoading(false);
   }, [outreachTarget, outreachContentTitle, outreachType]);
 
   const runBestofFinder = useCallback(async () => {
     if (!bestofNiche.trim()) return;
     setBestofLoading(true); setBestofResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/bestof-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: bestofNiche }) }); if (r.ok) setBestofResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/bestof-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: bestofNiche }) }); if (r.ok) setBestofResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setBestofLoading(false);
   }, [bestofNiche]);
 
   const runAnchorOptimizer = useCallback(async () => {
     if (!anchorOptKeyword.trim()) return;
     setAnchorOptLoading(true); setAnchorOptResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/anchor-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetKeyword: anchorOptKeyword, url: url.trim() }) }); if (r.ok) setAnchorOptResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/anchor-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetKeyword: anchorOptKeyword, url: url.trim() }) }); if (r.ok) setAnchorOptResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setAnchorOptLoading(false);
   }, [anchorOptKeyword, url]);
 
   const runLinkStrategy = useCallback(async () => {
     if (!linkStratNiche.trim()) return;
     setLinkStrategyLoading(true); setLinkStrategyResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/strategy-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: linkStratNiche, monthlyBudget: linkStratBudget, domain: url.trim() }) }); if (r.ok) setLinkStrategyResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/strategy-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: linkStratNiche, monthlyBudget: linkStratBudget, domain: url.trim() }) }); if (r.ok) setLinkStrategyResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLinkStrategyLoading(false);
   }, [linkStratNiche, linkStratBudget, url]);
 
   const runInternalSuggest = useCallback(async () => {
     if (!url.trim()) return;
     setInternalSuggestLoading(true); setInternalSuggestResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/internal-suggester`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setInternalSuggestResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/internal-suggester`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setInternalSuggestResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setInternalSuggestLoading(false);
   }, [url]);
 
@@ -1874,28 +1883,28 @@ export default function BlogSEO() {
   const runFreshnessScore = useCallback(async () => {
     if (!url.trim()) return;
     setFreshnessLoading(true); setFreshnessResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/freshness-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setFreshnessResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/freshness-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setFreshnessResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setFreshnessLoading(false);
   }, [url]);
 
   const runSkyscraperGap = useCallback(async () => {
     if (!url.trim()) return;
     setSkyscraperLoading(true); setSkyscraperResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/skyscraper-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: skyscraperKeyword || kwInput.trim() }) }); if (r.ok) setSkyscraperResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/skyscraper-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: skyscraperKeyword || kwInput.trim() }) }); if (r.ok) setSkyscraperResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSkyscraperLoading(false);
   }, [url, skyscraperKeyword, kwInput]);
 
   const runRelunchAdvisor = useCallback(async () => {
     if (!url.trim()) return;
     setRelunchLoading(true); setRelunchResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/relaunch-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: relunchKeyword || kwInput.trim() }) }); if (r.ok) setRelunchResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/relaunch-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: relunchKeyword || kwInput.trim() }) }); if (r.ok) setRelunchResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setRelunchLoading(false);
   }, [url, relunchKeyword, kwInput]);
 
   const runSemanticEnrich = useCallback(async () => {
     if (!url.trim() && !semanticEnrichKeyword.trim()) return;
     setSemanticEnrichLoading(true); setSemanticEnrichResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/semantic-enrichment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: semanticEnrichKeyword || kwInput.trim() }) }); if (r.ok) setSemanticEnrichResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/semantic-enrichment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: semanticEnrichKeyword || kwInput.trim() }) }); if (r.ok) setSemanticEnrichResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSemanticEnrichLoading(false);
   }, [url, semanticEnrichKeyword, kwInput]);
 
@@ -1903,28 +1912,28 @@ export default function BlogSEO() {
   const runGbpOptimizer = useCallback(async () => {
     if (!gbpBusiness.trim()) return;
     setGbpLoading(true); setGbpResult(null);
-    try { const r = await apiFetchJSON(`${API}/local/gbp-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: gbpBusiness, location: gbpLocation, category: gbpCategory }) }); if (r.ok) setGbpResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/local/gbp-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: gbpBusiness, location: gbpLocation, category: gbpCategory }) }); if (r.ok) setGbpResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setGbpLoading(false);
   }, [gbpBusiness, gbpLocation, gbpCategory]);
 
   const runCitationFinder = useCallback(async () => {
     if (!citationBusiness.trim()) return;
     setCitationLoading(true); setCitationResult(null);
-    try { const r = await apiFetchJSON(`${API}/local/citation-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: citationBusiness, location: citationLocation, category: citationCategory }) }); if (r.ok) setCitationResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/local/citation-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: citationBusiness, location: citationLocation, category: citationCategory }) }); if (r.ok) setCitationResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCitationLoading(false);
   }, [citationBusiness, citationLocation, citationCategory]);
 
   const runLocalKwGen = useCallback(async () => {
     if (!localKwService.trim() || !localKwCity.trim()) return;
     setLocalKwLoading(true); setLocalKwResult(null);
-    try { const r = await apiFetchJSON(`${API}/local/local-keyword-gen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service: localKwService, city: localKwCity }) }); if (r.ok) setLocalKwResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/local/local-keyword-gen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service: localKwService, city: localKwCity }) }); if (r.ok) setLocalKwResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLocalKwLoading(false);
   }, [localKwService, localKwCity]);
 
   const runLocalSchema = useCallback(async () => {
     if (!localSchemaName.trim()) return;
     setLocalSchemaLoading(true); setLocalSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/local/local-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: localSchemaName, address: localSchemaAddr, phone: localSchemaPhone }) }); if (r.ok) setLocalSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/local/local-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: localSchemaName, address: localSchemaAddr, phone: localSchemaPhone }) }); if (r.ok) setLocalSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLocalSchemaLoading(false);
   }, [localSchemaName, localSchemaAddr, localSchemaPhone]);
 
@@ -1932,35 +1941,35 @@ export default function BlogSEO() {
   const runEeatScorer = useCallback(async () => {
     if (!url.trim()) return;
     setEeatLoading(true); setEeatResult(null);
-    try { const r = await apiFetchJSON(`${API}/brand/eeat-scorer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setEeatResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/brand/eeat-scorer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setEeatResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setEeatLoading(false);
   }, [url]);
 
   const runAuthorBio = useCallback(async () => {
     if (!authorBioName.trim()) return;
     setAuthorBioLoading(true); setAuthorBioResult(null);
-    try { const r = await apiFetchJSON(`${API}/brand/author-bio`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ authorName: authorBioName, niche: authorBioNiche, credentials: authorBioCredentials }) }); if (r.ok) setAuthorBioResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/brand/author-bio`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ authorName: authorBioName, niche: authorBioNiche, credentials: authorBioCredentials }) }); if (r.ok) setAuthorBioResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setAuthorBioLoading(false);
   }, [authorBioName, authorBioNiche, authorBioCredentials]);
 
   const runBrandSignals = useCallback(async () => {
     if (!brandSignalDomain.trim()) return;
     setBrandSignalLoading(true); setBrandSignalResult(null);
-    try { const r = await apiFetchJSON(`${API}/brand/brand-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: brandSignalDomain, brandName: brandSignalName }) }); if (r.ok) setBrandSignalResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/brand/brand-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: brandSignalDomain, brandName: brandSignalName }) }); if (r.ok) setBrandSignalResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setBrandSignalLoading(false);
   }, [brandSignalDomain, brandSignalName]);
 
   const runExpertQuotes = useCallback(async () => {
     if (!expertQuoteTopic.trim()) return;
     setExpertQuoteLoading(true); setExpertQuoteResult(null);
-    try { const r = await apiFetchJSON(`${API}/brand/expert-quotes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: expertQuoteTopic }) }); if (r.ok) setExpertQuoteResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/brand/expert-quotes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: expertQuoteTopic }) }); if (r.ok) setExpertQuoteResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setExpertQuoteLoading(false);
   }, [expertQuoteTopic]);
 
   const runTrustBuilder = useCallback(async () => {
     if (!url.trim()) return;
     setTrustBuilderLoading(true); setTrustBuilderResult(null);
-    try { const r = await apiFetchJSON(`${API}/brand/trust-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setTrustBuilderResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/brand/trust-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setTrustBuilderResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setTrustBuilderLoading(false);
   }, [url]);
 
@@ -1968,28 +1977,28 @@ export default function BlogSEO() {
   const runVoiceOptimizer = useCallback(async () => {
     if (!voiceOptKeyword.trim()) return;
     setVoiceOptLoading(true); setVoiceOptResult(null);
-    try { const r = await apiFetchJSON(`${API}/voice/voice-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: voiceOptKeyword }) }); if (r.ok) setVoiceOptResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/voice/voice-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: voiceOptKeyword }) }); if (r.ok) setVoiceOptResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setVoiceOptLoading(false);
   }, [voiceOptKeyword]);
 
   const runFaqGenerator = useCallback(async () => {
     if (!faqGenTopic.trim()) return;
     setFaqGenLoading(true); setFaqGenResult(null);
-    try { const r = await apiFetchJSON(`${API}/voice/faq-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: faqGenTopic }) }); if (r.ok) setFaqGenResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/voice/faq-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: faqGenTopic }) }); if (r.ok) setFaqGenResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setFaqGenLoading(false);
   }, [faqGenTopic]);
 
   const runAiOverviewOptimizer = useCallback(async () => {
     if (!aiOverviewKeyword.trim()) return;
     setAiOverviewLoading(true); setAiOverviewResult(null);
-    try { const r = await apiFetchJSON(`${API}/voice/ai-overview-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: aiOverviewKeyword, url: url.trim() }) }); if (r.ok) setAiOverviewResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/voice/ai-overview-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: aiOverviewKeyword, url: url.trim() }) }); if (r.ok) setAiOverviewResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setAiOverviewLoading(false);
   }, [aiOverviewKeyword, url]);
 
   const runConvKeywords = useCallback(async () => {
     if (!convKwTopic.trim()) return;
     setConvKwLoading(true); setConvKwResult(null);
-    try { const r = await apiFetchJSON(`${API}/voice/conversational-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: convKwTopic }) }); if (r.ok) setConvKwResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/voice/conversational-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: convKwTopic }) }); if (r.ok) setConvKwResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setConvKwLoading(false);
   }, [convKwTopic]);
 
@@ -1997,35 +2006,35 @@ export default function BlogSEO() {
   const runReadingLevel = useCallback(async () => {
     if (!url.trim()) return;
     setReadingLevelLoading(true); setReadingLevelResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/reading-level`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setReadingLevelResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/reading-level`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setReadingLevelResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setReadingLevelLoading(false);
   }, [url]);
 
   const runTfidf = useCallback(async () => {
     if (!tfidfKeyword.trim()) return;
     setTfidfLoading(true); setTfidfResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/tfidf-analyzer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: tfidfKeyword, url: url.trim() }) }); if (r.ok) setTfidfResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/tfidf-analyzer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: tfidfKeyword, url: url.trim() }) }); if (r.ok) setTfidfResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setTfidfLoading(false);
   }, [tfidfKeyword, url]);
 
   const runContentLength = useCallback(async () => {
     if (!contentLengthKw.trim()) return;
     setContentLengthLoading(true); setContentLengthResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/content-length-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: contentLengthKw, currentWordCount: contentLengthWc }) }); if (r.ok) setContentLengthResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/content-length-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: contentLengthKw, currentWordCount: contentLengthWc }) }); if (r.ok) setContentLengthResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setContentLengthLoading(false);
   }, [contentLengthKw, contentLengthWc]);
 
   const runCwvAdvisor = useCallback(async () => {
     if (!url.trim()) return;
     setCwvLoading(true); setCwvResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/cwv-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setCwvResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/cwv-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setCwvResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCwvLoading(false);
   }, [url]);
 
   const runPageSpeed = useCallback(async () => {
     if (!url.trim()) return;
     setPageSpeedLoading(true); setPageSpeedResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/page-speed-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setPageSpeedResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/page-speed-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setPageSpeedResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPageSpeedLoading(false);
   }, [url]);
 
@@ -2033,35 +2042,35 @@ export default function BlogSEO() {
   const runTopicCluster = useCallback(async () => {
     if (!topicClusterSeed.trim()) return;
     setTopicClusterLoading(true); setTopicClusterResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/topic-cluster-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seed: topicClusterSeed }) }); if (r.ok) setTopicClusterResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/topic-cluster-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seed: topicClusterSeed }) }); if (r.ok) setTopicClusterResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setTopicClusterLoading(false);
   }, [topicClusterSeed]);
 
   const runVisualDiv = useCallback(async () => {
     if (!url.trim()) return;
     setVisualDivLoading(true); setVisualDivResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/visual-diversity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setVisualDivResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/visual-diversity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setVisualDivResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setVisualDivLoading(false);
   }, [url]);
 
   const runTimeToValue = useCallback(async () => {
     if (!url.trim()) return;
     setTimeToValueLoading(true); setTimeToValueResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/time-to-value`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setTimeToValueResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/time-to-value`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setTimeToValueResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setTimeToValueLoading(false);
   }, [url]);
 
   const runPruning = useCallback(async () => {
     if (!url.trim() && !pruningNiche.trim()) return;
     setPruningLoading(true); setPruningResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/content-pruning`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ siteUrl: url.trim(), niche: pruningNiche }) }); if (r.ok) setPruningResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/content-pruning`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ siteUrl: url.trim(), niche: pruningNiche }) }); if (r.ok) setPruningResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setPruningLoading(false);
   }, [url, pruningNiche]);
 
   const runStatsCurator = useCallback(async () => {
     if (!statsCuratorNiche.trim()) return;
     setStatsCuratorLoading(true); setStatsCuratorResult(null);
-    try { const r = await apiFetchJSON(`${API}/content/statistics-curator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: statsCuratorNiche }) }); if (r.ok) setStatsCuratorResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/content/statistics-curator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: statsCuratorNiche }) }); if (r.ok) setStatsCuratorResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setStatsCuratorLoading(false);
   }, [statsCuratorNiche]);
 
@@ -2069,14 +2078,14 @@ export default function BlogSEO() {
   const runLowDiff = useCallback(async () => {
     if (!lowDiffSeed.trim()) return;
     setLowDiffLoading(true); setLowDiffResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/low-difficulty-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seedKeyword: lowDiffSeed, siteDA: lowDiffDA }) }); if (r.ok) setLowDiffResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/low-difficulty-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seedKeyword: lowDiffSeed, siteDA: lowDiffDA }) }); if (r.ok) setLowDiffResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLowDiffLoading(false);
   }, [lowDiffSeed, lowDiffDA]);
 
   const runCannibalization = useCallback(async () => {
     if (!cannibalDomain.trim()) return;
     setCannibalLoading(true); setCannibalResult(null);
-    try { const r = await apiFetchJSON(`${API}/keywords/cannibalization-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: cannibalDomain }) }); if (r.ok) setCannibalResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/keywords/cannibalization-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: cannibalDomain }) }); if (r.ok) setCannibalResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCannibalLoading(false);
   }, [cannibalDomain]);
 
@@ -2084,35 +2093,35 @@ export default function BlogSEO() {
   const runNewsSeo = useCallback(async () => {
     if (!url.trim()) return;
     setNewsSeoLoading(true); setNewsSeoResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/news-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setNewsSeoResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/news-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setNewsSeoResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setNewsSeoLoading(false);
   }, [url]);
 
   const runVideoSeo = useCallback(async () => {
     if (!url.trim() && !videoSeoKw.trim()) return;
     setVideoSeoLoading(true); setVideoSeoResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/video-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), videoKeyword: videoSeoKw.trim() }) }); if (r.ok) setVideoSeoResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/video-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), videoKeyword: videoSeoKw.trim() }) }); if (r.ok) setVideoSeoResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setVideoSeoLoading(false);
   }, [url, videoSeoKw]);
 
   const runEntityOpt = useCallback(async () => {
     if (!entityOptKw.trim() && !entityOptName.trim()) return;
     setEntityOptLoading(true); setEntityOptResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/entity-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: entityOptKw, entityName: entityOptName, url: url.trim() }) }); if (r.ok) setEntityOptResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/entity-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: entityOptKw, entityName: entityOptName, url: url.trim() }) }); if (r.ok) setEntityOptResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setEntityOptLoading(false);
   }, [entityOptKw, entityOptName, url]);
 
   const runReviewSchema6 = useCallback(async () => {
     if (!url.trim() && !reviewSchemaProduct.trim()) return;
     setReviewSchemaLoading(true); setReviewSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/review-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), productName: reviewSchemaProduct }) }); if (r.ok) setReviewSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/review-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), productName: reviewSchemaProduct }) }); if (r.ok) setReviewSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setReviewSchemaLoading(false);
   }, [url, reviewSchemaProduct]);
 
   const runEventSchemaSeo = useCallback(async () => {
     if (!eventSchemaName.trim()) return;
     setEventSchemaLoading(true); setEventSchemaResult(null);
-    try { const r = await apiFetchJSON(`${API}/serp/event-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventName: eventSchemaName, eventDate: eventSchemaDate, eventLocation: eventSchemaLocation }) }); if (r.ok) setEventSchemaResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/serp/event-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventName: eventSchemaName, eventDate: eventSchemaDate, eventLocation: eventSchemaLocation }) }); if (r.ok) setEventSchemaResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setEventSchemaLoading(false);
   }, [eventSchemaName, eventSchemaDate, eventSchemaLocation]);
 
@@ -2120,28 +2129,28 @@ export default function BlogSEO() {
   const runRedirectAudit = useCallback(async () => {
     if (!url.trim()) return;
     setRedirectAuditLoading(true); setRedirectAuditResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/redirect-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRedirectAuditResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/redirect-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRedirectAuditResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setRedirectAuditLoading(false);
   }, [url]);
 
   const runDupContent = useCallback(async () => {
     if (!url.trim()) return;
     setDupContentLoading(true); setDupContentResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/duplicate-content`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setDupContentResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/duplicate-content`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setDupContentResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setDupContentLoading(false);
   }, [url]);
 
   const runHreflangAdvisor = useCallback(async () => {
     if (!url.trim()) return;
     setHreflangLoading(true); setHreflangResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/hreflang`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), targetMarkets: hreflangMarkets }) }); if (r.ok) setHreflangResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/hreflang`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), targetMarkets: hreflangMarkets }) }); if (r.ok) setHreflangResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setHreflangLoading(false);
   }, [url, hreflangMarkets]);
 
   const runMobileSeoAdvisor = useCallback(async () => {
     if (!url.trim()) return;
     setMobileSeoLoading(true); setMobileSeoResult(null);
-    try { const r = await apiFetchJSON(`${API}/schema/mobile-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setMobileSeoResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/schema/mobile-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setMobileSeoResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setMobileSeoLoading(false);
   }, [url]);
 
@@ -2149,28 +2158,28 @@ export default function BlogSEO() {
   const runLinkGapV2 = useCallback(async () => {
     if (!linkGapDomain.trim()) return;
     setLinkGapLoading(true); setLinkGapResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: linkGapDomain, competitors: linkGapCompetitors, niche: backlinkNiche }) }); if (r.ok) setLinkGapResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: linkGapDomain, competitors: linkGapCompetitors, niche: backlinkNiche }) }); if (r.ok) setLinkGapResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLinkGapLoading(false);
   }, [linkGapDomain, linkGapCompetitors, backlinkNiche]);
 
   const runBrokenBacklinks = useCallback(async () => {
     if (!brokenBacklinksDomain.trim()) return;
     setBrokenBacklinksLoading(true); setBrokenBacklinksResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/broken-backlinks`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: brokenBacklinksDomain, niche: backlinkNiche }) }); if (r.ok) setBrokenBacklinksResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/broken-backlinks`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: brokenBacklinksDomain, niche: backlinkNiche }) }); if (r.ok) setBrokenBacklinksResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setBrokenBacklinksLoading(false);
   }, [brokenBacklinksDomain, backlinkNiche]);
 
   const runAnchorText = useCallback(async () => {
     if (!anchorTextDomain.trim()) return;
     setAnchorTextLoading(true); setAnchorTextResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/anchor-text`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: anchorTextDomain, niche: backlinkNiche }) }); if (r.ok) setAnchorTextResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/anchor-text`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: anchorTextDomain, niche: backlinkNiche }) }); if (r.ok) setAnchorTextResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setAnchorTextLoading(false);
   }, [anchorTextDomain, backlinkNiche]);
 
   const runLinkVelocity = useCallback(async () => {
     if (!linkVelocityDomain.trim()) return;
     setLinkVelocityLoading(true); setLinkVelocityResult(null);
-    try { const r = await apiFetchJSON(`${API}/backlinks/link-velocity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: linkVelocityDomain, currentLinksPerMonth: linkVelocityRate, niche: backlinkNiche }) }); if (r.ok) setLinkVelocityResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/backlinks/link-velocity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: linkVelocityDomain, currentLinksPerMonth: linkVelocityRate, niche: backlinkNiche }) }); if (r.ok) setLinkVelocityResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLinkVelocityLoading(false);
   }, [linkVelocityDomain, linkVelocityRate, backlinkNiche]);
 
@@ -2178,48 +2187,48 @@ export default function BlogSEO() {
   const runAbTest = useCallback(async () => {
     if (!url.trim()) return;
     setAbTestLoading(true); setAbTestResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/ab-test-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setAbTestResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/ab-test-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setAbTestResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setAbTestLoading(false);
   }, [url]);
 
   const runContentRefresh = useCallback(async () => {
     if (!url.trim()) return;
     setContentRefreshLoading(true); setContentRefreshResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/content-refresh`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setContentRefreshResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/content-refresh`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setContentRefreshResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setContentRefreshLoading(false);
   }, [url]);
 
   const runTitleVariants = useCallback(async () => {
     if (!titleVariantsInput.trim() && !titleVariantsKw.trim()) return;
     setTitleVariantsLoading(true); setTitleVariantsResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/title-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentTitle: titleVariantsInput, keyword: titleVariantsKw }) }); if (r.ok) setTitleVariantsResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/title-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentTitle: titleVariantsInput, keyword: titleVariantsKw }) }); if (r.ok) setTitleVariantsResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setTitleVariantsLoading(false);
   }, [titleVariantsInput, titleVariantsKw]);
 
   const runMetaVariants = useCallback(async () => {
     if (!url.trim() && !metaVariantsKw.trim()) return;
     setMetaVariantsLoading(true); setMetaVariantsResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/meta-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: metaVariantsKw }) }); if (r.ok) setMetaVariantsResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/meta-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: metaVariantsKw }) }); if (r.ok) setMetaVariantsResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setMetaVariantsLoading(false);
   }, [url, metaVariantsKw]);
 
   const runBertOpt = useCallback(async () => {
     if (!bertOptKw.trim()) return;
     setBertOptLoading(true); setBertOptResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/bert-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: bertOptKw, url: url.trim() }) }); if (r.ok) setBertOptResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/bert-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: bertOptKw, url: url.trim() }) }); if (r.ok) setBertOptResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setBertOptLoading(false);
   }, [bertOptKw, url]);
 
   const runSecondaryKwFinder = useCallback(async () => {
     setSecondaryKwLoading(true); setSecondaryKwResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/secondary-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ primaryKeyword: secondaryKwInput, url: url.trim() }) }); if (r.ok) setSecondaryKwResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/secondary-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ primaryKeyword: secondaryKwInput, url: url.trim() }) }); if (r.ok) setSecondaryKwResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setSecondaryKwLoading(false);
   }, [secondaryKwInput, url]);
 
   const runKnowledgeGraph = useCallback(async () => {
     if (!knowledgeGraphEntity.trim()) return;
     setKnowledgeGraphLoading(true); setKnowledgeGraphResult(null);
-    try { const r = await apiFetchJSON(`${API}/ab/knowledge-graph`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entityName: knowledgeGraphEntity, domain: url.trim(), industry: knowledgeGraphIndustry }) }); if (r.ok) setKnowledgeGraphResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/ab/knowledge-graph`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entityName: knowledgeGraphEntity, domain: url.trim(), industry: knowledgeGraphIndustry }) }); if (r.ok) setKnowledgeGraphResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setKnowledgeGraphLoading(false);
   }, [knowledgeGraphEntity, url, knowledgeGraphIndustry]);
 
@@ -2227,28 +2236,28 @@ export default function BlogSEO() {
   const runCrawlBudget = useCallback(async () => {
     if (!url.trim()) return;
     setCrawlBudgetLoading(true); setCrawlBudgetResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/crawl-budget`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setCrawlBudgetResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/crawl-budget`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setCrawlBudgetResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setCrawlBudgetLoading(false);
   }, [url]);
 
   const runClickDepth = useCallback(async () => {
     if (!url.trim()) return;
     setClickDepthLoading(true); setClickDepthResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/click-depth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setClickDepthResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/click-depth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setClickDepthResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setClickDepthLoading(false);
   }, [url]);
 
   const runLogFile = useCallback(async () => {
     if (!logSnippet.trim() && !url.trim()) return;
     setLogFileLoading(true); setLogFileResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/log-file`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ logSnippet: logSnippet.trim(), domain: url.trim() }) }); if (r.ok) setLogFileResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/log-file`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ logSnippet: logSnippet.trim(), domain: url.trim() }) }); if (r.ok) setLogFileResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setLogFileLoading(false);
   }, [logSnippet, url]);
 
   const runIntlSeo = useCallback(async () => {
     if (!url.trim() && !intlSeoMarkets.trim()) return;
     setIntlSeoLoading(true); setIntlSeoResult(null);
-    try { const r = await apiFetchJSON(`${API}/technical/international-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), targetMarkets: intlSeoMarkets }) }); if (r.ok) setIntlSeoResult(r); } catch {}
+    try { const r = await apiFetchJSON(`${API}/technical/international-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), targetMarkets: intlSeoMarkets }) }); if (r.ok) setIntlSeoResult(r); } catch(e) { showToast(e.message || "An error occurred"); }
     setIntlSeoLoading(false);
   }, [url, intlSeoMarkets]);
 
@@ -2333,12 +2342,12 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/items`);
       if (r.ok) setHistory(r.items || []);
-    } catch {}
+    } catch(e) { showToast(e.message || "An error occurred"); }
     setHistoryLoading(false);
   }, []);
 
   const deleteHistory = useCallback(async (id) => {
-    try { await apiFetch(`${API}/items/${id}`, { method: "DELETE" }); } catch {}
+    try { await apiFetch(`${API}/items/${id}`, { method: "DELETE" }); } catch(e) { showToast(e.message || "An error occurred"); }
     setHistory(p => p.filter(h => h.id !== id));
   }, []);
 
@@ -2368,7 +2377,7 @@ export default function BlogSEO() {
             setOrgUrl(prev => prev || storeUrl);
           }
         }
-      } catch {}
+      } catch(e) { showToast(e.message || "An error occurred"); }
       setShopifyLoading(false);
     })();
   }, []);
@@ -10339,7 +10348,7 @@ export default function BlogSEO() {
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button style={{ ...S.btn("primary"), flex: 1, padding: "12px 0", fontSize: 14 }} onClick={() => setWizardStep(1)}>Get started &#8594;</button>
-                  <button style={{ ...S.btn(), padding: "12px 20px", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch {} }}>Skip</button>
+                  <button style={{ ...S.btn(), padding: "12px 20px", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch(e) { showToast(e.message || "An error occurred"); } }}>Skip</button>
                 </div>
               </>
             )}
@@ -10373,7 +10382,7 @@ export default function BlogSEO() {
                     </div>
                   ))}
                 </div>
-                <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch {} if (activeMission !== null) { setSection(MISSIONS[activeMission].steps[0].section || null); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[0].toolId] || TABS[0]); } }}>
+                <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch(e) { showToast(e.message || "An error occurred"); } if (activeMission !== null) { setSection(MISSIONS[activeMission].steps[0].section || null); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[0].toolId] || TABS[0]); } }}>
                   {activeMission !== null ? "Start mission &#9654;" : "Explore tools"}
                 </button>
               </>
@@ -10441,6 +10450,14 @@ export default function BlogSEO() {
         </div>
       )}
 
+      {/* Global error toast */}
+      {errToast && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#1c0a0a', border: '1px solid #7f1d1d', borderRadius: 10, padding: '12px 18px', fontSize: 13, color: '#fca5a5', maxWidth: 380, zIndex: 9999, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span>&#x26A0;&#xFE0F;</span>
+          <span style={{ flex: 1 }}>{errToast}</span>
+          <button onClick={() => setErrToast(null)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>&#x2715;</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -10474,5 +10491,6 @@ function ToggleSection({ title, open, toggle }) {
     </div>
   );
 }
+
 
 
