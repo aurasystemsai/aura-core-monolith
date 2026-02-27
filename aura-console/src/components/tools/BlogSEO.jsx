@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+﻿import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
 import { DOCS as DOCS_OBJ, MISSIONS, GLOSSARY } from "./BlogSEODocs";
@@ -252,6 +252,7 @@ export default function BlogSEO() {
   const [growthSub, setGrowthSub] = useState("calendar");
   const [schemaGenLoading, setSchemaGenLoading] = useState(false);
   const [generatedSchema, setGeneratedSchema] = useState(null);
+  const [schemaImpl, setSchemaImpl] = useState({}); // tracks implement-to-shopify state per schema key
   const [schemaAuthorName, setSchemaAuthorName] = useState("");
   const [schemaPublisherName, setSchemaPublisherName] = useState("");
   const [showSerp, setShowSerp] = useState(true);
@@ -894,6 +895,45 @@ export default function BlogSEO() {
     } catch {}
     setSchemaGenLoading(false);
   }, [scanResult, schemaAuthorName, schemaPublisherName, kwInput]);
+
+  const implementSchema = useCallback(async (scriptTag, key) => {
+    const art = shopifyArticles.find(a => String(a.id) === String(selectedArticleId));
+    if (!art) return;
+    setSchemaImpl(p => ({ ...p, [key]: 'loading' }));
+    try {
+      const r = await apiFetchJSON(`${API}/implement-schema`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId: art.id, blogId: art.blogId, scriptTag, shop: shopDomain }),
+      });
+      setSchemaImpl(p => ({ ...p, [key]: r.ok ? 'ok' : `error: ${r.error || 'Unknown error'}` }));
+    } catch (e) {
+      setSchemaImpl(p => ({ ...p, [key]: `error: ${e.message}` }));
+    }
+  }, [shopifyArticles, selectedArticleId, shopDomain]);
+
+  // Helper: renders Copy + Add-to-Post buttons for any schema output
+  const schemaActions = (scriptTag, key) => (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 4 }}>
+      <button style={{ ...S.btn('ghost'), fontSize: 11, padding: '3px 10px' }}
+        onClick={() => navigator.clipboard.writeText(scriptTag || '')}>📋 Copy</button>
+      {selectedArticleId
+        ? <button
+            style={{ ...S.btn(schemaImpl[key] === 'ok' ? undefined : 'primary'), fontSize: 11, padding: '3px 10px' }}
+            disabled={schemaImpl[key] === 'loading'}
+            onClick={() => implementSchema(scriptTag, key)}>
+            {schemaImpl[key] === 'loading'
+              ? <><span style={S.spinner}/> Adding…</>
+              : schemaImpl[key] === 'ok'
+                ? '✅ Added to Post!'
+                : '➕ Add to Post'}
+          </button>
+        : <span style={{ fontSize: 11, color: '#52525b', fontStyle: 'italic' }}>← Select a post above to add directly</span>}
+      {typeof schemaImpl[key] === 'string' && schemaImpl[key].startsWith('error:') && (
+        <span style={{ fontSize: 11, color: '#f87171' }}>{schemaImpl[key].slice(7)}</span>
+      )}
+    </div>
+  );
 
   const checkBrokenLinks = useCallback(async () => {
     if (!scanResult) return;
@@ -2998,8 +3038,8 @@ export default function BlogSEO() {
                           ))}
                         </div>
                         <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
-                          <div style={{ fontSize: 13, color: "#86efac", fontWeight: 600 }}>{faqSchemaResult.aiGenerated ? "? AI answers + schema generated" : "? Schema structure generated"}</div>
-                          <button style={S.btn("ghost")} onClick={() => navigator.clipboard.writeText(faqSchemaResult.scriptTag)}>💡 Copy</button>
+                          <div style={{ fontSize: 13, color: "#86efac", fontWeight: 600 }}>{faqSchemaResult.aiGenerated ? "✅ AI answers + schema generated" : "✅ Schema structure generated"}</div>
+                          {schemaActions(faqSchemaResult.scriptTag, 'faq')}
                         </div>
                         <pre style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 14, fontSize: 11, color: "#d4d4d8", overflowX: "auto", whiteSpace: "pre-wrap", maxHeight: 280, overflowY: "auto" }}>{faqSchemaResult.scriptTag}</pre>
                       </div>
@@ -3141,8 +3181,8 @@ export default function BlogSEO() {
                         {generatedSchema && (
                           <div style={{ marginTop: 14 }}>
                             <div style={{ ...S.row, marginBottom: 8, gap: 8 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: "#86efac" }}>? Schema generated � copy and paste into your blog post &lt;head&gt;</div>
-                              <button style={S.btn("ghost")} onClick={() => navigator.clipboard.writeText(generatedSchema.scriptTag)}>💡 Copy</button>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: "#86efac" }}><span role="img" aria-label="check">✅</span> BlogPosting schema generated</div>
+                              {schemaActions(generatedSchema.scriptTag, 'blogposting')}
                             </div>
                             <pre style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 14,
                               fontSize: 11, color: "#d4d4d8", overflowX: "auto", whiteSpace: "pre-wrap", maxHeight: 320, overflowY: "auto" }}>
@@ -3748,8 +3788,8 @@ export default function BlogSEO() {
                     {breadcrumbResult && (
                       <div style={{ marginTop: 10 }}>
                         <div style={{ ...S.row, gap: 8, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, color: "#86efac" }}>? {breadcrumbResult.breadcrumbs?.length} breadcrumb items generated</span>
-                          <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(breadcrumbResult.scriptTag || "")}>💡 Copy</button>
+                          <span style={{ fontSize: 12, color: "#86efac" }}>✅ {breadcrumbResult.breadcrumbs?.length} breadcrumb items generated</span>
+                          {schemaActions(breadcrumbResult.scriptTag || '', 'breadcrumb')}
                         </div>
                         <pre style={{ ...S.fixCode, maxHeight: 180 }}>{breadcrumbResult.scriptTag}</pre>
                       </div>
@@ -3768,8 +3808,8 @@ export default function BlogSEO() {
                     {howtoResult && (
                       <div>
                         <div style={{ ...S.row, gap: 8, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, color: "#86efac" }}>? {howtoResult.stepCount} steps generated</span>
-                          <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(howtoResult.scriptTag || "")}>💡 Copy</button>
+                          <span style={{ fontSize: 12, color: "#86efac" }}>✅ {howtoResult.stepCount} steps generated</span>
+                          {schemaActions(howtoResult.scriptTag || '', 'howto')}
                         </div>
                         <pre style={{ ...S.fixCode, maxHeight: 180 }}>{howtoResult.scriptTag}</pre>
                       </div>
@@ -3785,8 +3825,8 @@ export default function BlogSEO() {
                     {videoSchemaResult && !videoSchemaResult.embeds?.length && <div style={{ fontSize: 13, color: "#71717a", marginTop: 8 }}>No YouTube/Vimeo embeds found on this page.</div>}
                     {videoSchemaResult?.embeds?.length > 0 && (
                       <div style={{ marginTop: 10 }}>
-                        <div style={{ fontSize: 12, color: "#86efac", marginBottom: 6 }}>? {videoSchemaResult.embeds.length} video embed(s) found</div>
-                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(videoSchemaResult.scriptTag || "")}>💡 Copy JSON-LD</button>
+                        <div style={{ fontSize: 12, color: "#86efac", marginBottom: 6 }}>✅ {videoSchemaResult.embeds.length} video embed(s) found</div>
+                        {schemaActions(videoSchemaResult.scriptTag || '', 'video')}
                         <pre style={{ ...S.fixCode, maxHeight: 180, marginTop: 8 }}>{videoSchemaResult.scriptTag}</pre>
                       </div>
                     )}
@@ -3805,7 +3845,7 @@ export default function BlogSEO() {
                     </button>
                     {reviewResult && (
                       <div style={{ marginTop: 10 }}>
-                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(reviewResult.scriptTag || "")}>💡 Copy JSON-LD</button>
+                        {schemaActions(reviewResult.scriptTag || '', 'review')}
                         <pre style={{ ...S.fixCode, maxHeight: 180, marginTop: 8 }}>{reviewResult.scriptTag}</pre>
                       </div>
                     )}
@@ -3823,7 +3863,7 @@ export default function BlogSEO() {
                     </div>
                     {orgResult && (
                       <div>
-                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(orgResult.scriptTag || "")}>💡 Copy JSON-LD</button>
+                        {schemaActions(orgResult.scriptTag || '', 'org')}
                         <pre style={{ ...S.fixCode, maxHeight: 150, marginTop: 8 }}>{orgResult.scriptTag}</pre>
                       </div>
                     )}
@@ -3837,7 +3877,7 @@ export default function BlogSEO() {
                     </button>
                     {speakableResult && (
                       <div style={{ marginTop: 10 }}>
-                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(speakableResult.scriptTag || "")}>💡 Copy JSON-LD</button>
+                        {schemaActions(speakableResult.scriptTag || '', 'speakable')}
                         <pre style={{ ...S.fixCode, maxHeight: 150, marginTop: 8 }}>{speakableResult.scriptTag}</pre>
                       </div>
                     )}

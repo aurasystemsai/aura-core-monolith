@@ -7956,6 +7956,69 @@ router.post('/anchor-text-analyser', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+/* ── Implement Schema: push JSON-LD script tag directly into a Shopify article ── */
+router.post('/implement-schema', async (req, res) => {
+  try {
+    const { articleId, blogId, scriptTag, shop } = req.body;
+    if (!articleId || !blogId || !scriptTag) return res.status(400).json({ ok: false, error: 'Missing articleId, blogId or scriptTag' });
+
+    const shopTokens = require('../../core/shopTokens');
+    const resolvedShop = shop
+      || req.session?.shop
+      || req.headers['x-shopify-shop-domain']
+      || (shopTokens.loadAll ? (() => { const all = shopTokens.loadAll(); const keys = Object.keys(all || {}); return keys.length === 1 ? keys[0] : null; })() : null)
+      || process.env.SHOPIFY_STORE_URL;
+
+    if (!resolvedShop) return res.status(400).json({ ok: false, error: 'No Shopify store connected' });
+
+    const token = shopTokens.getToken
+      ? shopTokens.getToken(resolvedShop)
+      : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null);
+
+    if (!token) return res.status(400).json({ ok: false, error: 'No Shopify token — reconnect your store in Settings' });
+
+    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+    // Fetch current article
+    const artRes = await fetch(`https://${resolvedShop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}.json`, { headers });
+    if (!artRes.ok) throw new Error(`Failed to fetch article: ${artRes.status}`);
+    const artJson = await artRes.json();
+    const article = artJson.article;
+    if (!article) throw new Error('Article not found');
+
+    // Detect schema type from scriptTag to avoid duplicating same type
+    const typeMatch = scriptTag.match(/"@type"\s*:\s*"([^"]+)"/);
+    const schemaType = typeMatch ? typeMatch[1] : null;
+
+    // Remove any existing script tag of the same @type from body_html
+    let body = article.body_html || '';
+    if (schemaType) {
+      // Remove old script tags of the same @type
+      body = body.replace(
+        new RegExp(`<script[^>]*type=["']application/ld\\+json["'][^>]*>[\\s\\S]*?"@type"\\s*:\\s*"${schemaType}"[\\s\\S]*?<\\/script>`, 'gi'),
+        ''
+      );
+    }
+
+    // Append new schema at the end of body_html
+    const updatedBody = body.trimEnd() + '\n' + scriptTag;
+
+    // Update article via Shopify API
+    const updateRes = await fetch(`https://${resolvedShop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}.json`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ article: { id: articleId, body_html: updatedBody } }),
+    });
+    if (!updateRes.ok) {
+      const errText = await updateRes.text();
+      throw new Error(`Shopify update failed (${updateRes.status}): ${errText.slice(0, 200)}`);
+    }
+
+    res.json({ ok: true, message: `${schemaType || 'Schema'} added to post successfully` });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 // Site Architecture Analyser
 router.post('/site-architecture', async (req, res) => {
   try {
