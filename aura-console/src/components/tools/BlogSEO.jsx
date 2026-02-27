@@ -818,7 +818,7 @@ export default function BlogSEO() {
   const [entityNameInput, setEntityNameInput] = useState(''); const [personNameInput, setPersonNameInput] = useState('');
   const [localLocation, setLocalLocation] = useState(''); const [authorName, setAuthorName] = useState(''); const [authorExpertise, setAuthorExpertise] = useState('');
   const [contentLengthNum, setContentLengthNum] = useState('1000'); const [bulkUrlsText, setBulkUrlsText] = useState('');
-  const [vpLoadId, setVpLoadId] = useState(''); const [rankIdInput, setRankIdInput] = useState('');
+  const [rankIdInput, setRankIdInput] = useState('');
 
     /* -- ANALYZER ----------------------------------------------------------- */
   const runScan = useCallback(async () => {
