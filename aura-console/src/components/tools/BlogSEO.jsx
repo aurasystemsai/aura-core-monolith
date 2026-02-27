@@ -6535,7 +6535,7 @@ export default function BlogSEO() {
               {carouselResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(carouselResult,null,2)}</pre></div>}
             </div>
 
-            {/* === Internal Link Opportunities === */}}
+            {/* === Internal Link Opportunities === */}
             <div style={S.card}>
               <div style={{...S.row, alignItems:'center', marginBottom:8}}>
                 <div style={{...S.cardTitle, marginBottom:0}}>🔗 Internal Link Opportunities</div>
@@ -9507,7 +9507,7 @@ export default function BlogSEO() {
               {rossResult&&!rossResult.ok&&<div style={S.err}>{rossResult.error}</div>}
               {rossResult?.ok&&<div style={{fontSize:13,color:'#d4d4d8',marginTop:8}}><pre style={{whiteSpace:'pre-wrap',margin:0}}>{JSON.stringify(rossResult,null,2)}</pre></div>}
             </div>
-            {/* === Add Alert === */}}
+            {/* === Add Alert === */}
             <div style={S.card}>
               <div style={{...S.row,alignItems:'center',marginBottom:8}}>
                 <div style={{...S.cardTitle,marginBottom:0}}>➕ Add Monitoring Alert</div>
