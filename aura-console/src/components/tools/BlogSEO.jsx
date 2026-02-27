@@ -1,7 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
-import { DOCS, MISSIONS, GLOSSARY } from "./BlogSEODocs";
+import { DOCS as DOCS_OBJ, MISSIONS, GLOSSARY } from "./BlogSEODocs";
+// Convert DOCS object (keyed by tool id) to array for use with .map()/.find()/.slice()
+const DOCS = Object.entries(DOCS_OBJ).map(([id, doc]) => ({ id, ...doc }));
 
 const API = "/api/blog-seo";
 
@@ -44,6 +46,8 @@ const S = {
   bulkRow: { display: "flex", gap: 8, alignItems: "center", padding: "6px 0", borderBottom: "1px solid #1e1e22" },
   section: { marginBottom: 20 },
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
+  sidebarItem: (a) => ({ padding: "8px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: a ? 600 : 400, background: a ? "#312e81" : "transparent", color: a ? "#e0e7ff" : "#a1a1aa", borderLeft: a ? "3px solid #818cf8" : "3px solid transparent", marginBottom: 2, transition: "all .15s" }),
+  missionCard: (a) => ({ padding: 12, borderRadius: 10, cursor: "pointer", border: a ? "1px solid #818cf8" : "1px solid #27272a", background: a ? "#1e1b4b" : "#18181b", transition: "all .15s" }),
 };
 
 const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "Shopify SEO", "AI Growth", "Rank Tracker", "Site Crawl", "GEO & LLM", "Trend Scout", "History"];
@@ -730,6 +734,11 @@ export default function BlogSEO() {
   const [guestPostResult, setGuestPostResult] = useState(null); const [guestPostLoading, setGuestPostLoading] = useState(false); const [guestPostNiche, setGuestPostNiche] = useState('');
   const [resourcePageResult, setResourcePageResult] = useState(null); const [resourcePageLoading, setResourcePageLoading] = useState(false); const [resourcePageTopic, setResourcePageTopic] = useState('');
   const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperUrl, setSkyscraperUrl] = useState(''); const [skyscraperKeyword, setSkyscraperKeyword] = useState('');
+  const [activeMission, setActiveMission] = useState(null);
+  const [missionStep, setMissionStep] = useState(0);
+  const [seenWelcome, setSeenWelcome] = useState(() => { try { return !!localStorage.getItem('blogseo_seen_welcome'); } catch { return false; } });
+  const [helpTopic, setHelpTopic] = useState(null);
+  const [helpOpen, setHelpOpen] = useState(false);
   // Site Crawl
   const [crawlDupResult, setCrawlDupResult] = useState(null); const [crawlDupLoading, setCrawlDupLoading] = useState(false);
   const [crawlExportLoading, setCrawlExportLoading] = useState(false);
