@@ -46,8 +46,14 @@ const S = {
   bulkRow: { display: "flex", gap: 8, alignItems: "center", padding: "6px 0", borderBottom: "1px solid #1e1e22" },
   section: { marginBottom: 20 },
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
-  sidebarItem: (a) => ({ padding: "8px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: a ? 600 : 400, background: a ? "#312e81" : "transparent", color: a ? "#e0e7ff" : "#a1a1aa", borderLeft: a ? "3px solid #818cf8" : "3px solid transparent", marginBottom: 2, transition: "all .15s" }),
+  sidebarItem: (a) => ({ padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: a ? 600 : 400, background: a ? "#1e1b4b" : "transparent", color: a ? "#c4b5fd" : "#a1a1aa", borderLeft: a ? "3px solid #818cf8" : "3px solid transparent", marginBottom: 2, transition: "all .15s", display: "flex", alignItems: "center", gap: 10 }),
   missionCard: (a) => ({ padding: 12, borderRadius: 10, cursor: "pointer", border: a ? "1px solid #818cf8" : "1px solid #27272a", background: a ? "#1e1b4b" : "#18181b", transition: "all .15s" }),
+  layout: { display: "flex", alignItems: "flex-start", minHeight: "calc(100vh - 72px)" },
+  sidebar: { width: 220, flexShrink: 0, borderRight: "1px solid #18181b", paddingTop: 12, paddingBottom: 32, position: "sticky", top: 0, maxHeight: "100vh", overflowY: "auto" },
+  sidebarSection: { fontSize: 10, fontWeight: 700, color: "#3f3f46", textTransform: "uppercase", letterSpacing: "1px", padding: "14px 14px 4px" },
+  mainContent: { flex: 1, minWidth: 0, padding: "0 28px 64px", maxWidth: 1000 },
+  toolGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 },
+  toolCard: (color) => ({ background: "#18181b", border: `1px solid #27272a`, borderLeft: `3px solid ${color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 6 }),
 };
 
 const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "Shopify SEO", "AI Growth", "Rank Tracker", "Site Crawl", "GEO & LLM", "Trend Scout", "History"];
@@ -177,10 +183,6 @@ const SECTIONS = [
 export default function BlogSEO() {
   const [tab, setTab] = useState("Analyzer");
   const [section, setSection] = useState(null); // null = home dashboard
-  const [mode, setMode] = useState(() => {
-    try { return localStorage.getItem("blogseo_mode") || "beginner"; } catch { return "beginner"; }
-  });
-  const setModePersist = (m) => { setMode(m); try { localStorage.setItem("blogseo_mode", m); } catch {} };
 
   /* -- Shopify store data (auto-fill) -- */
   const [shopifyArticles, setShopifyArticles] = useState([]);
@@ -2390,30 +2392,26 @@ export default function BlogSEO() {
         {activeSec && <><span style={{ color: "#3f3f46", fontSize: 18 }}>&#8250;</span><span style={{ ...S.title, fontWeight: 500 }}>{activeSec.icon} {activeSec.title}</span></>}
         <span style={S.badge}>AI-Powered</span>
         <div style={{ flex: 1 }} />
-        <div style={{ display: "flex", background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: 3, gap: 3 }}>
-          <button style={{ padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: mode === "beginner" ? "#4f46e5" : "transparent", color: mode === "beginner" ? "#fff" : "#71717a" }} onClick={() => setModePersist("beginner")}>Beginner</button>
-          <button style={{ padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", background: mode === "advanced" ? "#7c3aed" : "transparent", color: mode === "advanced" ? "#fff" : "#71717a" }} onClick={() => setModePersist("advanced")}>Advanced</button>
-        </div>
-        <button style={{ ...S.btn(), padding: "7px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { setCmdOpen(true); setCmdQuery(""); setCmdIdx(0); }} title="Ctrl+K">Search</button>
-        <button style={{ ...S.btn(), padding: "7px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => setHelpOpen(h => !h)}>Help</button>
+        <button style={{ ...S.btn(), padding: "7px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { setCmdOpen(true); setCmdQuery(""); setCmdIdx(0); }} title="Ctrl+K">⌕ Search</button>
+        <button style={{ ...S.btn(), padding: "7px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => setHelpOpen(h => !h)}>? Help</button>
         {activeMission !== null && <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>Mission: {MISSIONS[activeMission]?.title}</span>}
       </div>
 
       <div style={S.layout}>
-        {/* Sidebar Navigation */}
-        {sidebarOpen && (
-          <nav style={S.sidebar}>
-            <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#71717a" }}>NAVIGATION</span>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "3px 8px" }} onClick={() => setSection(null)}>Home</button>
+        {/* Sidebar — always visible */}
+        <nav style={S.sidebar}>
+          <div style={{ padding: "6px 14px 10px", borderBottom: "1px solid #18181b", marginBottom: 6 }}>
+            <button style={{ fontSize: 13, fontWeight: 700, color: section ? "#818cf8" : "#fafafa", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 6 }}
+              onClick={() => setSection(null)}>🏠 Blog SEO Engine</button>
+          </div>
+          <div style={S.sidebarSection}>Tools</div>
+          {SECTIONS.map(s => (
+            <div key={s.id} style={S.sidebarItem(section === s.id)}
+              onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
+              <span style={{ fontSize: 15 }}>{s.icon}</span>
+              <span>{s.title}</span>
             </div>
-            {SECTIONS.filter(s => mode === "advanced" || s.level === "beginner").map(s => (
-              <div key={s.id} style={S.sidebarItem(section === s.id)}
-                onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
-                <span style={{ fontSize: 16 }}>{s.icon}</span>
-                <span>{s.title}</span>
-              </div>
-            ))}
+          ))}
             <div style={S.sidebarSection}>Missions</div>
             {MISSIONS.map((m, i) => (
               <div key={m.id} style={S.sidebarItem(activeMission === i)}
@@ -2431,7 +2429,6 @@ export default function BlogSEO() {
               </div>
             ))}
           </nav>
-        )}
         <div style={S.mainContent}>
 
         {/* ================================================================
@@ -2461,87 +2458,42 @@ export default function BlogSEO() {
                 </div>
               )}
 
-              {/* -- Beginner / Advanced toggle -- */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 2 }}>
-                    {mode === "beginner" ? "👋 Welcome! Pick a tool to get started." : "💡 Advanced Mode � all tools"}
-                  </div>
-                  <div style={{ fontSize: 13, color: "#71717a" }}>
-                    {mode === "beginner" ? "Everything is auto-filled from your store � just click and go." : "Full access to all SEO tools including technical, schema and backlink analysis."}
-                  </div>
+              {/* -- Quick scan hero -- */}
+              <div style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", border: "1px solid #3730a3", borderRadius: 14, padding: "24px", marginBottom: 28 }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#e0e7ff", marginBottom: 6 }}>&#x1F50D; Start with an SEO scan</div>
+                <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 16 }}>Paste any blog post URL to get your full SEO score, issues list and AI recommendations.</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <input style={{ ...S.input, maxWidth: 480 }} placeholder="https://yourstore.com/blogs/news/your-post" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && runScan()} />
+                  <button style={S.btn("primary")} onClick={() => { setSection('Analyze'); setTab('Analyzer'); setTimeout(runScan, 0); }} disabled={!url.trim() || scanning}>
+                    {scanning ? <><span style={S.spinner}/> Scanning&hellip;</> : '&#x1F50D; Scan Now'}
+                  </button>
                 </div>
-                <div style={{ display: "flex", background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 4, gap: 4, flexShrink: 0 }}>
-                  <button
-                    style={{ padding: "7px 18px", borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", transition: "all .15s",
-                      background: mode === "beginner" ? "#4f46e5" : "transparent",
-                      color: mode === "beginner" ? "#fff" : "#71717a" }}
-                    onClick={() => setModePersist("beginner")}
-                  >🌱 Beginner</button>
-                  <button
-                    style={{ padding: "7px 18px", borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", transition: "all .15s",
-                      background: mode === "advanced" ? "#7c3aed" : "transparent",
-                      color: mode === "advanced" ? "#fff" : "#71717a" }}
-                    onClick={() => setModePersist("advanced")}
-                  >⚡ Advanced</button>
-                </div>
+                {shopifyArticles.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <span style={{ fontSize: 12, color: "#6366f1" }}>Or pick from your store: </span>
+                    {shopifyArticles.slice(0, 5).map(a => (
+                      <button key={a.id} style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", margin: "2px 4px" }}
+                        onClick={() => { handleArticleSelect(String(a.id)); setSection('Analyze'); setTab('Analyzer'); }}>
+                        {a.title.slice(0, 40)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* -- Section cards -- */}
-              {mode === "beginner" ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 12 }}>
-                  {SECTIONS.filter(s => s.level === "beginner").map(s => (
-                    <div key={s.id} style={{ ...S.card, cursor: "pointer", borderLeft: `4px solid ${s.color}` }}
-                      onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
-                      <div style={{ fontSize: 28, marginBottom: 10 }}>{s.icon}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>{s.title}</div>
-                      <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.55 }}>{s.desc}</div>
-                      <div style={{ marginTop: 14, fontSize: 12, color: s.color, fontWeight: 600 }}>Open ?</div>
-                    </div>
-                  ))}
-                  {/* Teaser for advanced mode */}
-                  <div style={{ ...S.card, borderLeft: "4px solid #374151", cursor: "pointer", opacity: 0.7 }}
-                    onClick={() => setModePersist("advanced")}>
-                    <div style={{ fontSize: 28, marginBottom: 10 }}>?</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>More Tools</div>
-                    <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.55 }}>Technical SEO, schema, backlinks, A/B testing and more. Switch to Advanced mode to unlock.</div>
-                    <div style={{ marginTop: 14, fontSize: 12, color: "#7c3aed", fontWeight: 600 }}>Switch to Advanced ?</div>
+              {/* -- All tools grid -- */}
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 14 }}>All Tools</div>
+              <div style={S.toolGrid}>
+                {SECTIONS.map(s => (
+                  <div key={s.id} style={S.toolCard(s.color)}
+                    onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
+                    <span style={{ fontSize: 26 }}>{s.icon}</span>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
+                    <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#x2192;</div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 }}>Beginner Tools</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginBottom: 24 }}>
-                    {SECTIONS.filter(s => s.level === "beginner").map(s => (
-                      <div key={s.id} style={{ ...S.card, cursor: "pointer", borderLeft: `4px solid ${s.color}`, padding: "14px 16px" }}
-                        onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontSize: 22 }}>{s.icon}</span>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{s.title}</div>
-                            <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>{s.desc.slice(0, 60)}�</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 }}>? Advanced Tools</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
-                    {SECTIONS.filter(s => s.level === "advanced").map(s => (
-                      <div key={s.id} style={{ ...S.card, cursor: "pointer", borderLeft: `4px solid ${s.color}`, padding: "14px 16px" }}
-                        onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontSize: 22 }}>{s.icon}</span>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{s.title}</div>
-                            <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>{s.desc.slice(0, 60)}�</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+                ))}
+              </div>
             </div>
           </>
         )}
@@ -4387,8 +4339,8 @@ export default function BlogSEO() {
               </>
             )}
 
-            {/* Advanced-only deep-dive tools — hidden in beginner mode and before any scan */}
-            {mode === 'advanced' && scanResult && (
+            {/* Advanced API tools — shown after a scan */}
+            {scanResult && (
               <div style={{ marginTop: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>⚙️ Advanced API Tools</div>
                 <div style={S.card}><div style={{...S.row,alignItems:'center',marginBottom:6}}><div style={{...S.cardTitle,marginBottom:0}}>🔍 Full SEO Analyze</div><button style={{...S.btn(),marginLeft:'auto'}} disabled={xLoad['x_analyze']} onClick={async()=>{setXLoad(p=>({...p,'x_analyze':true}));try{const d=await apiFetchJSON(`${API}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({"url":url,"content":scanResult?.content||'',"shop":shopDomain})});setXRes(p=>({...p,'x_analyze':d}));}catch(e){setXRes(p=>({...p,'x_analyze':{error:e.message}}));}setXLoad(p=>({...p,'x_analyze':false}));}}>{xLoad['x_analyze']?'Running…':'Run'}</button></div>{xRes['x_analyze']&&<div style={{...S.result,marginTop:6,fontSize:12}}>{xRes['x_analyze'].error?<span style={{color:'#f87171'}}>{xRes['x_analyze'].error}</span>:<pre style={{margin:0,whiteSpace:'pre-wrap',maxHeight:200,overflow:'auto'}}>{JSON.stringify(xRes['x_analyze'],null,2)}</pre>}</div>}</div>
@@ -10245,19 +10197,15 @@ export default function BlogSEO() {
             )}
             {wizardStep === 1 && (
               <>
-                <div style={{ fontSize: 32, marginBottom: 16 }}>&#9881;</div>
-                <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Choose your experience</div>
-                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 24 }}>You can switch anytime from the header.</div>
-                <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
-                  <div style={{ ...S.card, flex: 1, cursor: "pointer", borderColor: mode === "beginner" ? "#4f46e5" : "#27272a" }} onClick={() => setModePersist("beginner")}>
-                    <div style={{ fontSize: 24, marginBottom: 8 }}>&#128218;</div>
-                    <div style={{ fontWeight: 700, marginBottom: 4 }}>Beginner</div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}>Guided tools, auto-fill from your store, clear explanations.</div>
-                  </div>
-                  <div style={{ ...S.card, flex: 1, cursor: "pointer", borderColor: mode === "advanced" ? "#7c3aed" : "#27272a" }} onClick={() => setModePersist("advanced")}>
-                    <div style={{ fontSize: 24, marginBottom: 8 }}>&#9889;</div>
-                    <div style={{ fontWeight: 700, marginBottom: 4 }}>Advanced</div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}>All 23 tools, technical audit, schema, backlinks, AI batch ops.</div>
+                <div style={{ fontSize: 32, marginBottom: 16 }}>&#9889;</div>
+                <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>You have full access</div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 24 }}>All 19 SEO tools are available from the sidebar — from quick scans to technical audits, schema, backlinks and AI writing.</div>
+                <div style={{ ...S.card, borderColor: "#4f46e5", marginBottom: 28, textAlign: "left" }}>
+                  <div style={{ fontSize: 13, color: "#a5b4fc", lineHeight: 1.7 }}>
+                    &#x1F50D; <strong>Analyze</strong> — scan any post for SEO score &amp; issues<br/>
+                    &#x270D;&#xFE0F; <strong>Write &amp; Optimize</strong> — AI rewrites, meta, H1<br/>
+                    &#x1F9E0; <strong>AI Growth</strong> — competitor gaps, topic clusters<br/>
+                    &#x1F517; <strong>Schema &amp; Technical</strong> — structured data, crawl audit
                   </div>
                 </div>
                 <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => setWizardStep(2)}>Next &#8594;</button>
