@@ -203,7 +203,9 @@ export default function BlogSEO() {
   const [expandedIssue, setExpandedIssue] = useState(null);
   const [fixLoading, setFixLoading] = useState(null);
   const [fixes, setFixes] = useState({});
-  const [rewriteField, setRewriteField] = useState(null);
+  const [aiAnalysisErr, setAiAnalysisErr] = useState(null);
+  const [fixErr, setFixErr] = useState({});
+  const [autoScanPending, setAutoScanPending] = useState(false);
   const [rewriteLoading, setRewriteLoading] = useState(false);
   const [rewriteResult, setRewriteResult] = useState(null);
   const [rewriteErr, setRewriteErr] = useState(null);
@@ -865,21 +867,28 @@ export default function BlogSEO() {
 
   const generateFix = useCallback(async (issue) => {
     const k = issue.msg;
-    setFixLoading(k);
+    setFixLoading(k); setFixErr(p => ({ ...p, [k]: null }));
     try {
       const r = await apiFetchJSON(`${API}/ai/fix-code`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issue: issue.msg, url: scanResult?.url, pageContext: { title: scanResult?.title, h1: scanResult?.h1, wordCount: scanResult?.wordCount } }) });
       if (r.ok) setFixes(p => ({ ...p, [k]: r.fix }));
-    } catch {}
+      else setFixErr(p => ({ ...p, [k]: r.error || 'Failed to generate fix' }));
+    } catch (e) { setFixErr(p => ({ ...p, [k]: e.message || 'Network error' })); }
     setFixLoading(null);
   }, [scanResult]);
 
   const runAiAnalysis = useCallback(async () => {
     if (!scanResult) return;
-    setAiAnalyzing(true);
+    setAiAnalyzing(true); setAiAnalysisErr(null);
     try {
       const r = await apiFetchJSON(`${API}/ai/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, wordCount: scanResult.wordCount, headings: scanResult.headings, keywords: kwInput, scored: scanResult.scored }) });
-      if (r.ok) setAiAnalysis(r.structured || JSON.parse(r.analysis));
-    } catch {}
+      if (r.ok) {
+        const parsed = r.structured || (r.analysis ? (() => { try { return JSON.parse(r.analysis); } catch { return null; } })() : null);
+        if (parsed) setAiAnalysis(parsed);
+        else setAiAnalysisErr('AI returned an unexpected format. Please try again.');
+      } else {
+        setAiAnalysisErr(r.error || (r.credit_error ? `Not enough credits (need ${r.credits_needed}, have ${r.credits_available})` : 'Analysis failed. Please try again.'));
+      }
+    } catch (e) { setAiAnalysisErr(e.message || 'Network error — please try again.'); }
     setAiAnalyzing(false);
   }, [scanResult, kwInput]);
 
@@ -2326,6 +2335,14 @@ export default function BlogSEO() {
 
   useEffect(() => { if (tab === "History" || section === "History") loadHistory(); }, [tab, section]);
 
+  /* -- Auto-scan after home article pick (fires once url state has updated) -- */
+  useEffect(() => {
+    if (autoScanPending && url) {
+      setAutoScanPending(false);
+      runScan();
+    }
+  }, [autoScanPending, url, runScan]);
+
   /* -- Fetch Shopify store data on mount -- */
   useEffect(() => {
     (async () => {
@@ -2533,7 +2550,7 @@ export default function BlogSEO() {
                     <span style={{ fontSize: 12, color: "#6366f1", whiteSpace: "nowrap" }}>Or pick from store:</span>
                     {shopifyArticles.slice(0, 4).map(a => (
                       <button key={a.id} style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                        onClick={() => { handleArticleSelect(String(a.id)); setSection('Analyze'); setTab('Analyzer'); }}
+                        onClick={() => { handleArticleSelect(String(a.id)); setSection('Analyze'); setTab('Analyzer'); setAutoScanPending(true); }}
                         title={a.title}>
                         {a.title.slice(0, 28)}{a.title.length > 28 ? '…' : ''}
                       </button>
@@ -2782,12 +2799,13 @@ export default function BlogSEO() {
 
                 {/* AI Analysis button */}
                 <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <button style={S.btn("primary")} onClick={runAiAnalysis} disabled={aiAnalyzing}>
+                  <button style={S.btn("primary")} onClick={runAiAnalysis} disabled={aiAnalyzing || !scanResult}>
                     {aiAnalyzing ? <><span style={S.spinner} /> Analyzing&hellip;</> : "🤖 AI Deep Analysis (1 credit)"}
                   </button>
-                  <button style={S.btn()} onClick={() => runRewrite("title")} disabled={rewriteLoading}>💡 AI Rewrite Title</button>
-                  <button style={S.btn()} onClick={() => runRewrite("metaDescription")} disabled={rewriteLoading}>💡 AI Rewrite Description</button>
-                  <button style={S.btn()} onClick={() => runRewrite("h1")} disabled={rewriteLoading}>💡 AI Rewrite H1</button>
+                  <button style={S.btn()} onClick={() => runRewrite("title")} disabled={rewriteLoading || !scanResult} title={!scanResult ? 'Scan a post first' : ''}>💡 AI Rewrite Title</button>
+                  <button style={S.btn()} onClick={() => runRewrite("metaDescription")} disabled={rewriteLoading || !scanResult} title={!scanResult ? 'Scan a post first' : ''}>💡 AI Rewrite Description</button>
+                  <button style={S.btn()} onClick={() => runRewrite("h1")} disabled={rewriteLoading || !scanResult} title={!scanResult ? 'Scan a post first' : ''}>💡 AI Rewrite H1</button>
+                  {!scanResult && <span style={{ fontSize: 12, color: '#52525b', fontStyle: 'italic' }}>Scan a post above first</span>}
                 </div>
 
                 {/* Rewrite loading / error / results — directly below buttons */}
@@ -2832,6 +2850,12 @@ export default function BlogSEO() {
                   </div>
                 )}
 
+                {aiAnalysisErr && !aiAnalyzing && (
+                  <div style={{ ...S.card, borderColor: '#7f1d1d', background: '#1c0a0a' }}>
+                    <span style={{ fontSize: 13, color: '#f87171' }}>&#x26A0;&#xFE0F; {aiAnalysisErr}</span>
+                    <button style={{ ...S.btn(), fontSize: 11, marginLeft: 12 }} onClick={() => setAiAnalysisErr(null)}>Dismiss</button>
+                  </div>
+                )}
                 {/* AI Analysis results */}
                 {aiAnalysis && (() => {
                   // Map recommendation keywords → in-tool action
@@ -4433,6 +4457,7 @@ export default function BlogSEO() {
                             <button style={hint ? S.btn() : S.btn("primary")} onClick={(e) => { e.stopPropagation(); generateFix(issue); }} disabled={fixLoading === k}>
                               {fixLoading === k ? <><span style={S.spinner} /> Generating&hellip;</> : "\u2728 AI Generate Specific Fix (1 credit)"}
                             </button>
+                            {fixErr[k] && <div style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>&#x26A0;&#xFE0F; {fixErr[k]}</div>}
                             {fixes[k] && (
                               <div style={S.fixPanel}>
                                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{fixes[k].explanation || fixes[k].location}</div>
