@@ -2389,6 +2389,59 @@ export default function BlogSEO() {
   const issues = scanResult?.scored?.issues || [];
   const filteredIssues = issues.filter(i => (filterCat === "all" || i.cat === filterCat) && (filterSev === "all" || i.sev === filterSev));
 
+  const getIssueHint = (msg) => {
+    const m = (msg || '').toLowerCase();
+    if ((m.includes('meta description') || m.includes('meta desc')) && (m.includes('missing') || m.includes('no meta') || m.includes('empty') || m.includes('0/160') || m.includes('not set')))
+      return { hint: 'Write a 150-160 character summary with your target keyword naturally included. This is the text shown in Google results.', label: '\u270d\ufe0f Write Meta Description', action: () => runRewrite('metaDescription') };
+    if (m.includes('meta description') || m.includes('meta desc'))
+      return { hint: 'Your meta description affects click-through rate from Google. Keep it 150-160 chars and include your primary keyword.', label: '\u270d\ufe0f Rewrite Meta', action: () => runRewrite('metaDescription') };
+    if (m.includes('title') && (m.includes('short') || m.includes('too few') || m.includes('below')))
+      return { hint: 'Aim for 50-60 characters. Put your primary keyword near the start, add a benefit or hook to improve clicks.', label: '\u270d\ufe0f Rewrite Title', action: () => runRewrite('title') };
+    if (m.includes('title') && (m.includes('long') || m.includes('truncat') || m.includes('exceeds') || m.includes('over 60')))
+      return { hint: 'Google cuts titles over ~60 characters in search results. Remove filler words and keep your keyword + main benefit.', label: '\u270d\ufe0f Shorten Title', action: () => runRewrite('title') };
+    if (m.includes('title') && (m.includes('keyword') || m.includes('not in title') || m.includes('missing from')))
+      return { hint: 'Place your primary keyword in the first 60 characters of the title — ideally as close to the start as possible.', label: '\u270d\ufe0f Rewrite Title', action: () => runRewrite('title') };
+    if (m.includes('title') && (m.includes('missing') || m.includes('no title')))
+      return { hint: 'Every page needs a unique title tag (50-60 chars) with your target keyword near the start.', label: '\u270d\ufe0f Write Title', action: () => runRewrite('title') };
+    if (m.includes('h1') && (m.includes('missing') || m.includes('no h1') || m.includes('0 h1')))
+      return { hint: 'Add one H1 at the top of your post body with your primary keyword. In Shopify blogs, check your theme — sometimes it auto-generates the H1 from the post title.', label: '\u270d\ufe0f Generate H1', action: () => runRewrite('h1') };
+    if (m.includes('h1') && (m.includes('multiple') || m.includes('h1 tags found') || m.includes('more than one')))
+      return { hint: 'Only one H1 per page. Open your post editor, change extra H1s to H2 or H3.', label: '\u270d\ufe0f Fix H1', action: () => runRewrite('h1') };
+    if (m.includes('h1') && m.includes('align'))
+      return { hint: 'Your title tag and H1 should share key terms. Edit one to match the other — Google uses both to understand your topic.', label: '\u270d\ufe0f Align H1 & Title', action: () => runRewrite('h1') };
+    if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin'))))
+      return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { setSection('Write'); setTab('AI Create'); } };
+    if (m.includes('schema') || m.includes('structured data') || m.includes('json-ld'))
+      return { hint: 'Add Article or BlogPosting schema to help Google display rich results. Use the Schema tool to generate and add it with one click.', label: '\U0001f517 Add Schema', action: () => { setSection('Schema'); setTab('Schema & Links'); } };
+    if (m.includes('internal link'))
+      return { hint: 'Link to 2-5 related posts or product pages within your store. It helps Google discover pages and keeps readers engaged longer.', label: '\U0001f517 Internal Links', action: () => { setSection('Schema'); setTab('Schema & Links'); } };
+    if (m.includes('image') && (m.includes('alt') || m.includes('missing alt')))
+      return { hint: 'Add descriptive alt text to every image. Describe what’s in the image, include your keyword where it fits naturally. Keep it under 125 characters.', label: '\U0001f5bc\ufe0f Fix Image Alt', action: () => { setSection('Technical'); setTab('Technical+'); } };
+    if (m.includes('canonical'))
+      return { hint: 'Add a self-referencing canonical tag in your page <head>: <link rel="canonical" href="YOUR-PAGE-URL">. In Shopify, edit your theme or use a meta fields app.', label: '\u2699\ufe0f Technical SEO', action: () => { setSection('Technical'); setTab('Technical+'); } };
+    if (m.includes('robots') || m.includes('noindex') || m.includes('blocked'))
+      return { hint: 'Check your robots.txt file and any noindex meta tags. Make sure the page is not accidentally blocked from search crawlers.', label: '\u2699\ufe0f Check Technical', action: () => { setSection('Technical'); setTab('Technical+'); } };
+    if (m.includes('https') || m.includes('mixed content') || m.includes('http:'))
+      return { hint: 'All resources (images, scripts, stylesheets) must load over HTTPS. Mixed content warnings hurt trust and rankings.', label: '\u2699\ufe0f Technical SEO', action: () => { setSection('Technical'); setTab('Technical+'); } };
+    if (m.includes('heading') && (m.includes('jump') || m.includes('skip') || m.includes('level')))
+      return { hint: 'Headings must flow in order: H1 \u2192 H2 \u2192 H3. Open your post editor and promote/demote any headings that skip a level.', label: '\u26a1 Optimize Post', action: () => { setSection('Optimize'); setTab('Content+'); } };
+    if (m.includes('sentence') || m.includes('passive voice'))
+      return { hint: 'Shorten sentences to under 20 words. Replace passive constructions ("was done by") with active voice ("we did"). Use the Optimize tool to scan and fix.', label: '\u26a1 Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
+    if (m.includes('paragraph') && (m.includes('long') || m.includes('exceed') || m.includes('words')))
+      return { hint: 'Break large paragraphs into 2-4 sentence chunks. Google and readers both prefer scannable content with clear visual breaks.', label: '\u26a1 Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
+    if (m.includes('transition'))
+      return { hint: 'Add linking words like “however”, “therefore”, “in addition”, “as a result” to improve flow. Yoast recommends \u226530% of sentences start with a transition word.', label: '\u26a1 Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
+    if (m.includes('og:') || m.includes('open graph') || m.includes('twitter card') || m.includes('social'))
+      return { hint: 'Add Open Graph tags to your theme: og:title, og:description, og:image. This controls how your post appears when shared on social media.', label: '\u2699\ufe0f Technical SEO', action: () => { setSection('Technical'); setTab('Technical+'); } };
+    if (m.includes('backlink') || m.includes('link build'))
+      return { hint: 'Build links by writing guest posts, creating share-worthy resources, or getting listed in niche directories. Use the Backlinks tool to find opportunities.', label: '\U0001f517 Backlinks', action: () => { setSection('Backlinks'); setTab('Backlinks'); } };
+    if (m.includes('keyword') && (m.includes('density') || m.includes('stuffing') || m.includes('repeated')))
+      return { hint: 'Reduce exact keyword repeats. Use natural synonyms and related phrases. Aim for 1-2% keyword density — use the Keywords tool to check.', label: '\U0001f3af Find Keywords', action: () => { setSection('Keywords'); setTab('Keywords'); } };
+    if (m.includes('keyword') && (m.includes('missing') || m.includes('not found') || m.includes('absent')))
+      return { hint: 'Include your target keyword in the first paragraph and at least 2-3 more times naturally throughout the post.', label: '\U0001f3af Keywords', action: () => { setSection('Keywords'); setTab('Keywords'); } };
+    return null;
+  };
+
   /* -- RENDER ------------------------------------------------------------ */
   const activeSec = section ? SECTIONS.find(s => s.id === section) : null;
   return (
@@ -2636,6 +2689,36 @@ export default function BlogSEO() {
                     </div>
                   </div>
                 </div>
+
+                {/* Priority Fixes strip */}
+                {(() => {
+                  const topIssues = (scanResult.scored?.issues || [])
+                    .filter(i => i.sev === 'high' || i.sev === 'medium')
+                    .slice(0, 4);
+                  if (!topIssues.length) return null;
+                  return (
+                    <div style={{ background: "#0f0f10", border: "1px solid #3f3f46", borderRadius: 12, padding: "14px 18px", marginBottom: 4 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 10 }}>\u26a1 Fix These First</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {topIssues.map((issue, i) => {
+                          const hint = getIssueHint(issue.msg);
+                          return (
+                            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", background: "#18181b", borderRadius: 8, borderLeft: `3px solid ${issue.sev === 'high' ? '#ef4444' : '#f59e0b'}` }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: issue.sev === 'high' ? '#f87171' : '#fbbf24', whiteSpace: 'nowrap', marginTop: 1 }}>{issue.sev.toUpperCase()}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 13, color: "#d4d4d8", marginBottom: hint ? 4 : 0 }}>{issue.msg}</div>
+                                {hint && <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{hint.hint}</div>}
+                              </div>
+                              {hint && (
+                                <button style={{ ...S.btn('primary'), fontSize: 11, padding: "4px 12px", whiteSpace: "nowrap", flexShrink: 0 }} onClick={hint.action}>{hint.label}</button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Category scores */}
                 <div style={S.catBar}>
@@ -4336,21 +4419,31 @@ export default function BlogSEO() {
                           <span style={{ flex: 1, fontSize: 13, color: "#d4d4d8" }}>{issue.msg}</span>
                           <span style={{ fontSize: 11, color: "#71717a" }}>-{issue.impact}pts</span>
                         </div>
-                        {isExpanded && (
-                          <div style={{ padding: "8px 14px 12px 40px" }}>
-                            <button style={S.btn("primary")} onClick={(e) => { e.stopPropagation(); generateFix(issue); }} disabled={fixLoading === k}>
-                              {fixLoading === k ? <><span style={S.spinner} /> Generating�</> : "✨ AI Generate Fix (1 credit)"}
+                        {isExpanded && (() => {
+                          const hint = getIssueHint(issue.msg);
+                          return (
+                          <div style={{ padding: "8px 14px 14px 40px", borderBottom: "1px solid #1c1c1e" }}>
+                            {hint && (
+                              <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 10 }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>&#x2139;&#xFE0F; How to fix this</div>
+                                <div style={{ fontSize: 13, color: "#d4d4d8", lineHeight: 1.6, marginBottom: 8 }}>{hint.hint}</div>
+                                <button style={{ ...S.btn("primary"), fontSize: 12, padding: "5px 14px" }} onClick={(e) => { e.stopPropagation(); hint.action(); }}>{hint.label}</button>
+                              </div>
+                            )}
+                            <button style={hint ? S.btn() : S.btn("primary")} onClick={(e) => { e.stopPropagation(); generateFix(issue); }} disabled={fixLoading === k}>
+                              {fixLoading === k ? <><span style={S.spinner} /> Generating&hellip;</> : "\u2728 AI Generate Specific Fix (1 credit)"}
                             </button>
                             {fixes[k] && (
                               <div style={S.fixPanel}>
                                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{fixes[k].explanation || fixes[k].location}</div>
                                 {fixes[k].code && <pre style={S.fixCode}>{fixes[k].code}</pre>}
-                                <div style={{ marginTop: 6, fontSize: 11, color: "#71717a" }}>Type: {fixes[k].fixType} � Priority: {fixes[k].priority}</div>
+                                <div style={{ marginTop: 6, fontSize: 11, color: "#71717a" }}>Type: {fixes[k].fixType} &middot; Priority: {fixes[k].priority}</div>
                                 <button style={{ ...S.btn(), marginTop: 8, fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(fixes[k].code || "")}>Copy Code</button>
                               </div>
                             )}
                           </div>
-                        )}
+                          );
+                        })()}
                       </div>
                     );
                   })}
