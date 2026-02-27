@@ -729,7 +729,7 @@ export default function BlogSEO() {
   const [expertQAResult, setExpertQAResult] = useState(null); const [expertQALoading, setExpertQALoading] = useState(false); const [expertQATopic, setExpertQATopic] = useState('');
   const [guestPostResult, setGuestPostResult] = useState(null); const [guestPostLoading, setGuestPostLoading] = useState(false); const [guestPostNiche, setGuestPostNiche] = useState('');
   const [resourcePageResult, setResourcePageResult] = useState(null); const [resourcePageLoading, setResourcePageLoading] = useState(false); const [resourcePageTopic, setResourcePageTopic] = useState('');
-  const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperUrl, setSkyscraperUrl] = useState('');
+  const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperUrl, setSkyscraperUrl] = useState(''); const [skyscraperKeyword, setSkyscraperKeyword] = useState('');
   // Site Crawl
   const [crawlDupResult, setCrawlDupResult] = useState(null); const [crawlDupLoading, setCrawlDupLoading] = useState(false);
   const [crawlExportLoading, setCrawlExportLoading] = useState(false);
