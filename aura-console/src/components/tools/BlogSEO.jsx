@@ -829,6 +829,20 @@ export default function BlogSEO() {
   const [contentLengthNum, setContentLengthNum] = useState('1000'); const [bulkUrlsText, setBulkUrlsText] = useState('');
   const [rankIdInput, setRankIdInput] = useState('');
 
+  /* -- Missing state declarations -- */
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [addAlertKw, setAddAlertKw] = useState('');
+  const [addAlertThreshold, setAddAlertThreshold] = useState('10');
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState('');
+  const [cmdIdx, setCmdIdx] = useState(0);
+  const [wizardStep, setWizardStep] = useState(0);
+  const [podcastSchemaTitle, setPodcastSchemaTitle] = useState('');
+  const [datasetSchemaTitle, setDatasetSchemaTitle] = useState('');
+  const [hreflangGenLocales, setHreflangGenLocales] = useState('');
+  const [contentApprovalTitle, setContentApprovalTitle] = useState('');
+  const [contentApprovalContent, setContentApprovalContent] = useState('');
+
     /* -- ANALYZER ----------------------------------------------------------- */
   const runScan = useCallback(async () => {
     if (!url.trim()) return;
