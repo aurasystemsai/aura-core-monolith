@@ -8401,6 +8401,17 @@ export default function BlogSEO() {
 
                 {/* Results table */}
                 <div style={S.card}>
+                  <div style={{ ...S.row, marginBottom: 10, alignItems: 'center' }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>Results</div>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: '4px 12px' }} onClick={() => {
+                      const headers = ['URL', 'Title', 'Score', 'Grade', 'Words', 'Issues', 'High Issues'];
+                      const rows = (bulkResult.results || []).map(r => [
+                        r.url, r.title || '', r.score ?? '', r.grade || '', r.wordCount ?? '', r.issueCount ?? '', r.highIssues ?? ''
+                      ]);
+                      const csv = [headers, ...rows].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+                      const a = document.createElement('a'); a.href = 'data:text/csv,' + encodeURIComponent(csv); a.download = 'bulk-scan-results.csv'; a.click();
+                    }}>⬇ Export CSV</button>
+                  </div>
                   <table style={S.table}>
                     <thead><tr><th style={S.th}>URL</th><th style={S.th}>Title</th><th style={S.th}>Score</th><th style={S.th}>Grade</th><th style={S.th}>Words</th><th style={S.th}>Issues</th></tr></thead>
                     <tbody>
