@@ -8280,7 +8280,7 @@ export default function BlogSEO() {
                 <div style={{ ...S.cardTitle, marginBottom: 0 }}>💾 Save Voice Profile</div>
                 <button style={{ ...S.btn(), marginLeft: 'auto' }} disabled={vpSaveLoading} onClick={async () => {
                   setVpSaveLoading(true);
-                  try { const r = await apiFetch(`${API}/voice-profile/save`, { method: 'POST', body: JSON.stringify({ shop: shopDomain }) }); setVpSaveResult(r); } catch (e) { setVpSaveResult({ error: e.message }); }
+                  try { const r = await (await apiFetch(`${API}/voice-profile/save`, { method: 'POST', body: JSON.stringify({ shop: shopDomain }) })).json(); setVpSaveResult(r); } catch (e) { setVpSaveResult({ error: e.message }); }
                   setVpSaveLoading(false);
                 }}>{vpSaveLoading ? 'Saving…' : 'Save Profile'}</button>
               </div>
@@ -8300,7 +8300,7 @@ export default function BlogSEO() {
                 <div style={{ ...S.cardTitle, marginBottom: 0 }}>📥 Load Voice Profile</div>
                 <button style={{ ...S.btn(), marginLeft: 'auto' }} disabled={vpLoadLoading} onClick={async () => {
                   setVpLoadLoading(true);
-                  try { const endpoint = vpLoadId.trim() ? `${API}/voice-profile/${encodeURIComponent(vpLoadId.trim())}` : `${API}/voice-profile`; const r = await apiFetch(endpoint); setVpLoadResult(r); } catch (e) { setVpLoadResult({ error: e.message }); }
+                  try { const endpoint = vpLoadId.trim() ? `${API}/voice-profile/${encodeURIComponent(vpLoadId.trim())}` : `${API}/voice-profile`; const r = await (await apiFetch(endpoint)).json(); setVpLoadResult(r); } catch (e) { setVpLoadResult({ error: e.message }); }
                   setVpLoadLoading(false);
                 }}>{vpLoadLoading ? 'Loading…' : 'Load'}</button>
               </div>
@@ -9682,7 +9682,7 @@ export default function BlogSEO() {
                     setRtLoading(true); setRtErr("");
                     try {
                       await apiFetch("/api/blog-seo/rank/add-keyword", { method:"POST", body: JSON.stringify({ keyword: rtKeyword.trim(), shop: "demo" }) });
-                      const list = await apiFetch("/api/blog-seo/rank/list?shop=demo");
+                      const list = await (await apiFetch("/api/blog-seo/rank/list?shop=demo")).json();
                       setRtKeywords(list.keywords || []); setRtKeyword("");
                     } catch(e) { setRtErr(e.message); }
                     setRtLoading(false);
@@ -9695,7 +9695,7 @@ export default function BlogSEO() {
                     <span style={{ fontSize:13, fontWeight:600 }}>{kw.keyword || kw}</span>
                     <button style={{ ...S.btn(), fontSize:11, padding:"4px 8px" }} onClick={async () => {
                       setRtLoading(true);
-                      try { const r = await apiFetch("/api/blog-seo/rank/check-position", { method:"POST", body: JSON.stringify({ keywordId: kw.id || i, keyword: kw.keyword || kw, shop:"demo" }) }); setRtResult(r); }
+                      try { const r = await apiFetch("/api/blog-seo/rank/check-position", { method:"POST", body: JSON.stringify({ keywordId: kw.id || i, keyword: kw.keyword || kw, shop:"demo" }) }); setRtResult(await r.json()); }
                       catch(e) { setRtErr(e.message); }
                       setRtLoading(false);
                     }}>Check</button>
@@ -9715,7 +9715,7 @@ export default function BlogSEO() {
                 <p style={{ fontSize:12, color:"#71717a", marginBottom:12 }}>Check all tracked keywords at once (5 credits).</p>
                 <button style={S.btn("primary")} disabled={rtLoading} onClick={async () => {
                   setRtLoading(true); setRtErr("");
-                  try { const r = await apiFetch("/api/blog-seo/rank/bulk-check", { method:"POST", body: JSON.stringify({ shop:"demo" }) }); setRtResult(r); }
+                  try { const r = await apiFetch("/api/blog-seo/rank/bulk-check", { method:"POST", body: JSON.stringify({ shop:"demo" }) }); setRtResult(await r.json()); }
                   catch(e) { setRtErr(e.message); }
                   setRtLoading(false);
                 }}>{rtLoading ? <span style={S.spinner}/> : "Run Bulk Check (5cr)"}</button>
@@ -9734,7 +9734,7 @@ export default function BlogSEO() {
                 <textarea style={{ ...S.input, height:110, fontFamily:"monospace", fontSize:11 }} placeholder={"query,clicks,impressions,ctr,position\nbest running shoes,120,4500,2.8,4.2"} value={rtGscCsv} onChange={e => setRtGscCsv(e.target.value)} />
                 <button style={{ ...S.btn("primary"), marginTop:8 }} disabled={rtGscLoading} onClick={async () => {
                   setRtGscLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/gsc/import-csv", { method:"POST", body: JSON.stringify({ csvData: rtGscCsv, shop:"demo" }) }); setRtGscResult(r); }
+                  try { const r = await apiFetch("/api/blog-seo/gsc/import-csv", { method:"POST", body: JSON.stringify({ csvData: rtGscCsv, shop:"demo" }) }); setRtGscResult(await r.json()); }
                   catch(e) { setRtErr(e.message); }
                   setRtGscLoading(false);
                 }}>{rtGscLoading ? <span style={S.spinner}/> : "Import GSC Data"}</button>
@@ -9749,7 +9749,7 @@ export default function BlogSEO() {
                   <input style={{ ...S.input, flex:1 }} placeholder="Keyword" value={rtKeyword} onChange={e => setRtKeyword(e.target.value)} />
                   <button style={S.btn("primary")} disabled={rtForecastLoading} onClick={async () => {
                     setRtForecastLoading(true);
-                    try { const r = await apiFetch("/api/blog-seo/rank/ai-forecast", { method:"POST", body: JSON.stringify({ keyword: rtKeyword, currentPosition: 15, shop:"demo" }) }); setRtForecastResult(r); }
+                    try { const r = await apiFetch("/api/blog-seo/rank/ai-forecast", { method:"POST", body: JSON.stringify({ keyword: rtKeyword, currentPosition: 15, shop:"demo" }) }); setRtForecastResult(await r.json()); }
                     catch(e) { setRtErr(e.message); }
                     setRtForecastLoading(false);
                   }}>{rtForecastLoading ? <span style={S.spinner}/> : "Forecast (2cr)"}</button>
@@ -9886,16 +9886,16 @@ export default function BlogSEO() {
                     setCrawlLoading(true); setCrawlErr("");
                     try {
                       const r = await apiFetch("/api/blog-seo/crawl/start", { method:"POST", body: JSON.stringify({ url: crawlUrl.trim(), shop:"demo", maxPages:200 }) });
-                      setCrawlStatus(r);
+                      setCrawlStatus(await r.json());
                       let tries = 0;
                       const poll = setInterval(async () => {
                         tries++;
                         try {
-                          const status = await apiFetch("/api/blog-seo/crawl/status?shop=demo");
+                          const status = await (await apiFetch("/api/blog-seo/crawl/status?shop=demo")).json();
                           setCrawlStatus(status);
                           if (status.status === "done" || tries > 30) {
                             clearInterval(poll);
-                            const results = await apiFetch("/api/blog-seo/crawl/results?shop=demo");
+                            const results = await (await apiFetch("/api/blog-seo/crawl/results?shop=demo")).json();
                             setCrawlResults(results); setCrawlLoading(false);
                           }
                         } catch(e) { clearInterval(poll); setCrawlLoading(false); }
@@ -9923,7 +9923,7 @@ export default function BlogSEO() {
                     </div>
                     <button style={{ ...S.btn(), fontSize:12, marginBottom:10 }} onClick={async () => {
                       setCrawlAiLoading(true);
-                      try { const r = await apiFetch("/api/blog-seo/crawl/ai-summary", { method:"POST", body: JSON.stringify({ shop:"demo" }) }); setCrawlAiSummary(r); }
+                      try { const r = await apiFetch("/api/blog-seo/crawl/ai-summary", { method:"POST", body: JSON.stringify({ shop:"demo" }) }); setCrawlAiSummary(await r.json()); }
                       catch(e) { setCrawlErr(e.message); }
                       setCrawlAiLoading(false);
                     }}>{crawlAiLoading ? <span style={S.spinner}/> : "AI Summary (5cr)"}</button>
@@ -9944,7 +9944,7 @@ export default function BlogSEO() {
                 <p style={{ fontSize:12, color:"#71717a", marginBottom:12 }}>Detect pages with no internal links pointing to them.</p>
                 <button style={S.btn("primary")} disabled={crawlLoading} onClick={async () => {
                   setCrawlLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/crawl/orphan-finder", { method:"POST", body: JSON.stringify({ shop:"demo" }) }); setCrawlResults(prev => ({...prev, orphans: r.orphanPages})); }
+                  try { const r = await (await apiFetch("/api/blog-seo/crawl/orphan-finder", { method:"POST", body: JSON.stringify({ shop:"demo" }) })).json(); setCrawlResults(prev => ({...prev, orphans: r.orphanPages})); }
                   catch(e) { setCrawlErr(e.message); }
                   setCrawlLoading(false);
                 }}>{crawlLoading ? <span style={S.spinner}/> : "Find Orphan Pages"}</button>
@@ -9957,7 +9957,7 @@ export default function BlogSEO() {
                 <div style={S.cardTitle}>Snapshot Compare</div>
                 <button style={S.btn("primary")} disabled={crawlLoading} onClick={async () => {
                   setCrawlLoading(true);
-                  try { const snaps = await apiFetch("/api/blog-seo/crawl/snapshots?shop=demo"); setCrawlSnapshots(snaps.snapshots || []); }
+                  try { const snaps = await (await apiFetch("/api/blog-seo/crawl/snapshots?shop=demo")).json(); setCrawlSnapshots(snaps.snapshots || []); }
                   catch(e) { setCrawlErr(e.message); }
                   setCrawlLoading(false);
                 }}>{crawlLoading ? <span style={S.spinner}/> : "Load Snapshots"}</button>
