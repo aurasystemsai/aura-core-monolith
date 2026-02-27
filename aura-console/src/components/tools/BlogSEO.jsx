@@ -18,6 +18,7 @@ const S = {
   tab: (a) => ({ padding: "7px 18px", borderRadius: 8, fontSize: 13, fontWeight: a ? 600 : 500, cursor: "pointer", background: a ? "#4f46e5" : "#18181b", color: a ? "#fff" : "#a1a1aa", border: a ? "1px solid #4f46e5" : "1px solid #27272a", transition: "all .15s" }),
   card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20, marginBottom: 16 },
   cardTitle: { fontSize: 15, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 },
+  cardDesc: { fontSize: 12, color: "#71717a", marginBottom: 10, marginTop: -6, lineHeight: 1.5 },
   row: { display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" },
   input: { flex: 1, minWidth: 220, padding: "10px 14px", borderRadius: 8, border: "1px solid #3f3f46", background: "#09090b", color: "#fafafa", fontSize: 14, outline: "none" },
   textarea: { width: "100%", minHeight: 90, padding: "10px 14px", borderRadius: 8, border: "1px solid #3f3f46", background: "#09090b", color: "#fafafa", fontSize: 14, outline: "none", resize: "vertical", fontFamily: "inherit" },
@@ -4551,6 +4552,24 @@ export default function BlogSEO() {
 
             {kwResearch && !kwLoading && (
               <>
+                {/* Export CSV button */}
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                  <button style={{ ...S.btn(), fontSize: 12, padding: "6px 14px" }} onClick={() => {
+                    const rows = [["Keyword", "EstVolume", "Difficulty", "Priority", "Cluster", "Intent"]];
+                    (kwResearch.clusters || []).forEach(cluster => {
+                      (cluster.keywords || []).forEach(kw => {
+                        rows.push([kw.keyword, kw.estimatedVolume, kw.difficulty, kw.priority, cluster.name, cluster.intent]);
+                      });
+                    });
+                    (kwResearch.longTailKeywords || []).forEach(kw => rows.push([kw, "", "", "", "Long-tail", ""]));
+                    const csv = rows.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `keyword-research-${seedKw.trim().replace(/\s+/g, "-") || "export"}.csv`;
+                    a.click();
+                  }}>📥 Export CSV</button>
+                </div>
                 {/* Clusters */}
                 {(kwResearch.clusters || []).map((cluster, ci) => (
                   <div key={ci} style={S.card}>
