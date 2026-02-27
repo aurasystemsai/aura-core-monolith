@@ -825,7 +825,7 @@ router.post('/faq-schema/generate', async (req, res) => {
     if (useAI) {
       const openai = getOpenAI();
       const prompt = `You are an SEO content expert. For the blog post${url ? ` at ${url}` : ''}, write concise 2-3 sentence answers for each FAQ question below. Answers must be factual, helpful, and suitable for a Google featured answer box.\n\nQuestions:\n${questionHeadings.map((h, i) => `${i + 1}. ${h.text}`).join('\n')}\n\nRespond as JSON: {"faqs": [{"question": "string", "answer": "string"}]}`;
-      const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+      const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
       faqs = JSON.parse(resp.choices[0].message.content).faqs || [];
       if (req.deductCredits) req.deductCredits({ model });
     } else {
@@ -949,7 +949,7 @@ Respond ONLY as JSON:
   "tip": "Single actionable optimization tip"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...parsed });
@@ -1383,7 +1383,7 @@ Respond ONLY as JSON:
   "tip": "One overall internal linking tip for this page"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...parsed });
@@ -2107,7 +2107,7 @@ Return ONLY valid JSON-LD (no markdown), using schema.org HowTo. Include:
 - step array with @type: HowToStep, name, text for each step
 - estimatedCost if applicable`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }] });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }] });
     let raw = resp.choices[0].message.content.trim().replace(/^```json\s*/i, '').replace(/```$/, '');
     const parsed = JSON.parse(raw);
     if (req.deductCredits) req.deductCredits({ model });
@@ -2295,7 +2295,7 @@ Respond as JSON ONLY:
   "recommendation": "what to change if mismatch, else what's working"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, pageTitle, ...parsed });
@@ -2359,7 +2359,7 @@ Return JSON ONLY:
   "directAnswerPresent": true|false
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, title, wordCount, hasList, hasTable, hasDefinition, hasSteps, ...parsed });
@@ -2412,7 +2412,7 @@ Respond as JSON ONLY:
   "recommendation": "overall recommendation"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, title, headingCount: headings.length, ...parsed });
@@ -2465,7 +2465,7 @@ Return JSON ONLY:
   "tips": ["specific tip about what made these better"]
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, pageTitle, currentMeta: metaDesc, ...parsed });
@@ -2529,7 +2529,7 @@ Return JSON ONLY:
   "recommendation": "specific update recommendation"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, title, publishedDate, modifiedDate, daysSincePublish, daysSinceUpdate, oldestYear, newestYear, ...parsed });
@@ -2590,7 +2590,7 @@ Return JSON ONLY:
   "summary": "1-2 sentence summary"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, myPage, competitorPages, ...parsed });
@@ -2821,7 +2821,7 @@ Return JSON ONLY:
   "serp_features": ["featured snippet", "image pack", "video carousel", "knowledge panel"]
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...parsed });
@@ -2879,7 +2879,7 @@ Return JSON ONLY:
   "recommendation": "how to improve entity coverage"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, contentLength: content.length, ...parsed });
@@ -2983,7 +2983,7 @@ router.post('/content/emotional-tone', async (req, res) => {
     $('script,style,nav,footer,header').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 2000);
     const prompt = `Analyze the emotional tone of this blog content. Return JSON: {"primaryTone":"informative|persuasive|inspirational|urgent|neutral|conversational","toneScore":0-100,"positivity":0-100,"urgency":0-100,"trustworthiness":0-100,"emotions":["list of 3-5 detected emotions"],"recommendation":"one actionable improvement tip"}. Content: ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...data });
@@ -3277,7 +3277,7 @@ router.post('/keywords/secondary', async (req, res) => {
       } catch (_) {}
     }
     const prompt = `For a blog post targeting the primary keyword "${keyword}"${contentSnippet ? `, here is a content snippet: ${contentSnippet}` : ''}, suggest 10 secondary/LSI keywords with search intent. Return JSON: {"secondary":[{"keyword":"...","intent":"informational|commercial|transactional","priority":"high|medium|low","tip":"where to use it"},...],"contentGaps":["2-3 subtopic gaps"],"relatedQuestions":["3 PAA-style questions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, primaryKeyword: keyword, ...data });
@@ -3301,7 +3301,7 @@ router.post('/keywords/voice-search', async (req, res) => {
       } catch (_) {}
     }
     const prompt = `Optimize for voice search (Google Assistant, Siri, Alexa). Primary keyword: "${keyword}". ${text ? `Content snippet: ${text}` : ''} Return JSON: {"voiceKeywords":["5 conversational question-style queries"],"featuredSnippetTarget":"one ideal paragraph for a snippet (under 50 words)","conversationalAnswers":[{"question":"...","answer":"..."}],"optimizationTips":["3 voice SEO tips"],"score":0-100}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -3553,7 +3553,7 @@ router.post('/ai/blog-outline', async (req, res) => {
     const { keyword, topic, audience = 'general', model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword && !topic) return res.status(400).json({ ok: false, error: 'keyword or topic required' });
     const prompt = `Create a comprehensive, SEO-optimised blog post outline for target keyword: "${keyword || topic}". Target audience: ${audience}. Return JSON: {"title":"SEO optimised title","metaDescription":"under 160 chars","sections":[{"heading":"H2 heading","type":"intro|body|faq|conclusion","suggestedWordCount":200,"keyPoints":["3 key points to cover"],"seoTip":"tip for this section"}],"totalWordCount":0,"estimatedReadTime":"X min read","contentAngle":"unique angle","primaryKeyword":"...","secondaryKeywords":["3-5 LSI keywords"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword: keyword || topic, audience, ...data });
@@ -3566,7 +3566,7 @@ router.post('/ai/intro-generator', async (req, res) => {
     const { keyword, topic, style = 'PAS', audience = 'general', model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword && !topic) return res.status(400).json({ ok: false, error: 'keyword or topic required' });
     const prompt = `Write 3 compelling blog intro paragraphs (each 80-120 words) for a post about "${keyword || topic}". Use the ${style} formula (Problem-Agitate-Solve for PAS, AIDA for attention-interest-desire-action). Audience: ${audience}. Return JSON: {"intros":[{"style":"...","text":"...","hookType":"stat|question|story|bold claim","hookStrength":0-10}],"recommended":0}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword: keyword || topic, style, ...data });
@@ -3579,7 +3579,7 @@ router.post('/ai/title-ideas', async (req, res) => {
     const { keyword, topic, count = 10, model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword && !topic) return res.status(400).json({ ok: false, error: 'keyword or topic required' });
     const prompt = `Generate ${count} SEO-optimised, high-CTR blog post titles for keyword: "${keyword || topic}". Mix title formulas (how-to, listicle, question, power word, year-based, negative, etc). Return JSON: {"titles":[{"title":"...","formula":"how-to|listicle|question|power|negative|data","charCount":0,"ctrScore":0-10,"powerWords":["..."],"note":"why this works"}],"bestTitle":"...","tip":"..."}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword: keyword || topic, count, ...data });
@@ -3602,7 +3602,7 @@ router.post('/ai/cta-generator', async (req, res) => {
       } catch (_) {}
     }
     const prompt = `Write 3 high-converting CTA (call-to-action) paragraphs for a blog post about "${keyword || contentSnippet}". Goal: ${goal}. Each CTA should end blog content and drive user action. Return JSON: {"ctas":[{"variant":"A|B|C","text":"...","buttonText":"...","urgencyLevel":"low|medium|high","conversionPrinciple":"scarcity|authority|reciprocity|social-proof|FOMO","estimatedCTR":0-10}],"bestVariant":"A|B|C","tip":"..."}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, goal, ...data });
@@ -3621,7 +3621,7 @@ router.post('/ai/key-takeaways', async (req, res) => {
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 3000);
     const prompt = `Extract the 5-7 most important key takeaways from this blog post. Return JSON: {"takeaways":[{"point":"concise key insight (under 20 words)","importance":"critical|important|useful","detail":"1 sentence elaboration"}],"summary":"2-sentence article summary","mainThesis":"core argument in one sentence"}. Content: ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, ...data });
@@ -3641,7 +3641,7 @@ router.post('/ai/summary-generator', async (req, res) => {
     const text = $('body').text().slice(0, 3000);
     const wordTarget = length === 'short' ? '50-80' : length === 'medium' ? '100-150' : '200-250';
     const prompt = `Summarise this blog post in ${wordTarget} words. Return JSON: {"summaryShort":"1 sentence","summaryMedium":"2-3 sentences","summaryLong":"paragraph","tweetThread":["3 tweet-sized points under 280 chars each"],"tldr":"one line TL;DR"}. Content: ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, length, ...data });
@@ -3660,7 +3660,7 @@ router.post('/ai/tone-analyzer', async (req, res) => {
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 2500);
     const prompt = `Analyze the writing tone and style of this blog content. Return JSON: {"primaryTone":"formal|casual|authoritative|conversational|persuasive|educational|inspirational","toneScore":0-100,"brandVoice":"description","audienceFit":"who this tone best serves","sentenceStyle":"complex|simple|mixed","vocabulary":"technical|accessible|jargon-heavy","activeVoiceRatio":0-100,"toneConsistency":0-100,"improvements":["2-3 tone improvement suggestions"],"toneProfile":{"formal":0,"casual":0,"authoritative":0,"conversational":0,"persuasive":0}}. Content: ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, ...data });
@@ -3680,7 +3680,7 @@ router.post('/ai/content-grader', async (req, res) => {
     const text = $('body').text().slice(0, 3500);
     const title = $('title').first().text();
     const prompt = `Grade this blog content on SEO and quality. Title: "${title}"${keyword ? `. Target keyword: "${keyword}"` : ''}. Return JSON: {"overallGrade":"A|B|C|D|F","overallScore":0-100,"categories":{"contentQuality":{"score":0-100,"grade":"A-F","notes":"..."},"seoOptimisation":{"score":0-100,"grade":"A-F","notes":"..."},"userExperience":{"score":0-100,"grade":"A-F","notes":"..."},"eeat":{"score":0-100,"grade":"A-F","notes":"..."},"readability":{"score":0-100,"grade":"A-F","notes":"..."}},"strengths":["3 things done well"],"improvements":["3 priority improvements"],"rankingPotential":"high|medium|low","verdict":"2 sentence assessment"}. Content (first 2500 chars): ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, title, ...data });
@@ -3699,7 +3699,7 @@ router.post('/ai/pull-quotes', async (req, res) => {
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 3000);
     const prompt = `Extract the ${count} best pull-quotes from this blog content for social sharing. Each quote should be compelling, standalone, and shareable. Return JSON: {"quotes":[{"quote":"...","platform":"twitter|linkedin|instagram","charCount":0,"shareability":0-10,"category":"stat|insight|tip|controversial|inspiring"}],"bestQuote":"...","hashtags":["5 relevant hashtags"]}. Content: ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, count, ...data });
@@ -3720,7 +3720,7 @@ router.post('/ai/headline-hook', async (req, res) => {
     })() : '');
     if (!title && !keyword) return res.status(400).json({ ok: false, error: 'currentTitle or keyword required' });
     const prompt = `Optimise this blog headline for CTR and SEO: "${title || keyword}". Return JSON: {"originalTitle":"...","analysis":{"powerWords":[],"numbers":false,"curiosityGap":false,"benefitClear":false,"keywordPresent":false},"optimisations":[{"title":"...","improvement":"what was changed","ctrLift":"estimated % CTR improvement","formula":"..."}],"bestVariant":"...","firstSentenceHook":"...","openingLine":"compelling 1-sentence opener that hooks instantly"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -3741,7 +3741,7 @@ router.post('/ai/passage-optimizer', async (req, res) => {
     $('p').each((_, el) => { const t = $(el).text().trim(); if (t.length > 50) paragraphs.push(t); });
     const topPara = paragraphs.slice(0, 8).join(' | ');
     const prompt = `Target keyword: "${keyword}". Optimise these paragraphs for passage indexing (Google shows individual passages in search). Return JSON: {"bestPassage":"the strongest existing passage","optimisedPassage":"rewritten version (40-60 words, direct answer format)","passageScore":0-100,"snippetType":"definition|steps|list|comparison","improvedParagraphs":[{"original":"...","optimised":"...","reason":"..."}]}. Paragraphs: ${topPara.slice(0, 2000)}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, ...data });
@@ -3761,7 +3761,7 @@ router.post('/ai/content-repurpose', async (req, res) => {
     const text = $('body').text().slice(0, 2000);
     const title = $('title').first().text();
     const prompt = `Suggest content repurposing strategies for this blog post: "${title}". Return JSON: {"repurposes":[{"format":"YouTube Video|LinkedIn Post|Twitter Thread|Instagram Carousel|Podcast Episode|Email Newsletter|SlideShare|Infographic|TikTok|Pinterest","effort":"low|medium|high","estimatedReach":"low|medium|high","outline":["3 key points for this format"],"tip":"platform-specific advice"}],"quickWins":["2 easiest repurposing options"],"contentLifespan":"evergreen|timely|seasonal"}. Content: ${text}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, title, ...data });
@@ -4007,7 +4007,7 @@ router.post('/ai/content-visibility', async (req, res) => {
     const hasFAQ = html.includes('"FAQPage"');
     const hasArticle = html.includes('"Article"') || html.includes('"BlogPosting"');
     const prompt = `Assess the overall AI/LLM search visibility and Google SERP visibility for this content. Target keyword: "${keyword || 'general topic'}". Title: "${title}", H1: "${h1}", Word count: ${wordCount}, FAQ schema: ${hasFAQ}, Article schema: ${hasArticle}. Content snippet: ${text.slice(0, 1000)}. Return JSON: {"visibilityScore":0-100,"llmCitationLikelihood":"high|medium|low","googleAIOLikelihood":"high|medium|low","serpVisibility":{"featuredSnippet":0-100,"paa":0-100,"imageRank":0-100,"videoRank":0-100},"topStrengths":["3 things making this visible"],"topWeaknesses":["3 visibility blockers"],"actionPlan":["5 ranked actions to boost visibility"],"predictedRankingPosition":"1-3|4-10|11-20|20+"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, title, wordCount, ...data });
@@ -4025,7 +4025,7 @@ router.post('/serp/ctr-optimizer', async (req, res) => {
     const { title, metaDescription, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!title) return res.status(400).json({ ok: false, error: 'title required' });
     const prompt = `Analyze this page's click-through-rate potential in Google SERPs. Title: "${title}". Meta description: "${metaDescription || 'none'}". Target keyword: "${keyword || 'unspecified'}". Return JSON: {"ctrScore":0-100,"titleScore":0-100,"descScore":0-100,"titleIssues":["list of issues"],"descIssues":["list of issues"],"emotionalTriggers":["triggers present or missing"],"powerWords":["suggested power words to add"],"improvedTitle":"optimized title ≤60 chars","improvedDesc":"optimized meta ≤155 chars","estimatedCTRLift":"e.g. +15-25%"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...data });
@@ -4038,7 +4038,7 @@ router.post('/serp/intent-classifier', async (req, res) => {
     const { keyword, url, content, model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword && !content) return res.status(400).json({ ok: false, error: 'keyword or content required' });
     const prompt = `Classify the search intent for: keyword="${keyword || ''}", content snippet="${(content || '').slice(0, 500)}". Return JSON: {"primaryIntent":"informational|navigational|transactional|commercial","confidence":0-100,"subIntent":"e.g. how-to|comparison|review|definition","contentMatch":0-100,"contentMatchExplanation":"why this score","recommendations":["3 ways to better match intent"],"targetAudience":"who is searching this","buyerStage":"awareness|consideration|decision|retention"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -4062,7 +4062,7 @@ router.post('/serp/feature-targets', async (req, res) => {
     const hasVideo = $('iframe, video').length > 0;
     const hasNumberedList = $('ol').length > 0;
     const prompt = `Identify which Google SERP features this content is eligible for and how to win them. Content snippet: "${text}". Keyword: "${keyword || ''}". Has FAQ schema: ${hasFAQ}, HowTo schema: ${hasHowTo}, tables: ${hasTable}, video: ${hasVideo}, numbered lists: ${hasNumberedList}. Return JSON: {"eligibleFeatures":[{"feature":"featured snippet|PAA|image pack|video carousel|knowledge panel|sitelinks|HowTo|FAQ","eligibility":0-100,"currentlyWinning":true|false,"stepsToWin":["actions"]}],"topOpportunity":"best feature to target","priorityActions":["top 5 actions ranked by impact"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, ...data });
@@ -4075,7 +4075,7 @@ router.post('/serp/paa-generator', async (req, res) => {
     const { keyword, niche, model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
     const prompt = `Generate realistic "People Also Ask" questions for the keyword "${keyword}" in the "${niche || 'general'}" niche. These should match real PAA box patterns on Google. Return JSON: {"questions":[{"question":"full question text","answerSnippet":"concise 40-60 word answer ideal for PAA","intent":"informational|definitional|how-to|comparison|why","difficulty":"easy|medium|hard","suggestedH2":true|false}],"totalQuestions":number,"topicClusters":["main topic areas covered"]}. Include 12-15 questions.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, niche, ...data });
@@ -4132,7 +4132,7 @@ router.post('/serp/rankbrain-advisor', async (req, res) => {
     const hasImages = $('img').length;
     const hasVideo = $('iframe, video').length;
     const prompt = `Audit this page for Google RankBrain UX signals (dwell time, bounce rate, CTR factors). Opening paragraph: "${intro}". Word count: ${wordCount}, Average paragraph length: ${avgParaLen} words, Images: ${hasImages}, Videos: ${hasVideo}. Return JSON: {"dwellTimeScore":0-100,"bounceRiskScore":0-100,"openingHookStrength":"strong|moderate|weak","openingHookFeedback":"brief analysis","paragraphLengthFeedback":"too long|good|inconsistent","multimediaScore":0-100,"readabilityFeedback":"brief assessment","topImprovements":[{"area":"string","issue":"string","fix":"string","expectedImpact":"high|medium|low"}],"predictedDwellTime":"<1 min|1-2 min|2-3 min|3+ min"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, wordCount, avgParaLen, hasImages, hasVideo, ...data });
@@ -4145,7 +4145,7 @@ router.post('/serp/longtail-embedder', async (req, res) => {
     const { title, primaryKeyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!title || !primaryKeyword) return res.status(400).json({ ok: false, error: 'title and primaryKeyword required' });
     const prompt = `Find long-tail keyword variations that can be naturally embedded in this title: "${title}". Primary keyword: "${primaryKeyword}". Return JSON: {"longTailVariants":[{"keyword":"long-tail term","searchVolume":"low|medium|high estimate","difficulty":"easy|medium|hard","revisedTitle":"natural title with this embedded ≤60 chars","explanation":"why this works"}],"bestVariant":"the best recommendation","titleLengthCurrent":${title.length},"strategy":"brief advice on multi-keyword title targeting"}. Include 5-7 variants.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, originalTitle: title, primaryKeyword, ...data });
@@ -4158,7 +4158,7 @@ router.post('/serp/meta-ab-variants', async (req, res) => {
     const { title, keyword, content, model = 'gpt-4o-mini' } = req.body || {};
     if (!title && !content) return res.status(400).json({ ok: false, error: 'title or content required' });
     const prompt = `Generate 5 distinct A/B meta description variants for a page. Title: "${title || ''}". Target keyword: "${keyword || ''}". Content summary: "${(content || '').slice(0, 400)}". Each variant should use a different psychological trigger. Return JSON: {"variants":[{"id":"A|B|C|D|E","description":"meta desc ≤155 chars","trigger":"curiosity|urgency|social proof|benefit|question","ctrEstimate":"high|medium","keywordPlacement":"start|middle|end","characterCount":number,"analysis":"why this works"}],"recommended":"A|B|C|D|E","testingAdvice":"brief A/B testing strategy"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, title, keyword, ...data });
@@ -4171,7 +4171,7 @@ router.post('/serp/difficulty-score', async (req, res) => {
     const { keyword, niche, model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
     const prompt = `Estimate SEO keyword difficulty and potential for: "${keyword}" in the "${niche || 'general'}" niche. Return JSON: {"keyword":"${keyword}","estimatedDifficulty":0-100,"difficultyLabel":"very easy|easy|medium|hard|very hard","estimatedMonthlySearches":"<100|100-500|500-1k|1k-5k|5k-20k|20k+","commercialIntent":0-100,"cpcEstimate":"low <$1|medium $1-5|high $5-20|very high $20+","topCompetitors":["3 likely top-ranking site types"],"rankingTimeframe":"1-2 months|3-6 months|6-12 months|12+ months","contentStrategy":"best content type to target this","quickWinPotential":true|false,"quickWinExplanation":"why or why not"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...data });
@@ -4184,7 +4184,7 @@ router.post('/serp/competitor-snapshot', async (req, res) => {
     const { keyword, url, model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
     const prompt = `Create a fictional but realistic SERP competitor analysis for the keyword "${keyword}". If a URL is provided (${url || 'none'}), compare against these typical competitors. Return JSON: {"keyword":"${keyword}","topCompetitors":[{"position":1-5,"contentType":"listicle|guide|review|tool|news","estimatedWordCount":number,"keyStrength":"what makes it rank","titlePattern":"example title format","schemaUsed":["types"],"estimatedDA":"low 20-40|medium 40-60|high 60-80|very high 80+"} x5],"contentGaps":["topics top pages cover that might be missing"],"contentOpportunities":["ways to differentiate and outrank"],"minimumWordCount":number,"recommendedContentType":"best format to compete","snippetOpportunity":true|false}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -4199,7 +4199,7 @@ router.post('/backlinks/opportunity-finder', async (req, res) => {
     const { niche, url, model = 'gpt-4o-mini' } = req.body || {};
     if (!niche && !url) return res.status(400).json({ ok: false, error: 'niche or url required' });
     const prompt = `Generate a realistic list of backlink opportunities for a ${niche || 'general'} website${url ? ' at ' + url : ''}. Return JSON: {"opportunities":[{"type":"guest post|resource page|broken link|skyscraper|unlinked mention|directory|podcast|scholarship|roundup","sourceDomain":"example site type e.g. industry blog, university, news site","difficulty":"easy|medium|hard","estimatedDA":"low|medium|high|very high","linkType":"dofollow|nofollow|varies","tactic":"specific approach to get this link","emailTemplate":"2-sentence outreach opener","timeToAcquire":"days|weeks|months","linkValue":"low|medium|high|very high"}],"topQuickWin":"best fast opportunity","strategicPriority":"best long-term opportunity","monthlyLinkTarget":number}. Include 10 opportunities.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, niche, url, ...data });
@@ -4212,7 +4212,7 @@ router.post('/backlinks/link-gap', async (req, res) => {
     const { yourDomain, competitor1, competitor2, niche, model = 'gpt-4o-mini' } = req.body || {};
     if (!yourDomain) return res.status(400).json({ ok: false, error: 'yourDomain required' });
     const prompt = `Analyze the backlink gap between ${yourDomain} and competitors: ${competitor1 || 'competitor-1.com'}, ${competitor2 || 'competitor-2.com'} in the ${niche || 'general'} niche. Return JSON: {"yourDomain":"${yourDomain}","gapAnalysis":{"estimatedYourLinks":"low <100|medium 100-1k|high 1k-10k|very high 10k+","estimatedCompetitorLinks":"same scale","gapScore":0-100,"gapSeverity":"minimal|moderate|significant|critical"},"topLinkSources":["10 specific site types that likely link to competitors but not you"],"linkCategories":[{"type":"category e.g. industry associations","competitorHas":true,"youHave":false,"howToGet":"brief tactic"}],"prioritizedActions":["5 ranked actions to close the gap"],"timeToCloseGap":"3-6 months|6-12 months|12-24 months"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...data });
@@ -4225,7 +4225,7 @@ router.post('/backlinks/outreach-generator', async (req, res) => {
     const { targetSite, yourSite, contentTitle, contentUrl, outreachType, model = 'gpt-4o-mini' } = req.body || {};
     if (!contentTitle) return res.status(400).json({ ok: false, error: 'contentTitle required' });
     const prompt = `Write a personalized, professional outreach email for link building. Type: "${outreachType || 'guest post'}". Your site: "${yourSite || 'my website'}". Target site: "${targetSite || 'their website'}". Content: "${contentTitle}"${contentUrl ? ' at ' + contentUrl : ''}. Return JSON: {"subject":"compelling email subject","emailBody":"full email 150-200 words, conversational, includes 'because' naturally, not spammy","followUpSubject":"follow-up subject 4 days later","followUpBody":"brief follow-up 50-80 words","tipsForPersonalization":["3 ways to customize this before sending"],"successProbability":"low 5-15%|medium 15-30%|high 30%+","keyPsychologyUsed":["persuasion principles used"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, contentTitle, outreachType, ...data });
@@ -4238,7 +4238,7 @@ router.post('/backlinks/bestof-finder', async (req, res) => {
     const { niche, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!niche && !keyword) return res.status(400).json({ ok: false, error: 'niche or keyword required' });
     const prompt = `Generate realistic "best of" list and roundup post opportunities for link building in the "${niche || keyword}" space. Return JSON: {"searchStrings":["10 Google search strings to find these lists e.g. 'best [niche] blogs 2025'"],"listTypes":[{"type":"e.g. best blogs list|weekly roundup|expert tools list","example":"sample post title","frequency":"one-time|weekly|monthly|annual","linkType":"dofollow|usually dofollow|varies","outreachApproach":"how to get featured","difficulty":"easy|medium|hard"}],"topTargetTypes":["3 most valuable list types for your niche"],"pitchTemplate":"2-sentence pitch to get included in a list","seasonalOpportunities":["time-sensitive list opportunities e.g. annual awards"]}. Include 6 list types.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, niche, keyword, ...data });
@@ -4251,7 +4251,7 @@ router.post('/backlinks/anchor-optimizer', async (req, res) => {
     const { targetKeyword, url, currentAnchors, model = 'gpt-4o-mini' } = req.body || {};
     if (!targetKeyword) return res.status(400).json({ ok: false, error: 'targetKeyword required' });
     const prompt = `Optimize the anchor text profile for a page targeting "${targetKeyword}"${url ? ' at ' + url : ''}. Current anchors: ${JSON.stringify(currentAnchors || [])}. Return JSON: {"targetKeyword":"${targetKeyword}","idealDistribution":{"exactMatch":"5-10%","partialMatch":"25-35%","branded":"20-30%","generic":"20-30%","naked":"10-15%"},"currentDistributionAssessment":"${currentAnchors?.length ? 'based on provided anchors' : 'no data provided'}: over-optimized|natural|under-optimized","recommendedAnchors":[{"anchorText":"specific text","type":"exact|partial|branded|generic|naked","priority":"primary|secondary","usageRecommendation":"use for X% of links","naturalContext":"example sentence using this anchor"}],"warnings":["over-optimization risks"],"nextSteps":["3 actionable anchor text diversification steps"]}. Provide 8-10 recommended anchors.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, targetKeyword, ...data });
@@ -4264,7 +4264,7 @@ router.post('/backlinks/strategy-builder', async (req, res) => {
     const { domain, niche, monthlyBudget, timeframe, model = 'gpt-4o-mini' } = req.body || {};
     if (!niche) return res.status(400).json({ ok: false, error: 'niche required' });
     const prompt = `Build a comprehensive link building strategy for a ${niche} website${domain ? ' (' + domain + ')' : ''}. Budget: ${monthlyBudget || 'minimal/free tactics only'}. Timeframe: ${timeframe || '6 months'}. Return JSON: {"strategyName":"catchy name for this strategy","overview":"2-3 sentence summary","phases":[{"phase":1-3,"name":"phase name","duration":"weeks/months","primaryTactic":"main focus","targetLinks":number,"expectedDA":"domain authority range of links expected","actions":["4-5 specific actions"],"kpis":["success metrics"]}],"tackicsPrioritized":[{"tactic":"string","effort":"low|medium|high","impact":"low|medium|high","costEstimate":"free|$50-200/mo|$200-500/mo|$500+/mo","timeToResults":"weeks|months"}],"monthlyLinkTarget":number,"6MonthLinkProjection":number,"riskFactors":["potential penalties or issues to watch for"],"toolsRecommended":["free tools to use"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, niche, ...data });
@@ -4285,7 +4285,7 @@ router.post('/backlinks/internal-suggester', async (req, res) => {
     const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1000);
     const h2s = $('h2').map((_, el) => $(el).text()).get().slice(0, 8);
     const prompt = `Analyze this page's content and suggest internal linking opportunities. Page URL: "${url}". H2 headings: ${JSON.stringify(h2s)}. Content snippet: "${text}". Existing internal links: ${existingLinks.length}. Return JSON: {"currentInternalLinkCount":${existingLinks.length},"internalLinkScore":0-100,"assessment":"too few|adequate|good|excellent","suggestedLinkOpportunities":[{"anchorTextSuggestion":"text from content","targetPageType":"e.g. related blog post|product page|resource","pageDescription":"what the target page should be about","importance":"high|medium|low","locationInContent":"intro|body|conclusion|callout"}],"orphanRisk":"high|medium|low","orphanRiskExplanation":"brief","recommendations":["4 internal linking improvement actions"]}. Include 6-8 opportunities.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, existingLinksDetected: existingLinks.length, ...data });
@@ -4310,7 +4310,7 @@ router.post('/content/freshness-score', async (req, res) => {
     const yearMatches = text.match(/\b(20\d{2})\b/g) || [];
     const years = [...new Set(yearMatches)].sort();
     const prompt = `Assess the freshness of this content. URL: "${url}". Published: "${publishDate || 'unknown'}". Modified: "${modDate || 'unknown'}". Year references found in text: ${JSON.stringify(years)}. Content snippet: "${text}". Return JSON: {"freshnessScore":0-100,"freshnessLabel":"fresh|recent|aging|stale|outdated","publishDateDetected":"${publishDate || 'not found'}","lastModifiedDetected":"${modDate || 'not found'}","daysOldEstimate":"<30|30-90|90-180|180-365|365-730|730+","outdatedSignals":["specifics found that indicate aging content"],"freshnessSignals":["specifics indicating recent content"],"updatePriority":"immediate|within 3 months|within 6 months|low priority","updateRecommendations":["5 specific things to update"],"freshnessSEOImpact":"high|medium|low","freshnessSEOExplanation":"brief"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, publishDate, modDate, yearRefs: years, ...data });
@@ -4331,7 +4331,7 @@ router.post('/content/skyscraper-gap', async (req, res) => {
     const h2s = $('h2,h3').map((_, el) => $(el).text()).get().slice(0, 15);
     const wordCount = text.split(/\s+/).length;
     const prompt = `Apply the Skyscraper Technique to find content gaps for improving this page to outrank competitors. Keyword: "${keyword || 'inferred from content'}". Current word count: ${wordCount}. Headings: ${JSON.stringify(h2s)}. Content preview: "${text.slice(0, 800)}". Return JSON: {"currentQualityScore":0-100,"skyscraperPotential":"low|medium|high|very high","contentGaps":[{"gap":"missing topic/section","importance":"critical|high|medium|low","suggestedH2":"heading for this section","contentBrief":"what to cover in 2-3 sentences","estimatedWordAdd":number}],"recommendedNewWordCount":number,"currentWordCount":${wordCount},"wordCountGap":number,"uniqueAngles":["differentiation strategies vs competitors"],"linkBaitElements":["elements to add that attract backlinks"],"upgradeActions":["ranked action plan"]}. Include 8-10 gaps.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, currentWordCount: wordCount, ...data });
@@ -4353,7 +4353,7 @@ router.post('/content/relaunch-advisor', async (req, res) => {
     const wordCount = text.split(/\s+/).length;
     const h2s = $('h2,h3').map((_, el) => $(el).text()).get().slice(0, 10);
     const prompt = `Create a content relaunch plan for this post to boost organic traffic. Published: "${publishDate || 'unknown'}". Keyword: "${keyword || 'inferred'}". Word count: ${wordCount}. Headings: ${JSON.stringify(h2s)}. Content preview: "${text.slice(0, 600)}". Return JSON: {"relunchScore":0-100,"relunchWorthiness":"not worth it|maybe|yes|definitely","reasoning":"2-3 sentences","relunchPlan":{"step1ContentAudit":"what to review and remove","step2UpdateData":"what data/stats to refresh","step3AddSections":["new sections to add"],"step4UpdateExamples":"how to modernize examples","step5SEOTUNEUP":"title/meta/schema updates","step6PromotionPlan":["how to re-promote: email list|social|outreach"]},"estimatedTrafficLift":"10-25%|25-50%|50-100%|100%+","timeToComplete":"hours|1-2 days|3-5 days|1-2 weeks","relunchTitle":"suggested updated title","relunchMeta":"suggested updated meta description"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, wordCount, publishDate, ...data });
@@ -4377,7 +4377,7 @@ router.post('/content/semantic-enrichment', async (req, res) => {
       } catch (_) {}
     }
     const prompt = `Identify semantic SEO enrichment opportunities for a page targeting "${keyword || 'the main topic'}". Content snippet: "${text || 'no content provided'}". Return JSON: {"semanticScore":0-100,"semanticLabel":"thin|basic|moderate|rich|comprehensive","lsiTermsMissing":["LSI keywords absent from content"],"relatedTopicsToAdd":["related subtopics that would help Google understand the topic"],"entityMentions":{"found":["entities already present"],"missing":["important entities to add e.g. brands, people, places"]},"semanticEnrichments":[{"term":"word or phrase","type":"LSI|entity|synonym|topic","importance":"critical|high|medium","suggestedUsage":"how and where to add it","exampleSentence":"natural example sentence"}],"topicCompleteness":0-100,"hummingbirdAlignmentScore":0-100,"topActions":["5 ranked semantic enrichment actions"]}. Include 12-15 enrichment suggestions.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, ...data });
@@ -4395,7 +4395,7 @@ router.post('/local/gbp-optimizer', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!businessName) return res.status(400).json({ ok: false, error: 'Business name required' });
     const prompt = `You are a local SEO specialist. Optimize a Google Business Profile for: Business: "${businessName}", Location: "${location || 'not specified'}", Category: "${category || 'general business'}", Current description: "${currentDescription || 'none provided'}". Return JSON: {"optimizedDescription":"150-word GBP description with local keywords","primaryCategory":"best GBP category","additionalCategories":["3-5 relevant categories"],"keywordsToTarget":["10 local keywords to use"],"photoRecommendations":["5 photo types to add"],"postIdeas":["5 GBP post ideas"],"qaPairs":[{"question":"likely customer question","answer":"short answer"}],"quickWins":["5 immediate improvements"],"completenessScore":0-100,"estimatedImpact":"low|medium|high"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, businessName, location, ...data });
@@ -4409,7 +4409,7 @@ router.post('/local/citation-finder', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!businessName) return res.status(400).json({ ok: false, error: 'Business name required' });
     const prompt = `You are a local SEO citation specialist. Find citation opportunities for: Business: "${businessName}", Location: "${location || 'general'}", Category: "${category || 'general'}". Return JSON: {"napConsistencyTips":["3 tips for consistent Name/Address/Phone"],"topDirectories":[{"name":"directory name","url":"directory URL","priority":"high|medium|low","niche":"general|industry-specific","freeOrPaid":"free|paid|freemium"}],"industryDirectories":["5 niche-specific directories"],"localDirectories":["5 city/region-specific directories"],"citationAuditChecklist":["5 things to audit in existing citations"],"napTemplate":{"nameFormat":"how to format business name","addressFormat":"standardized address format","phoneFormat":"phone number format"},"estimatedCitations":{"current":0,"potential":50},"quickWins":["3 highest-priority citation opportunities"]}. Include 20 directory entries total.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, businessName, location, ...data });
@@ -4423,7 +4423,7 @@ router.post('/local/local-keyword-gen', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!service || !city) return res.status(400).json({ ok: false, error: 'Service and city required' });
     const prompt = `You are a local SEO keyword strategist. Generate local keywords for: Service: "${service}", City: "${city}", State/Region: "${state || ''}". Return JSON: {"primaryKeywords":["10 main local keywords with city"],"neighborhoodKeywords":["8 neighborhood/area-specific keywords"],"nearMeKeywords":["5 near me variants"],"longTailKeywords":["10 specific local long-tail keywords"],"voiceSearchQueries":["5 conversational local queries"],"serviceAreaKeywords":["5 keywords for service area pages"],"seasonalKeywords":["4 seasonal local keyword opportunities"],"competitorKeywords":["3 competitor-style keywords to target"],"keywordDensityTips":"","totalOpportunities":0}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, service, city, ...data });
@@ -4437,7 +4437,7 @@ router.post('/local/local-schema', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!businessName) return res.status(400).json({ ok: false, error: 'Business name required' });
     const prompt = `Generate comprehensive LocalBusiness schema markup for: Name: "${businessName}", Address: "${address || ''}", City: "${city || ''}", Phone: "${phone || ''}", Website: "${website || ''}", Category: "${category || 'LocalBusiness'}", Hours: "${hours || ''}". Return JSON: {"schemaMarkup":"full JSON-LD script tag as a string","schemaType":"most specific schema type (e.g. Restaurant, Dentist, etc.)","additionalProperties":["3 extra schema properties to consider"],"implementationTips":["3 tips for implementing the schema"],"validationUrl":"https://search.google.com/test/rich-results","richResultPotential":["potential rich results this could unlock"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, businessName, ...data });
@@ -4458,7 +4458,7 @@ router.post('/brand/eeat-scorer', async (req, res) => {
     const hasContactPage = $('a[href*="contact"]').length > 0;
     const hasSources = $('a[href^="http"]').length;
     const prompt = `You are an E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) specialist. Audit this page for E-E-A-T signals: URL: "${url}", Niche: "${niche || 'general'}", Has author bio: ${hasAuthorBio}, Has about page link: ${hasAboutPage}, Has contact page: ${hasContactPage}, External links/sources: ${hasSources}. Return JSON: {"eeatScore":0-100,"breakdown":{"experience":{"score":0-100,"signals":["present signals"],"improvements":["2-3 improvements"]},"expertise":{"score":0-100,"signals":["present signals"],"improvements":["2-3 improvements"]},"authoritativeness":{"score":0-100,"signals":["present signals"],"improvements":["2-3 improvements"]},"trustworthiness":{"score":0-100,"signals":["present signals"],"improvements":["2-3 improvements"]}},"topPriorities":["5 ranked E-E-A-T improvements"],"ymylRisk":"low|medium|high","estimatedImpact":"how fixing E-E-A-T could impact rankings"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, ...data });
@@ -4472,7 +4472,7 @@ router.post('/brand/author-bio', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!authorName) return res.status(400).json({ ok: false, error: 'Author name required' });
     const prompt = `You are an E-E-A-T content specialist. Optimize an author bio for SEO and trust signals: Author: "${authorName}", Niche: "${niche || 'general'}", Credentials: "${credentials || 'none provided'}", Current bio: "${currentBio || 'none provided'}". Return JSON: {"optimizedBio":{"short":"50-word bio with E-E-A-T signals","medium":"100-word bio","long":"200-word full bio"},"eeatSignals":["8 E-E-A-T signals to include in bio"],"credentialHighlights":["how to present credentials for maximum trust"],"keywordsToInclude":["5 niche keywords for bio"],"structuredDataTip":"how to mark up author with Person schema","socialProofElements":["4 types of social proof to add"],"bioImprovements":["5 specific improvements to current bio"],"qualityScore":0-100}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, authorName, ...data });
@@ -4486,7 +4486,7 @@ router.post('/brand/brand-signals', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
     const prompt = `You are a brand SEO specialist. Audit brand signals for: Domain: "${domain}", Brand: "${brandName || domain}", Niche: "${niche || 'general'}". Return JSON: {"brandSignalScore":0-100,"signalCategories":{"socialPresence":{"score":0-100,"platforms":["ideal social platforms for this niche"],"improvements":["3 improvements"]},"brandedSearch":{"score":0-100,"tips":["3 ways to increase branded search volumes"],"improvements":["3 improvements"]},"unlinkedMentions":{"score":0-100,"reclamationTips":["3 tips to find and convert unlinked mentions to links"]},"knowledgePanel":{"eligible":true,"requirements":["what's needed for a knowledge panel"],"tips":["3 tips to get a knowledge panel"]},"authoritySignals":{"score":0-100,"existing":["likely authority signals"],"toAcquire":["4 authority signals to target"]}},"topBrandActions":["7 ranked brand signal improvements"],"competitorBrandGap":"description of typical competitor brand advantage","quickWins":["3 fast brand signal improvements"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, brandName, ...data });
@@ -4500,7 +4500,7 @@ router.post('/brand/expert-quotes', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!topic) return res.status(400).json({ ok: false, error: 'Topic required' });
     const prompt = `You are an E-E-A-T content strategist. Generate expert quote suggestions and sourcing strategies for: Topic: "${topic}", Niche: "${niche || 'general'}", Content type: "${contentType || 'blog post'}". Return JSON: {"expertTypes":["5 types of experts to quote for this topic"],"quotePrompts":["8 specific questions to ask experts"],"outreachSources":["5 platforms/methods to find experts: HARO, Qwoted, LinkedIn, etc."],"sampleQuotes":["3 example expert quotes with attribution template"],"quoteIntegrationTips":["4 ways to naturally integrate expert quotes"],"schemaMarkup":"how to mark up quotes with schema","eeatBenefit":"how expert quotes boost E-E-A-T for this topic","topExperts":["5 types of credible experts or organizations in this niche"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, topic, ...data });
@@ -4521,7 +4521,7 @@ router.post('/brand/trust-builder', async (req, res) => {
     const hasTerms = $('a[href*="terms"]').length > 0;
     const hasCookieNotice = html.toLowerCase().includes('cookie') || html.toLowerCase().includes('gdpr');
     const prompt = `Audit trust and credibility signals for this page. URL: "${url}", Niche: "${niche || 'general'}", Has HTTPS: ${hasSSL}, Has privacy policy link: ${hasPrivacyPolicy}, Has terms link: ${hasTerms}, Has cookie notice: ${hasCookieNotice}. Return JSON: {"trustScore":0-100,"trustSignals":{"security":{"present":["detected security signals"],"missing":["missing security elements"],"priority":"high|medium|low"},"transparency":{"present":["detected transparency signals"],"missing":["missing elements like privacy policy, contact info"],"priority":"high|medium|low"},"socialProof":{"present":["detected social proof elements"],"missing":["missing social proof: reviews, testimonials, case studies"],"priority":"high|medium|low"},"contentQuality":{"rating":"low|medium|high","improvements":["3 content quality improvements for trust"]}},"topTrustActions":["7 ranked trust improvement actions"],"legalCompliance":["4 legal/compliance elements to check"],"conversionImpact":"how trust improvements could affect conversions"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, ...data });
@@ -4535,7 +4535,7 @@ router.post('/voice/voice-optimizer', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!keyword) return res.status(400).json({ ok: false, error: 'Keyword required' });
     const prompt = `You are a voice search SEO specialist. Based on the Backlinko/Google voice search study (10,000 queries), optimize for voice search: Keyword: "${keyword}", Target device: "${targetDevice || 'Google Assistant / smart speaker'}", Content snippet: "${content ? content.substring(0, 500) : 'not provided'}". Return JSON: {"voiceSearchScore":0-100,"idealAnswer":{"text":"29-word optimal voice search answer for this keyword","wordCount":29,"readingLevel":"target 9th grade"},"longtailVariants":["8 conversational voice search queries for this keyword"],"questionFormats":["5 question-based formats (who/what/where/when/why/how)"],"featuredSnippetOpportunity":{"canWin":true,"snippetType":"paragraph|list|table","optimizationTips":["3 tips to win the snippet"]},"pageSpeedImpact":"how page speed affects voice search ranking","contentStructureTips":["4 structural changes for voice search"],"faqSection":{"recommended":true,"sampleQA":[{"q":"voice query","a":"29-word answer"}]},"topActions":["5 voice search optimization actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -4549,7 +4549,7 @@ router.post('/voice/faq-generator', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!topic) return res.status(400).json({ ok: false, error: 'Topic required' });
     const prompt = `You are a voice search and AI overview content strategist. Generate a comprehensive FAQ page optimized for voice search and Google AI Overviews: Topic: "${topic}", Niche: "${niche || 'general'}", Audience: "${audience || 'general consumer'}". Return JSON: {"pageTitle":"SEO-optimized FAQ page title","metaDescription":"compelling 155-char meta description","faqs":[{"question":"natural language question","answer":"concise 1-3 sentence answer optimized for voice","voiceLength":true,"answerType":"definition|how-to|list|comparison","paaSource":"People Also Ask opportunity"}],"schemaMarkup":"FAQPage schema JSON-LD as string","contentStructureTip":"best page structure for voice + AI overview ranking","voiceSearchTips":["3 specific tips for this topic"],"aiOverviewTips":["3 tips to appear in Google AI Overviews"],"estimatedTrafficPotential":"low|medium|high"}. Include 15 FAQ pairs.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, topic, ...data });
@@ -4563,7 +4563,7 @@ router.post('/voice/ai-overview-optimizer', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!keyword) return res.status(400).json({ ok: false, error: 'Keyword required' });
     const prompt = `You are an AI search optimization specialist focused on Google AI Overviews (formerly SGE) and LLM search engines. Optimize content to appear in AI search results for: Keyword: "${keyword}", URL: "${url || 'not provided'}", Content snippet: "${currentContent ? currentContent.substring(0, 600) : 'not provided'}". Return JSON: {"aiOverviewScore":0-100,"aiReadinessLabel":"not ready|developing|ready|optimized","optimizedAnswer":"clear, factual 150-200 word answer structured for AI extraction","contentStructureTips":["5 structural improvements for AI readability"],"factualDensityTips":["4 ways to increase factual density"],"entityOptimization":{"keyEntities":["important entities to mention clearly"],"contextualClues":["contextual signals that help AI understand your content"]},"citationWorthiness":{"score":0-100,"improvements":["3 ways to make content more citable by AI"]},"llmOptimizationTips":["3 tips for ChatGPT/Perplexity/Claude visibility"],"schemaRecommendations":["2 schema types that help AI understanding"],"topActions":["5 ranked AI overview optimization actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -4577,7 +4577,7 @@ router.post('/voice/conversational-keywords', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!topic) return res.status(400).json({ ok: false, error: 'Topic required' });
     const prompt = `You are a voice and conversational search keyword specialist. Generate conversational/natural language keywords for: Topic: "${topic}", Niche: "${niche || 'general'}". Return JSON: {"conversationalKeywords":["15 natural language, full-sentence voice queries"],"questionKeywords":{"who":["3 who-questions"],"what":["3 what-questions"],"where":["3 where-questions"],"when":["3 when-questions"],"why":["3 why-questions"],"how":["3 how-questions"]},"nearMeVariants":["5 near-me conversational queries"],"comparisonQueries":["4 vs/comparison voice queries"],"shoppingQueries":["4 purchase-intent voice queries"],"localQueries":["4 local voice queries"],"deviceTargets":{"smartSpeaker":"best format for smart speaker queries","mobileVoice":"best format for Siri/Google Assistant","smartDisplay":"best format for Echo Show/Nest Hub"},"contentFormatTips":["4 content formats that rank for these queries"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, topic, ...data });
@@ -4600,7 +4600,7 @@ router.post('/technical/reading-level', async (req, res) => {
     const longWords = words.filter(w => w.replace(/[^a-z]/gi, '').length > 6).length;
     const longWordRatio = words.length > 0 ? ((longWords / words.length) * 100).toFixed(1) : 0;
     const prompt = `Analyze reading level of this content for SEO: Word count: ${words.length}, Average words per sentence: ${avgWordsPerSentence}, Long words (>6 chars): ${longWordRatio}%, Sample text: "${content.substring(0, 500)}". Return JSON: {"fleschKincaidGrade":0-20,"readingLevel":"3rd grade|...|College","readingLevelLabel":"too easy|ideal|too complex","targetGrade":9,"sentenceAnalysis":{"avgWordsPerSentence":${avgWordsPerSentence},"recommendation":"ideal is 15-20 words per sentence","longSentences":["examples of overly long phrases"]},"vocabularyAnalysis":{"complexWordPercentage":${longWordRatio},"recommendation":"","hardPhrases":["complex phrases to simplify"]},"voiceSearchCompatibility":"low|medium|high","simplificationSuggestions":["5 specific rewrites or improvements"],"gradeImpact":"how reading level affects ranking for this content type"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, wordCount: words.length, avgWordsPerSentence, longWordRatio, ...data });
@@ -4619,7 +4619,7 @@ router.post('/technical/tfidf-analyzer', async (req, res) => {
     const kwCount = words.filter(w => w.includes(kwLower)).length;
     const density = words.length > 0 ? ((kwCount / words.length) * 100).toFixed(2) : 0;
     const prompt = `You are a TF-IDF SEO analyst. Analyze keyword density and TF-IDF signals: Keyword: "${keyword}", Niche: "${niche || 'general'}", Word count: ${words.length}, Keyword occurrences: ${kwCount}, Keyword density: ${density}%, Content sample: "${content.substring(0, 800)}". Return JSON: {"keywordDensity":${density},"densityLabel":"under-optimized|optimal|over-optimized","optimalRange":"0.5-2%","tfidfScore":0-100,"lsiKeywordsPresent":["LSI keywords found or likely in content"],"lsiKeywordsMissing":["10 important LSI keywords to add"],"keywordPlacementAnalysis":{"inTitle":true,"inH1":true,"inFirstParagraph":true,"inLastParagraph":false,"inSubheadings":true},"densityRecommendations":["4 specific density improvements"],"competitorBenchmark":"typical keyword density for top 10 results in this niche","overOptimizationRisk":"low|medium|high","topActions":["3 immediate TF-IDF improvements"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, wordCount: words.length, density, ...data });
@@ -4633,7 +4633,7 @@ router.post('/technical/content-length-advisor', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!keyword) return res.status(400).json({ ok: false, error: 'Keyword required' });
     const prompt = `You are a content length optimization specialist. Advise on optimal content length for: Keyword: "${keyword}", Content type: "${contentType || 'blog post'}", Niche: "${niche || 'general'}", Current word count: ${currentWordCount || 'unknown'}. Return JSON: {"optimalWordCount":{"minimum":0,"recommended":0,"maximum":0},"competitorBenchmark":{"averageTopRanking":0,"range":"min-max words seen in top results"},"lengthJustification":"why this length works for this keyword","contentDepthScore":0-100,"topicsToInclude":["8 subtopics/sections needed to justify the word count"],"voiceSearchNote":"how length affects voice search (avg 2312 words for voice results)","lengthBySection":[{"section":"section name","recommendedWords":0}],"currentGap":{"wordsNeeded":0,"assessment":"too short|about right|too long"},"topActions":["3 concrete content length improvements"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, ...data });
@@ -4650,7 +4650,7 @@ router.post('/technical/cwv-advisor', async (req, res) => {
     let resourceCount = 0; let imageCount = 0;
     try { const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) }); const html = await r.text(); const $ = cheerio.load(html); resourceCount = $('script,link[rel="stylesheet"]').length; imageCount = $('img').length; } catch (e2) { }
     const prompt = `You are a Core Web Vitals optimization specialist. Provide CWV recommendations for: URL: "${url}", Platform/CMS: "${platformOrCMS || 'unknown'}", Script/CSS resources: ${resourceCount}, Images: ${imageCount}. Return JSON: {"cwvTargets":{"lcp":{"target":"<2.5s","current":"unknown","fixes":["4 LCP improvement actions ranked by impact"]},"cls":{"target":"<0.1","current":"unknown","fixes":["3 CLS improvement actions"]},"inp":{"target":"<200ms","current":"unknown","fixes":["3 INP/FID improvement actions"]}},"overallCWVRisk":"low|medium|high","topPriorityFixes":["5 highest-impact CWV fixes for this URL"],"platformSpecificTips":["3 CMS-specific optimization tips"],"resourceOptimization":{"scripts":["2 script optimization tips","resourceCount":${resourceCount}],"images":["2 image optimization tips","imageCount":${imageCount}]},"voiceSearchBonus":"good CWV also improves voice search ranking (avg 4.6s load for voice results)","measurementTools":["Google PageSpeed Insights","Chrome UX Report","Search Console CWV report"],"estimatedRankingImpact":"low|medium|high"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, resourceCount, imageCount, ...data });
@@ -4667,7 +4667,7 @@ router.post('/technical/page-speed-advisor', async (req, res) => {
     let scriptCount = 0; let cssCount = 0; let imgCount = 0; let fontCount = 0; let hasLazyLoad = false;
     try { const startTime = Date.now(); const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) }); const html = await r.text(); const fetchTime = Date.now() - startTime; const $ = cheerio.load(html); scriptCount = $('script[src]').length; cssCount = $('link[rel="stylesheet"]').length; imgCount = $('img').length; fontCount = (html.match(/fonts\.google|typekit|font-face/gi) || []).length; hasLazyLoad = html.includes('loading="lazy"') || html.includes('data-src'); } catch (e2) { }
     const prompt = `You are a web performance specialist. Provide page speed optimization advice for: URL: "${url}", Platform: "${platformOrCMS || 'unknown'}", External scripts: ${scriptCount}, CSS files: ${cssCount}, Images: ${imgCount}, Font sources: ${fontCount}, Lazy loading: ${hasLazyLoad}. Voice search benchmark: pages should load in <4.6s; avg TTFB <0.54s. Return JSON: {"speedScore":0-100,"estimatedLoadTime":"X seconds","criticalIssues":["issues causing slowdown based on detected resources"],"imageOptimization":{"issues":["image issues"],"fixes":["3 image speed fixes"],"toolSuggestions":["WebP conversion, lazy loading, CDN"]},"scriptOptimization":{"issues":[],"fixes":["3 script load optimizations: defer, async, bundles"]},"cssOptimization":{"fixes":["2 CSS optimizations"]},"serverOptimization":{"fixes":["3 server-side improvements: caching, compression, CDN"]},"voiceSearchSpeed":"impact on voice search (faster = better chance of being voice result)","topSpeedActions":["7 ranked page speed improvements"],"measurementUrl":"https://pagespeed.web.dev/"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, scriptCount, cssCount, imgCount, ...data });
@@ -4681,7 +4681,7 @@ router.post('/content/topic-cluster-builder', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!seed) return res.status(400).json({ ok: false, error: 'Seed topic required' });
     const prompt = `You are a topic cluster and content hub strategist (Semrush/HubSpot methodology). Build a comprehensive topic cluster for: Seed topic: "${seed}", Niche: "${niche || 'general'}", Audience: "${targetAudience || 'general consumer'}". Return JSON: {"pillarPage":{"title":"pillar page title","targetKeyword":"broad high-volume keyword","estimatedWordCount":3000,"sections":["8 main sections the pillar page should cover"]},"clusterPages":[{"title":"cluster page title","targetKeyword":"long-tail keyword","intent":"informational|commercial|transactional","wordCount":1500,"internalLinkAnchorText":"how to link from pillar to this page"}],"internalLinkingMap":["description of how all pages link to each other"],"topicalAuthorityScore":0-100,"contentCalendar":["suggested order to publish the cluster pages"],"missingTopics":["subtopics not covered that competitors might target"],"clusterMetrics":{"totalPages":0,"totalEstimatedWords":0,"timeToPublish":"X weeks"}}. Include 8-10 cluster pages.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, seed, ...data });
@@ -4698,7 +4698,7 @@ router.post('/content/visual-diversity', async (req, res) => {
     let imgCount = 0; let hasVideo = false; let hasGif = false; let hasSVG = false; let hasTable = false; let hasInfographic = false;
     try { const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) }); const html = await r.text(); const $ = cheerio.load(html); imgCount = $('img').length; hasVideo = $('video,iframe[src*="youtube"],iframe[src*="vimeo"]').length > 0; hasGif = $('img[src*=".gif"]').length > 0; hasSVG = $('svg,img[src*=".svg"]').length > 0; hasTable = $('table').length > 0; hasInfographic = html.toLowerCase().includes('infographic'); } catch (e2) { }
     const prompt = `You are a visual content SEO strategist. Audit visual diversity for engagement and rankings: URL: "${url}", Topic: "${topic || 'general'}", Content type: "${contentType || 'blog post'}", Static images: ${imgCount}, Has video: ${hasVideo}, Has GIFs/animations: ${hasGif}, Has SVG/animated: ${hasSVG}, Has tables: ${hasTable}, Has infographics: ${hasInfographic}. Semrush research: diverse visuals reduce bounce rate and improve dwell time. Return JSON: {"visualDiversityScore":0-100,"currentVisuals":{"score":0-100,"what-is-good":"","what-is-missing":""},"recommendedVisuals":[{"type":"image|gif|video|infographic|table|chart|interactive","description":"specific visual to create","placement":"where in content","userEngagementBenefit":"","seoBonus":""}],"videoSEOTips":["3 tips to optimize embedded videos for search"],"imageOptimizationTips":["3 image SEO improvements"],"engagementImpact":{"estimatedBounceRateReduction":"X%","estimatedDwellTimeIncrease":"X seconds"},"topVisualActions":["5 visual diversity improvements to implement first"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, imgCount, hasVideo, ...data });
@@ -4719,7 +4719,7 @@ router.post('/content/time-to-value', async (req, res) => {
     const paragraphs = fetchedContent.split('\n\n').filter(p => p.trim().length > 50);
     introLength = paragraphs.length > 0 ? paragraphs[0].split(/\s+/).length : 0;
     const prompt = `You are a content UX and SEO specialist. Analyze time-to-value (BLUF/inverted pyramid structure): URL: "${url || 'not provided'}", Intro paragraph word count: ${introLength}, Content sample: "${fetchedContent.substring(0, 1000)}". Semrush research: short time-to-value improves bounce rate, dwell time, and rankings. Return JSON: {"timeToValueScore":0-100,"timeToValueLabel":"poor|needs work|good|excellent","introAnalysis":{"wordCount":${introLength},"issue":"","recommendation":"put key info in first 100 words"},"blufAnalysis":{"hasBLUF":false,"recommendation":"","exampleRewrite":"rewrite the intro to lead with the answer"},"scrollDepthRisk":"how many users might leave before reaching the value","aboveFoldContent":{"hasKeyTakeaway":false,"hasAnswerToQuery":false,"improvements":["3 above-fold improvements"]},"structureImprovements":["5 specific structural changes to improve time-to-value"],"seoImpact":"how time-to-value affects bounce rate, dwell time, and rankings","topActions":["3 highest-impact time-to-value changes"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, introLength, ...data });
@@ -4733,7 +4733,7 @@ router.post('/content/content-pruning', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!siteUrl && !contentList) return res.status(400).json({ ok: false, error: 'Site URL or content list required' });
     const prompt = `You are a content audit and pruning strategist (Semrush methodology). Advise on content pruning strategy for: Site: "${siteUrl || 'not provided'}", Niche: "${niche || 'general'}", Content URLs provided: "${contentList ? contentList.substring(0, 500) : 'none — provide general strategy'}". Semrush research: removing/repurposing underperforming content can boost overall site authority. Return JSON: {"pruningStrategy":"overview","decisionFramework":{"keep":{"criteria":["4 criteria for keeping content"],"examples":["what good performing content looks like"]},"improve":{"criteria":["4 criteria for improving content"],"actions":["merge, update, expand, add examples"]},"repurpose":{"criteria":["3 criteria for repurposing content"],"actions":["combine thin pages, create pillar from cluster"]},"remove":{"criteria":["3 criteria for removing content"],"actions":["301 redirect strategy"]}},"auditChecklist":["8 metrics to check when auditing each URL"],"quickWins":["4 fast pruning actions that often immediately improve domain authority"],"toolsNeeded":["recommended tools for content audit"],"estimatedImpact":"how pruning typically affects organic traffic","frequencyRecommendation":"how often to run content audits","topActions":["5 immediate content pruning actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, siteUrl, ...data });
@@ -4747,7 +4747,7 @@ router.post('/content/statistics-curator', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!niche) return res.status(400).json({ ok: false, error: 'Niche required' });
     const prompt = `You are a linkbait content strategist. Curate SEO statistics and data points for creating link-worthy content: Niche: "${niche}", Topic: "${topic || niche}". Ahrefs technique: curating industry statistics is one of the easiest ways to earn backlinks. Return JSON: {"contentTitle":"\"X ${niche} Statistics [Current Year]\" (linkbait title)","metaDescription":"compelling 155-char meta for stats page","statCategories":[{"category":"stat category name","stats":[{"stat":"specific statistic with plausible number","source":"type of credible source to verify","yearRange":"2023-2024","linkability":"high|medium","verificationUrl":"type of URL to find this stat"}]}],"contentStructureTips":["4 tips for formatting stats pages for maximum backlinks"],"promotionStrategy":["4 outreach strategies for stats pages"],"updateSchedule":"how often to refresh statistics","estimatedBacklinkPotential":"low|medium|high","internalLinkingOpportunities":["3 ways to use stats page as hub for internal links"],"topActions":["3 immediate actions to create and promote this stats page"]}. Include 5-6 stat categories with 3-4 stats each.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, niche, ...data });
@@ -4761,7 +4761,7 @@ router.post('/keywords/low-difficulty-finder', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!seedKeyword) return res.status(400).json({ ok: false, error: 'Seed keyword required' });
     const prompt = `You are a keyword opportunity specialist focused on low-competition wins. Find low-difficulty keyword opportunities for: Seed keyword: "${seedKeyword}", Niche: "${niche || 'general'}", Site DA/authority: "${siteDA || 'new/low'}". Ahrefs methodology: filter for KD <30 and SERPs with low-authority pages to find quick wins. Return JSON: {"lowDifficultyKeywords":[{"keyword":"keyword phrase","estimatedKD":0-30,"searchIntent":"informational|commercial|transactional","whyEasy":"reason this is achievable","estimatedMonthlySearches":"range","weeksSERP":1-12,"contentType":"blog post|product page|landing page|FAQ"}],"weakSERPIndicators":["signals that indicate a SERP is easy to crack into"],"contentPriorityList":["ranked order to target these keywords"],"clusterOpportunity":"whether these form a natural topic cluster","quickWinStrategy":"best approach for a new/low DA site to rank fast","estimatedTrafficPotential":"combined monthly traffic if all keywords rank","topActions":["5 immediate keyword targeting actions"]}. Provide 15 low-difficulty keyword opportunities.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, seedKeyword, ...data });
@@ -4775,7 +4775,7 @@ router.post('/keywords/cannibalization-detector', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!domain && !urlList) return res.status(400).json({ ok: false, error: 'Domain or URL list required' });
     const prompt = `You are a keyword cannibalization specialist (Semrush methodology). Analyze and fix keyword cannibalization for: Domain: "${domain || 'not provided'}", URLs to check: "${urlList ? urlList.substring(0, 600) : 'none — provide general strategy for the domain'}", Focus keyword: "${targetKeyword || 'general site-wide analysis'}". Semrush: cannibalization happens when 2+ pages target same search intent. Return JSON: {"cannibalizationRisk":"low|medium|high","detectedIssues":[{"pageGroup":"pages competing with each other","keyword":"the cannibalized keyword","intent":"the shared intent","primaryUrl":"which URL should rank","secondaryUrls":["URLs that are competing"],"symptoms":["signs of cannibalization: fluctuating ranks etc"]}],"detectionChecklist":["6 signs your site has keyword cannibalization"],"fixStrategies":{"consolidate":{"when":"when to merge pages","how":"merge + 301 redirect"},"canonicalize":{"when":"when to use canonical","how":"add canonical tag"},"reoptimize":{"when":"when to change page intent","how":"shift content focus"},"internalLinks":{"fix":"how to reconcile internal links"}},"preventionTips":["4 tips to prevent future cannibalization"],"toolsToUseForAudit":["Position Tracking, Search Console, Screaming Frog"],"topActions":["5 ranked actions to resolve cannibalization"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, ...data });
@@ -4800,7 +4800,7 @@ router.post('/serp/news-seo', async (req, res) => {
     const ogType = $('meta[property="og:type"]').attr('content') || '';
     const hasNewsSchema = html.includes('"NewsArticle"') || html.includes('"Article"');
     const prompt = `You are a Google News and Discover SEO expert. Audit this page for Google News and Discover eligibility. URL: "${url}", Title: "${title}", Published date meta: "${publishDate}", Has AMP: ${hasAmpLink}, OG type: "${ogType}", Has NewsArticle schema: ${hasNewsSchema}. Key Google News ranking factors: original reporting, timeliness, authority, schema, bylines, publication date. Return JSON: {"newsEligibilityScore":0-100,"discoverEligibilityScore":0-100,"newsIssues":[{"issue":"problem","fix":"solution","priority":"high|medium|low"}],"discoverIssues":[{"issue":"problem","fix":"fix","priority":"high|medium|low"}],"schemaRecommendation":{"type":"NewsArticle|Article","missingFields":["list of missing schema fields"]},"freshnessSignals":{"publishDateFound":${publishDate !== 'not found'},"publishDateValue":"${publishDate}","freshnessScore":0-100},"headlineOptimization":{"current":"${title.slice(0,80)}","issues":["issues with headline"],"improved":"improved version"},"ampRecommendation":"whether and how to implement AMP","topActions":["5 prioritized actions to get into Google News/Discover"],"estimatedImpact":"high|medium|low"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, hasAmpLink, hasNewsSchema, ...data });
@@ -4827,7 +4827,7 @@ router.post('/serp/video-seo', async (req, res) => {
       } catch {}
     }
     const prompt = `You are a video SEO expert specializing in video rich results and YouTube-to-web SEO. Optimize for video search: URL: "${url || 'N/A'}", Video keyword: "${videoKeyword || 'N/A'}", Has VideoObject schema: ${videoContext.hasVideoSchema}, Has video embed: ${videoContext.hasVideoEmbed}, Video count on page: ${videoContext.videoCount || 0}. Google shows video rich results for pages with VideoObject schema. Return JSON: {"videoRichResultScore":0-100,"richResultEligibility":"eligible|likely|unlikely","videoObjectSchema":{"missingFields":["list of required/recommended fields missing"],"exampleMarkup":"JSON-LD VideoObject example with the keyword"},"thumbnailStrategy":{"recommendation":"thumbnail best practices","dimensions":"1280x720 preferred"},"transcriptValue":"why and how to add transcript","chapterMarkers":"how to add timestamp chapters for richer snippets","youtubeOptimization":{"titleFormula":"formula for the video title","descriptionStructure":"how to structure description","tagsStrategy":"how to choose tags"},"pageOptimization":["5 on-page changes to support video SEO"],"topActions":["5 actions to get video rich results"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, videoKeyword, ...videoContext, ...data });
@@ -4841,7 +4841,7 @@ router.post('/serp/entity-optimizer', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!keyword && !entityName) return res.status(400).json({ ok: false, error: 'Keyword or entity name required' });
     const prompt = `You are a Knowledge Graph and entity SEO specialist. Optimize for entity search and Knowledge Graph inclusion: Keyword: "${keyword || 'N/A'}", Entity name: "${entityName || keyword}", URL context: "${url || 'N/A'}". Google's Knowledge Graph uses entity associations, structured data, Wikipedia/Wikidata, brand signals. Return JSON: {"entityScore":0-100,"entityType":"Person|Organization|Product|Place|Event|Concept","knowledgeGraphGap":{"currentCoverage":"assessment","missingSignals":["signals needed for KG inclusion"]},"entityDefinition":"clear 1-sentence entity definition for schema","samedAsOpportunities":["Wikipedia URL","Wikidata URL","LinkedIn","Crunchbase","official social profiles"],"schemaMarkup":{"type":"the schema type e.g. Organization","keyProperties":{"name":"value","url":"value","description":"value","sameAs":["placeholder URLs"]}},"entityMentionStrategy":["how to build entity prominence through content"],"ngramOptimization":{"entityNgrams":["key phrases Google associates with this entity"],"coOccurrenceTerms":["terms that should co-occur with this entity"]},"topActions":["5 entity SEO actions to strengthen Knowledge Graph presence"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, entityName, ...data });
@@ -4868,7 +4868,7 @@ router.post('/serp/review-schema', async (req, res) => {
       } catch {}
     }
     const prompt = `You are a Product and Review schema specialist focused on rich results. Optimize schema for: URL: "${url || 'N/A'}", Product: "${productName || pageCtx.title || 'N/A'}", Category: "${category || 'general'}", Has Product schema: ${pageCtx.hasProduct || false}, Has Review schema: ${pageCtx.hasReview || false}. Google shows star ratings, price, availability in SERPs when schema is correct. Return JSON: {"richResultScore":0-100,"richResultTypes":["star ratings","price","availability","review count"],"currentSchemaIssues":["list of detected issues"],"productSchemaExample":{"complete JSON-LD Product schema with example values"},"reviewSchemaExample":{"complete JSON-LD AggregateRating example"},"validationChecklist":["required fields checklist"],"starRatingEligibility":"eligible|needs review count|needs proper schema","affiliateConsiderations":["special notes for affiliate/review sites"],"topActions":["5 actions to get rich results showing in SERPs"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, productName, ...pageCtx, ...data });
@@ -4882,7 +4882,7 @@ router.post('/serp/event-schema', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!eventName) return res.status(400).json({ ok: false, error: 'Event name required' });
     const prompt = `You are an Event schema specialist. Build optimized Event JSON-LD schema for Google rich results. Event name: "${eventName}", Date: "${eventDate || 'TBD'}", Location: "${eventLocation || 'TBD'}", Description: "${description || ''}", Organizer: "${organizer || ''}", Ticket URL: "${ticketUrl || ''}". Return JSON: {"schemaMarkup":"complete JSON-LD Event schema as a string","richResultPreview":{"eventTitle":"${eventName}","dateDisplay":"human-friendly date string","locationDisplay":"${eventLocation || 'TBD'}","ticketsAvailable":${!!ticketUrl}},"requiredFields":["list of required Event schema fields"],"recommendedFields":["additional recommended fields"],"virtualEventNotes":"if online event, how to mark up correctly","validationUrl":"https://search.google.com/test/rich-results","commonMistakes":["5 most common Event schema mistakes"],"topActions":["3 actions to maximize event visibility in Google"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, eventName, ...data });
@@ -4909,7 +4909,7 @@ router.post('/schema/redirect-audit', async (req, res) => {
       }
     } catch (fetchErr) { chain.push({ url: current, error: fetchErr.message }); }
     const prompt = `You are a redirect and crawl efficiency specialist. Analyze this redirect chain: ${JSON.stringify(chain)}. Original URL: "${url}". Rules: 301 chains lose ~10-15% PageRank per hop, chains >2 hops are problematic, 302s pass no link equity by default, self-referential redirects waste crawl budget. Return JSON: {"chainLength":${chain.length},"chainHealthScore":0-100,"issues":[{"issue":"description","impact":"high|medium|low","fix":"specific fix"}],"linkEquityLoss":"estimated % PageRank loss","crawlBudgetImpact":"impact description","detectedChain":${JSON.stringify(chain)},"fixPriority":"immediate|soon|monitor","fixStrategy":"consolidation approach","topActions":["3 specific actions to fix this redirect situation"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, chain, ...data });
@@ -4934,7 +4934,7 @@ router.post('/schema/duplicate-content', async (req, res) => {
     const textContent = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 800);
     const title = $('title').text().slice(0, 100);
     const prompt = `You are a duplicate content and canonicalization specialist. Audit this page for duplicate content risks. URL: "${url}", Canonical tag: "${canonical || 'missing'}", Canonical matches self: ${canonicalMatchesSelf}, Is noindexed: ${noindex}, Title: "${title}", Content snippet: "${textContent}". Analyze for: near-duplicate pages, canonicalization issues, parameter URLs, session IDs, faceted navigation, pagination duplication. Return JSON: {"duplicateRisk":"low|medium|high","duplicateScore":0-100,"canonicalStatus":{"hasCanonical":${hasCanonical},"canonicalUrl":"${canonical || 'none'}","isSelfCanonical":${canonicalMatchesSelf},"recommendation":"fix action"},"parameterIssues":{"detected":true/false,"parameters":["any query params found in URL"],"fix":"how to handle"},"thinContentRisk":"none|low|medium|high","paginationIssues":["pagination duplication risks if any"],"nearDuplicateRisks":["content patterns that indicate near-duplicate pages"],"topActions":["5 actions to fix duplicate content risks"],"estimatedImpact":"how fixing this affects rankings"}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, canonical, hasCanonical, canonicalMatchesSelf, noindex, ...data });
@@ -4954,7 +4954,7 @@ router.post('/schema/hreflang', async (req, res) => {
     const hreflangTags = $('link[hreflang]').map((_, el) => ({ lang: $(el).attr('hreflang'), href: $(el).attr('href') })).get();
     const langAttribute = $('html').attr('lang') || 'not set';
     const prompt = `You are an international SEO and hreflang specialist. Audit hreflang implementation and international SEO for: URL: "${url}", Target markets: "${targetMarkets || 'not specified'}", HTML lang attribute: "${langAttribute}", Detected hreflang tags: ${JSON.stringify(hreflangTags)}. Return JSON: {"internationalSeoScore":0-100,"langAttribute":{"current":"${langAttribute}","correct":"correct format","issue":"any issue"},"hreflangAudit":{"tagCount":${hreflangTags.length},"hasXDefaultTag":${hreflangTags.some(t => t.lang === 'x-default')},"issues":["common hreflang mistakes found or general best practices"],"fixedExample":"corrected hreflang tags example"},"ccTLDvsSubdirectory":{"recommendation":"which URL structure for international","pros":["pros"],"cons":["cons"]},"targetMarketStrategy":${JSON.stringify(targetMarkets ? `{"markets":"${targetMarkets}","urlStrategy":"recommended structure","contentConsiderations":["localization tips"]}` : '"specify target markets for custom advice"')},"topActions":["5 international SEO actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, hreflangTags, langAttribute, ...data });
@@ -4981,7 +4981,7 @@ router.post('/schema/mobile-seo', async (req, res) => {
     const imageCount = $('img').length;
     const lazyImages = $('img[loading="lazy"]').length;
     const prompt = `You are a mobile SEO and mobile-first indexing specialist. Google uses mobile-first indexing — mobile version is what gets indexed. Mobile audit for: URL: "${url}", Viewport meta: "${viewport || 'MISSING'}", Viewport correct: ${viewportCorrect}, Tap targets count: ${tapTargets}, Interstitial-like elements: ${interstitials}, Images: ${imageCount} (${lazyImages} lazy), Mobile UA used: yes. Return JSON: {"mobileScore":0-100,"mobileFriendlyLabel":"mobile-friendly|needs work|not mobile-friendly","viewportIssue":${!hasViewport},"criticalIssues":[{"issue":"problem","fix":"fix","priority":"high|medium|low"}],"mobileFirstIndexingChecklist":{"contentParity":"check content matches desktop","structuredData":"check schema is on mobile version","crawlability":"Googlebot-Mobile can access","interstitials":{"risk":${interstitials > 0},"googlePenaltyRisk":"low|medium|high"}},"coreWebVitalsMobile":{"LCP":"note about LCP on mobile","CLS":"CLS mobile specific issues","INP":"interaction delay issues"},"ampAlternative":"whether AMP could help this page type","topActions":["5 mobile SEO improvements ranked by impact"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, viewport, hasViewport, viewportCorrect, tapTargets, interstitials, ...data });
@@ -4997,7 +4997,7 @@ router.post('/backlinks/link-gap', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
     const prompt = `You are a link gap analysis specialist (Ahrefs/Semrush methodology). Identify link building gaps for: Domain: "${domain}", Competitors: "${competitors || 'not specified — generate typical competitors for this domain'}", Niche: "${niche || 'general'}". Link gap = sites linking to competitors but not to this domain. Return JSON: {"linkGapScore":0-100,"estimatedGapSize":"number of missed link opportunities","topLinkGapOpportunities":[{"sourceType":"e.g. industry blog, news site, directory","domainAuthority":"typical DA range","linkType":"editorial|directory|resource|guest post","outreachDifficulty":"easy|medium|hard","linkValue":"high|medium|low","howToEarn":"specific tactic to earn this type of link"}],"competitorBacklinkPatterns":["patterns in how competitors earn links"],"quickWinLinks":["5 highest-probability near-term link targets"],"contentTypesForLinks":["content formats that attract links in this niche"],"topActions":["5 ranked link gap closing actions"]}. Provide 10 link gap opportunities.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, competitors, ...data });
@@ -5011,7 +5011,7 @@ router.post('/backlinks/broken-backlinks', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
     const prompt = `You are a broken backlink reclamation specialist. Create a broken link reclamation strategy for: Domain: "${domain}", Niche: "${niche || 'general'}". Broken links (404s with inbound links) are low-hanging fruit — pages that changed URL leave orphaned links pointing to 404s. Return JSON: {"reclamationStrategy":"overall approach","quickWinTypes":["types of broken links easiest to reclaim"],"outreachTemplate":{"subject":"email subject line","body":"3-sentence outreach email body asking to update the broken link"},"brokenLinkTypes":[{"type":"renamed page","likelihood":"high","fix":"301 redirect from old URL","outreach":false},{"type":"deleted content","likelihood":"medium","fix":"recreate content or redirect to best alternative","outreach":true},{"type":"moved resources","likelihood":"high","fix":"set up proper redirects","outreach":false}],"toolsNeeded":["Ahrefs Site Explorer, Screaming Frog, Google Search Console"],"auditProcess":["step 1","step 2","step 3"],"competitorBrokenLinks":"strategy to steal competitor broken backlinks","estimatedMonthly":"typical broken link recovery potential for a site this size","topActions":["5 broken link reclamation actions ranked by ROI"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, ...data });
@@ -5025,7 +5025,7 @@ router.post('/backlinks/anchor-text', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
     const prompt = `You are an anchor text profile analyst. Audit and optimize the anchor text backlink profile for: Domain: "${domain}", Niche: "${niche || 'general'}". Ideal anchor text distribution (Ahrefs data): branded ~40-70%, naked URL ~10-20%, exact match <5%, partial match ~10-20%, generic ~5-15%. Return JSON: {"anchorTextScore":0-100,"penaltyRisk":"low|medium|high","idealDistribution":{"branded":"40-70%","nakedUrl":"10-20%","exactMatch":"<5% target","partialMatch":"10-20%","generic":"5-15%","compound":"5-15%"},"currentIssues":["anchor text problems to fix"],"overOptimizationRisk":"none|low|medium|high","diversificationNeeded":["which anchor types to build more of"],"safetyMeasures":["how to diversify anchor profile safely"],"nextLinks":["recommended anchor texts for next 10 links to build with rationale"],"topActions":["5 anchor text optimization actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, ...data });
@@ -5039,7 +5039,7 @@ router.post('/backlinks/link-velocity', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
     const prompt = `You are a link velocity and link building momentum specialist. Analyze and optimize link building velocity for: Domain: "${domain}", Current links/month: "${currentLinksPerMonth || 'unknown'}", Niche: "${niche || 'general'}". Link velocity = rate at which new backlinks are acquired. Unnatural spikes can trigger Penguin. Ideal = consistent natural growth. Return JSON: {"velocityScore":0-100,"velocityStatus":"too slow|healthy|suspicious spike|unknown","naturalGrowthRange":{"minPerMonth":"number","maxPerMonth":"number","basis":"why this range is natural for this niche"},"velocityRisks":["risks of current pattern"],"buildingSchedule":{"week1":{"quantity":0,"types":["link types"]},"week2":{"quantity":0,"types":[]},"month2":{"quantity":0,"types":[]},"ongoing":{"quantity":0,"types":[]}},"diversificationCalendar":["month 1 focus","month 2 focus","month 3 focus"],"spikeMitigation":["what to do if you get a sudden spike"],"competitorVelocityTips":["how to research competitor link velocity"],"topActions":["5 link velocity optimizations"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, currentLinksPerMonth, ...data });
@@ -5062,7 +5062,7 @@ router.post('/ab/ab-test-advisor', async (req, res) => {
     const metaDesc = $('meta[name="description"]').attr('content') || '';
     const h1 = $('h1').first().text().slice(0, 100);
     const prompt = `You are an SEO A/B testing specialist. Generate high-impact SEO A/B test ideas for: URL: "${url}", Page type: "${pageType || 'blog post'}", Title: "${title}", Meta: "${metaDesc.slice(0, 150)}", H1: "${h1}". A/B tests proven to move rankings: title tag changes, meta description CTR tests, H1 variations, content structure, internal linking, schema additions, CTA placement. Return JSON: {"highestImpactTests":[{"testName":"test name","element":"what to test","control":"current version","variant":"test version","hypothesis":"why this would improve CTR/rankings","difficulty":"easy|medium|hard","estimatedImpact":"% CTR or ranking improvement","timeToResults":"weeks"}],"statisticalRequirements":{"minimumTraffic":"visits/month needed","testDuration":"weeks","significanceLevel":"95%"},"seoSpecificCaveats":["SEO A/B testing pitfalls to avoid"],"toolsNeeded":["tools for SEO A/B testing"],"topTests":["5 must-do A/B tests for this page type"]}. Include 8 test ideas.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, title, ...data });
@@ -5085,7 +5085,7 @@ router.post('/ab/content-refresh', async (req, res) => {
     const content = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1500);
     const wordCount = content.split(' ').length;
     const prompt = `You are a content refresh and historical optimization specialist. Create a content refresh strategy for: URL: "${url}", Title: "${title}", Published/modified: "${pubDateMeta}", Word count approx: ${wordCount}. Content snippet: "${content.slice(0, 800)}". Semrush's content refresh methodology: update outdated stats, add new sections for new search intent, improve EEAT signals, fix broken links, re-optimize for new keywords, update publish date only if significant changes. Return JSON: {"refreshPriorityScore":0-100,"refreshUrgency":"immediate|within a month|quarterly|not needed","agingSignals":["signs the content is outdated"],"newSectionSuggestions":[{"section":"heading","why":"why to add this section","keywords":["target keywords"]}],"outdatedElements":["specific things likely to be outdated based on content"],"eeatRefreshActions":["how to improve EEAT during refresh"],"internalLinkUpdates":["how to update internal linking after refresh"],"keywordOpportunity":"new search intent opportunities to capture","publishDateStrategy":"when and how to update the date","estimatedRankingGain":"expected improvement after refresh","topActions":["5 refresh actions ranked by impact"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, title, pubDateMeta, wordCount, ...data });
@@ -5099,7 +5099,7 @@ router.post('/ab/title-variants', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!currentTitle && !keyword) return res.status(400).json({ ok: false, error: 'Current title or keyword required' });
     const prompt = `You are a title tag conversion rate optimizer for organic search. Generate high-CTR A/B title tag variants for: Current title: "${currentTitle || 'N/A'}", Target keyword: "${keyword || 'N/A'}", Page type: "${pageType || 'blog post'}". Psychological triggers proven to boost CTR: numbers, curiosity gaps, fear of missing out, specificity, power words, negative framing, benefit-led, question format. Google title tag rules: 50-60 chars ideally, keyword near the front, match search intent. Return JSON: {"currentTitleAnalysis":{"charCount":${(currentTitle || '').length},"keywordPosition":"start|middle|end","estimatedCTR":"low|medium|high","weaknesses":["issues with current title"]},"variants":[{"title":"variant text","chars":0,"psychologicalTrigger":"trigger used","ctrPrediction":"high|medium","bestForIntent":"informational|commercial|transactional","testHypothesis":"why this should outperform"}],"titleFormulas":["formula 1 — e.g. [Number] + [Adjective] + [Keyword] + [Benefit]"],"keywordPlacement":"where to put keyword for best CTR","charOptimum":"55-60 chars for most queries","topVariants":["top 3 recommended variants to test"]}. Generate 8 variants.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, currentTitle, keyword, ...data });
@@ -5125,7 +5125,7 @@ router.post('/ab/meta-variants', async (req, res) => {
       } catch {}
     }
     const prompt = `You are a meta description CTR specialist. Create high-CTR meta description A/B variants for: URL: "${url || 'N/A'}", Keyword: "${keyword || 'N/A'}", Current meta: "${currentMeta || 'none set'}", Page title: "${pageTitle}". Meta rules: 150-160 chars, include keyword naturally (it bolds in SERP), end with CTA, emotional hook, specificity. Return JSON: {"currentMetaAnalysis":{"charCount":${currentMeta.length},"hasKeyword":${keyword ? currentMeta.toLowerCase().includes((keyword || '').toLowerCase()) : false},"hasCTA":true/false,"weaknesses":["issues"]},"variants":[{"meta":"variant text","chars":0,"formula":"formula used","emotionalTrigger":"urgency|curiosity|FOMO|trust|benefit","ctrBias":"high|medium","keywordNatural":true/false}],"ctrPrinciples":["5 meta description CTR principles from Google's own studies"],"characterOptimum":"155-160 chars for most queries","boldingStrategy":"how to naturally include the keyword for bolding effect","topVariants":["3 recommended variants"]}. Generate 6 variants.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, keyword, currentMeta, ...data });
@@ -5150,7 +5150,7 @@ router.post('/ab/bert-optimizer', async (req, res) => {
       } catch {}
     }
     const prompt = `You are a BERT/NLP semantic optimization specialist. BERT (Google's transformer model) understands natural language context. Optimize content semantically for: Keyword: "${keyword}", Content snippet: "${contentSnippet.slice(0, 600) || 'no URL provided — give general advice'}". BERT processes bidirectional context, understands intent beyond keywords, rewards natural language over keyword stuffing. Return JSON: {"semanticScore":0-100,"bertReadiness":"optimized|needs work|poor","intentAnalysis":{"primaryIntent":"what user really wants","secondaryIntents":["other things users want"],"intentMismatch":"is there a mismatch with current content"},"semanticGaps":["concepts missing that BERT expects for this topic"],"coOccurrenceTerms":["terms that naturally occur with this keyword — BERT co-occurrence signals"],"naturalLanguageIssues":["places where keyword stuffing or unnatural phrasing detected"],"sentenceStructureAdvice":"how to write more naturally for BERT","questionAnswerOpportunities":["conversational Q&A pairs that address the full intent"],"topActions":["5 BERT/NLP semantic optimization actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, url, ...data });
@@ -5164,7 +5164,7 @@ router.post('/ab/secondary-keywords', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!primaryKeyword) return res.status(400).json({ ok: false, error: 'Primary keyword required' });
     const prompt = `You are a secondary keyword and LSI optimization specialist. Find and optimize secondary keywords for: Primary keyword: "${primaryKeyword}", URL: "${url || 'N/A'}". Secondary keywords are variations, synonyms, and related terms that help Google understand topical coverage. Ahrefs: pages ranking for 1 keyword also rank for ~1000 related terms on average. Return JSON: {"primaryKeywordAnalysis":{"searchIntent":"informational|commercial|transactional|navigational","contentType":"what format ranks best"},"secondaryKeywords":[{"keyword":"secondary term","type":"synonym|variant|related|subtopic|long-tail","searchVolume":"estimated monthly volume","difficulty":"low|medium|high","placement":"title|intro|heading|body|conclusion|FAQ"}],"lsiKeywords":["10 LSI terms to naturally include"],"coOccurrenceTerms":["terms Google expects to see alongside primary keyword"],"headingOpportunities":["H2/H3 headings that would capture secondary keyword traffic"],"contentExtensions":["additional content sections to rank for secondary terms"],"topActions":["5 secondary keyword implementation actions"]}. Include 15 secondary keywords.`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, primaryKeyword, url, ...data });
@@ -5178,7 +5178,7 @@ router.post('/ab/knowledge-graph', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!entityName) return res.status(400).json({ ok: false, error: 'Entity name required' });
     const prompt = `You are a Knowledge Graph coverage and entity optimization specialist. Audit Knowledge Graph coverage for: Entity: "${entityName}", Domain: "${domain || 'N/A'}", Industry: "${industry || 'general'}". Google's Knowledge Graph uses: entity mentions, structured data, Wikipedia/Wikidata presence, consistent NAP signals, co-citation patterns, brand search volume. Return JSON: {"kgCoverageScore":0-100,"kgEligibility":"likely listed|partially listed|not listed|unknown","entityStrength":"strong|moderate|weak","coverageGaps":[{"signal":"coverage signal","currentStatus":"present|missing|weak","fix":"how to build this signal"}],"wikiStrategy":{"worthy":"yes|borderline|unlikely","criteria":["Wikipedia notability criteria to meet"],"alternativePages":["Wikidata","Google Business Profile","industry wikis"]},"knowledgePanelTriggers":["what causes a Knowledge Panel to appear"],"coOccurrenceBuilding":["content strategies to build entity co-occurrence"],"sameAsLocations":["authoritative third-party pages to create/claim"],"topActions":["5 Knowledge Graph coverage actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, entityName, domain, industry, ...data });
@@ -5207,7 +5207,7 @@ router.post('/technical/crawl-budget', async (req, res) => {
     const hasNofollowLinks = $('a[rel*="nofollow"]').length;
     const queryParamLinks = $('a[href*="?"]').length;
     const prompt = `You are a crawl budget optimization expert. Analyze crawl budget for: URL: "${url}", Domain: "${domain}", Total links on page: ${linkCount}, Links with query params: ${queryParamLinks}, Nofollow links: ${hasNofollowLinks}, Page has noindex: ${hasNoindex}, Robots.txt snippet: "${robotsTxt.slice(0, 300)}". Crawl budget matters for large sites (1000+ pages), ecommerce, news sites. Google allocates limited crawl rate per domain. Return JSON: {"crawlBudgetScore":0-100,"crawlBudgetRisk":"low|medium|high","siteSize":"estimated site type for crawl budget relevance","crawlWasters":[{"issue":"what is wasting crawl budget","pages":"estimated % of crawl budget wasted","fix":"how to fix","priority":"high|medium|low"}],"robotsTxtOptimization":{"findings":"what the robots.txt tells us","improvements":["4 robots.txt improvements"]},"xmlSitemapTips":["how sitemap affects crawl efficiency"],"crawlRateSignals":["factors that affect how often Googlebot visits"],"logFileValue":"why log file analysis would help this site","topActions":["5 crawl budget optimizations"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, domain, linkCount, queryParamLinks, hasNofollowLinks, robotsTxt: robotsTxt.slice(0, 200), ...data });
@@ -5224,7 +5224,7 @@ router.post('/technical/click-depth', async (req, res) => {
     const pathDepth = urlObj.pathname.split('/').filter(Boolean).length;
     const subdirs = urlObj.pathname.split('/').filter(Boolean);
     const prompt = `You are a site architecture and click depth specialist. Analyze click depth for: URL: "${url}", URL path depth: ${pathDepth} levels (${subdirs.join(' > ') || 'root'}). Google's John Mueller: pages more than 3-4 clicks from homepage may get less crawl budget. Optimal: important pages ≤3 clicks from homepage. Return JSON: {"clickDepthScore":0-100,"urlPathDepth":${pathDepth},"depthAssessment":"${pathDepth <= 2 ? 'ideal' : pathDepth === 3 ? 'acceptable' : 'deep'}","issues":["depth-related issues"],"architectureRecommendations":["flat vs deep architecture trade-offs"],"breadcrumbValue":"why breadcrumbs reduce effective click depth","internalLinkStrategy":"how internal links create shortcuts to deep pages","urlStructureRating":"${pathDepth <= 3 ? 'good' : 'too deep'}","improvementOptions":[{"option":"restructuring option","benefit":"seo benefit","effort":"low|medium|high"}],"sitemapMitigation":"how XML sitemaps help deep pages get crawled","topActions":["4 click depth optimization actions"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, urlPathDepth: pathDepth, pathSegments: subdirs, ...data });
@@ -5238,7 +5238,7 @@ router.post('/technical/log-file', async (req, res) => {
     const model = req.body.model || 'gpt-4o-mini';
     if (!logSnippet && !domain) return res.status(400).json({ ok: false, error: 'Log snippet or domain required' });
     const prompt = `You are a server log file SEO analysis expert. Analyze server log data for SEO insights: Domain: "${domain || 'N/A'}", Log snippet (first 1000 chars): "${(logSnippet || '').substring(0, 1000)}". Log file analysis finds: which pages Googlebot actually crawls, crawl frequency patterns, pages never crawled, crawl errors, CSS/JS blocking, slow server responses. Key insight from Semrush research: log files reveal ground truth of how Google sees your site. Return JSON: {"logAnalysisValue":"high|medium|low","keyInsightsToLook":[{"insight":"what to look for","howToFind":"command or filter to apply","seoBenefit":"benefit of this insight"}],"crawlbotPatterns":["patterns in Googlebot behavior to watch for"],"setupGuide":{"nginxCommand":"grep 'Googlebot' access.log | awk '{print $7}' | sort | uniq -c | sort -rn","apacheCommand":"grep 'Googlebot' /var/log/apache2/access.log","cloudflare":"how to get logs from Cloudflare","sampleAnalysis":"${logSnippet ? 'based on provided log' : 'general sample interpretation'}"},"toolsForLogAnalysis":["Semrush Log File Analyzer","Screaming Frog Log Analyzer","JetOctopus","custom grep commands"],"quickWins":["5 quick wins commonly found in log analysis"],"topActions":["5 log file analysis workflow steps"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, domain, ...data });
@@ -5265,7 +5265,7 @@ router.post('/technical/international-seo', async (req, res) => {
       } catch {}
     }
     const prompt = `You are an international SEO strategy expert. Create an international SEO expansion strategy for: URL: "${url || 'N/A'}", Target markets: "${targetMarkets || 'specify target countries'}", Current HTML lang: "${siteCtx.lang || 'unknown'}", Hreflang count: ${siteCtx.hreflangCount || 0}, Has x-default: ${siteCtx.hasXDefault || false}. Return JSON: {"internationalSeoScore":0-100,"expansionReadiness":"ready|needs preparation|not ready","urlStructureComparison":{"ccTLD":{"example":"de.brand.com or brand.de","pros":["strong geo signal","local trust"],"cons":["separate authority","more expensive"],"bestFor":"large budgets, established brands"},"subdirectory":{"example":"brand.com/de/","pros":["shares domain authority","easier to manage"],"cons":["weaker geo signal"],"bestFor":"most sites — recommended default"},"subdomain":{"example":"de.brand.com","pros":["easy setup"],"cons":["treated as separate site by Google"],"bestFor":"rarely recommended"}},"marketStrategy":{"markets":"${targetMarkets || 'specify'}","priorityOrder":["most to least important markets"],"localDomainNeeds":["which markets benefit from ccTLD"]},"technicalChecklist":["hreflang implementation","x-default tag","geo-targeting in Search Console","local hosting or CDN"],"contentLocalizationVsTranslation":{"recommendation":"localize vs translate — what Google prefers","keyDifferences":["cultural adaptations needed"]},"topActions":["5 international SEO actions to start"]}`;
-    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, targetMarkets, ...siteCtx, ...data });
@@ -5599,7 +5599,7 @@ Respond ONLY as JSON:
   "tip": "One strategic tip about product-blog interlinking for this Shopify store"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, productUrl, blogUrl, ...parsed });
@@ -5650,7 +5650,7 @@ Respond ONLY as JSON:
   "note": "One tip on using Shopify metafields for SEO"
 }`;
 
-    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const resp = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(resp.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, type, ...parsed });
@@ -5700,7 +5700,7 @@ Create a detailed editorial calendar. Respond ONLY as JSON:
   "quickWins": ["3 easy first posts to publish for fast rankings"],
   "longTermBets": ["2 high-effort posts with high payoff potential"]
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, niche, duration, postsPerWeek, ...parsed });
@@ -5745,7 +5745,7 @@ Respond ONLY as JSON:
   "topicalCoverageScore": 85,
   "gaps": ["topics still needed to complete topical authority"]
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, topic, ...parsed });
@@ -5786,7 +5786,7 @@ Generate a programmatic SEO template system. Respond ONLY as JSON:
   "trafficPotential": "description of traffic potential",
   "warnings": ["risks or pitfalls to avoid"]
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, category, ...parsed });
@@ -5827,7 +5827,7 @@ Provide an ROI analysis. Respond ONLY as JSON:
   "similarKeywords": ["3-5 semantically related keywords to also target"],
   "verdict": "short recommendation paragraph"
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, keyword, monthlySearchVolume, targetPosition, estMonthlyClicks, estLeads, estMonthlyRevenue: estRevenue, ...parsed });
@@ -5868,7 +5868,7 @@ Evaluate and provide optimization guidance. Respond ONLY as JSON:
   "entityGaps": ["important entities/concepts missing from the content"],
   "structureRecommendations": ["structural changes to improve AI parsing"]
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, aiEngine, keyword, ...parsed });
@@ -5914,7 +5914,7 @@ Simulate what real people in this niche discuss online and generate blog ideas f
   "contentGaps": ["topics the audience needs but can't find good answers to"],
   "toneRecommendations": "recommended tone and voice based on community style"
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, niche, ...parsed });
@@ -5963,7 +5963,7 @@ Analyze social SEO signals. Respond ONLY as JSON:
   "viralTriggers": ["emotional/psychological triggers present in content"],
   "missingTriggers": ["triggers that could be added to boost sharing"]
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, title, ...parsed });
@@ -6026,7 +6026,7 @@ Provide a comprehensive competitive audit. Respond ONLY as JSON:
   "linkBuildingInsights": ["observations about their link profile"],
   "battlePlan": ["5 prioritized actions to outrank this competitor"]
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, competitorUrl, liveData: competitorData, ...parsed });
@@ -6073,7 +6073,7 @@ Generate a comprehensive link reclamation strategy. Respond ONLY as JSON:
   "reclamationPriority": "how to prioritize which mentions to pursue first",
   "estimatedLinks": "realistic estimate of links recovereable per month"
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, brandName, siteUrl, ...parsed });
@@ -6136,7 +6136,7 @@ Evaluate all Google News Publisher criteria and technical requirements. Respond 
   "technicalChecklist": ["technical SEO items needed for News eligibility"],
   "estimatedTimeToApproval": "rough estimate once issues are fixed"
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, url, pageData, ...parsed });
@@ -6184,7 +6184,7 @@ Based on patterns from successful content in this space, predict performance out
   "competitionSnapshot": "brief overview of expected SERP competition",
   "verdict": "one sentence overall prediction verdict"
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, title, targetKeyword, wordCount, contentType, ...parsed });
@@ -6230,7 +6230,7 @@ Respond ONLY as JSON:
   "semanticScore": 0,
   "coverageGrade": "A|B|C|D"
 }`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, seedTopic, industry, ...parsed });
@@ -6329,7 +6329,7 @@ router.post('/rank/check-position', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `You are a SERP estimation tool. For the keyword "${keyword}", estimate the likely search engine ranking position (1-100) for the URL "${targetUrl || 'unknown'}". Consider typical competitive patterns. Return JSON: {"estimatedPosition": number, "positionRange": "e.g. 1-3", "confidence": "high|medium|low", "topCompetitors": ["domain1","domain2","domain3"], "pageOneLikelihood": "percentage string", "notes": "brief reasoning"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     const data = loadRankData(shop);
@@ -6356,7 +6356,7 @@ router.post('/rank/bulk-check', async (req, res) => {
     const openai = getOpenAI();
     const kwList = targets.map(k => `${k.keyword} (URL: ${k.targetUrl || 'any'})`).join('\n');
     const prompt = `Estimate ranking positions for these keywords. Return JSON: {"results": [{"keyword": "string", "estimatedPosition": number, "trend": "rising|stable|falling", "notes": "brief"}]}. Keywords:\n${kwList}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     parsed.results.forEach(result => {
@@ -6374,7 +6374,7 @@ router.post('/rank/competitor-compare', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Compare estimated SERP positions for keyword "${keyword}". Your URL: ${yourUrl || 'unknown'}. Competitors: ${competitors.join(', ') || 'top competitors'}. Return JSON: {"yourPosition": number, "competitorPositions": [{"domain": "string", "position": number, "strengths": ["string"]}], "gapAnalysis": "string", "recommendations": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -6402,7 +6402,7 @@ router.post('/rank/ai-forecast', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Based on ranking history for keyword "${kw.keyword}": ${JSON.stringify(history)}. Forecast the likely position in 30, 60, and 90 days. Return JSON: {"forecast30": number, "forecast60": number, "forecast90": number, "trend": "improving|declining|stable", "confidence": "high|medium|low", "keyFactors": ["string"], "actionItems": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword: kw.keyword, currentPosition: kw.currentPosition, ...parsed });
@@ -6441,7 +6441,7 @@ router.post('/rank/device-split', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Estimate mobile vs desktop SERP position differences for keyword "${keyword}", URL: ${targetUrl || 'unknown'}. Return JSON: {"desktopPosition": number, "mobilePosition": number, "divergence": number, "mobileIntent": "string", "mobileTips": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -6454,7 +6454,7 @@ router.post('/rank/cannibalization-live', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse keyword cannibalization risk for "${keyword}" on site "${siteUrl}". Return JSON: {"cannibalizationRisk": "high|medium|low", "likelyUrls": ["url1","url2"], "primaryUrl": "string", "recommendation": "string", "consolidationStrategy": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, siteUrl, ...parsed });
@@ -6596,7 +6596,7 @@ router.post('/crawl/ai-summary', async (req, res) => {
     const issueBreakdown = {};
     (latest.issues || []).forEach(i => { issueBreakdown[i.type] = (issueBreakdown[i.type] || 0) + 1; });
     const prompt = `You are an SEO expert. Summarise these site crawl results and provide a prioritised action plan. Pages crawled: ${latest.pagesFound || latest.pages?.length}. Issues: ${JSON.stringify(issueBreakdown)}. Return JSON: {"executiveSummary": "string", "overallHealthScore": number, "criticalIssues": [{"issue": "string", "count": number, "impact": "string", "fix": "string"}], "quickWins": ["string"], "priorityOrder": ["string"], "estimatedFixTime": "string"}`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...parsed });
@@ -6700,7 +6700,7 @@ router.post('/geo/llm-visibility-audit', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Perform a GEO (Generative Engine Optimisation) visibility audit for brand "${brandName}" in niche "${niche||'general'}". Competitors: ${competitors.join(', ')||'unknown'}. Return JSON: {"visibilityScore": number, "platformScores": {"chatgpt": number, "perplexity": number, "googleAiOverview": number, "gemini": number, "claude": number, "copilot": number, "grok": number, "deepseek": number}, "topCitedCompetitors": ["string"], "contentGaps": ["string"], "citations": ["string"], "recommendations": ["string"], "quickWins": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, brandName, niche, ...parsed });
@@ -6713,7 +6713,7 @@ router.post('/geo/prompt-simulation', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Simulate how ${platform} would respond to the query: "${query}". Consider whether the site "${siteUrl||'unknown'}" would likely be cited. Return JSON: {"simulatedAnswer": "string", "citationLikelihood": "high|medium|low", "citationScore": number, "wouldCiteSite": boolean, "reasonsFor": ["string"], "reasonsAgainst": ["string"], "contentImprovements": ["string"], "competitorsMentioned": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, query, platform, siteUrl, ...parsed });
@@ -6726,7 +6726,7 @@ router.post('/geo/citation-gap-analysis', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse citation gaps for brand "${brandName}" vs competitors [${competitors.join(', ')}] in niche "${niche||'general'}". Topics: ${topics.join(', ')||'general topics'}. Return JSON: {"citationGaps": [{"topic": "string", "competitorsCited": ["string"], "yourBrandCited": boolean, "opportunity": "high|medium|low", "contentToCreate": "string"}], "overallGapScore": number, "priorityTopics": ["string"], "actionPlan": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, brandName, niche, ...parsed });
@@ -6740,7 +6740,7 @@ router.post('/geo/ai-platform-tracker', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Simulate tracking brand "${brandName}" visibility across 8 AI platforms for these queries: ${queries.slice(0,5).join('; ')||'general brand queries'}. Competitors: ${competitors.join(', ')||'none'}. Return JSON: {"platforms": {"chatgpt": {"mentioned": boolean, "sentiment": "positive|neutral|negative", "context": "string"}, "perplexity": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "googleAiOverview": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "gemini": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "claude": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "copilot": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "grok": {"mentioned": boolean, "sentiment": "string", "context": "string"}, "deepseek": {"mentioned": boolean, "sentiment": "string", "context": "string"}}, "overallVisibilityScore": number, "competitorComparison": [{"competitor": "string", "visibilityScore": number}]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     const geoData = loadGeoData(shop);
@@ -6757,7 +6757,7 @@ router.post('/geo/mention-gap', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Find AI mention gaps for brand "${brandName}" vs competitors [${competitors.join(', ')}] on topic "${topic||'general'}". Return JSON: {"gaps": [{"query": "string", "competitorsMentioned": ["string"], "brandMentioned": false, "priority": "high|medium|low", "contentSuggestion": "string"}], "totalGaps": number, "quickestWins": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, brandName, topic, ...parsed });
@@ -6770,7 +6770,7 @@ router.post('/geo/brand-sentiment-ai', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse how AI models likely perceive and describe brand "${brandName}" in niche "${niche||'general'}". Return JSON: {"overallSentiment": "positive|neutral|negative|mixed", "sentimentScore": number, "platformSentiments": {"chatgpt": "string", "perplexity": "string", "gemini": "string"}, "positiveSignals": ["string"], "negativeSignals": ["string"], "reputationRisks": ["string"], "improvementActions": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, brandName, niche, ...parsed });
@@ -6795,7 +6795,7 @@ router.post('/geo/faq-for-llm', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate FAQ content optimised to be cited by ${targetPlatform} for topic: "${topic}". Return JSON: {"faqs": [{"question": "string", "answer": "string", "citationLikelihood": "high|medium|low", "answerType": "definition|howto|list|comparison"}], "schemaSuggestion": "paste-ready JSON-LD FAQ schema", "tips": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, topic, targetPlatform, ...parsed });
@@ -6808,7 +6808,7 @@ router.post('/geo/content-for-citation', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Rewrite this content to maximise its likelihood of being cited by AI search engines (ChatGPT, Perplexity). Make it more direct, factual, citable, and structured. Topic: ${topic||'general'}. Original: ${content.substring(0,2000)}. Return JSON: {"rewrittenContent": "string", "changes": ["string"], "citationScore": number, "keyImprovements": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, topic, ...parsed });
@@ -6849,7 +6849,7 @@ router.post('/trends/rising-topics', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `You are a trend analysis expert. Identify rising topics and keywords in the "${niche}" niche for ${industry||'general'} industry over the last ${timeframe}. Return JSON: {"risingTopics": [{"topic": "string", "growthEstimate": "string", "searchVolumeRange": "string", "competition": "low|medium|high", "contentAngle": "string", "urgency": "act now|this month|this quarter", "why": "string"}], "emergingThemes": ["string"], "firstMoverOpportunities": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, industry, timeframe, ...parsed });
@@ -6862,7 +6862,7 @@ router.post('/trends/seasonal-planner', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Create a 12-month seasonal content calendar for "${niche}" niche. Topics: ${seedTopics.join(', ')||'all relevant topics'}. Return JSON: {"calendar": {"january": [{"topic": "string", "peakMonth": "string", "publishBy": "string", "contentType": "string"}], "february": [], "march": [], "april": [], "may": [], "june": [], "july": [], "august": [], "september": [], "october": [], "november": [], "december": []}, "topSeasonalOpportunities": ["string"], "evergreen": ["string"], "note": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -6875,7 +6875,7 @@ router.post('/trends/micro-niche-finder', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Find underserved micro-niches within "${broadNiche}" for ${industry||'general'} businesses. Return JSON: {"microNiches": [{"niche": "string", "audienceSize": "small|medium|large", "competition": "very low|low|medium", "monetisationPotential": "high|medium|low", "contentGap": "string", "entryStrategy": "string"}], "topPick": "string", "avoidNiches": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, broadNiche, ...parsed });
@@ -6888,7 +6888,7 @@ router.post('/trends/newsjack-ideas', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate newsjacking content ideas for "${niche}" niche. Current events context: ${currentEvents.join(', ')||'current news cycle'}. Return JSON: {"opportunities": [{"headline": "string", "angle": "string", "urgency": "string", "contentFormat": "string", "targetKeyword": "string", "publishWindow": "string"}], "bestOpportunity": "string", "evergreens": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -6901,7 +6901,7 @@ router.post('/trends/keyword-surge-detector', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Identify keywords in "${niche}" niche with 50%+ search volume surge in the last ${timeframe}. Return JSON: {"surges": [{"keyword": "string", "estimatedGrowth": "string", "currentVolume": "string", "trigger": "string", "longevity": "trend|fad|seasonal|structural", "contentOpportunity": "string"}], "totalSurges": number, "actionableNow": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, timeframe, ...parsed });
@@ -6914,7 +6914,7 @@ router.post('/trends/first-mover-brief', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Create a first-mover content brief for trending topic "${topic}" in "${niche||'general'}" niche. This should capture early traffic before competition increases. Return JSON: {"title": "string", "targetKeyword": "string", "searchIntent": "string", "recommendedWordCount": number, "publishDeadline": "string", "outline": [{"heading": "string", "purpose": "string"}], "uniqueAngles": ["string"], "competitorsToWatch": ["string"], "estimatedTrafficPotential": "string", "monetisationHook": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, topic, niche, ...parsed });
@@ -6927,7 +6927,7 @@ router.post('/trends/competitor-velocity', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse content publishing velocity for competitors in "${niche}" niche. Your domain: ${yourDomain||'unknown'}. Competitors: ${competitors.join(', ')||'major players'}. Return JSON: {"velocityComparison": [{"domain": "string", "estimatedPostsPerMonth": number, "topicFocus": ["string"], "recentWins": ["string"]}], "yourVelocityAdvice": "string", "topicsToSteal": ["string"], "gapOpportunities": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -6940,7 +6940,7 @@ router.post('/trends/trend-report', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Write a comprehensive SEO trend report for "${niche}" for ${period}. Return JSON: {"reportTitle": "string", "executiveSummary": "string", "biggestTrends": [{"trend": "string", "impact": "high|medium|low", "opportunities": ["string"], "threats": ["string"]}], "keywordTrends": [{"keyword": "string", "direction": "rising|falling|stable", "notes": "string"}], "contentTypes": ["string"], "strategicRecommendations": ["string"], "outlook": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, period, ...parsed });
@@ -6953,7 +6953,7 @@ router.post('/trends/investment-signal-tracker', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Identify topics in "${niche}" niche that show early investment/funding signals before mainstream search volume peaks. Return JSON: {"earlySignals": [{"topic": "string", "signalType": "vc-funding|acquisition|patent|regulatory|media", "estimatedPeakMonths": number, "confidence": "high|medium|low", "contentStrategy": "string", "keywords": ["string"]}], "hottest": "string", "avoid": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -6970,7 +6970,7 @@ router.post('/serp/content-vs-top10', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `You are an expert content gap analyst. Compare content at ${url} targeting keyword "${keyword}" against typical top-10 SERP results. Identify gaps, missing sections, thin content, and improvement opportunities. Return JSON: {"overallScore": number, "wordCountVsTop10": {"yours": number, "top10Avg": number, "verdict": "string"}, "missingTopics": ["string"], "weakeragainst":["string"], "strongerThan": ["string"], "featuredSnippetOpportunity": boolean, "paaQuestions": ["string"], "entitiesMissing": ["string"], "contentStructureGaps": ["string"], "quickWins": ["string"], "estimatedRankPotential": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, url, keyword, ...parsed });
@@ -6983,7 +6983,7 @@ router.post('/serp/top10-insights', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse the full SERP landscape for keyword "${keyword}". Return JSON: {"dominantContentTypes": ["string"], "averageWordCount": number, "commonHeadings": ["string"], "sharedEntities": ["string"], "backingAuthors": ["expert|brand|user-generated"], "formatsRanking": ["string"], "intentSignals": "informational|transactional|navigational|commercial", "contentGaps": ["string"], "recommendations": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -6996,7 +6996,7 @@ router.post('/serp/volatility-monitor', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse SERP volatility for ${keywords.length > 0 ? 'keywords: ' + keywords.join(', ') : niche + ' niche'}. Return JSON: {"volatilityIndex": number, "highlyVolatile": ["string"], "stable": ["string"], "recentFlips": [{"keyword": "string", "change": "string", "likely Cause": "string"}], "algorithmActivity": "high|medium|low", "advice": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7009,7 +7009,7 @@ router.post('/serp/intent-evolution', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse how search intent has evolved for keyword "${keyword}" over the last 2 years. Return JSON: {"currentIntent": "string", "historicIntent": "string", "intentShift": "same|slight|major", "contentImplications": "string", "bestFormatNow": "string", "riskyApproaches": ["string"], "modernisationSteps": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -7022,7 +7022,7 @@ router.post('/serp/splitsignal', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Compare two SEO title/meta variants for keyword "${keyword}": Variant A: "${variant1}" vs Variant B: "${variant2}". Predict which will get more clicks on SERPs. Return JSON: {"winner": "A|B", "winnerConfidence": "high|medium|low", "reasoning": "string", "ctrEstA": number, "ctrEstB": number, "improvementTips": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -7035,7 +7035,7 @@ router.post('/zero-click/featured-snippet-optimizer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Optimise for featured snippet (Position 0) for keyword "${keyword}". ${content ? 'Current content excerpt: ' + content.slice(0, 800) : 'URL: ' + (url||'unknown')}. Return JSON: {"snippetType": "paragraph|list|table|none", "snippetParagraph": "string", "snippetList": ["string"], "snippetHeadingToUse": "string", "wordCount": number, "changes": ["string"], "forbiddenPatterns": ["string"], "confidence": "high|medium|low"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -7048,7 +7048,7 @@ router.post('/zero-click/paa-dominator', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate all likely "People Also Ask" questions for keyword "${keyword}" in ${niche||'general'} niche. Return JSON: {"paaQuestions": [{"question": "string", "bestAnswer": "string", "wordCount": number, "answerFormat": "paragraph|list|table"}], "clusterThemes": ["string"], "implementationNote": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -7061,7 +7061,7 @@ router.post('/zero-click/knowledge-panel-push', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Create a strategy to earn a Google Knowledge Panel for brand "${brandName}". URL: ${url||'unknown'}. Return JSON: {"eligibilityScore": number, "requiredActions": [{"action": "string", "effort": "low|medium|high", "impact": "high|medium|low", "platform": "string"}], "entityDefinition": "string", "wikiDataReady": boolean, "schemaCTA": "string", "estimatedTimeline": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, brandName, ...parsed });
@@ -7079,7 +7079,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const openai = getOpenAI();
     const model = req.body.model || 'gpt-4o-mini';
     const prompt = `Write a complete, publish-ready blog post:\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nWord count: ~${wordCount}\n${outline.length ? 'Follow this outline:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : ''}\n\nInclude: engaging intro with keyword naturally placed, H2/H3 headings, body paragraphs, internal linking opportunities [marked as {{IL:keyword}}], a FAQ section, conclusion with CTA. Return JSON: {"title": "string", "metaDescription": "string", "slug": "string", "fullArticle": "string", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqQuestions": ["string"]}`;
-    const r = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...parsed });
@@ -7092,7 +7092,7 @@ router.post('/ai/newsletter-digest', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Transform these blog posts into a newsletter digest: ${blogPosts.map(p => p.title || p).join(', ')||niche+' weekly digest'}. Format: ${format}. Return JSON: {"subject": "string", "previewText": "string", "fullNewsletter": "string", "ctaText": "string", "estimatedReadTime": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7105,7 +7105,7 @@ router.post('/ai/x-thread', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Turn this blog post into a high-engagement X (Twitter) thread: Title: "${blogTitle||keyword}". ${blogContent ? 'Content excerpt: ' + blogContent.slice(0,1000) : ''}. Return JSON: {"threadTweets": [{"tweet": "string", "charCount": number}], "hookTweet": "string", "finalCTA": "string", "suggestedHashtags": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7118,7 +7118,7 @@ router.post('/ai/linkedin-article', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Transform this blog into a LinkedIn article: "${blogTitle}". Keyword: ${keyword||''}. Tone: ${tone}. ${blogContent ? 'Based on: ' + blogContent.slice(0,800) : ''}. Return JSON: {"linkedinTitle": "string", "fullArticle": "string", "hook": "string", "ctaComment": "string", "emojis": "yes", "estimatedReach": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7131,7 +7131,7 @@ router.post('/ai/atomize', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `"Atomise" this blog post into micro-content assets. Blog: "${blogTitle||keyword}". Content: ${blogContent ? blogContent.slice(0,1200) : 'generate from title'}. Return JSON: {"xThread": ["string"], "linkedinPost": "string", "instagramCaption": "string", "emailSubject": "string", "emailBody": "string", "quoteTiles": ["string"], "tiktokScript": "string", "pinterestDescription": "string", "faqPairs": [{"q":"string","a":"string"}]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7144,7 +7144,7 @@ router.post('/ai/content-humanizer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Humanise this AI-generated content to pass AI detectors and feel naturally written. Reading level: ${targetReadingLevel}. Tone: ${tone}. Content:\n\n${content.slice(0,3000)}\n\nReturn JSON: {"humanizedContent": "string", "readabilityScore": number, "fleschKincaid": number, "changesApplied": ["string"], "aiDetectionRisk": "low|medium|high", "tips": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7157,7 +7157,7 @@ router.post('/ai/listicle-writer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Write a complete, SEO-optimised listicle: "${topic}". Keyword: "${keyword}". Niche: ${niche||'general'}. Items: ${items}. Return JSON: {"title": "string", "metaDescription": "string", "intro": "string", "listItems": [{"number": number, "heading": "string", "description": "string", "proTip": "string"}], "conclusion": "string", "totalWordCount": number}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7170,7 +7170,7 @@ router.post('/ai/case-study-writer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Write an SEO-optimised case study. Client: ${clientName||'unnamed'}. Problem: ${problem}. Solution: ${solution||'our service'}. Results: ${results||'significant improvement'}. Keyword: ${keyword||''}. Return JSON: {"title": "string", "metaDescription": "string", "executiveSummary": "string", "challengeSection": "string", "solutionSection": "string", "resultsSection": "string", "testimonialsuggest": "string", "cta": "string", "totalWordCount": number}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7183,7 +7183,7 @@ router.post('/video/youtube-optimizer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Optimise a YouTube video for SEO. Topic: "${videoTopic}". Keyword: "${targetKeyword}". Niche: ${niche||'general'}. Duration: ${duration}. Return JSON: {"optimisedTitle": "string", "description": "string", "tags": ["string"], "chaptersTimestamps": [{"time": "string", "label": "string"}], "thumbnailTextIdeas": ["string"], "pinComment": "string", "cardText": "string", "endScreenCTA": "string", "expectedRankBoost": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, videoTopic, targetKeyword, ...parsed });
@@ -7207,7 +7207,7 @@ router.post('/keywords/alphabet-soup', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate alphabet soup keyword expansions for seed keyword "${seed}". For each letter A-Z generate 2-3 long-tail questions/phrases starting with that letter. Return JSON: {"alphabetSoup": {"a": ["string"], "b": ["string"], "c": ["string"], "d": ["string"], "e": ["string"], "f": ["string"], "g": ["string"], "h": ["string"], "i": ["string"], "j": ["string"], "k": ["string"], "l": ["string"], "m": ["string"], "n": ["string"], "o": ["string"], "p": ["string"], "q": ["string"], "r": ["string"], "s": ["string"], "t": ["string"], "u": ["string"], "v": ["string"], "w": ["string"], "x": ["string"], "y": ["string"], "z": ["string"]}, "topOpportunities": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, seed, ...parsed });
@@ -7220,7 +7220,7 @@ router.post('/keywords/question-explorer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate ${count} question-based keywords for "${seed}" ${intent !== 'all' ? 'with ' + intent + ' intent' : ''}. Include what/why/how/when/where/who/which/can/does/is questions. Return JSON: {"questions": [{"question": "string", "intent": "informational|transactional|commercial|navigational", "difficulty": "low|medium|high", "quickAnswer": "string", "paaLikely": boolean}], "topQuestions": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, seed, ...parsed });
@@ -7233,7 +7233,7 @@ router.post('/keywords/cluster-by-serp', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Cluster these keywords by SERP similarity (keywords that rank on same URLs should be in the same cluster): ${keywords.join(', ')}. Return JSON: {"clusters": [{"clusterName": "string", "parentUrl": "string", "keywords": ["string"], "intent": "string", "priority": "high|medium|low"}], "unclustered": ["string"], "totalClusters": number}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7248,7 +7248,7 @@ router.post('/keywords/kgr-calculator', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Calculate estimated Keyword Golden Ratio (KGR = allintitle results / monthly searches) for these keywords: ${keywords.join(', ')}. KGR < 0.25 = golden. Return JSON: {"results": [{"keyword": "string", "estimatedSearchVolume": number, "estimatedAllintitle": number, "kgr": number, "verdict": "golden|good|competitive", "opportunity": "high|medium|low"}], "topGolden": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7261,7 +7261,7 @@ router.post('/keywords/keyword-mapping', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Map these keywords to appropriate pages. Keywords: ${keywords.join(', ')}. Existing pages: ${existingPages.join(', ')||'none provided, suggest new pages'}. Return JSON: {"mapping": [{"keyword": "string", "assignedPage": "string", "isNewPage": boolean, "pageType": "pillar|supporting|landing|blog", "reason": "string"}], "newPagesNeeded": ["string"], "cannibalizationRisks": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7274,7 +7274,7 @@ router.post('/keywords/share-of-voice', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Estimate share of voice in SERPs for brand "${brand}" vs competitors: ${competitors.join(', ')||'top 4 competitors'}. Keywords: ${keywords.join(', ')||niche+' main keywords'}. Return JSON: {"shareOfVoice": {"${brand}": number, "competitors": [{"name": "string", "sharePercent": number}]}, "visibilityScore": number, "topKeywordsOwned": ["string"], "opportunities": ["string"], "trendDirection": "improving|declining|stable"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, brand, ...parsed });
@@ -7287,7 +7287,7 @@ router.post('/keywords/intent-matrix', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Build a full intent matrix for these keywords: ${keywords.join(', ')}. Return JSON: {"matrix": [{"keyword": "string", "primaryIntent": "string", "microMoment": "know|go|do|buy", "buyerStage": "awareness|consideration|decision", "contentFormat": "string", "cta": "string", "conversionPotential": "high|medium|low"}], "summary": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...parsed });
@@ -7304,7 +7304,7 @@ router.post('/backlinks/digital-pr-pitch', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Create digital PR pitch emails to earn backlinks for brand "${brandName||'our brand'}" around topic "${topic}" in ${niche||'general'} niche. Angle: ${angle||'auto'}. Return JSON: {"pitchEmail": "string", "subject": "string", "targetPublications": ["string"], "whyTheyWouldLink": "string", "assetRequired": "string", "followUpEmail": "string", "successRate": "estimated string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, topic, ...parsed });
@@ -7317,7 +7317,7 @@ router.post('/backlinks/guest-post-finder', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Find guest posting opportunities in "${niche}" niche for sites with DA ${domainAuthority}+. Topics: ${topics.join(', ')||'general'}. Return JSON: {"opportunities": [{"site": "string", "estimatedDA": number, "guestPostEmail": "string", "topicsTheyAccept": ["string"], "linkPolicy": "dofollow|mixed|nofollow", "prospectingTip": "string"}], "pitchTemplate": "string", "totalFound": number}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -7330,7 +7330,7 @@ router.post('/backlinks/resource-page-builder', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Identify resource pages in "${niche}" niche that would link to content at ${url||'our URL'} titled "${contentTitle||'our resource'}". Return JSON: {"resourcePages": [{"searchQuery": "string", "likelyURL": "string", "contactMethod": "string", "pitchAngle": "string"}], "outreachTemplate": "string", "contentRequirements": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -7343,7 +7343,7 @@ router.post('/backlinks/skyscraper-prospector', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Apply skyscraper technique for keyword "${keyword}" in ${niche||'general'} niche. Competitor URL: ${competitorUrl||'top ranking page'}. Return JSON: {"topCompetitorAssets": [{"url": "string", "whyItRanks": "string", "estimatedBacklinks": number}], "skyscraperAngles": ["string"], "contentImprovements": ["string"], "outreachTargets": ["string"], "expectedSuccess": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, keyword, ...parsed });
@@ -7356,7 +7356,7 @@ router.post('/backlinks/expert-qa-pipeline', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Build an expert Q&A backlink pipeline. Brand: ${brandName||'our brand'}. Expert: ${expertName||'our expert'}. Niche: ${niche}. Topics: ${topics.join(', ')||'all relevant'}. Return JSON: {"qaOpportunities": [{"platform": "string", "questions": ["string"], "linkOpportunity": "string", "effortLevel": "low|medium|high"}], "haroAlternatives": ["string"], "responseTemplate": "string", "weeklyPlan": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, niche, ...parsed });
@@ -7373,7 +7373,7 @@ router.post('/technical/inp-advisor', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Provide INP (Interaction to Next Paint) optimisation advice for ${url}. INP replaced FID in Core Web Vitals 2024. Return JSON: {"inpStatus": "good|needs improvement|poor", "estimatedINP": "string", "topCauses": ["string"], "fixes": [{"fix": "string", "effort": "low|medium|high", "impact": "high|medium|low", "codeExample": "string"}], "toolsToMeasure": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, url, ...parsed });
@@ -7411,7 +7411,7 @@ router.post('/technical/algo-impact-check', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Diagnose if ${domain||'this site'} in "${niche}" niche was hit by a Google algorithm update around ${dateSuspected||'recently'}. Return JSON: {"likelyUpdate": "string", "updateName": "string", "updateDate": "string", "matchesSite": "yes|maybe|no", "victimFactors": ["string"], "recoverySteps": [{"step": "string", "effort": "low|medium|high", "timeline": "string"}], "preventionForFuture": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, domain, niche, ...parsed });
@@ -7423,7 +7423,7 @@ router.post('/technical/generate-robots-txt', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate an optimised robots.txt for a "${siteType}" site. Allowed: ${crawlableDirectories.join(', ')||'/'}. Blocked: ${blockedDirectories.join(', ')||'/admin, /cart, /account, /checkout'}. Sitemap: ${sitemapUrl||'https://example.com/sitemap.xml'}. Return JSON: {"robotsTxt": "string", "explanation": ["string"], "googleBotDirectives": ["string"], "warnings": ["string"]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     res.json({ ok: true, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
@@ -7450,7 +7450,7 @@ router.post('/technical/pagination-seo', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Audit pagination SEO for ${url} (type: ${paginationType}). Return JSON: {"currentIssues": ["string"], "relPrevNext": "present|missing|incorrect", "canonicalSetup": "correct|incorrect|missing", "recommendations": ["string"], "googleGuidance": "string", "infiniteScrollAdvice": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     res.json({ ok: true, url, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
@@ -7511,7 +7511,7 @@ router.post('/schema/speakable', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Suggest speakable markup selectors for a page at ${url} with CSS selectors: ${cssSelectors.join(', ')||'auto-detect common patterns'}. Return JSON: {"speakableSchema": "string", "recommendedSelectors": ["string"], "reasoning": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     const schema = { '@context': 'https://schema.org', '@type': 'WebPage', speakable: { '@type': 'SpeakableSpecification', cssSelector: cssSelectors.length ? cssSelectors : ['h1', 'p:first-of-type'] }, url };
     res.json({ ok: true, url, schema: JSON.stringify(schema, null, 2), ...parsed });
@@ -7527,7 +7527,7 @@ router.post('/shopify/collection-seo-audit', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Audit Shopify collection SEO for "${collectionHandle||'all collections'}" on ${shopDomain}. Return JSON: {"issues": [{"issue": "string", "impact": "high|medium|low", "fix": "string"}], "titleOptimisation": "string", "descriptionOptimisation": "string", "breadcrumbAdvice": "string", "facetedNavAdvice": "string", "score": number}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     res.json({ ok: true, shopDomain, collectionHandle, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
@@ -7557,7 +7557,7 @@ router.post('/shopify/sitemap-enhancer', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Optimise XML sitemap strategy for Shopify store ${shopDomain}. Return JSON: {"sitemapStructure": ["string"], "priorityRecommendations": [{"urlPattern": "string", "priority": number, "changefreq": "string"}], "excludePatterns": ["string"], "imageSitemapAdvice": "string", "videoSitemapAdvice": "string", "maxUrls": number}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     res.json({ ok: true, shopDomain, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
@@ -7594,7 +7594,7 @@ router.post('/reports/generate-pdf', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Generate a professional SEO report for shop "${shop}". Report type: "${reportType}". Sections: ${sections.join(', ')||'executive summary, keyword rankings, technical health, backlinks, recommendations'}. Return JSON: {"reportTitle": "string", "generatedAt": "string", "executiveSummary": "string", "sections": [{"sectionTitle": "string", "content": "string", "keyMetrics": [{"metric": "string", "value": "string", "trend": "up|down|stable"}]}], "recommendations": [{"priority": "high|medium|low", "action": "string", "estimatedImpact": "string"}], "nextReportDate": "string"}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, shop, ...parsed, note: 'Use a client-side PDF library (jsPDF/html2pdf) to render this as a downloadable PDF.' });
@@ -7629,7 +7629,7 @@ router.post('/analytics/ross', async (req, res) => {
   try {
     const openai = getOpenAI();
     const prompt = `Analyse Return on Organic Search Spend (ROSS): Revenue ${organicRevenue}, SEO Spend ${seoSpend}, ROSS: ${ross}%. Sessions: ${organicSessions||'unknown'}. Top keywords: ${keywords.join(', ')||'unknown'}. Return JSON: {"ross": ${ross}, "verdict": "string", "benchmark": "string", "improvements": ["string"], "roiProjections": [{"scenario": "string", "projectedROSS": number}]}`;
-    const r = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const r = await getOpenAI().chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const parsed = JSON.parse(r.choices[0].message.content);
     res.json({ ok: true, organicRevenue, seoSpend, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
