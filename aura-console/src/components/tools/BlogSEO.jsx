@@ -8278,7 +8278,7 @@ export default function BlogSEO() {
             <div style={S.card}>
               <div style={{ ...S.row, alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ ...S.cardTitle, marginBottom: 0 }}>💾 Save Voice Profile</div>
-                <button style={{ ...S.btn, marginLeft: 'auto' }} disabled={vpSaveLoading} onClick={async () => {
+                <button style={{ ...S.btn(), marginLeft: 'auto' }} disabled={vpSaveLoading} onClick={async () => {
                   setVpSaveLoading(true);
                   try { const r = await apiFetch(`${API}/voice-profile/save`, { method: 'POST', body: JSON.stringify({ shop: shopDomain }) }); setVpSaveResult(r); } catch (e) { setVpSaveResult({ error: e.message }); }
                   setVpSaveLoading(false);
@@ -8298,7 +8298,7 @@ export default function BlogSEO() {
             <div style={S.card}>
               <div style={{ ...S.row, alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ ...S.cardTitle, marginBottom: 0 }}>📥 Load Voice Profile</div>
-                <button style={{ ...S.btn, marginLeft: 'auto' }} disabled={vpLoadLoading} onClick={async () => {
+                <button style={{ ...S.btn(), marginLeft: 'auto' }} disabled={vpLoadLoading} onClick={async () => {
                   setVpLoadLoading(true);
                   try { const endpoint = vpLoadId.trim() ? `${API}/voice-profile/${encodeURIComponent(vpLoadId.trim())}` : `${API}/voice-profile`; const r = await apiFetch(endpoint); setVpLoadResult(r); } catch (e) { setVpLoadResult({ error: e.message }); }
                   setVpLoadLoading(false);
