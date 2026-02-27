@@ -2450,11 +2450,11 @@ export default function BlogSEO() {
               {/* -- Shopify connection status -- */}
               {shopifyLoading ? (
                 <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#71717a", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={S.spinner} /> Loading your store data�
+                  <span style={S.spinner} /> Loading your store data…
                 </div>
               ) : shopDomain ? (
-                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#86efac", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                  <span>? Connected to <strong>{shopDomain}</strong> � {shopifyArticles.length > 0 ? `${shopifyArticles.length} blog posts` : "no blog posts yet"} � {shopifyProducts.length} products ready to use</span>
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#86efac", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  ✅ Connected to <strong style={{ margin: "0 4px" }}>{shopDomain}</strong> &middot; {shopifyArticles.length > 0 ? `${shopifyArticles.length} blog post${shopifyArticles.length !== 1 ? 's' : ''}` : "no blog posts yet"} &middot; {shopifyProducts.length} products
                 </div>
               ) : (
                 <div style={{ background: "#1c1007", border: "1px solid #92400e", borderRadius: 10, padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -2462,28 +2462,27 @@ export default function BlogSEO() {
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#fbbf24", marginBottom: 3 }}>💡 Shopify store not connected</div>
                     <div style={{ fontSize: 12, color: "#d97706" }}>Without a connection, you'll need to manually type URLs and keywords. Connect your store and everything fills in automatically.</div>
                   </div>
-                  <a href="#settings" style={{ ...S.btn("primary"), textDecoration: "none", fontSize: 12, padding: "8px 16px", whiteSpace: "nowrap" }}
-                    onClick={() => { /* navigate to settings if possible */ }}>Connect in Settings ?</a>
                 </div>
               )}
 
               {/* -- Quick scan hero -- */}
-              <div style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", border: "1px solid #3730a3", borderRadius: 14, padding: "24px", marginBottom: 28 }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#e0e7ff", marginBottom: 6 }}>&#x1F50D; Start with an SEO scan</div>
-                <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 16 }}>Paste any blog post URL to get your full SEO score, issues list and AI recommendations.</div>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <input style={{ ...S.input, maxWidth: 480 }} placeholder="https://yourstore.com/blogs/news/your-post" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && runScan()} />
-                  <button style={S.btn("primary")} onClick={() => { setSection('Analyze'); setTab('Analyzer'); setTimeout(runScan, 0); }} disabled={!url.trim() || scanning}>
-                    {scanning ? <><span style={S.spinner}/> Scanning&hellip;</> : '&#x1F50D; Scan Now'}
+              <div style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", border: "1px solid #3730a3", borderRadius: 14, padding: "20px 24px", marginBottom: 28 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "#e0e7ff", marginBottom: 4 }}>🔍 Start with an SEO scan</div>
+                <div style={{ fontSize: 12, color: "#a5b4fc", marginBottom: 14 }}>Paste a blog post URL to get your SEO score, issues and AI recommendations.</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <input style={{ ...S.input, flex: "1 1 280px", minWidth: 0 }} placeholder="https://yourstore.com/blogs/news/your-post" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && runScan()} />
+                  <button style={{ ...S.btn("primary"), whiteSpace: "nowrap" }} onClick={() => { setSection('Analyze'); setTab('Analyzer'); setTimeout(runScan, 0); }} disabled={!url.trim() || scanning}>
+                    {scanning ? <><span style={S.spinner}/> Scanning…</> : '🔍 Scan Now'}
                   </button>
                 </div>
                 {shopifyArticles.length > 0 && (
-                  <div style={{ marginTop: 12 }}>
-                    <span style={{ fontSize: 12, color: "#6366f1" }}>Or pick from your store: </span>
-                    {shopifyArticles.slice(0, 5).map(a => (
-                      <button key={a.id} style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", margin: "2px 4px" }}
-                        onClick={() => { handleArticleSelect(String(a.id)); setSection('Analyze'); setTab('Analyzer'); }}>
-                        {a.title.slice(0, 40)}
+                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                    <span style={{ fontSize: 12, color: "#6366f1", whiteSpace: "nowrap" }}>Or pick from store:</span>
+                    {shopifyArticles.slice(0, 4).map(a => (
+                      <button key={a.id} style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                        onClick={() => { handleArticleSelect(String(a.id)); setSection('Analyze'); setTab('Analyzer'); }}
+                        title={a.title}>
+                        {a.title.slice(0, 28)}{a.title.length > 28 ? '…' : ''}
                       </button>
                     ))}
                   </div>
