@@ -2748,34 +2748,104 @@ export default function BlogSEO() {
                 </div>
 
                 {/* AI Analysis results */}
-                {aiAnalysis && (
+                {aiAnalysis && (() => {
+                  // Map recommendation keywords → in-tool action
+                  const getRcAction = (r) => {
+                    const t = (r.title + ' ' + r.description).toLowerCase();
+                    if (t.includes('meta description') || t.includes('meta desc')) return { label: '✍️ Write Meta Description', onClick: () => runRewrite('metaDescription') };
+                    if (t.includes('title')) return { label: '✍️ Rewrite Title', onClick: () => runRewrite('title') };
+                    if (t.includes('heading') || t.includes('h1') || t.includes('h2')) return { label: '✍️ Rewrite H1', onClick: () => runRewrite('h1') };
+                    if (t.includes('keyword') || t.includes('keyword strategy')) return { label: '🎯 Find Keywords', onClick: () => { setSection('Keywords'); setTab('Keywords'); } };
+                    if (t.includes('schema') || t.includes('json-ld') || t.includes('structured data')) return { label: '🔗 Open Schema Tools', onClick: () => { setSection('Schema'); setTab('Schema & Links'); } };
+                    if (t.includes('technical') || t.includes('core web') || t.includes('speed') || t.includes('crawl')) return { label: '⚙️ Technical SEO', onClick: () => { setSection('Technical'); setTab('Technical+'); } };
+                    if (t.includes('backlink') || t.includes('link building')) return { label: '🕸️ Backlinks', onClick: () => { setSection('Backlinks'); setTab('Backlinks'); } };
+                    if (t.includes('content') || t.includes('word count') || t.includes('expand') || t.includes('length') || t.includes('write')) return { label: '✍️ Write with AI', onClick: () => { setSection('Write'); setTab('AI Create'); } };
+                    if (t.includes('optimize') || t.includes('improve') || t.includes('fix') || t.includes('issue')) return { label: '⚡ Optimize Post', onClick: () => { setSection('Optimize'); setTab('Content+'); } };
+                    return null;
+                  };
+                  return (
                   <div style={S.card}>
-                    <div style={S.cardTitle}>💡 AI Analysis</div>
-                    {aiAnalysis.assessment && <div style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12, lineHeight: 1.6 }}>{aiAnalysis.assessment}</div>}
+                    <div style={S.cardTitle}>🤖 AI Analysis</div>
+                    {aiAnalysis.assessment && <div style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16, lineHeight: 1.65 }}>{aiAnalysis.assessment}</div>}
                     {aiAnalysis.strengths?.length > 0 && (
-                      <div style={S.section}><div style={S.heading}>? Strengths</div>{aiAnalysis.strengths.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#86efac", marginBottom: 4 }}>� {s}</div>)}</div>
+                      <div style={{ ...S.section, marginBottom: 16 }}>
+                        <div style={{ ...S.heading, color: '#86efac', marginBottom: 8 }}>✅ Strengths</div>
+                        {aiAnalysis.strengths.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#86efac", marginBottom: 5, display: 'flex', gap: 8, alignItems: 'flex-start' }}><span style={{ flexShrink: 0, marginTop: 1 }}>•</span>{s}</div>)}
+                      </div>
                     )}
                     {aiAnalysis.weaknesses?.length > 0 && (
-                      <div style={S.section}><div style={S.heading}>💡 Weaknesses</div>{aiAnalysis.weaknesses.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 4 }}>� {s}</div>)}</div>
+                      <div style={{ ...S.section, marginBottom: 16 }}>
+                        <div style={{ ...S.heading, color: '#fbbf24', marginBottom: 8 }}>⚠️ Weaknesses</div>
+                        {aiAnalysis.weaknesses.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 5, display: 'flex', gap: 8, alignItems: 'flex-start' }}><span style={{ flexShrink: 0, marginTop: 1 }}>•</span>{s}</div>)}
+                      </div>
                     )}
                     {aiAnalysis.recommendations?.length > 0 && (
-                      <div style={S.section}><div style={S.heading}>💡 Recommendations</div>
-                        {aiAnalysis.recommendations.map((r, i) => (
-                          <div key={i} style={{ ...S.issueRow, flexDirection: "column", alignItems: "flex-start" }}>
-                            <div><span style={S.pill(r.priority === "critical" ? "high" : r.priority === "recommended" ? "medium" : "low")}>{r.priority}</span><strong style={{ fontSize: 13 }}>{r.title}</strong></div>
-                            <div style={{ fontSize: 13, color: "#a1a1aa", marginTop: 4 }}>{r.description}</div>
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ ...S.heading, marginBottom: 10 }}>💡 Recommendations</div>
+                        {aiAnalysis.recommendations.map((r, i) => {
+                          const action = getRcAction(r);
+                          return (
+                            <div key={i} style={{ background: '#09090b', border: `1px solid ${r.priority === 'critical' ? '#7f1d1d' : r.priority === 'recommended' ? '#713f12' : '#27272a'}`, borderLeft: `3px solid ${r.priority === 'critical' ? '#ef4444' : r.priority === 'recommended' ? '#eab308' : '#52525b'}`, borderRadius: 8, padding: '12px 14px', marginBottom: 10 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                    <span style={S.pill(r.priority === 'critical' ? 'high' : r.priority === 'recommended' ? 'medium' : 'low')}>{r.priority}</span>
+                                    <strong style={{ fontSize: 13, color: '#fafafa' }}>{r.title}</strong>
+                                  </div>
+                                  <div style={{ fontSize: 13, color: '#a1a1aa', lineHeight: 1.55 }}>{r.description}</div>
+                                </div>
+                                {action && (
+                                  <button style={{ ...S.btn('primary'), fontSize: 11, padding: '4px 12px', flexShrink: 0, whiteSpace: 'nowrap' }} onClick={action.onClick}>{action.label} →</button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {aiAnalysis.contentGaps?.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ ...S.heading, marginBottom: 10 }}>🕳️ Content Gaps — Topics You're Missing</div>
+                        {aiAnalysis.contentGaps.map((s, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid #18181b' }}>
+                            <div style={{ fontSize: 13, color: '#93c5fd' }}>• {s}</div>
+                            <button style={{ ...S.btn(), fontSize: 11, padding: '3px 10px', flexShrink: 0 }}
+                              onClick={() => { setKwInput(s.slice(0, 80)); setSection('Write'); setTab('AI Create'); }}>
+                              ✍️ Draft This →
+                            </button>
                           </div>
                         ))}
                       </div>
                     )}
-                    {aiAnalysis.contentGaps?.length > 0 && (
-                      <div style={S.section}><div style={S.heading}>💡 Content Gaps</div>{aiAnalysis.contentGaps.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#93c5fd", marginBottom: 4 }}>� {s}</div>)}</div>
-                    )}
                     {aiAnalysis.topicSuggestions?.length > 0 && (
-                      <div style={S.section}><div style={S.heading}>💡 Related Topics</div>{aiAnalysis.topicSuggestions.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#c4b5fd", marginBottom: 4 }}>� {s}</div>)}</div>
+                      <div>
+                        <div style={{ ...S.heading, marginBottom: 10 }}>💡 Related Topics to Explore</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {aiAnalysis.topicSuggestions.map((s, i) => (
+                            <button key={i} style={{ ...S.btn(), fontSize: 12, padding: '4px 12px', borderRadius: 20, border: '1px solid #3f3f46' }}
+                              onClick={() => { setKwInput(s); setSection('Keywords'); setTab('Keywords'); }}>
+                              🎯 {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {aiAnalysis.estimatedTrafficPotential && (
+                      <div style={{ marginTop: 14, background: '#0a1628', border: '1px solid #1e3a5f', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#93c5fd' }}>
+                        📈 Traffic Potential: {aiAnalysis.estimatedTrafficPotential}
+                      </div>
+                    )}
+                    {aiAnalysis.geoReadiness && (
+                      <div style={{ marginTop: 10, background: '#0d1117', border: `1px solid ${aiAnalysis.geoReadiness.score === 'good' ? '#166534' : aiAnalysis.geoReadiness.score === 'fair' ? '#713f12' : '#7f1d1d'}`, borderRadius: 8, padding: '10px 14px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: aiAnalysis.geoReadiness.score === 'good' ? '#86efac' : aiAnalysis.geoReadiness.score === 'fair' ? '#fbbf24' : '#fca5a5', marginBottom: 4 }}>
+                          🤖 GEO / AI Search Readiness: {aiAnalysis.geoReadiness.score?.toUpperCase()}
+                        </div>
+                        <div style={{ fontSize: 13, color: '#a1a1aa' }}>{aiAnalysis.geoReadiness.summary}</div>
+                      </div>
                     )}
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* Rewrite results */}
                 {rewriteLoading && <div style={S.card}><span style={S.spinner} /> Generating AI rewrites for <strong>{rewriteField}</strong>�</div>}
