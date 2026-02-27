@@ -43,6 +43,7 @@ const S = {
   td: { padding: "8px 10px", borderBottom: "1px solid #1e1e22", color: "#d4d4d8" },
   fixPanel: { background: "#1c1917", border: "1px solid #3f3f46", borderRadius: 10, padding: 16, marginTop: 10 },
   fixCode: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12, fontSize: 12, fontFamily: "'Fira Code',monospace", color: "#86efac", whiteSpace: "pre-wrap", overflowX: "auto", maxHeight: 220 },
+  result: { background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginTop: 8 },
   bulkRow: { display: "flex", gap: 8, alignItems: "center", padding: "6px 0", borderBottom: "1px solid #1e1e22" },
   section: { marginBottom: 20 },
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
@@ -207,6 +208,7 @@ export default function BlogSEO() {
   const [fixErr, setFixErr] = useState({});
   const [autoScanPending, setAutoScanPending] = useState(false);
   const [rewriteLoading, setRewriteLoading] = useState(false);
+  const [rewriteField, setRewriteField] = useState(null);
   const [rewriteResult, setRewriteResult] = useState(null);
   const [rewriteErr, setRewriteErr] = useState(null);
   const [applyResult, setApplyResult] = useState({}); // tracks apply-to-shopify state per rewrite variant index
@@ -257,6 +259,7 @@ export default function BlogSEO() {
   const [semTopic, setSemTopic] = useState(""); const [semIndustry, setSemIndustry] = useState(""); const [semResult, setSemResult] = useState(null); const [semLoading, setSemLoading] = useState(false); const [semErr, setSemErr] = useState("");
   const [growthSub, setGrowthSub] = useState("calendar");
   const [schemaGenLoading, setSchemaGenLoading] = useState(false);
+  const [schemaGenErr, setSchemaGenErr] = useState("");
   const [generatedSchema, setGeneratedSchema] = useState(null);
   const [schemaImpl, setSchemaImpl] = useState({}); // tracks implement-to-shopify state per schema key
   const [schemaAuthorName, setSchemaAuthorName] = useState("");
@@ -894,7 +897,7 @@ export default function BlogSEO() {
 
   const generateSchema = useCallback(async () => {
     if (!scanResult) return;
-    setSchemaGenLoading(true); setGeneratedSchema(null);
+    setSchemaGenLoading(true); setGeneratedSchema(null); setSchemaGenErr("");
     try {
       const r = await apiFetchJSON(`${API}/schema/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         url: scanResult.url, title: scanResult.title, metaDescription: scanResult.metaDescription,
@@ -905,7 +908,8 @@ export default function BlogSEO() {
         keywords: kwInput ? kwInput.split(",").map(s => s.trim()) : undefined,
       }) });
       if (r.ok) setGeneratedSchema(r);
-    } catch {}
+      else setSchemaGenErr(r.error || "Schema generation failed. Please try again.");
+    } catch (e) { setSchemaGenErr(e.message || "Network error — please try again."); }
     setSchemaGenLoading(false);
   }, [scanResult, schemaAuthorName, schemaPublisherName, kwInput]);
 
@@ -2274,7 +2278,9 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/ai/keyword-research`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seedKeyword: seedKw.trim(), niche: kwNiche.trim() || undefined }) });
       if (!r.ok) throw new Error(r.error || "Failed");
-      setKwResearch(r.structured || JSON.parse(r.research));
+      const parsed = r.structured || (r.research ? (() => { try { return JSON.parse(r.research); } catch { return null; } })() : null);
+      if (parsed) setKwResearch(parsed);
+      else throw new Error("Unexpected response format from AI. Please try again.");
     } catch (e) { setKwErr(e.message); }
     setKwLoading(false);
   }, [seedKw, kwNiche]);
@@ -2286,7 +2292,9 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/ai/content-brief`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: briefTopic.trim(), primaryKeyword: briefPrimary.trim(), secondaryKeywords: briefSecondary.split(",").map(s => s.trim()).filter(Boolean) }) });
       if (!r.ok) throw new Error(r.error || "Failed");
-      setBriefResult(r.structured || JSON.parse(r.brief));
+      const parsed = r.structured || (r.brief ? (() => { try { return JSON.parse(r.brief); } catch { return null; } })() : null);
+      if (parsed) setBriefResult(parsed);
+      else throw new Error("Unexpected response format from AI. Please try again.");
     } catch (e) { setBriefErr(e.message); }
     setBriefLoading(false);
   }, [briefTopic, briefPrimary, briefSecondary]);
@@ -2313,7 +2321,8 @@ export default function BlogSEO() {
     try {
       const r = await apiFetchJSON(`${API}/ai/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [...chatMessages, userMsg] }) });
       if (r.ok && r.reply) setChatMessages(p => [...p, { role: "assistant", content: r.reply }]);
-    } catch {}
+      else setChatMessages(p => [...p, { role: "assistant", content: `⚠️ ${r.error || "AI request failed. Please try again."}`, isError: true }]);
+    } catch (e) { setChatMessages(p => [...p, { role: "assistant", content: `⚠️ ${e.message || "Network error. Please try again."}`, isError: true }]); }
     setChatLoading(false);
     setTimeout(() => chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" }), 100);
   }, [chatInput, chatMessages]);
@@ -3354,9 +3363,11 @@ export default function BlogSEO() {
                               placeholder="e.g. My Store Blog" />
                           </div>
                         </div>
-                        <button style={S.btn("primary")} onClick={generateSchema} disabled={schemaGenLoading}>
-                          {schemaGenLoading ? <><span style={S.spinner} /> Generating�</> : "? Generate BlogPosting JSON-LD (1 credit)"}
+                        <button style={S.btn("primary")} onClick={generateSchema} disabled={schemaGenLoading || !scanResult}>
+                          {schemaGenLoading ? <><span style={S.spinner} /> Generating&hellip;</> : "🔗 Generate BlogPosting JSON-LD (1 credit)"}
                         </button>
+                        {schemaGenErr && <div style={{ ...S.err, marginTop: 8 }}>&#x26A0;&#xFE0F; {schemaGenErr}</div>}
+                        {!scanResult && <div style={{ fontSize: 12, color: '#52525b', fontStyle: 'italic', marginTop: 6 }}>Scan a post first to generate schema</div>}
                         {generatedSchema && (
                           <div style={{ marginTop: 14 }}>
                             <div style={{ ...S.row, marginBottom: 8, gap: 8 }}>
@@ -8426,7 +8437,7 @@ export default function BlogSEO() {
                     <div style={{ fontSize: 13 }}>Ask anything about blog SEO � keyword strategy, content optimization, technical SEO, etc.</div>
                   </div>
                 )}
-                {chatMessages.map((m, i) => <div key={i} style={S.chatBubble(m.role === "user")}>{m.content}</div>)}
+                {chatMessages.map((m, i) => <div key={i} style={{ ...S.chatBubble(m.role === "user"), ...(m.isError ? { background: "#450a0a", border: "1px solid #7f1d1d", color: "#fca5a5" } : {}) }}>{m.content}</div>)}
                 {chatLoading && <div style={S.chatBubble(false)}><span style={S.spinner} /> Thinking�</div>}
               </div>
               <div style={{ ...S.row, marginTop: 10 }}>
