@@ -982,7 +982,7 @@ export default function BlogSEO() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId, blogId, field, value, shop: shopDomain }),
       });
-      if (r.ok) {
+      if (r.ok && field !== 'headings') {
         // Mirror the change locally so the UI reflects the new value immediately
         setScanResult(prev => prev ? { ...prev, [field]: r.handle || value } : prev);
       }
@@ -2772,8 +2772,10 @@ export default function BlogSEO() {
                       {rewriteResult && !rewriteLoading && (
                         <div style={{ ...S.card, marginTop: 10 }}>
                           <div style={{ ...S.cardTitle, marginBottom: 4 }}>✅ AI Suggestions</div>
-                          {rewriteField === 'headings'
-                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Each option is a full H2 structure for your post. Copy one and paste the headings into your Shopify post editor.</div>
+                          {rewriteField === 'headings' && !scannedArticleId
+                            ? <div style={{ fontSize: 12, color: "#fbbf24", marginBottom: 12 }}>⚠️ No article linked — select your post from the dropdown above and rescan to enable one-click H2 injection.</div>
+                            : rewriteField === 'headings' && scannedArticleId
+                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>🚀 Apply to Shopify</strong> to inject these H2 headings directly into your post body, or copy and paste manually.</div>
                             : scannedArticleId
                             ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>{rewriteField === 'handle' ? '🔗 Apply URL Slug' : '🚀 Apply to Shopify'}</strong> to update the {rewriteField === 'handle' ? 'URL slug' : rewriteField === 'metaDescription' ? 'meta description' : rewriteField || 'field'} automatically, or copy it manually.</div>
                             : <div style={{ fontSize: 12, color: "#fbbf24", marginBottom: 12 }}>⚠️ No article linked — select your post from the dropdown above and rescan to enable one-click updates.</div>}
@@ -2789,7 +2791,7 @@ export default function BlogSEO() {
                                 : <div style={{ fontSize: 13, color: "#e0e7ff", marginBottom: 8 }}>{v.text}</div>}
                               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                                 <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
-                                {scannedArticleId && rewriteField !== 'headings' && (
+                                {scannedArticleId && (
                                   <button
                                     style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 12px" }}
                                     disabled={applyResult[i] === "loading"}
@@ -3285,16 +3287,16 @@ export default function BlogSEO() {
                         </div>
                         <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
                           <button style={{ ...S.btn("ghost"), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
-                          {scannedArticleId && rewriteField !== 'headings'
+                          {scannedArticleId
                             ? <button
                                 style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 10px" }}
                                 disabled={applyResult[i] === "loading"}
                                 onClick={() => applyRewrite(v.text, rewriteField, i)}>
                                 {applyResult[i] === "loading" ? <><span style={S.spinner}/> Applying...</>
                                   : applyResult[i] === "ok" ? "✅ Applied!"
-                                  : "🚀 Apply to Post"}
+                                  : rewriteField === 'handle' ? "🔗 Apply URL Slug" : "🚀 Apply to Post"}
                               </button>
-                            : <span style={{ fontSize: 11, color: "#52525b", fontStyle: "italic" }}>{scannedArticleId ? null : "Select & scan a post to apply"}</span>}
+                            : <span style={{ fontSize: 11, color: "#52525b", fontStyle: "italic" }}>Select &amp; scan a post to apply</span>}
                           {typeof applyResult[i] === "string" && applyResult[i].startsWith("error:") && (
                             <span style={{ fontSize: 11, color: "#f87171" }}>{applyResult[i].slice(7)}</span>
                           )}
