@@ -7602,8 +7602,8 @@ router.post('/reports/generate-pdf', async (req, res) => {
 });
 
 router.post('/monitoring/add-alert', async (req, res) => {
-  const { shop, type, threshold, url, keyword, email } = req.body;
-  if (!shop || !type) return res.status(400).json({ ok: false, error: 'shop and type required' });
+  const { shop, type = 'keyword-position', threshold, url, keyword, email } = req.body;
+  if (!shop) return res.status(400).json({ ok: false, error: 'shop required' });
   const alertsPath = path.join(__dirname, '../../..', 'data', `monitoring-alerts-${shop.replace(/\./g,'_')}.json`);
   let alerts = [];
   try { alerts = JSON.parse(fs.readFileSync(alertsPath, 'utf8')); } catch(e) { alerts = []; }
@@ -7615,6 +7615,15 @@ router.post('/monitoring/add-alert', async (req, res) => {
 
 router.get('/monitoring/alerts', async (req, res) => {
   const shop = req.query.shop || req.headers['x-shopify-shop-domain'];
+  if (!shop) return res.status(400).json({ ok: false, error: 'shop required' });
+  const alertsPath = path.join(__dirname, '../../..', 'data', `monitoring-alerts-${shop.replace(/\./g,'_')}.json`);
+  let alerts = [];
+  try { alerts = JSON.parse(fs.readFileSync(alertsPath, 'utf8')); } catch(e) { alerts = []; }
+  res.json({ ok: true, alerts, total: alerts.length });
+});
+
+router.post('/monitoring/alerts', async (req, res) => {
+  const shop = req.body.shop || req.headers['x-shopify-shop-domain'];
   if (!shop) return res.status(400).json({ ok: false, error: 'shop required' });
   const alertsPath = path.join(__dirname, '../../..', 'data', `monitoring-alerts-${shop.replace(/\./g,'_')}.json`);
   let alerts = [];
