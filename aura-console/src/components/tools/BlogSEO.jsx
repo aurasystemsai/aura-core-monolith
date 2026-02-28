@@ -187,6 +187,8 @@ export default function BlogSEO() {
   const [section, setSection] = useState(null); // null = home dashboard
   const [simpleMode, setSimpleMode] = useState(true); // beginner vs expert
   const [simpleFlow, setSimpleFlow] = useState(null); // 'fix' | 'write' | null
+  const [simpleTopics, setSimpleTopics] = useState(null); // AI topic suggestions
+  const [simpleTopicsLoading, setSimpleTopicsLoading] = useState(false);
 
   /* -- Toast notification state -- */
   const [errToast, setErrToast] = useState(null);
@@ -2603,7 +2605,19 @@ export default function BlogSEO() {
                     <div style={{ marginTop: 8, background: "#312e81", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#c7d2fe" }}>Check my post →</div>
                   </div>
                   {/* Write card */}
-                  <div onClick={() => { setSimpleFlow('write'); setBlogOutlineKw(''); setBlogOutlineResult(null); }} style={{ background: "#0c1a0c", border: "2px solid #14532d", borderRadius: 14, padding: "28px 22px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "border-color 0.15s" }}
+                  <div onClick={() => { setSimpleFlow('write'); setBlogOutlineKw(''); setBlogOutlineResult(null); setSimpleTopics(null); setSimpleTopicsLoading(true);
+                // Auto-generate topic suggestions from store context
+                (async () => {
+                  try {
+                    // derive niche from shopDomain or product titles
+                    const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce');
+                    const resp = await apiFetch(`${API}/ai/topic-miner`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ niche, targetAudience: 'online shoppers' }) });
+                    const d = await resp.json();
+                    if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0, 6));
+                    else setSimpleTopics([]);
+                  } catch { setSimpleTopics([]); }
+                  setSimpleTopicsLoading(false);
+                })(); }} style={{ background: "#0c1a0c", border: "2px solid #14532d", borderRadius: 14, padding: "28px 22px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "border-color 0.15s" }}
                     onMouseEnter={e => e.currentTarget.style.borderColor='#22c55e'}
                     onMouseLeave={e => e.currentTarget.style.borderColor='#14532d'}>
                     <span style={{ fontSize: 40, lineHeight: 1 }}>✍️</span>
@@ -2728,12 +2742,37 @@ export default function BlogSEO() {
             {simpleFlow === 'write' && (
               <>
                 <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setSimpleFlow(null)}>← Back</button>
-                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 14, padding: "28px 24px", marginBottom: blogOutlineResult ? 16 : 0 }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: "#dcfce7", marginBottom: 6 }}>✍️ What do you want to write about?</div>
-                  <div style={{ fontSize: 13, color: "#86efac", marginBottom: 20 }}>AI will create a full structured blog post ready to paste into Shopify.</div>
+
+                {/* AI topic suggestions */}
+                {simpleTopicsLoading && (
+                  <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc", fontSize: 13 }}>
+                    <span style={S.spinner} /> Reading your store and finding the best blog ideas for you�
+                  </div>)}
+
+                {simpleTopics && simpleTopics.length > 0 && !simpleTopicsLoading && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>💡 AI picked these ideas for your store — click one to use it:</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+                      {simpleTopics.map((t, i) => (
+                        <div key={i}
+                          onClick={() => setBlogOutlineKw(t.targetKeyword || t.title)}
+                          style={{ background: blogOutlineKw === (t.targetKeyword || t.title) ? "#1e1b4b" : "#18181b", border: `1px solid ${blogOutlineKw === (t.targetKeyword || t.title) ? '#6366f1' : '#27272a'}`, borderRadius: 10, padding: "12px 14px", cursor: "pointer", transition: "border-color 0.15s" }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor='#4f46e5'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = blogOutlineKw === (t.targetKeyword || t.title) ? '#6366f1' : '#27272a'}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#e0e7ff", marginBottom: 4 }}>{t.title}</div>
+                          <div style={{ fontSize: 11, color: "#818cf8" }}>Keyword: {t.targetKeyword}</div>
+                          {t.opportunityScore && <div style={{ fontSize: 11, color: "#52525b", marginTop: 2 }}>Opportunity: {t.opportunityScore}/100</div>}
+                        </div>))}
+                    </div>
+                  </div>)}
+
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 14, padding: "24px", marginBottom: blogOutlineResult ? 16 : 0 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#dcfce7", marginBottom: 4 }}>
+                    {blogOutlineKw ? `✅ Writing about: ${blogOutlineKw}` : '✍️ Or type your own topic'}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#86efac", marginBottom: 14 }}>AI will generate a full structured blog post ready to paste into Shopify.</div>
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 13, color: "#86efac", marginBottom: 6 }}>Topic or keyword <span style={{ color: "#52525b" }}>(e.g. "best snowboards for beginners")</span></div>
-                    <input style={{ ...S.input, width: "100%" }} placeholder="Enter your topic..." value={blogOutlineKw} onChange={e => setBlogOutlineKw(e.target.value)} onKeyDown={e => e.key === 'Enter' && !blogOutlineLoading && blogOutlineKw.trim() && runBlogOutline()} />
+                    <input style={{ ...S.input, width: "100%" }} placeholder="e.g. best snowboards for beginners" value={blogOutlineKw} onChange={e => setBlogOutlineKw(e.target.value)} onKeyDown={e => e.key === 'Enter' && !blogOutlineLoading && blogOutlineKw.trim() && runBlogOutline()} />
                   </div>
                   <button style={{ ...S.btn("primary"), width: "100%", fontSize: 15, padding: "12px 20px", justifyContent: "center" }}
                     onClick={runBlogOutline}
@@ -2819,17 +2858,34 @@ export default function BlogSEO() {
                 )}
               </div>
 
-              {/* -- All tools grid -- */}
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 14 }}>All Tools</div>
-              <div style={S.toolGrid}>
-                {SECTIONS.map(s => (
-                  <div key={s.id} style={S.toolCard(s.color)}
-                    onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
-                    <span style={{ fontSize: 26 }}>{s.icon}</span>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{s.title}</div>
-                    <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
-                    <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#x2192;</div>
+              {/* -- Quick actions -- */}
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>Quick Actions</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
+                {[
+                  { icon: "🔧", label: "Fix a Post", desc: "Scan for issues and apply AI fixes", color: "#f59e0b", action: () => { setSection("Analyze"); setTab("Overview"); } },
+                  { icon: "✍️", label: "Write a Post", desc: "AI outlines, intros, titles & drafts", color: "#8b5cf6", action: () => { setSection("Write"); setTab("AI Create"); } },
+                  { icon: "🎯", label: "Find Keywords", desc: "Research topics and keyword clusters", color: "#06b6d4", action: () => { setSection("Keywords"); setTab("Research"); } },
+                ].map(q => (
+                  <div key={q.label} onClick={q.action} style={{ background: "#18181b", border: `1px solid ${q.color}33`, borderRadius: 12, padding: "18px 16px", cursor: "pointer", transition: "border-color 0.15s", display: "flex", flexDirection: "column", gap: 6 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = q.color}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = `${q.color}33`}>
+                    <span style={{ fontSize: 28 }}>{q.icon}</span>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{q.label}</div>
+                    <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{q.desc}</div>
+                    <div style={{ fontSize: 12, color: q.color, fontWeight: 600, marginTop: 2 }}>Open &#x2192;</div>
                   </div>
+                ))}
+              </div>
+              {/* -- All tools compact list -- */}
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 10 }}>All Tools</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {SECTIONS.map(s => (
+                  <button key={s.id} onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}
+                    style={{ background: "#27272a", border: "1px solid #3f3f46", borderRadius: 20, padding: "6px 14px", fontSize: 13, color: "#d4d4d8", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "background 0.15s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#3f3f46"}
+                    onMouseLeave={e => e.currentTarget.style.background = "#27272a"}>
+                    <span>{s.icon}</span> {s.title}
+                  </button>
                 ))}
               </div>
             </div>
