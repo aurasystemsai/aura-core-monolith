@@ -230,6 +230,9 @@ export default function BlogSEO() {
   const [rewriteResult, setRewriteResult] = useState(null);
   const [rewriteErr, setRewriteErr] = useState(null);
   const [applyResult, setApplyResult] = useState({}); // tracks apply-to-shopify state per rewrite variant index
+  // IDs of the article that was most recently scanned — used by applyRewrite so it never relies on stale selectedArticleId
+  const [scannedArticleId, setScannedArticleId] = useState(null);
+  const [scannedBlogId, setScannedBlogId] = useState(null);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [showHeadings, setShowHeadings] = useState(false);
@@ -876,17 +879,27 @@ export default function BlogSEO() {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null); setAiAnalysis(null);
     setRewriteResult(null); setRewriteErr(null); setFixes({}); setExpandedIssue(null);
+    setScannedArticleId(null); setScannedBlogId(null);
     try {
       const selectedArt = selectedArticleId ? shopifyArticles.find(a => String(a.id) === String(selectedArticleId)) : null;
       const analyzeBody = { url: url.trim(), keywords: kwInput.trim(), ...(selectedArt ? { articleId: selectedArt.id, blogId: selectedArt.blogId } : {}) };
       const r = await apiFetchJSON(`${API}/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(analyzeBody) });
       if (!r.ok) throw new Error(r.error || "Scan failed");
       setScanResult(r);
+      // Store the article IDs for apply operations — use selectedArt if available, otherwise
+      // try to match by URL against loaded articles
+      if (selectedArt) {
+        setScannedArticleId(selectedArt.id);
+        setScannedBlogId(selectedArt.blogId);
+      } else if (shopifyArticles.length > 0) {
+        const matched = shopifyArticles.find(a => a.url && r.url && (r.url.includes(a.handle) || a.url === r.url));
+        if (matched) { setScannedArticleId(matched.id); setScannedBlogId(matched.blogId); }
+      }
       // Save to history
       try { await apiFetch(`${API}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", url: r.url, title: r.title, score: r.scored?.overall, grade: r.scored?.grade, issueCount: r.scored?.issueCount }) }); } catch(e) { showToast(e.message || "An error occurred"); }
     } catch (e) { setScanErr(e.message); }
     setScanning(false);
-  }, [url, kwInput]);
+  }, [url, kwInput, selectedArticleId, shopifyArticles]);
 
   const generateFix = useCallback(async (issue) => {
     const k = issue.msg;
@@ -934,48 +947,57 @@ export default function BlogSEO() {
   }, [scanResult, schemaAuthorName, schemaPublisherName, kwInput]);
 
   const implementSchema = useCallback(async (scriptTag, key) => {
-    const art = shopifyArticles.find(a => String(a.id) === String(selectedArticleId));
-    if (!art) return;
+    // Use IDs captured at scan time — avoids stale closure on selectedArticleId
+    const articleId = scannedArticleId;
+    const blogId = scannedBlogId;
+    if (!articleId || !blogId) {
+      setSchemaImpl(p => ({ ...p, [key]: 'error: Select and rescan a post first to link it' }));
+      return;
+    }
     setSchemaImpl(p => ({ ...p, [key]: 'loading' }));
     try {
       const r = await apiFetchJSON(`${API}/implement-schema`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articleId: art.id, blogId: art.blogId, scriptTag, shop: shopDomain }),
+        body: JSON.stringify({ articleId, blogId, scriptTag, shop: shopDomain }),
       });
       setSchemaImpl(p => ({ ...p, [key]: r.ok ? 'ok' : `error: ${r.error || 'Unknown error'}` }));
     } catch (e) {
       setSchemaImpl(p => ({ ...p, [key]: `error: ${e.message}` }));
     }
-  }, [shopifyArticles, selectedArticleId, shopDomain]);
+  }, [scannedArticleId, scannedBlogId, shopDomain]);
 
   const applyRewrite = useCallback(async (value, field, idx) => {
-    const art = shopifyArticles.find(a => String(a.id) === String(selectedArticleId));
-    if (!art) return;
+    // Use IDs captured at scan time — avoids stale closure bugs on selectedArticleId
+    const articleId = scannedArticleId;
+    const blogId = scannedBlogId;
+    if (!articleId || !blogId) {
+      setApplyResult(p => ({ ...p, [idx]: 'error: No article linked — select your post from the dropdown and rescan' }));
+      return;
+    }
     setApplyResult(p => ({ ...p, [idx]: 'loading' }));
     try {
       const r = await apiFetchJSON(`${API}/apply-field`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articleId: art.id, blogId: art.blogId, field, value, shop: shopDomain }),
+        body: JSON.stringify({ articleId, blogId, field, value, shop: shopDomain }),
       });
       if (r.ok) {
-        // Mirror the change locally so the page reflects the new value immediately
-        const scanKey = field === 'handle' ? 'handle' : field === 'h1' ? 'h1' : field;
-        setScanResult(prev => prev ? { ...prev, [scanKey]: r.handle || value } : prev);
+        // Mirror the change locally so the UI reflects the new value immediately
+        setScanResult(prev => prev ? { ...prev, [field]: r.handle || value } : prev);
       }
-      setApplyResult(p => ({ ...p, [idx]: r.ok ? 'ok' : `error: ${r.error || 'Failed'}` }));
+      setApplyResult(p => ({ ...p, [idx]: r.ok ? 'ok' : `error: ${r.error || 'Shopify update failed — check permissions'}` }));
     } catch (e) {
       setApplyResult(p => ({ ...p, [idx]: `error: ${e.message}` }));
     }
-  }, [shopifyArticles, selectedArticleId, shopDomain]);
+  }, [scannedArticleId, scannedBlogId, shopDomain]);
 
   // Helper: renders Copy + Add-to-Post buttons for any schema output
   const schemaActions = (scriptTag, key) => (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 4 }}>
       <button style={{ ...S.btn('ghost'), fontSize: 11, padding: '3px 10px' }}
         onClick={() => navigator.clipboard.writeText(scriptTag || '')}>📋 Copy</button>
-      {selectedArticleId
+      {scannedArticleId
         ? <button
             style={{ ...S.btn(schemaImpl[key] === 'ok' ? undefined : 'primary'), fontSize: 11, padding: '3px 10px' }}
             disabled={schemaImpl[key] === 'loading'}
@@ -986,7 +1008,7 @@ export default function BlogSEO() {
                 ? '✅ Added to Post!'
                 : '➕ Add to Post'}
           </button>
-        : <span style={{ fontSize: 11, color: '#52525b', fontStyle: 'italic' }}>← Select a post above to add directly</span>}
+        : <span style={{ fontSize: 11, color: '#52525b', fontStyle: 'italic' }}>← Scan a post first to add directly</span>}
       {typeof schemaImpl[key] === 'string' && schemaImpl[key].startsWith('error:') && (
         <span style={{ fontSize: 11, color: '#f87171' }}>{schemaImpl[key].slice(7)}</span>
       )}
@@ -2303,7 +2325,7 @@ export default function BlogSEO() {
       setRewriteErr(e.message || "Network error — please try again.");
     }
     setRewriteLoading(false);
-  }, [scanResult, kwInput]);
+  }, [scanResult, kwInput, shopifyArticles, selectedArticleId]);
 
   /* -- PDF REPORT --------------------------------------------------------- */
   const downloadPdfReport = useCallback(() => {
@@ -2752,9 +2774,9 @@ export default function BlogSEO() {
                           <div style={{ ...S.cardTitle, marginBottom: 4 }}>✅ AI Suggestions</div>
                           {rewriteField === 'headings'
                             ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Each option is a full H2 structure for your post. Copy one and paste the headings into your Shopify post editor.</div>
-                            : selectedArticleId
-                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>{rewriteField === 'handle' ? 'Apply URL Slug' : 'Apply to Shopify'}</strong> to update the {rewriteField === 'handle' ? 'URL slug' : rewriteField === 'metaDescription' ? 'meta description' : rewriteField || 'field'} automatically, or copy it manually.</div>
-                            : <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>No article selected — copy a suggestion and paste it into Shopify, or select an article above to apply directly.</div>}
+                            : scannedArticleId
+                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>{rewriteField === 'handle' ? '🔗 Apply URL Slug' : '🚀 Apply to Shopify'}</strong> to update the {rewriteField === 'handle' ? 'URL slug' : rewriteField === 'metaDescription' ? 'meta description' : rewriteField || 'field'} automatically, or copy it manually.</div>
+                            : <div style={{ fontSize: 12, color: "#fbbf24", marginBottom: 12 }}>⚠️ No article linked — select your post from the dropdown above and rescan to enable one-click updates.</div>}
                           {(rewriteResult.variants || []).map((v, i) => (
                             <div key={i} style={{ padding: "10px 0", borderBottom: i < (rewriteResult.variants.length - 1) ? "1px solid #27272a" : "none" }}>
                               {rewriteField === 'headings'
@@ -2767,7 +2789,7 @@ export default function BlogSEO() {
                                 : <div style={{ fontSize: 13, color: "#e0e7ff", marginBottom: 8 }}>{v.text}</div>}
                               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                                 <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
-                                {selectedArticleId && rewriteField !== 'headings' && (
+                                {scannedArticleId && rewriteField !== 'headings' && (
                                   <button
                                     style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 12px" }}
                                     disabled={applyResult[i] === "loading"}
@@ -3263,16 +3285,16 @@ export default function BlogSEO() {
                         </div>
                         <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
                           <button style={{ ...S.btn("ghost"), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
-                          {selectedArticleId
+                          {scannedArticleId && rewriteField !== 'headings'
                             ? <button
                                 style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 10px" }}
                                 disabled={applyResult[i] === "loading"}
                                 onClick={() => applyRewrite(v.text, rewriteField, i)}>
                                 {applyResult[i] === "loading" ? <><span style={S.spinner}/> Applying...</>
                                   : applyResult[i] === "ok" ? "✅ Applied!"
-                                  : "Apply to Post"}
+                                  : "🚀 Apply to Post"}
                               </button>
-                            : <span style={{ fontSize: 11, color: "#52525b", fontStyle: "italic" }}>Select post above to apply</span>}
+                            : <span style={{ fontSize: 11, color: "#52525b", fontStyle: "italic" }}>{scannedArticleId ? null : "Select & scan a post to apply"}</span>}
                           {typeof applyResult[i] === "string" && applyResult[i].startsWith("error:") && (
                             <span style={{ fontSize: 11, color: "#f87171" }}>{applyResult[i].slice(7)}</span>
                           )}
