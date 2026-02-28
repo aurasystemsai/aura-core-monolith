@@ -606,9 +606,17 @@ router.post('/ai/rewrite', async (req, res) => {
     const { field, currentValue, keywords, url } = req.body || {};
     if (!field || !currentValue) return res.status(400).json({ ok: false, error: 'field and currentValue required' });
 
-    const limits = { title: '50-60 characters', metaDescription: '150-160 characters', h1: '20-70 characters' };
-    const systemPrompt = `You are an SEO copywriter for e-commerce blogs. Generate 5 optimized variants for the blog post's ${field}. Each variant should be ${limits[field] || 'concise'}, include the target keyword naturally, and be compelling for CTR. Return JSON with: { field: string, variants: [{ text: string, charCount: number, keywordPresent: boolean, ctaStrength: string }] }`;
-    const userPrompt = `Current ${field}: "${currentValue}"\nKeywords: ${keywords || 'none'}\nURL: ${url || 'N/A'}\n\nGenerate 5 SEO-optimized variants.`;
+    const limits = { title: '50-60 characters', metaDescription: '150-160 characters', h1: '20-70 characters', handle: 'URL slug: all-lowercase with hyphens, max 60 chars, no stop words', headings: '5-8 words each, H2 heading format' };
+    const isHandle = field === 'handle';
+    const isHeadings = field === 'headings';
+    const systemPrompt = isHandle
+      ? `You are an SEO specialist. Generate 5 URL slug variants for a Shopify blog post. Each must be lowercase, hyphens only, 30-60 chars, contain the target keyword, no stop words. Return JSON: { field: "handle", variants: [{ text: string, charCount: number, keywordPresent: boolean, ctaStrength: string }] }`
+      : isHeadings
+      ? `You are an SEO content strategist. Generate 5 H2 subheading structures (4-6 H2s each) for a blog post. Each structure should cover different angles of the topic and include keyword variations. Return JSON: { field: "headings", variants: [{ text: string, charCount: number, keywordPresent: boolean, ctaStrength: string }] } where text is a comma-separated list of H2 headings.`
+      : `You are an SEO copywriter for e-commerce blogs. Generate 5 optimized variants for the blog post's ${field}. Each variant should be ${limits[field] || 'concise'}, include the target keyword naturally, and be compelling for CTR. Return JSON with: { field: string, variants: [{ text: string, charCount: number, keywordPresent: boolean, ctaStrength: string }] }`;
+    const userPrompt = isHeadings
+      ? `Blog title: "${currentValue}"\nKeywords: ${keywords || 'none'}\n\nGenerate 5 sets of H2 subheadings (4-6 H2s per set) covering the full topic structure. Each set's "text" field should list the H2s separated by " | "."`
+      : `Current ${field}: "${currentValue}"\nKeywords: ${keywords || 'none'}\nURL: ${url || 'N/A'}\n\nGenerate 5 SEO-optimized variants.`;
 
     const completion = await getOpenAI().chat.completions.create({
       model: req.body.model || 'gpt-4o-mini',
@@ -8018,6 +8026,16 @@ router.post('/apply-field', async (req, res) => {
       });
       if (!r.ok) throw new Error(`Shopify update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
       return res.json({ ok: true, message: 'Title updated on post' });
+    }
+    if (field === 'handle') {
+      // Sanitise to valid Shopify handle: lowercase, hyphens, no special chars
+      const sanitised = value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const r = await fetch(`${articleBase}.json`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ article: { id: articleId, handle: sanitised } }),
+      });
+      if (!r.ok) throw new Error(`Shopify handle update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'URL slug updated on post', handle: sanitised });
     }
     if (field === 'metaDescription') {
       // Update SEO meta description via metafields

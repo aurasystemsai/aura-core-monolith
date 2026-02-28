@@ -961,7 +961,8 @@ export default function BlogSEO() {
       });
       if (r.ok) {
         // Mirror the change locally so the page reflects the new value immediately
-        setScanResult(prev => prev ? { ...prev, [field === 'h1' ? 'h1' : field]: value } : prev);
+        const scanKey = field === 'handle' ? 'handle' : field === 'h1' ? 'h1' : field;
+        setScanResult(prev => prev ? { ...prev, [scanKey]: r.handle || value } : prev);
       }
       setApplyResult(p => ({ ...p, [idx]: r.ok ? 'ok' : `error: ${r.error || 'Failed'}` }));
     } catch (e) {
@@ -2278,9 +2279,18 @@ export default function BlogSEO() {
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
-    setRewriteField(field); setRewriteLoading(true); setRewriteResult(null); setRewriteErr(null);
+    setRewriteField(field); setRewriteLoading(true); setRewriteResult(null); setRewriteErr(null); setApplyResult({});
     try {
-      const currentValue = field === "title" ? scanResult.title : field === "metaDescription" ? scanResult.metaDescription : scanResult.h1;
+      let currentValue;
+      if (field === "title") currentValue = scanResult.title;
+      else if (field === "metaDescription") currentValue = scanResult.metaDescription;
+      else if (field === "h1") currentValue = scanResult.h1;
+      else if (field === "handle") {
+        const art = shopifyArticles.find(a => String(a.id) === String(selectedArticleId));
+        currentValue = art?.handle || scanResult.url?.split('/').filter(Boolean).pop() || '(generate from title)';
+      } else if (field === "headings") {
+        currentValue = scanResult.title || '(no title)';
+      } else currentValue = scanResult.title;
       const r = await apiFetchJSON(`${API}/ai/rewrite`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ field, currentValue: currentValue || `(none — generate a ${field} from scratch)`, keywords: kwInput, url: scanResult.url }) });
       if (r.ok) {
         const parsed = r.structured || (r.suggestions ? (() => { try { return JSON.parse(r.suggestions); } catch { return null; } })() : null);
@@ -2519,6 +2529,14 @@ export default function BlogSEO() {
       return { hint: 'Reduce exact keyword repeats. Use natural synonyms and related phrases. Aim for 1-2% keyword density — use the Keywords tool to check.', label: '\U0001f3af Find Keywords', action: () => { if (simpleMode) setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
     if (m.includes('keyword') && (m.includes('missing') || m.includes('not found') || m.includes('absent')))
       return { hint: 'Include your target keyword in the first paragraph and at least 2-3 more times naturally throughout the post.', label: '\U0001f3af Keywords', action: () => { if (simpleMode) setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
+    if (m.includes('keyword') && (m.includes('url') || m.includes('slug') || m.includes('handle')))
+      return { hint: 'The URL slug should contain your primary keyword. AI will generate clean keyword-rich slugs you can apply directly to Shopify with one click.', label: '\U0001f517 Fix URL Slug', action: () => runRewrite('handle') };
+    if ((m.includes('h2') || m.includes('subheading') || m.includes('sub-heading') || m.includes('subhead')) && (m.includes('no ') || m.includes('missing') || m.includes('lack') || m.includes('needs') || m.includes('structure') || m.includes('clear')))
+      return { hint: 'H2 headings break up your post and signal topic structure to Google. AI will suggest 4-6 H2s you can paste into your post editor.', label: '\u270d\ufe0f Suggest H2s', action: () => runRewrite('headings') };
+    if (m.includes('faq') || (m.includes('question') && m.includes('answer')))
+      return { hint: 'Adding an FAQ section helps target voice search and question-based queries. Expand with the AI Optimize tools.', label: '\u26a1 Optimize Content', action: () => { if (simpleMode) setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+    if (m.includes('reading') || m.includes('readability') || m.includes('flesch'))
+      return { hint: 'Aim for a reading level accessible to your audience. Use shorter sentences, simpler words, and active voice.', label: '\u26a1 Optimize Content', action: () => { if (simpleMode) setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
     return null;
   };
 
@@ -2732,22 +2750,31 @@ export default function BlogSEO() {
                       {rewriteResult && !rewriteLoading && (
                         <div style={{ ...S.card, marginTop: 10 }}>
                           <div style={{ ...S.cardTitle, marginBottom: 4 }}>✅ AI Suggestions</div>
-                          {selectedArticleId
-                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>Apply to Shopify</strong> to update the post title automatically, or copy it manually.</div>
+                          {rewriteField === 'headings'
+                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Each option is a full H2 structure for your post. Copy one and paste the headings into your Shopify post editor.</div>
+                            : selectedArticleId
+                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>{rewriteField === 'handle' ? 'Apply URL Slug' : 'Apply to Shopify'}</strong> to update the {rewriteField === 'handle' ? 'URL slug' : rewriteField === 'metaDescription' ? 'meta description' : rewriteField || 'field'} automatically, or copy it manually.</div>
                             : <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>No article selected — copy a suggestion and paste it into Shopify, or select an article above to apply directly.</div>}
                           {(rewriteResult.variants || []).map((v, i) => (
                             <div key={i} style={{ padding: "10px 0", borderBottom: i < (rewriteResult.variants.length - 1) ? "1px solid #27272a" : "none" }}>
-                              <div style={{ fontSize: 13, color: "#e0e7ff", marginBottom: 8 }}>{v.text}</div>
+                              {rewriteField === 'headings'
+                                ? <div style={{ marginBottom: 8 }}>
+                                    {v.text.split(/\s*\|\s*/).map((h, hi) => (
+                                      <div key={hi} style={{ fontSize: 13, color: "#e0e7ff", padding: "2px 0" }}>
+                                        <span style={{ color: "#4f46e5", fontWeight: 700, fontSize: 11, marginRight: 6 }}>H2</span>{h}
+                                      </div>))}
+                                  </div>
+                                : <div style={{ fontSize: 13, color: "#e0e7ff", marginBottom: 8 }}>{v.text}</div>}
                               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                                 <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
-                                {selectedArticleId && (
+                                {selectedArticleId && rewriteField !== 'headings' && (
                                   <button
                                     style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 12px" }}
                                     disabled={applyResult[i] === "loading"}
                                     onClick={() => applyRewrite(v.text, rewriteField || 'title', i)}>
                                     {applyResult[i] === "loading" ? <><span style={S.spinner} /> Applying…</>
                                       : applyResult[i] === "ok" ? "✅ Applied!"
-                                      : "🚀 Apply to Shopify"}
+                                      : rewriteField === 'handle' ? "🔗 Apply URL Slug" : "🚀 Apply to Shopify"}
                                   </button>)}
                                 {typeof applyResult[i] === "string" && applyResult[i].startsWith("error:") && (
                                   <span style={{ fontSize: 11, color: "#f87171" }}>{applyResult[i].slice(7)}</span>)}
