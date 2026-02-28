@@ -263,6 +263,7 @@ function App() {
   function setActiveSection(section, url) {
     if (url) setToolInitUrl(url);
     if (!canUseTool(plan, section)) {
+      navModeRef.current = 'gate'; // mark so history skips recording this redirect
       setActiveSectionRaw('settings');
       return;
     }
@@ -320,9 +321,13 @@ function App() {
   };
   // Track section transitions for an in-app back action
   useEffect(() => {
-    if (navModeRef.current === 'back') {
+    if (navModeRef.current === 'back' || navModeRef.current === 'gate') {
       navModeRef.current = null;
-    } else if (prevSectionRef.current && prevSectionRef.current !== activeSection) {
+      prevSectionRef.current = activeSection;
+      return;
+    }
+    if (prevSectionRef.current && prevSectionRef.current !== activeSection) {
+      // Never record 'settings' caused by a gate redirect — only genuine navigation
       setSectionHistory(prev => [...prev.slice(-9), prevSectionRef.current]);
     }
     prevSectionRef.current = activeSection;
@@ -404,7 +409,8 @@ function App() {
         }
         const last = prev[prev.length - 1];
         navModeRef.current = 'back';
-        setActiveSection(last);
+        // Use setActiveSectionRaw — bypass plan gate since user was genuinely there before
+        setActiveSectionRaw(last);
         return prev.slice(0, -1);
       });
     };
