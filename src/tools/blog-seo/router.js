@@ -8079,6 +8079,61 @@ router.post('/apply-field', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+/* ── Publish article to Shopify as draft ───────────────────────────────── */
+router.post('/shopify/publish-article', async (req, res) => {
+  try {
+    const shopTokens = require('../../core/shopTokens');
+    const { title, bodyHtml, metaDescription, tags, asDraft = true } = req.body;
+    if (!title || !bodyHtml) return res.status(400).json({ ok: false, error: 'title and bodyHtml required' });
+
+    let shop = req.session?.shop
+      || req.headers['x-shopify-shop-domain']
+      || (shopTokens.loadAll ? (() => { const all = shopTokens.loadAll(); const keys = Object.keys(all || {}); return keys.length === 1 ? keys[0] : null; })() : null)
+      || process.env.SHOPIFY_STORE_URL || null;
+    if (!shop) return res.status(400).json({ ok: false, error: 'No Shopify store connected' });
+
+    const token = shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null);
+    if (!token) return res.status(400).json({ ok: false, error: 'No Shopify token — reconnect your store in Settings' });
+
+    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+    // Get first blog
+    const blogsRes = await fetch(`https://${shop}/admin/api/${ver}/blogs.json?limit=1`, { headers });
+    if (!blogsRes.ok) throw new Error(`Could not fetch Shopify blogs: ${blogsRes.status}`);
+    const blogsJson = await blogsRes.json();
+    const blog = (blogsJson.blogs || [])[0];
+    if (!blog) return res.status(400).json({ ok: false, error: 'No blog found in your Shopify store. Create a blog first.' });
+
+    const articleBody = {
+      article: {
+        title,
+        body_html: bodyHtml,
+        ...(metaDescription ? { summary_html: `<p>${metaDescription}</p>` } : {}),
+        ...(tags ? { tags } : {}),
+        published: !asDraft,
+      }
+    };
+
+    const artRes = await fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles.json`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(articleBody),
+    });
+    if (!artRes.ok) {
+      const errBody = await artRes.text();
+      throw new Error(`Shopify article create failed (${artRes.status}): ${errBody.slice(0, 200)}`);
+    }
+    const artJson = await artRes.json();
+    const article = artJson.article;
+    const articleUrl = `https://admin.shopify.com/store/${shop.replace('.myshopify.com', '')}/blogs/${blog.id}/articles/${article.id}`;
+    res.json({ ok: true, articleId: article.id, articleUrl, blogId: blog.id, blogHandle: blog.handle, handle: article.handle });
+  } catch (err) {
+    console.error('[blog-seo] /shopify/publish-article error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Site Architecture Analyser
 router.post('/site-architecture', async (req, res) => {
   try {

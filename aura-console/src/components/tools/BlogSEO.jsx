@@ -191,6 +191,8 @@ export default function BlogSEO() {
   const [simpleTopicsLoading, setSimpleTopicsLoading] = useState(false);
   const [simpleDraftLoading, setSimpleDraftLoading] = useState(false); // full post generation in simple mode
   const [simpleDraftResult, setSimpleDraftResult] = useState(null);
+  const [simpleInjectLoading, setSimpleInjectLoading] = useState(false);
+  const [simpleInjectResult, setSimpleInjectResult] = useState(null); // { ok, articleUrl } | { ok:false, error }
 
   /* -- Toast notification state -- */
   const [errToast, setErrToast] = useState(null);
@@ -2478,7 +2480,7 @@ export default function BlogSEO() {
     if (m.includes('h1') && m.includes('align'))
       return { hint: 'Your title tag and H1 should share key terms. Edit one to match the other — Google uses both to understand your topic.', label: '\u270d\ufe0f Align H1 & Title', action: () => runRewrite('h1') };
     if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin') || m.includes('only') || m.includes('minimum') || m.includes('should be'))))
-      return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,6)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
+      return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,3)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
     if (m.includes('author'))
       return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: '\u2699\ufe0f Add Author', action: () => { if (simpleMode) setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
     if (m.includes('date') || m.includes('freshness') || m.includes('publish') || m.includes('modified'))
@@ -2615,7 +2617,7 @@ export default function BlogSEO() {
                     const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce');
                     const resp = await apiFetch(`${API}/ai/topic-miner`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ niche, targetAudience: 'online shoppers' }) });
                     const d = await resp.json();
-                    if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0, 6));
+                    if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0, 3));
                     else setSimpleTopics([]);
                   } catch { setSimpleTopics([]); }
                   setSimpleTopicsLoading(false);
@@ -2766,6 +2768,26 @@ export default function BlogSEO() {
                           {t.opportunityScore && <div style={{ fontSize: 11, color: "#52525b", marginTop: 2 }}>Opportunity: {t.opportunityScore}/100</div>}
                         </div>))}
                     </div>
+                    <button
+                      style={{ marginTop: 10, background: 'none', border: '1px solid #3f3f46', borderRadius: 8, color: '#a1a1aa', fontSize: 12, padding: '6px 14px', cursor: 'pointer' }}
+                      disabled={simpleTopicsLoading}
+                      onClick={() => {
+                        setSimpleTopics(null);
+                        setSimpleTopicsLoading(true);
+                        setBlogOutlineKw('');
+                        (async () => {
+                          try {
+                            const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce');
+                            const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) });
+                            const d = await resp.json();
+                            if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0, 3));
+                            else setSimpleTopics([]);
+                          } catch { setSimpleTopics([]); }
+                          setSimpleTopicsLoading(false);
+                        })();
+                      }}>
+                      {simpleTopicsLoading ? '⏳ Finding ideas…' : '🔄 Refresh ideas'}
+                    </button>
                   </div>)}
 
                 <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 14, padding: "24px", marginBottom: blogOutlineResult ? 16 : 0 }}>
@@ -2811,11 +2833,36 @@ export default function BlogSEO() {
                           <div style={{ color: "#f87171", fontSize: 13 }}>Error: {simpleDraftResult.error}</div>
                         ) : (
                           <>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-                              <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>📄 Your full post is ready!</div>
-                              <button style={{ ...S.btn('primary'), fontSize: 13, padding: "8px 16px" }} onClick={() => { const text = (simpleDraftResult.title ? '# ' + simpleDraftResult.title + '\n\n' : '') + (simpleDraftResult.fullArticle || simpleDraftResult.content || simpleDraftResult.body || ''); navigator.clipboard.writeText(text); }}>📋 Copy Full Post</button>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 12 }}>📄 Your full post is ready!</div>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+                              <button style={{ ...S.btn('primary'), fontSize: 13, padding: "8px 16px" }} disabled={simpleInjectLoading} onClick={async () => {
+                                setSimpleInjectLoading(true); setSimpleInjectResult(null);
+                                try {
+                                  const bodyHtml = (simpleDraftResult.fullArticle || '').split('\n').map(l => l.trim() ? `<p>${l}</p>` : '').join('');
+                                  const r = await apiFetch(`${API}/shopify/publish-article`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: simpleDraftResult.title || blogOutlineResult?.title, bodyHtml, metaDescription: simpleDraftResult.metaDescription || '', tags: blogOutlineKw, asDraft: true, shop: shopDomain }) });
+                                  const d = await r.json();
+                                  setSimpleInjectResult(d);
+                                } catch(e) { setSimpleInjectResult({ ok: false, error: e.message }); }
+                                setSimpleInjectLoading(false);
+                              }}>{simpleInjectLoading ? <><span style={S.spinner} /> Injecting…</> : '🚀 Save to Shopify (draft)'}</button>
+                              <button style={{ ...S.btn(), fontSize: 13, padding: "8px 16px" }} onClick={() => {
+                                setSimpleDraftResult(null); setSimpleInjectResult(null);
+                                // re-trigger write
+                                setSimpleDraftLoading(true);
+                                (async () => {
+                                  try {
+                                    const r2 = await apiFetch(`${API}/ai/full-blog-writer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: blogOutlineResult?.title, keyword: blogOutlineKw, outline: (blogOutlineResult?.sections||[]).map(s=>s.heading), niche: shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : 'e-commerce', shop: shopDomain }) });
+                                    const d2 = await r2.json(); setSimpleDraftResult(d2);
+                                  } catch(e) { setSimpleDraftResult({ ok: false, error: e.message }); }
+                                  setSimpleDraftLoading(false);
+                                })();
+                              }}>🔄 Rewrite</button>
+                              <button style={{ ...S.btn(), fontSize: 13, padding: "8px 16px" }} onClick={() => { const text = (simpleDraftResult.title ? '# ' + simpleDraftResult.title + '\n\n' : '') + (simpleDraftResult.fullArticle || simpleDraftResult.content || simpleDraftResult.body || ''); navigator.clipboard.writeText(text); }}>📋 Copy</button>
                             </div>
-                            <div style={{ fontSize: 13, color: "#71717a", marginBottom: 10 }}>Copy the post above and paste it into your Shopify blog editor.</div>
+                            {simpleInjectResult && (
+                              <div style={{ marginBottom: 10, padding: '10px 14px', borderRadius: 8, background: simpleInjectResult.ok ? '#0c1a0c' : '#1c0a0a', border: `1px solid ${simpleInjectResult.ok ? '#14532d' : '#7f1d1d'}`, fontSize: 13, color: simpleInjectResult.ok ? '#86efac' : '#f87171' }}>
+                                {simpleInjectResult.ok ? (<>✅ Saved as draft! <a href={simpleInjectResult.articleUrl} target="_blank" rel="noreferrer" style={{ color: '#6ee7b7', marginLeft: 8 }}>View in Shopify →</a></>) : `❌ ${simpleInjectResult.error}`}
+                              </div>)}
                             <div style={{ maxHeight: 380, overflowY: "auto", fontSize: 13, color: "#d4d4d8", lineHeight: 1.7, whiteSpace: "pre-wrap", background: "#18181b", borderRadius: 8, padding: "14px 16px" }}>{simpleDraftResult.fullArticle || simpleDraftResult.content || simpleDraftResult.body || JSON.stringify(simpleDraftResult, null, 2)}</div>
                           </>
                         )}
