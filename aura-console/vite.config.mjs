@@ -5,10 +5,12 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig({
   plugins: [react(), visualizer({ filename: "stats.html", open: false })],
+  resolve: {
+    mainFields: ['browser', 'module', 'main'],
+  },
   optimizeDeps: {
     include: [
       '@mui/material',
-      '@mui/icons-material',
       '@mui/system',
       '@emotion/react',
       '@emotion/styled',
@@ -16,9 +18,15 @@ export default defineConfig({
       'react',
       'react-dom',
     ],
+    esbuildOptions: {
+      mainFields: ['browser', 'module', 'main'],
+    },
   },
   server: {
     port: 5173,
+    proxy: {
+      '/api': 'http://localhost:10000',
+    },
   },
   build: {
     outDir: "dist",
@@ -26,7 +34,6 @@ export default defineConfig({
     rollupOptions: {
       output: {},
     },
-    // Higher limit; remaining large chunk is components-heavy and will need route-level lazy loading to shrink further
     chunkSizeWarningLimit: 2000,
   },
 });
