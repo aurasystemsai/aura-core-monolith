@@ -254,40 +254,108 @@ function App() {
         fetchProject();
       }, []);
     // Debug banner removed
-  // Main navigation state
+  // ── Navigation state ──────────────────────────────────────────────────────
   const [activeSection, setActiveSectionRaw] = useState('dashboard');
+  const [sectionHistory, setSectionHistory] = useState([]);
+  const sectionHistoryRef = React.useRef([]);
   const { plan, planLoading } = usePlan();
   const [toolInitUrl, setToolInitUrl] = useState(null);
+  const planLoadedRef = React.useRef(false);
+  const isPushingFromPopstate = React.useRef(false);
 
-  // Gate navigation — locked tools redirect to Settings
-  // Skip gating while plan is still loading (it defaults to 'free' which would wrongly block everything)
-  function setActiveSection(section, url) {
+  // Keep sectionHistoryRef in sync (for use inside event listeners)
+  useEffect(() => { sectionHistoryRef.current = sectionHistory; }, [sectionHistory]);
+
+  // Core navigate — pushes current page to history then goes to new page
+  // This is the ONLY place that should call setActiveSectionRaw for forward navigation
+  function navigateTo(section, url, opts = {}) {
     if (url) setToolInitUrl(url);
+    // Skip plan gate while plan is loading to avoid false redirects
     if (!planLoading && !canUseTool(plan, section)) {
-      navModeRef.current = 'gate'; // mark so history skips recording this redirect
-      setActiveSectionRaw('settings');
+      // Silently ignore gated nav — don't change page, don't touch history
       return;
     }
+    setSectionHistory(prev => {
+      const next = [...prev.slice(-14), activeSection].filter(
+        (s, i, arr) => s && s !== section && arr.indexOf(s) === i // dedup
+      ).slice(-14);
+      sectionHistoryRef.current = next;
+      return next;
+    });
     setActiveSectionRaw(section);
+    if (!opts.noHistory && !isPushingFromPopstate.current) {
+      window.history?.pushState({ section }, '');
+    }
   }
 
-  // Once real plan loads, re-check the current section — only gate if still not allowed
-  const planLoadedRef = React.useRef(false);
+  // Go back one step
+  function navigateBack() {
+    const hist = sectionHistoryRef.current;
+    if (!hist.length) {
+      setActiveSectionRaw('dashboard');
+      return;
+    }
+    const last = hist[hist.length - 1];
+    const next = hist.slice(0, -1);
+    setSectionHistory(next);
+    sectionHistoryRef.current = next;
+    setActiveSectionRaw(last);
+    window.history?.pushState({ section: last }, '');
+  }
+
+  // On first real plan load, kick any tools the user actually can't use
   useEffect(() => {
     if (!planLoading && !planLoadedRef.current) {
       planLoadedRef.current = true;
       if (!canUseTool(plan, activeSection)) {
-        navModeRef.current = 'gate';
-        setActiveSectionRaw('settings');
+        // User is on a section they can't access — silently go to dashboard
+        setSectionHistory([]);
+        setActiveSectionRaw('dashboard');
       }
     }
   }, [planLoading]); // eslint-disable-line
 
-  const [sectionHistory, setSectionHistory] = useState([]);
-  const sectionHistoryRef = React.useRef([]);
-  const navModeRef = React.useRef(null);
-  const prevSectionRef = React.useRef(null);
-  const lastPushedSectionRef = React.useRef(null);
+  // Browser back/forward (popstate) — only fires from actual browser nav
+  useEffect(() => {
+    window.history?.replaceState({ section: activeSection }, '');
+    const onPop = (e) => {
+      const dest = e.state?.section || 'dashboard';
+      isPushingFromPopstate.current = true;
+      const hist = sectionHistoryRef.current;
+      if (hist.length && hist[hist.length - 1] === dest) {
+        // Going back in our own history
+        const next = hist.slice(0, -1);
+        setSectionHistory(next);
+        sectionHistoryRef.current = next;
+        setActiveSectionRaw(dest);
+      } else {
+        setActiveSectionRaw(dest);
+      }
+      setTimeout(() => { isPushingFromPopstate.current = false; }, 0);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []); // eslint-disable-line
+
+  // Expose globals used by BackButton + tool internals
+  useEffect(() => {
+    window.__AURA_SECTION_BACK = navigateBack;
+    window.__AURA_TO_SUITE = (groupId) => {
+      try {
+        const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || '{}') || {};
+        localStorage.setItem(MAIN_SUITE_PREF_KEY, JSON.stringify({ ...prefs, activeGroup: groupId || prefs.activeGroup }));
+      } catch (_) {}
+      navigateTo('main-suite');
+    };
+    return () => { delete window.__AURA_SECTION_BACK; delete window.__AURA_TO_SUITE; };
+  }); // runs every render so navigateBack/navigateTo closures stay fresh
+
+  // setActiveSection is the public API for sidebar + other components
+  function setActiveSection(section, url) {
+    navigateTo(section, url);
+  }
+
+
   // Project state (simulate or fetch as needed)
   const [project, setProject] = useState(null);
   // Core API URL (simulate or fetch as needed)
@@ -318,116 +386,6 @@ function App() {
     if (alreadyHandled) {
       setTimeout(() => sessionStorage.removeItem('billingSuccessHandled'), 10000);
     }
-  }, []);
-
-  const navigateToMainSuite = (targetGroupId) => {
-    try {
-      const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || "{}") || {};
-      localStorage.setItem(
-        MAIN_SUITE_PREF_KEY,
-        JSON.stringify({ ...prefs, activeGroup: targetGroupId || prefs.activeGroup })
-      );
-    } catch (e) {
-      // ignore prefs errors
-    }
-    setActiveSection('main-suite');
-  };
-  // Track section transitions for an in-app back action
-  useEffect(() => {
-    if (navModeRef.current === 'back' || navModeRef.current === 'gate') {
-      navModeRef.current = null;
-      prevSectionRef.current = activeSection;
-      return;
-    }
-    if (prevSectionRef.current && prevSectionRef.current !== activeSection) {
-      // Never record 'settings' caused by a gate redirect — only genuine navigation
-      setSectionHistory(prev => [...prev.slice(-9), prevSectionRef.current]);
-    }
-    prevSectionRef.current = activeSection;
-  }, [activeSection]);
-
-  useEffect(() => {
-    sectionHistoryRef.current = sectionHistory;
-  }, [sectionHistory]);
-
-  // Keep browser history in sync so browser back stays inside the app
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.history?.pushState) return;
-    const state = { section: activeSection };
-    if (lastPushedSectionRef.current === null) {
-      window.history.replaceState(state, "");
-    } else if (navModeRef.current !== 'popstate') {
-      window.history.pushState(state, "");
-    }
-    lastPushedSectionRef.current = activeSection;
-    if (navModeRef.current === 'popstate') navModeRef.current = null;
-  }, [activeSection]);
-
-  useEffect(() => {
-    const onPopState = (e) => {
-      if (e.state && e.state.section) {
-        navModeRef.current = 'popstate';
-        setActiveSection(e.state.section);
-        return;
-      }
-      const historyStack = sectionHistoryRef.current;
-      if (historyStack.length) {
-        const last = historyStack[historyStack.length - 1];
-        navModeRef.current = 'popstate';
-        setSectionHistory(historyStack.slice(0, -1));
-        setActiveSection(last);
-        return;
-      }
-      // fallback to dashboard without leaving the embedded app
-      navModeRef.current = 'popstate';
-      setActiveSection('dashboard');
-      if (typeof window !== 'undefined' && window.history?.replaceState) {
-        window.history.replaceState({ section: 'dashboard' }, "");
-      }
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  // Provide a global helper for tool back buttons to jump to Main Suite
-  useEffect(() => {
-    window.__AURA_TO_SUITE = (targetGroupId) => {
-      try {
-        const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || "{}") || {};
-        localStorage.setItem(
-          MAIN_SUITE_PREF_KEY,
-          JSON.stringify({ ...prefs, activeGroup: targetGroupId || prefs.activeGroup })
-        );
-      } catch (e) {
-        // ignore prefs errors
-      }
-      navModeRef.current = 'suite';
-      setSectionHistory([]);
-      setActiveSection('main-suite');
-      if (typeof window !== 'undefined' && window.history?.replaceState) {
-        window.history.replaceState({ section: 'main-suite' }, "");
-      }
-    };
-    return () => { delete window.__AURA_TO_SUITE; };
-  }, []);
-
-  useEffect(() => {
-    window.__AURA_SECTION_BACK = () => {
-      setSectionHistory(prev => {
-        if (!prev.length) {
-          // No history: go to dashboard (safe in Shopify iframe — don't call history.back())
-          navModeRef.current = 'back';
-          setActiveSectionRaw('dashboard');
-          return prev;
-        }
-        const last = prev[prev.length - 1];
-        navModeRef.current = 'back';
-        // Use setActiveSectionRaw — bypass plan gate since user was genuinely there before
-        setActiveSectionRaw(last);
-        return prev.slice(0, -1);
-      });
-    };
-    return () => { delete window.__AURA_SECTION_BACK; };
   }, []);
 
   // Mark onboarding as complete
@@ -480,6 +438,8 @@ function App() {
 
   const currentPageLabel = SECTION_LABELS[activeSection] || activeSection;
   const prevPageLabel = sectionHistory.length > 0 ? (SECTION_LABELS[sectionHistory[sectionHistory.length - 1]] || sectionHistory[sectionHistory.length - 1]) : null;
+  // Tell per-tool BackButton components whether the App top bar already shows a back button
+  if (typeof window !== 'undefined') window.__AURA_TOP_BACK_ACTIVE = sectionHistory.length > 0;
 
   return (
     <ErrorBoundary>
