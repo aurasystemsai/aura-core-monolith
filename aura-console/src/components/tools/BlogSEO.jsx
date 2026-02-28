@@ -189,6 +189,8 @@ export default function BlogSEO() {
   const [simpleFlow, setSimpleFlow] = useState(null); // 'fix' | 'write' | null
   const [simpleTopics, setSimpleTopics] = useState(null); // AI topic suggestions
   const [simpleTopicsLoading, setSimpleTopicsLoading] = useState(false);
+  const [simpleDraftLoading, setSimpleDraftLoading] = useState(false); // full post generation in simple mode
+  const [simpleDraftResult, setSimpleDraftResult] = useState(null);
 
   /* -- Toast notification state -- */
   const [errToast, setErrToast] = useState(null);
@@ -2476,7 +2478,7 @@ export default function BlogSEO() {
     if (m.includes('h1') && m.includes('align'))
       return { hint: 'Your title tag and H1 should share key terms. Edit one to match the other — Google uses both to understand your topic.', label: '\u270d\ufe0f Align H1 & Title', action: () => runRewrite('h1') };
     if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin') || m.includes('only') || m.includes('minimum') || m.includes('should be'))))
-      return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,6)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
+      return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,6)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
     if (m.includes('author'))
       return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: '\u2699\ufe0f Add Author', action: () => { if (simpleMode) setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
     if (m.includes('date') || m.includes('freshness') || m.includes('publish') || m.includes('modified'))
@@ -2605,7 +2607,7 @@ export default function BlogSEO() {
                     <div style={{ marginTop: 8, background: "#312e81", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#c7d2fe" }}>Check my post →</div>
                   </div>
                   {/* Write card */}
-                  <div onClick={() => { setSimpleFlow('write'); setBlogOutlineKw(''); setBlogOutlineResult(null); setSimpleTopics(null); setSimpleTopicsLoading(true);
+                  <div onClick={() => { setSimpleFlow('write'); setBlogOutlineKw(''); setBlogOutlineResult(null); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false);
                 // Auto-generate topic suggestions from store context
                 (async () => {
                   try {
@@ -2741,7 +2743,7 @@ export default function BlogSEO() {
             {/* === Step: WRITE flow === */}
             {simpleFlow === 'write' && (
               <>
-                <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setSimpleFlow(null)}>← Back</button>
+                <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => { if (simpleDraftResult) { setSimpleDraftResult(null); } else if (blogOutlineResult) { setBlogOutlineResult(null); } else { setSimpleFlow(null); } }}>← Back</button>
 
                 {/* AI topic suggestions */}
                 {simpleTopicsLoading && (
@@ -2800,9 +2802,25 @@ export default function BlogSEO() {
                         </div>))}
                     </div>
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <button style={{ ...S.btn('primary'), fontSize: 14, padding: "10px 20px" }} onClick={() => { setSimpleMode(false); setSection('Write'); setTab('AI Create'); }}>✍️ Write the full post →</button>
+                      <button style={{ ...S.btn('primary'), fontSize: 14, padding: "10px 20px" }} disabled={simpleDraftLoading} onClick={async () => { setSimpleDraftLoading(true); setSimpleDraftResult(null); try { const r = await apiFetch(`${API}/ai/full-blog-writer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic: blogOutlineKw, shop: shopDomain }) }); const d = await r.json(); setSimpleDraftResult(d); } catch(e) { setSimpleDraftResult({ ok: false, error: e.message }); } setSimpleDraftLoading(false); }}>{simpleDraftLoading ? <><span style={S.spinner} /> Writing your post…</> : '✍️ Write the full post →'}</button>
                       <button style={{ ...S.btn(), fontSize: 13 }} onClick={() => navigator.clipboard.writeText('# ' + blogOutlineResult.title + '\n\n' + (blogOutlineResult.sections || []).map((s, i) => (i+1) + '. ' + s.heading + ' (~' + s.suggestedWordCount + ' words)').join('\n'))}>📋 Copy Outline</button>
                     </div>
+                    {simpleDraftResult && (
+                      <div style={{ marginTop: 16, background: "#09090b", border: "1px solid #27272a", borderRadius: 12, padding: "20px" }}>
+                        {simpleDraftResult.ok === false ? (
+                          <div style={{ color: "#f87171", fontSize: 13 }}>Error: {simpleDraftResult.error}</div>
+                        ) : (
+                          <>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                              <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>📄 Your full post is ready!</div>
+                              <button style={{ ...S.btn('primary'), fontSize: 13, padding: "8px 16px" }} onClick={() => { const text = (simpleDraftResult.title ? '# ' + simpleDraftResult.title + '\n\n' : '') + (simpleDraftResult.content || simpleDraftResult.body || JSON.stringify(simpleDraftResult, null, 2)); navigator.clipboard.writeText(text); }}>📋 Copy Full Post</button>
+                            </div>
+                            <div style={{ fontSize: 13, color: "#71717a", marginBottom: 10 }}>Copy the post above and paste it into your Shopify blog editor.</div>
+                            <div style={{ maxHeight: 380, overflowY: "auto", fontSize: 13, color: "#d4d4d8", lineHeight: 1.7, whiteSpace: "pre-wrap", background: "#18181b", borderRadius: 8, padding: "14px 16px" }}>{simpleDraftResult.content || simpleDraftResult.body || JSON.stringify(simpleDraftResult, null, 2)}</div>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>)}
               </>
             )}
