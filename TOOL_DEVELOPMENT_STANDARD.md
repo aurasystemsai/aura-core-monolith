@@ -30,7 +30,591 @@ Every tool that generates any of the following **must** have a working Apply/Pub
 
 ---
 
-## 2. Backend: Shopify Write Endpoints
+## 2. UI Architecture — Complete Pattern for Every Tool
+
+This entire section defines exactly how every tool UI must be built. Follow it without deviation.
+
+---
+
+### 2a. The `S` Styles Object — Standard Design Tokens
+
+Every tool component defines a single `const S = { ... }` object at the top of the file (outside the component).  
+**Never** use separate CSS files, CSS modules, Tailwind classes, or scattered inline style objects throughout JSX.  
+All styles live in `S`. Reference them as `S.card`, `S.btn('primary')`, etc.
+
+```jsx
+/* -- Dark-theme inline styles -------------------------------------------- */
+const S = {
+  // Page shell
+  page: {
+    minHeight: '100vh',
+    background: '#09090b',
+    color: '#fafafa',
+    fontFamily: "'Inter','Segoe UI',system-ui,sans-serif",
+    padding: '0 0 64px',
+  },
+  topBar: {
+    display: 'flex', alignItems: 'center', gap: 12,
+    padding: '18px 32px 0', flexWrap: 'wrap',
+  },
+  title: { fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px' },
+  badge: {
+    fontSize: 11, fontWeight: 600, padding: '3px 10px',
+    borderRadius: 999, background: '#4f46e5', color: '#fff', marginLeft: 8,
+  },
+  body: { maxWidth: 1100, margin: '0 auto', padding: '0 24px' },
+
+  // Navigation
+  tabs: {
+    display: 'flex', gap: 6, padding: '18px 0 12px',
+    borderBottom: '1px solid #27272a', flexWrap: 'wrap',
+  },
+  tab: (active) => ({
+    padding: '7px 18px', borderRadius: 8, fontSize: 13,
+    fontWeight: active ? 600 : 500, cursor: 'pointer',
+    background: active ? '#4f46e5' : '#18181b',
+    color: active ? '#fff' : '#a1a1aa',
+    border: active ? '1px solid #4f46e5' : '1px solid #27272a',
+    transition: 'all .15s',
+  }),
+
+  // Cards
+  card: {
+    background: '#18181b', border: '1px solid #27272a',
+    borderRadius: 12, padding: 20, marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 15, fontWeight: 700, marginBottom: 12,
+    display: 'flex', alignItems: 'center', gap: 8,
+  },
+  cardDesc: { fontSize: 12, color: '#71717a', marginBottom: 10, marginTop: -6, lineHeight: 1.5 },
+
+  // Layout helpers
+  row: { display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' },
+  section: { marginBottom: 20 },
+  heading: {
+    fontSize: 13, fontWeight: 700, color: '#a1a1aa',
+    textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 10,
+  },
+
+  // Form elements
+  input: {
+    flex: 1, minWidth: 220, padding: '10px 14px', borderRadius: 8,
+    border: '1px solid #3f3f46', background: '#09090b', color: '#fafafa',
+    fontSize: 14, outline: 'none',
+  },
+  textarea: {
+    width: '100%', minHeight: 90, padding: '10px 14px', borderRadius: 8,
+    border: '1px solid #3f3f46', background: '#09090b', color: '#fafafa',
+    fontSize: 14, outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+  },
+  select: {
+    padding: '9px 12px', borderRadius: 8, border: '1px solid #3f3f46',
+    background: '#09090b', color: '#fafafa', fontSize: 13, outline: 'none',
+  },
+
+  // Buttons — call S.btn('primary') / S.btn('danger') / S.btn('success') / S.btn()
+  btn: (variant) => ({
+    padding: '9px 20px', borderRadius: 8, fontSize: 13,
+    fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all .15s',
+    ...(variant === 'primary'
+      ? { background: '#4f46e5', color: '#fff' }
+      : variant === 'danger'
+      ? { background: '#7f1d1d', color: '#fca5a5' }
+      : variant === 'success'
+      ? { background: '#14532d', color: '#86efac' }
+      : { background: '#27272a', color: '#d4d4d8' }),
+  }),
+
+  // Feedback
+  spinner: {
+    display: 'inline-block', width: 18, height: 18,
+    border: '2px solid #3f3f46', borderTop: '2px solid #4f46e5',
+    borderRadius: '50%', animation: 'spin .7s linear infinite',
+  },
+  err: {
+    background: '#450a0a', border: '1px solid #7f1d1d', borderRadius: 10,
+    padding: '14px 18px', color: '#fca5a5', fontSize: 13, marginBottom: 12,
+  },
+  result: {
+    background: '#18181b', border: '1px solid #27272a',
+    borderRadius: 8, padding: '10px 14px', marginTop: 8,
+  },
+  empty: { textAlign: 'center', padding: '48px 20px', color: '#71717a' },
+
+  // Score / grading display
+  scoreRing: (score) => ({
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    width: 64, height: 64, borderRadius: '50%', fontSize: 22, fontWeight: 800,
+    border: `3px solid ${score >= 75 ? '#22c55e' : score >= 50 ? '#eab308' : '#ef4444'}`,
+    color: score >= 75 ? '#22c55e' : score >= 50 ? '#eab308' : '#ef4444',
+  }),
+  grade: (g) => ({
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    width: 38, height: 38, borderRadius: 8, fontSize: 18, fontWeight: 800, marginLeft: 12,
+    background: g === 'A' ? '#14532d' : g === 'B' ? '#422006' : g === 'C' ? '#713f12' : '#7f1d1d',
+    color:      g === 'A' ? '#86efac' : g === 'B' ? '#fbbf24' : g === 'C' ? '#fbbf24' : '#fca5a5',
+  }),
+  pill: (severity) => ({
+    display: 'inline-block', fontSize: 11, fontWeight: 700,
+    padding: '2px 10px', borderRadius: 999, marginRight: 6,
+    background: severity === 'high' ? '#7f1d1d' : severity === 'medium' ? '#713f12' : '#1e3a5f',
+    color:      severity === 'high' ? '#fca5a5' : severity === 'medium' ? '#fbbf24' : '#93c5fd',
+  }),
+  catCard: (score) => ({
+    flex: '1 1 140px', background: '#09090b', border: '1px solid #27272a',
+    borderRadius: 10, padding: '12px 16px', textAlign: 'center',
+    borderTop: `3px solid ${score >= 75 ? '#22c55e' : score >= 50 ? '#eab308' : '#ef4444'}`,
+  }),
+
+  // Tables
+  table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  th: {
+    textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid #27272a',
+    color: '#71717a', fontWeight: 600, fontSize: 11, textTransform: 'uppercase',
+  },
+  td: { padding: '8px 10px', borderBottom: '1px solid #1e1e22', color: '#d4d4d8' },
+
+  // Chat / AI output
+  chatBubble: (isUser) => ({
+    maxWidth: '82%', padding: '10px 16px', borderRadius: 14, fontSize: 14,
+    lineHeight: 1.55, whiteSpace: 'pre-wrap',
+    alignSelf: isUser ? 'flex-end' : 'flex-start',
+    background: isUser ? '#4f46e5' : '#27272a', color: '#fafafa', marginBottom: 8,
+  }),
+
+  // Code blocks
+  fixCode: {
+    background: '#09090b', border: '1px solid #27272a', borderRadius: 8,
+    padding: 12, fontSize: 12, fontFamily: "'Fira Code',monospace",
+    color: '#86efac', whiteSpace: 'pre-wrap', overflowX: 'auto', maxHeight: 220,
+  },
+
+  // Misc
+  link: { color: '#818cf8', textDecoration: 'none', cursor: 'pointer', fontSize: 13 },
+  metaRow:   { display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 10 },
+  metaLabel: { fontSize: 12, color: '#71717a', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.5px' },
+  metaVal:   { fontSize: 14, color: '#d4d4d8', marginTop: 2 },
+
+  // Sidebar layout (for tools with a navigation sidebar)
+  layout:      { display: 'flex', alignItems: 'flex-start', minHeight: 'calc(100vh - 72px)' },
+  sidebar:     { width: 220, flexShrink: 0, borderRight: '1px solid #18181b', paddingTop: 12, paddingBottom: 32, position: 'sticky', top: 0, maxHeight: '100vh', overflowY: 'auto' },
+  sidebarItem: (active) => ({
+    padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+    fontWeight: active ? 600 : 400, background: active ? '#1e1b4b' : 'transparent',
+    color: active ? '#c4b5fd' : '#a1a1aa',
+    borderLeft: active ? '3px solid #818cf8' : '3px solid transparent',
+    marginBottom: 2, transition: 'all .15s', display: 'flex', alignItems: 'center', gap: 10,
+  }),
+  mainContent: { flex: 1, minWidth: 0, padding: '0 28px 64px', maxWidth: 1000 },
+};
+```
+
+**Required** global CSS (include once somewhere, e.g. `index.css` or injected via `<style>` in the component):
+```css
+@keyframes spin { to { transform: rotate(360deg); } }
+```
+
+---
+
+### 2b. Standard Page Shell
+
+Every tool renders exactly this outer structure:
+
+```jsx
+export default function MyTool() {
+  return (
+    <div style={S.page}>
+      {/* 1. Top bar with back button + title */}
+      <div style={S.topBar}>
+        <BackButton />
+        <span style={S.title}>🔧 Tool Name</span>
+        <span style={S.badge}>PLAN</span>
+      </div>
+
+      {/* 2. Constrained body */}
+      <div style={S.body}>
+
+        {/* 3. Tab row (if multi-tab) */}
+        <div style={S.tabs}>
+          {['Tab A', 'Tab B', 'Tab C'].map(t => (
+            <button key={t} style={S.tab(activeTab === t)} onClick={() => setActiveTab(t)}>{t}</button>
+          ))}
+        </div>
+
+        {/* 4. Tab panels */}
+        {activeTab === 'Tab A' && <TabA />}
+        {activeTab === 'Tab B' && <TabB />}
+      </div>
+
+      {/* 5. Toast (if used) — rendered last so it floats above everything */}
+      {errToast && (
+        <div style={{
+          position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+          background: '#18181b', border: '1px solid #3f3f46', borderRadius: 12,
+          padding: '12px 24px', color: '#fca5a5', fontSize: 13,
+          boxShadow: '0 8px 24px #000a', zIndex: 999, whiteSpace: 'nowrap',
+        }}>
+          {errToast}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### 2c. Toast Notification Pattern
+
+Use a toast for any error that doesn't belong inline (global errors, network failures, permission issues).
+
+```jsx
+const [errToast, setErrToast]   = useState(null);
+const toastTimerRef             = useRef(null);
+
+const showToast = useCallback((msg) => {
+  setErrToast(msg);
+  if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  toastTimerRef.current = setTimeout(() => setErrToast(null), 4500);
+}, []);
+```
+
+Call `showToast('Something went wrong')` anywhere in your callbacks.  
+Render the toast at the bottom of the return JSX (see shell above).
+
+---
+
+### 2d. Simple / Expert Mode Toggle
+
+For tools with beginner and advanced workflows, always provide a mode toggle:
+
+```jsx
+const [expertMode, setExpertMode] = useState(false);
+
+// In top bar:
+<button
+  style={{ ...S.btn(expertMode ? 'primary' : undefined), fontSize: 12, padding: '5px 14px' }}
+  onClick={() => setExpertMode(e => !e)}
+>
+  {expertMode ? '⚡ Expert Mode ON' : '⚡ Expert Mode'}
+</button>
+
+// Hide/show sections by mode:
+{/* Always visible: */}
+<div style={S.card}>...</div>
+
+{/* Expert only: */}
+{expertMode && (
+  <div style={S.card}>
+    <div style={S.cardTitle}>🔬 Advanced Settings</div>
+    ...
+  </div>
+)}
+```
+
+**Rule:** Every tool should have at least one "beginner" workflow that is immediately usable without configuration. Expert mode unlocks more controls, not required functionality.
+
+---
+
+### 2e. Standard Card Structure
+
+```jsx
+<div style={S.card}>
+  {/* Title — always has an icon */}
+  <div style={S.cardTitle}>
+    📝 Card Title
+    <span style={{ fontSize: 11, color: '#71717a', fontWeight: 400 }}>optional subtitle</span>
+  </div>
+
+  {/* Description — only if not self-explanatory */}
+  <div style={S.cardDesc}>Brief explanation of what this card does.</div>
+
+  {/* Content */}
+  <div style={S.row}>
+    <input style={S.input} placeholder="Enter value…" value={val} onChange={e => setVal(e.target.value)} />
+    <button style={S.btn('primary')} onClick={handleAction}>✨ AI Generate</button>
+  </div>
+
+  {/* Loading */}
+  {loading && (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#a5b4fc', marginTop: 12 }}>
+      <span style={S.spinner} /> Generating…
+    </div>
+  )}
+
+  {/* Error */}
+  {error && <div style={S.err}>{error}</div>}
+
+  {/* Empty */}
+  {!loading && !error && !result && (
+    <div style={{ ...S.empty, padding: '24px 0' }}>Click Generate to get AI suggestions.</div>
+  )}
+
+  {/* Result */}
+  {result && (
+    <div style={S.result}>
+      {/* ... display result ... */}
+      <button style={{ ...S.btn('primary'), fontSize: 12, marginTop: 10 }} onClick={applyToShopify}>
+        🚀 Apply to Shopify
+      </button>
+    </div>
+  )}
+</div>
+```
+
+---
+
+### 2f. Table Pattern
+
+```jsx
+<table style={S.table}>
+  <thead>
+    <tr>
+      <th style={S.th}>Column A</th>
+      <th style={S.th}>Column B</th>
+      <th style={S.th}>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {items.map(item => (
+      <tr key={item.id}>
+        <td style={S.td}>{item.name}</td>
+        <td style={S.td}>
+          <span style={S.pill(item.severity)}>{item.severity}</span>
+        </td>
+        <td style={S.td}>
+          <button style={{ ...S.btn('primary'), padding: '4px 12px', fontSize: 11 }}>
+            Apply
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+```
+
+---
+
+### 2g. Score Display Pattern
+
+For tools that generate a numeric score (0–100):
+
+```jsx
+{/* Score ring + letter grade side by side */}
+<div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+  <div style={S.scoreRing(score)}>{score}</div>
+  <div style={S.grade(score >= 75 ? 'A' : score >= 50 ? 'B' : score >= 30 ? 'C' : 'D')}>
+    {score >= 75 ? 'A' : score >= 50 ? 'B' : score >= 30 ? 'C' : 'D'}
+  </div>
+  <div>
+    <div style={{ fontWeight: 700 }}>Overall SEO Score</div>
+    <div style={{ fontSize: 12, color: '#71717a' }}>
+      {score >= 75 ? 'Good' : score >= 50 ? 'Needs work' : 'Poor'}
+    </div>
+  </div>
+</div>
+
+{/* Category breakdown row */}
+<div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+  {categories.map(cat => (
+    <div key={cat.label} style={S.catCard(cat.score)}>
+      <div style={{ fontSize: 26, fontWeight: 800, color: cat.score >= 75 ? '#22c55e' : cat.score >= 50 ? '#eab308' : '#ef4444' }}>
+        {cat.score}
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase', marginTop: 2 }}>
+        {cat.label}
+      </div>
+    </div>
+  ))}
+</div>
+```
+
+---
+
+### 2h. Sidebar Layout Pattern
+
+For complex multi-section tools that need a persistent left navigation:
+
+```jsx
+<div style={S.layout}>
+  {/* Left sidebar */}
+  <nav style={S.sidebar}>
+    <div style={{ fontSize: 10, fontWeight: 700, color: '#3f3f46', textTransform: 'uppercase', letterSpacing: 1, padding: '14px 14px 4px' }}>
+      SECTIONS
+    </div>
+    {SECTIONS.map(s => (
+      <div
+        key={s.id}
+        style={S.sidebarItem(activeSection === s.id)}
+        onClick={() => setActiveSection(s.id)}
+      >
+        <span>{s.icon}</span> {s.title}
+      </div>
+    ))}
+  </nav>
+
+  {/* Main content */}
+  <main style={S.mainContent}>
+    {/* render active section */}
+  </main>
+</div>
+```
+
+---
+
+### 2i. AI Output + Apply Panel Pattern
+
+Every section that has AI output must follow this exact structure:
+
+```jsx
+{/* AI action row */}
+<div style={S.row}>
+  <input style={S.input} value={topic} onChange={e => setTopic(e.target.value)} placeholder="Topic or URL…" />
+  <button style={S.btn('primary')} onClick={runAI} disabled={aiLoading}>
+    {aiLoading ? <><span style={S.spinner} /> Generating…</> : '✨ AI Generate'}
+  </button>
+</div>
+
+{/* AI output block */}
+{aiResult && (
+  <div style={{ ...S.result, marginTop: 12 }}>
+    {/* Editable output so user can tweak before applying */}
+    <textarea
+      style={{ ...S.textarea, minHeight: 60 }}
+      value={editedResult}
+      onChange={e => setEditedResult(e.target.value)}
+    />
+
+    {/* Action row: Copy always available, Apply is primary */}
+    <div style={{ ...S.row, marginTop: 8 }}>
+      <button
+        style={{ ...S.btn('primary'), fontSize: 12, padding: '5px 14px' }}
+        disabled={applying}
+        onClick={applyToShopify}
+      >
+        {applying
+          ? <><span style={S.spinner} /> Applying…</>
+          : applyResult === 'ok'
+          ? '✅ Applied!'
+          : '🚀 Apply to Shopify'}
+      </button>
+
+      <button
+        style={{ ...S.btn(), fontSize: 12, padding: '5px 14px' }}
+        onClick={() => navigator.clipboard.writeText(editedResult)}
+      >
+        📋 Copy
+      </button>
+
+      {/* Credits notice */}
+      <span style={{ fontSize: 11, color: '#52525b', marginLeft: 'auto' }}>
+        ✦ 2 credits
+      </span>
+    </div>
+
+    {/* Inline error — only shown on failure */}
+    {typeof applyResult === 'string' && applyResult.startsWith('error:') && (
+      <div style={{ fontSize: 11, color: '#f87171', marginTop: 6 }}>{applyResult.slice(7)}</div>
+    )}
+
+    {/* Warning when apply preconditions aren't met */}
+    {!scannedArticleId && (
+      <div style={{ fontSize: 11, color: '#fbbf24', fontStyle: 'italic', marginTop: 6 }}>
+        ⚠️ Select a post and scan first to enable Apply
+      </div>
+    )}
+  </div>
+)}
+```
+
+---
+
+### 2j. List / Draft Row Pattern
+
+For tools that manage a list of generated items (drafts, posts, campaigns, etc.):
+
+```jsx
+{items.map(item => (
+  <div key={item.id} style={{ ...S.card, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+    {/* Item content */}
+    <div style={{ flex: 1 }}>
+      <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+      <div style={{ fontSize: 12, color: '#71717a', marginBottom: 6 }}>{item.description}</div>
+      {/* Tags */}
+      {item.tags?.map(tag => (
+        <span key={tag} style={{ ...S.pill('low'), marginBottom: 4 }}>{tag}</span>
+      ))}
+    </div>
+
+    {/* Action column */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+      <button
+        style={{
+          ...S.btn(publishResults[item.id] === 'ok' ? 'success' : 'primary'),
+          fontSize: 12, padding: '5px 14px',
+        }}
+        disabled={publishingId === item.id || publishResults[item.id] === 'ok'}
+        onClick={() => publishItem(item)}
+      >
+        {publishingId === item.id
+          ? <><span style={S.spinner} /> Publishing…</>
+          : publishResults[item.id] === 'ok'
+          ? '✅ Published'
+          : '🚀 Publish to Shopify'}
+      </button>
+      <button style={{ ...S.btn(), fontSize: 11, padding: '4px 10px' }} onClick={() => navigator.clipboard.writeText(item.content)}>
+        📋 Copy
+      </button>
+    </div>
+
+    {/* Inline publish error */}
+    {publishResults[item.id]?.startsWith('error:') && (
+      <div style={{ fontSize: 11, color: '#f87171', width: '100%', marginTop: 4 }}>
+        {publishResults[item.id].slice(7)}
+      </div>
+    )}
+  </div>
+))}
+```
+
+---
+
+### 2k. Credits Notice — Show Before Any Paid AI Action
+
+```jsx
+{/* Before the button, show cost prominently */}
+<div style={{ fontSize: 12, color: '#a1a1aa', marginBottom: 8 }}>
+  This action costs <strong style={{ color: '#fbbf24' }}>2 credits</strong>
+  {' '}(you have <strong>{credits}</strong> remaining)
+</div>
+<button style={S.btn('primary')} disabled={credits < 2} onClick={runAI}>
+  ✨ AI Generate
+</button>
+{credits < 2 && (
+  <div style={{ fontSize: 11, color: '#f87171', marginTop: 4 }}>
+    Not enough credits. <a href="#" style={S.link}>Buy more →</a>
+  </div>
+)}
+```
+
+---
+
+### 2l. Standard Imports for Every Tool Component
+
+```jsx
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { apiFetch, apiFetchJSON } from '../../api';
+import BackButton from './BackButton';
+
+const API = '/api/<tool-id>';
+```
+
+Always import `BackButton` — every tool screen has a back button to return to the main menu.
+
+---
+
+## 3. Backend: Shopify Write Endpoints
 
 ### 2a. Use the shared module
 
@@ -48,7 +632,7 @@ const { applyProductFields, publishArticle, applySchemaToEntity } = require('../
 
 For blog article field updates (title, meta, handle, headings on existing articles) use the Blog SEO `/apply-field` pattern which already handles all those cases.
 
-### 2b. Every content tool must have a Shopify write endpoint
+### 3b. Every content tool must have a Shopify write endpoint
 
 Add this to every tool's `router.js` that generates content:
 
@@ -84,7 +668,7 @@ router.post('/shopify/apply', async (req, res) => {
 });
 ```
 
-### 2c. Response format
+### 3c. Response format
 
 All endpoints return:
 ```js
@@ -96,9 +680,9 @@ Never return a 200 with an error inside it unchecked. Frontend must be able to t
 
 ---
 
-## 3. Frontend: Apply Button Pattern
+## 4. Frontend: Apply Button Pattern
 
-### 3a. State — what you always need
+### 4a. State — what you always need
 
 ```jsx
 // For tools applying to an existing entity (article/product already selected):
@@ -110,7 +694,7 @@ const [publishingId, setPublishingId] = useState(null);
 const [publishResults, setPublishResults] = useState({}); // { [itemId]: 'ok' | 'error: msg' }
 ```
 
-### 3b. The Apply function — useCallback with correct deps
+### 4b. The Apply function — useCallback with correct deps
 
 **This is the most important rule.** The bug we fixed repeatedly: `useCallback` with a stale `selectedId` closure.
 
@@ -164,7 +748,7 @@ const applyRewrite = useCallback(async (value, field, idx) => {
 - Never rely on closure over `useState` values without listing them in deps
 - When in doubt: extract what you need into a local `const` at the top of the callback
 
-### 3c. The Apply button — standard render pattern
+### 4c. The Apply button — standard render pattern
 
 ```jsx
 // Single item apply:
@@ -208,7 +792,7 @@ const applyRewrite = useCallback(async (value, field, idx) => {
 )}
 ```
 
-### 3d. Local state mirror after apply
+### 4d. Local state mirror after apply
 
 After a successful apply, mirror the change locally so the UI reflects it immediately without needing a rescan:
 
@@ -222,7 +806,7 @@ if (r.ok && field !== 'headings' && field !== 'body_html') {
 
 ---
 
-## 4. UX States — Required for Every Feature
+## 5. UX States — Required for Every Feature
 
 Every AI action in every tool must handle all five states. No exceptions.
 
@@ -257,7 +841,7 @@ Every AI action in every tool must handle all five states. No exceptions.
 
 ---
 
-## 5. AI-First Architecture
+## 6. AI-First Architecture
 
 Every tool feature must have an AI option. This is non-negotiable product vision.
 
@@ -288,7 +872,7 @@ Every tool feature must have an AI option. This is non-negotiable product vision
 
 ---
 
-## 6. API Calls — Always Use apiFetch
+## 7. API Calls — Always Use apiFetch
 
 **Frontend:** Always use `apiFetch` / `apiFetchJSON` from `aura-console/src/api.js`.
 
@@ -310,7 +894,7 @@ These automatically add:
 
 ---
 
-## 7. Error Handling Rules
+## 8. Error Handling Rules
 
 ### Never do this:
 ```js
@@ -350,7 +934,7 @@ if (!r.ok) {
 
 ---
 
-## 8. Checklist: Adding a New Tool
+## 9. Checklist: Adding a New Tool
 
 Use this every time. Don't ship without checking all boxes.
 
@@ -389,7 +973,7 @@ Use this every time. Don't ship without checking all boxes.
 
 ---
 
-## 9. Checklist: Modifying an Existing Tool
+## 10. Checklist: Modifying an Existing Tool
 
 Before touching any existing tool:
 
@@ -401,7 +985,7 @@ Before touching any existing tool:
 
 ---
 
-## 10. Shopify Admin API Notes
+## 11. Shopify Admin API Notes
 
 - API version: `process.env.SHOPIFY_API_VERSION || '2023-10'` — use the env var, don't hardcode
 - Token: `shopTokens.getToken(shop)` — synchronous, returns `null` if not found
@@ -413,7 +997,7 @@ Before touching any existing tool:
 
 ---
 
-## 11. What Was Fixed / Why This Standard Exists
+## 12. What Was Fixed / Why This Standard Exists
 
 These are the bugs we kept hitting. This standard prevents them.
 
@@ -430,7 +1014,7 @@ These are the bugs we kept hitting. This standard prevents them.
 
 ---
 
-## 12. Standard File Structure for a Tool
+## 13. Standard File Structure for a Tool
 
 ```
 src/tools/<tool-id>/
