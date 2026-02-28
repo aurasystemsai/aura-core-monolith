@@ -256,19 +256,32 @@ function App() {
     // Debug banner removed
   // Main navigation state
   const [activeSection, setActiveSectionRaw] = useState('dashboard');
-  const { plan } = usePlan();
+  const { plan, planLoading } = usePlan();
   const [toolInitUrl, setToolInitUrl] = useState(null);
 
   // Gate navigation — locked tools redirect to Settings
+  // Skip gating while plan is still loading (it defaults to 'free' which would wrongly block everything)
   function setActiveSection(section, url) {
     if (url) setToolInitUrl(url);
-    if (!canUseTool(plan, section)) {
+    if (!planLoading && !canUseTool(plan, section)) {
       navModeRef.current = 'gate'; // mark so history skips recording this redirect
       setActiveSectionRaw('settings');
       return;
     }
     setActiveSectionRaw(section);
   }
+
+  // Once real plan loads, re-check the current section — only gate if still not allowed
+  const planLoadedRef = React.useRef(false);
+  useEffect(() => {
+    if (!planLoading && !planLoadedRef.current) {
+      planLoadedRef.current = true;
+      if (!canUseTool(plan, activeSection)) {
+        navModeRef.current = 'gate';
+        setActiveSectionRaw('settings');
+      }
+    }
+  }, [planLoading]); // eslint-disable-line
 
   const [sectionHistory, setSectionHistory] = useState([]);
   const sectionHistoryRef = React.useRef([]);
