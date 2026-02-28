@@ -8998,7 +8998,7 @@ export default function BlogSEO() {
                   setCalLoading(true); setCalErr(""); setCalResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/content-calendar`, { method: "POST", body: JSON.stringify({ niche: calNiche, audience: calAudience, duration: calWeeks * 7, postsPerWeek: calPpw }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setCalResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setCalResult(d);
                   } catch (e) { setCalErr(e.message); } finally { setCalLoading(false); }
                 }}>
                   {calLoading ? <><span style={S.spinner} /> Generating�</> : "📅 Build Calendar (3 credits)"}
@@ -9045,7 +9045,7 @@ export default function BlogSEO() {
                   setPillarLoading(true); setPillarErr(""); setPillarResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/pillar-page`, { method: "POST", body: JSON.stringify({ topic: pillarTopic, audience: pillarAudience }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setPillarResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setPillarResult(d);
                   } catch (e) { setPillarErr(e.message); } finally { setPillarLoading(false); }
                 }}>
                   {pillarLoading ? <><span style={S.spinner} /> Building�</> : "💡 Build Pillar Hub (3 credits)"}
@@ -9095,7 +9095,7 @@ export default function BlogSEO() {
                   setProgLoading(true); setProgErr(""); setProgResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/programmatic-seo`, { method: "POST", body: JSON.stringify({ category: progCategory, dataVariables: progVars.split(",").map(v => v.trim()).filter(Boolean) }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setProgResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setProgResult(d);
                   } catch (e) { setProgErr(e.message); } finally { setProgLoading(false); }
                 }}>
                   {progLoading ? <><span style={S.spinner} /> Building�</> : "💡 Generate Templates (3 credits)"}
@@ -9153,7 +9153,7 @@ export default function BlogSEO() {
                   setRoiLoading(true); setRoiErr(""); setRoiResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/content-roi`, { method: "POST", body: JSON.stringify({ keyword: roiKw, monthlySearchVolume: parseInt(roiVol) || undefined, targetPosition: roiPos, conversionRate: roiCvr, avgOrderValue: roiAov }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setRoiResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setRoiResult(d);
                   } catch (e) { setRoiErr(e.message); } finally { setRoiLoading(false); }
                 }}>
                   {roiLoading ? <><span style={S.spinner} /> Calculating�</> : "💡 Estimate ROI (2 credits)"}
@@ -9208,7 +9208,7 @@ export default function BlogSEO() {
                   setSgeLoading(true); setSgeErr(""); setSgeResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/sge-optimizer`, { method: "POST", body: JSON.stringify({ content: sgeContent, keyword: sgeKw, aiEngine: sgeEngine }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setSgeResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setSgeResult(d);
                   } catch (e) { setSgeErr(e.message); } finally { setSgeLoading(false); }
                 }}>
                   {sgeLoading ? <><span style={S.spinner} /> Analyzing�</> : "💡 Optimize for AI Search (2 credits)"}
@@ -9271,7 +9271,7 @@ export default function BlogSEO() {
                   setMinerLoading(true); setMinerErr(""); setMinerResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/topic-miner`, { method: "POST", body: JSON.stringify({ niche: minerNiche, targetAudience: minerAudience }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setMinerResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setMinerResult(d);
                   } catch (e) { setMinerErr(e.message); } finally { setMinerLoading(false); }
                 }}>
                   {minerLoading ? <><span style={S.spinner} /> Mining�</> : "💡 Mine Topics (2 credits)"}
@@ -9324,7 +9324,7 @@ export default function BlogSEO() {
                   setSocialLoading(true); setSocialErr(""); setSocialResult(null);
                   try {
                     const r = await apiFetch(`${API}/social/seo-score`, { method: "POST", body: JSON.stringify({ title: socialTitle, description: socialDesc, content: socialContent }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setSocialResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setSocialResult(d);
                   } catch (e) { setSocialErr(e.message); } finally { setSocialLoading(false); }
                 }}>
                   {socialLoading ? <><span style={S.spinner} /> Scoring�</> : "💡 Score Social SEO (1 credit)"}
@@ -9368,7 +9368,7 @@ export default function BlogSEO() {
                   setCompLoading(true); setCompErr(""); setCompResult(null);
                   try {
                     const r = await apiFetch(`${API}/competitor/full-audit`, { method: "POST", body: JSON.stringify({ competitorUrl: compUrl, yourNiche: compNiche }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setCompResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setCompResult(d);
                   } catch (e) { setCompErr(e.message); } finally { setCompLoading(false); }
                 }}>
                   {compLoading ? <><span style={S.spinner} /> Auditing�</> : "🕵️ Full Competitor Audit (5 credits)"}
@@ -9430,7 +9430,7 @@ export default function BlogSEO() {
                   setReclaimLoading(true); setReclaimErr(""); setReclaimResult(null);
                   try {
                     const r = await apiFetch(`${API}/backlinks/link-reclamation`, { method: "POST", body: JSON.stringify({ brandName: reclaimBrand, siteUrl: reclaimSite, niche: reclaimNiche }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setReclaimResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setReclaimResult(d);
                   } catch (e) { setReclaimErr(e.message); } finally { setReclaimLoading(false); }
                 }}>
                   {reclaimLoading ? <><span style={S.spinner} /> Searching�</> : "💡 Find Link Opportunities (2 credits)"}
@@ -9470,7 +9470,7 @@ export default function BlogSEO() {
                     setGnLoading(true); setGnErr(""); setGnResult(null);
                     try {
                       const r = await apiFetch(`${API}/technical/google-news`, { method: "POST", body: JSON.stringify({ url: gnUrl }) });
-                      if (!r.ok) throw new Error(r.error || "Failed"); setGnResult(r);
+                      const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setGnResult(d);
                     } catch (e) { setGnErr(e.message); } finally { setGnLoading(false); }
                   }}>
                     {gnLoading ? <><span style={S.spinner} /> Checking�</> : "Check"}
@@ -9523,7 +9523,7 @@ export default function BlogSEO() {
                   setPredLoading(true); setPredErr(""); setPredResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/performance-predictor`, { method: "POST", body: JSON.stringify({ title: predTitle, targetKeyword: predKw, wordCount: predWords, contentType: predType }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setPredResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setPredResult(d);
                   } catch (e) { setPredErr(e.message); } finally { setPredLoading(false); }
                 }}>
                   {predLoading ? <><span style={S.spinner} /> Predicting�</> : "💡 Predict Performance (2 credits)"}
@@ -9580,7 +9580,7 @@ export default function BlogSEO() {
                   setSemLoading(true); setSemErr(""); setSemResult(null);
                   try {
                     const r = await apiFetch(`${API}/ai/semantic-clusters`, { method: "POST", body: JSON.stringify({ seedTopic: semTopic, industry: semIndustry }) });
-                    if (!r.ok) throw new Error(r.error || "Failed"); setSemResult(r);
+                    const d = await r.json(); if (!d.ok) throw new Error(d.error || "Failed"); setSemResult(d);
                   } catch (e) { setSemErr(e.message); } finally { setSemLoading(false); }
                 }}>
                   {semLoading ? <><span style={S.spinner} /> Mapping�</> : "💡 Build Semantic Map (2 credits)"}
@@ -10013,7 +10013,7 @@ export default function BlogSEO() {
                   <button style={S.btn("primary")} disabled={geoLoading} onClick={async () => {
                     if (!geoUrl.trim()) return;
                     setGeoLoading(true); setGeoErr("");
-                    try { const r = await apiFetch("/api/blog-seo/geo/geo-health-score", { method:"POST", body: JSON.stringify({ url: geoUrl, shop:"demo" }) }); setGeoScore(r); }
+                    try { const r = await apiFetch("/api/blog-seo/geo/geo-health-score", { method:"POST", body: JSON.stringify({ url: geoUrl, shop:"demo" }) }); setGeoScore(await r.json()); }
                     catch(e) { setGeoErr(e.message); }
                     setGeoLoading(false);
                   }}>{geoLoading ? <span style={S.spinner}/> : "Analyse"}</button>
@@ -10043,7 +10043,7 @@ export default function BlogSEO() {
                 <button style={S.btn("primary")} disabled={promptSimLoading} onClick={async () => {
                   if (!promptSimBrand || !promptSimQuery) return;
                   setPromptSimLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/geo/prompt-simulation", { method:"POST", body: JSON.stringify({ brandName: promptSimBrand, query: promptSimQuery, shop:"demo" }) }); setPromptSimResult(r); }
+                  try { const r = await apiFetch("/api/blog-seo/geo/prompt-simulation", { method:"POST", body: JSON.stringify({ brandName: promptSimBrand, query: promptSimQuery, shop:"demo" }) }); setPromptSimResult(await r.json()); }
                   catch(e) { setGeoErr(e.message); }
                   setPromptSimLoading(false);
                 }}>{promptSimLoading ? <span style={S.spinner}/> : "Simulate (3cr)"}</button>
@@ -10065,7 +10065,7 @@ export default function BlogSEO() {
                 <button style={S.btn("primary")} disabled={geoTrackerLoading} onClick={async () => {
                   if (!geoTrackerBrand || !geoTrackerQuery) return;
                   setGeoTrackerLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/geo/ai-platform-tracker", { method:"POST", body: JSON.stringify({ brandName: geoTrackerBrand, query: geoTrackerQuery, niche:"general", shop:"demo" }) }); setGeoTrackerResult(r); }
+                  try { const r = await apiFetch("/api/blog-seo/geo/ai-platform-tracker", { method:"POST", body: JSON.stringify({ brandName: geoTrackerBrand, query: geoTrackerQuery, niche:"general", shop:"demo" }) }); setGeoTrackerResult(await r.json()); }
                   catch(e) { setGeoErr(e.message); }
                   setGeoTrackerLoading(false);
                 }}>{geoTrackerLoading ? <span style={S.spinner}/> : "Track All Platforms (3cr)"}</button>
@@ -10087,7 +10087,7 @@ export default function BlogSEO() {
                   <button style={S.btn("primary")} disabled={llmsTxtLoading} onClick={async () => {
                     if (!geoUrl.trim()) return;
                     setLlmsTxtLoading(true);
-                    try { const r = await apiFetch("/api/blog-seo/llms-txt/generate?url=" + encodeURIComponent(geoUrl) + "&shop=demo"); setLlmsTxtResult(r); }
+                    try { const r = await apiFetch("/api/blog-seo/llms-txt/generate?url=" + encodeURIComponent(geoUrl) + "&shop=demo"); setLlmsTxtResult(await r.json()); }
                     catch(e) { setGeoErr(e.message); }
                     setLlmsTxtLoading(false);
                   }}>{llmsTxtLoading ? <span style={S.spinner}/> : "Generate llms.txt"}</button>
@@ -10195,7 +10195,7 @@ export default function BlogSEO() {
                 <button style={S.btn("primary")} disabled={trendLoading} onClick={async () => {
                   if (!trendNiche.trim()) return;
                   setTrendLoading(true); setTrendErr("");
-                  try { const r = await apiFetch("/api/blog-seo/trends/rising-topics", { method:"POST", body: JSON.stringify({ niche: trendNiche, industry: trendIndustry }) }); setTrendRising(r); }
+                  try { const r = await apiFetch("/api/blog-seo/trends/rising-topics", { method:"POST", body: JSON.stringify({ niche: trendNiche, industry: trendIndustry }) }); setTrendRising(await r.json()); }
                   catch(e) { setTrendErr(e.message); }
                   setTrendLoading(false);
                 }}>{trendLoading ? <span style={S.spinner}/> : "Find Rising Topics (2cr)"}</button>
@@ -10218,7 +10218,7 @@ export default function BlogSEO() {
                 <button style={S.btn("primary")} disabled={trendSeasonalLoading} onClick={async () => {
                   if (!trendNiche.trim()) return;
                   setTrendSeasonalLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/trends/seasonal-planner", { method:"POST", body: JSON.stringify({ niche: trendNiche }) }); setTrendSeasonal(r); }
+                  try { const r = await apiFetch("/api/blog-seo/trends/seasonal-planner", { method:"POST", body: JSON.stringify({ niche: trendNiche }) }); setTrendSeasonal(await r.json()); }
                   catch(e) { setTrendErr(e.message); }
                   setTrendSeasonalLoading(false);
                 }}>{trendSeasonalLoading ? <span style={S.spinner}/> : "Generate Calendar (2cr)"}</button>
@@ -10236,7 +10236,7 @@ export default function BlogSEO() {
                 <button style={S.btn("primary")} disabled={trendSurgeLoading} onClick={async () => {
                   if (!trendNiche.trim()) return;
                   setTrendSurgeLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/trends/keyword-surge-detector", { method:"POST", body: JSON.stringify({ niche: trendNiche }) }); setTrendSurge(r); }
+                  try { const r = await apiFetch("/api/blog-seo/trends/keyword-surge-detector", { method:"POST", body: JSON.stringify({ niche: trendNiche }) }); setTrendSurge(await r.json()); }
                   catch(e) { setTrendErr(e.message); }
                   setTrendSurgeLoading(false);
                 }}>{trendSurgeLoading ? <span style={S.spinner}/> : "Detect Surges (2cr)"}</button>
@@ -10254,7 +10254,7 @@ export default function BlogSEO() {
                 <button style={S.btn("primary")} disabled={trendMicroLoading} onClick={async () => {
                   if (!trendNiche.trim()) return;
                   setTrendMicroLoading(true);
-                  try { const r = await apiFetch("/api/blog-seo/trends/micro-niche-finder", { method:"POST", body: JSON.stringify({ broadNiche: trendNiche, industry: trendIndustry }) }); setTrendMicro(r); }
+                  try { const r = await apiFetch("/api/blog-seo/trends/micro-niche-finder", { method:"POST", body: JSON.stringify({ broadNiche: trendNiche, industry: trendIndustry }) }); setTrendMicro(await r.json()); }
                   catch(e) { setTrendErr(e.message); }
                   setTrendMicroLoading(false);
                 }}>{trendMicroLoading ? <span style={S.spinner}/> : "Find Micro-Niches (2cr)"}</button>
