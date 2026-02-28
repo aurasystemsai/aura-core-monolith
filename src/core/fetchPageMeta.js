@@ -1,9 +1,11 @@
 // src/core/fetchPageMeta.js
 // -------------------------------------
 // Fetch basic SEO meta from a URL (server-side)
+// Always uses Shopify Admin API for Shopify blog URLs.
 // -------------------------------------
 
 const { URL } = require("url");
+const { fetchForAnalysis } = require('./shopifyContentFetcher');
 
 function stripTags(html) {
   if (!html) return "";
@@ -30,33 +32,20 @@ function decodeHtmlEntities(str) {
     .replace(/&gt;/g, ">");
 }
 
-async function fetchPageMeta(url) {
+async function fetchPageMeta(url, req) {
   const u = new URL(url);
 
-  const res = await fetch(u.toString(), {
-    method: "GET",
-    redirect: "follow",
-    headers: {
-      "User-Agent":
-        "AURA Content Auditor (+https://aurasystemsai.com) NodeFetch/1.0",
-      Accept: "text/html,application/xhtml+xml",
-    },
-  });
+  // Use central fetcher — bypasses Shopify storefront password via Admin API
+  const { html, fromAdminApi, warning } = await fetchForAnalysis(u.toString(), req);
 
-  const contentType = res.headers.get("content-type") || "";
-  const html = await res.text();
-
-  // If we did not get HTML, do not try to parse
-  if (!contentType.includes("text/html") && !html.includes("<html")) {
+  if (!html || (!html.includes('<html') && !html.includes('<HTML'))) {
     return {
       ok: false,
       url: u.toString(),
-      status: res.status,
-      contentType,
       title: null,
       metaDescription: null,
       h1: null,
-      note: "Non-HTML response",
+      note: 'Non-HTML response',
     };
   }
 
@@ -84,11 +73,11 @@ async function fetchPageMeta(url) {
   return {
     ok: true,
     url: u.toString(),
-    status: res.status,
-    contentType,
+    fromAdminApi: !!fromAdminApi,
     title: title || null,
     metaDescription: metaDescription || null,
     h1: h1 || null,
+    warning: warning || undefined,
   };
 }
 

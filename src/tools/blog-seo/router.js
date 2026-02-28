@@ -9,6 +9,8 @@ const onpageEngine = require('./onpage-technical-engine');
 const linkingEngine = require('./internal-linking-engine');
 const performanceEngine = require('./performance-analytics-engine');
 
+const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
+
 const router = express.Router();
 
 /* ── Flesch-Kincaid readability helpers ──────────────────────────────────── */
@@ -109,21 +111,13 @@ router.post('/analyze', async (req, res) => {
     }
 
     if (!html) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
-      let response;
       try {
-        response = await fetch(url, {
-          signal: controller.signal,
-          headers: { 'User-Agent': 'AuraBlogSEOBot/2.0 (+https://aurasystems.ai)', Accept: 'text/html' },
-          redirect: 'follow',
-        });
+        const fetched = await fetchForAnalysis(url, req);
+        html = fetched.html;
+        if (fetched.warning) console.warn('[blog-seo/analyze] warning:', fetched.warning);
       } catch (fetchErr) {
-        clearTimeout(timeout);
         return res.status(502).json({ ok: false, error: `Failed to fetch: ${fetchErr.message}` });
       }
-      clearTimeout(timeout);
-      html = await response.text();
     }
     const $ = cheerio.load(html);
     $('script, style, noscript, svg, iframe').remove();
@@ -688,11 +682,8 @@ router.post('/bulk-analyze', async (req, res) => {
     const results = [];
     for (const blogUrl of toScan) {
       try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 10000);
-        const resp = await fetch(blogUrl, { signal: ctrl.signal, headers: { 'User-Agent': 'AuraBlogSEOBot/2.0' }, redirect: 'follow' });
-        clearTimeout(t);
-        const html = await resp.text();
+        const fetched = await fetchForAnalysis(blogUrl, req);
+        const html = fetched.html;
         const $ = cheerio.load(html);
         $('script, style, noscript, svg, iframe').remove();
         const title = $('title').first().text().trim();
@@ -911,9 +902,8 @@ router.post('/links/check', async (req, res) => {
 
     if (url && !linksToCheck.length) {
       // Fetch page and extract all links
-      const fetchMod = (await import('node-fetch')).default;
-      const pageResp = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
-      const html     = await pageResp.text();
+      const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+      const { html } = await _fetchPageHtml(url, req);
       const $        = cheerio.load(html);
       $('a[href]').each((_, el) => {
         const href = $(el).attr('href');
@@ -1013,9 +1003,8 @@ router.post('/llm/score', async (req, res) => {
     let html = content || '';
 
     if (!html && url) {
-      const fetchMod = (await import('node-fetch')).default;
-      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
-      html = await r.text();
+      const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+      const { html } = await _fetchPageHtml(url, req);
     }
     if (!html) return res.status(400).json({ ok: false, error: 'url or content required' });
 
@@ -1092,12 +1081,10 @@ router.post('/technical/audit', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
+    const fetched = await fetchForAnalysis(url, req);
+    const html = fetched.html;
     const $ = cheerio.load(html);
-
-    // HTTPS check
     const isHttps = url.startsWith('https://');
 
     // Canonical check
@@ -1265,9 +1252,9 @@ router.post('/article-schema/validate', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
+    const artFetched = await fetchForAnalysis(url, req);
+    const html = artFetched.html;
     const $ = cheerio.load(html);
 
     // Extract all JSON-LD blocks
@@ -1330,9 +1317,8 @@ router.post('/content/advanced-readability', async (req, res) => {
     let html = content || '';
 
     if (!html && url) {
-      const fetchMod = (await import('node-fetch')).default;
-      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
-      html = await r.text();
+      const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+      const { html } = await _fetchPageHtml(url, req);
     }
     if (!html) return res.status(400).json({ ok: false, error: 'url or content required' });
 
@@ -1575,9 +1561,8 @@ router.post('/title-h1-alignment', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const title = $('title').first().text().trim();
@@ -1623,9 +1608,8 @@ router.post('/heading-hierarchy', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const headings = [];
@@ -1670,9 +1654,8 @@ router.post('/image-seo', async (req, res) => {
     const { url, keyword = '' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const images = [];
@@ -1720,9 +1703,8 @@ router.post('/semantic-html', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const checks = [
@@ -1763,9 +1745,8 @@ router.post('/meta-description-audit', async (req, res) => {
     const { url, keyword = '' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const metaDesc = $('meta[name="description"]').attr('content') || '';
@@ -1800,9 +1781,8 @@ router.post('/keyword-density', async (req, res) => {
     const { url, keyword } = req.body || {};
     if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     $('script,style,nav,footer,header').remove();
@@ -1851,9 +1831,8 @@ router.post('/index-directives', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const headers = Object.fromEntries(r.headers.entries());
     const $ = cheerio.load(html);
 
@@ -1892,9 +1871,8 @@ router.post('/content-structure', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     $('script,style,nav,footer,header').remove();
@@ -1950,9 +1928,8 @@ router.post('/author-authority', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     // Find author signals
@@ -2049,9 +2026,8 @@ router.post('/og-validator', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const og = {
@@ -2173,9 +2149,8 @@ router.post('/schema/video', async (req, res) => {
 
     let detectedVideos = [];
     if (url) {
-      const fetchMod = (await import('node-fetch')).default;
-      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-      const html = await r.text();
+      const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+      const { html } = await _fetchPageHtml(url, req);
       const $ = cheerio.load(html);
 
       $('iframe[src*="youtube"],iframe[src*="vimeo"],video').each((_, el) => {
@@ -2271,9 +2246,8 @@ router.post('/schema/speakable', async (req, res) => {
     const { url, cssSelectors } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     // Auto-detect speakable sections: first H1 + first H2 summary paragraphs
@@ -2308,9 +2282,8 @@ router.post('/intent-classifier', async (req, res) => {
     let pageExcerpt = excerpt || '';
     if (url && !title) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         pageTitle = $('title').first().text().trim().slice(0, 120);
         pageExcerpt = $('meta[name="description"]').attr('content') || $('article p').first().text().trim().slice(0, 300);
@@ -2358,9 +2331,8 @@ router.post('/ai-overview-eligibility', async (req, res) => {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     $('script,style,nav,footer').remove();
@@ -2422,9 +2394,8 @@ router.post('/topical-authority', async (req, res) => {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     $('script,style,nav,footer').remove();
@@ -2478,9 +2449,8 @@ router.post('/meta-description-optimizer', async (req, res) => {
     let metaDesc = currentMeta || '';
     let pageTitle = '';
     if (url && !currentMeta) {
-      const fetchMod = (await import('node-fetch')).default;
-      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
-      const html = await r.text();
+      const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+      const { html } = await _fetchPageHtml(url, req);
       const $ = cheerio.load(html);
       metaDesc = $('meta[name="description"]').attr('content') || '';
       pageTitle = $('title').first().text().trim();
@@ -2528,9 +2498,8 @@ router.post('/content-decay', async (req, res) => {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const title = $('title').first().text().trim();
@@ -2700,9 +2669,8 @@ router.post('/anchor-text-audit', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const origin = new URL(url).origin;
@@ -2747,9 +2715,8 @@ router.post('/toc-generator', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     const headings = [];
@@ -2792,9 +2759,8 @@ router.post('/section-word-count', async (req, res) => {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
 
@@ -2886,9 +2852,8 @@ router.post('/entity-detection', async (req, res) => {
 
     let content = text || '';
     if (url && !text) {
-      const fetchMod = (await import('node-fetch')).default;
-      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-      const html = await r.text();
+      const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+      const { html } = await _fetchPageHtml(url, req);
       const $ = cheerio.load(html);
       $('script,style,nav,footer').remove();
       content = $('article, main, .post-content, body').text().replace(/\s+/g, ' ').trim().slice(0, 3000);
@@ -2942,9 +2907,8 @@ router.post('/serp-features', async (req, res) => {
     const { url, keyword } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
 
     $('script,style').remove();
@@ -2996,9 +2960,8 @@ router.post('/content/sentence-variety', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const resp = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await resp.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer,header').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim();
@@ -3022,9 +2985,8 @@ router.post('/content/emotional-tone', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer,header').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 2000);
@@ -3041,9 +3003,8 @@ router.post('/content/jargon-detector', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim();
@@ -3063,9 +3024,8 @@ router.post('/content/expertise-signals', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const text = $('body').text();
     const signals = {
@@ -3091,9 +3051,8 @@ router.post('/content/multimedia-score', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const images = $('img').length;
     const videos = $('video,iframe[src*="youtube"],iframe[src*="vimeo"]').length;
@@ -3115,9 +3074,8 @@ router.post('/content/questions-count', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style').remove();
     const text = $('body').text();
@@ -3136,9 +3094,8 @@ router.post('/content/intro-quality', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,header,footer').remove();
     const paras = $('p');
@@ -3163,9 +3120,8 @@ router.post('/content/cta-audit', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const buttons = $('button,a.btn,a.button,[class*="cta"],[class*="call-to-action"]').length;
     const ctaText = [];
@@ -3184,9 +3140,8 @@ router.post('/content/formatting-score', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style').remove();
     const bullets = $('ul li').length;
@@ -3209,9 +3164,8 @@ router.post('/content/thin-content', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer,header,aside').remove();
     const text = $('article,main,[class*="content"],[class*="post"]').text().trim() || $('body').text().trim();
@@ -3231,9 +3185,8 @@ router.post('/keywords/prominence', async (req, res) => {
   try {
     const { url, keyword } = req.body || {};
     if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const kw = keyword.toLowerCase();
     const title = $('title').first().text().toLowerCase();
@@ -3263,9 +3216,8 @@ router.post('/keywords/tfidf', async (req, res) => {
   try {
     const { url, keyword } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().replace(/\s+/g, ' ').toLowerCase();
@@ -3285,9 +3237,8 @@ router.post('/keywords/co-occurrence', async (req, res) => {
   try {
     const { url, keyword } = req.body || {};
     if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().toLowerCase().replace(/\s+/g, ' ');
@@ -3314,9 +3265,8 @@ router.post('/keywords/secondary', async (req, res) => {
     let contentSnippet = '';
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         $('script,style,nav,footer').remove();
         contentSnippet = $('body').text().slice(0, 1200);
@@ -3338,9 +3288,8 @@ router.post('/keywords/voice-search', async (req, res) => {
     let text = '';
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         $('script,style,nav,footer').remove();
         text = $('body').text().slice(0, 800);
@@ -3359,9 +3308,8 @@ router.post('/keywords/negative-check', async (req, res) => {
   try {
     const { url, keyword } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style').remove();
     const text = $('body').text().replace(/\s+/g, ' ');
@@ -3383,9 +3331,8 @@ router.post('/keywords/featured-snippet', async (req, res) => {
   try {
     const { url, keyword } = req.body || {};
     if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text();
@@ -3429,9 +3376,8 @@ router.post('/technical/mobile-seo', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const viewport = $('meta[name="viewport"]').attr('content') || '';
     const hasViewport = viewport.length > 0;
@@ -3455,9 +3401,8 @@ router.post('/technical/hreflang', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const hreflangs = [];
     $('link[rel="alternate"][hreflang]').each((_, el) => { hreflangs.push({ lang: $(el).attr('hreflang'), href: $(el).attr('href') }); });
@@ -3476,9 +3421,8 @@ router.post('/technical/amp-check', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const isAMPPage = html.includes('<html amp') || html.includes('<html ⚡') || $('html').attr('amp') !== undefined;
     const ampLink = $('link[rel="amphtml"]').attr('href') || null;
@@ -3496,9 +3440,8 @@ router.post('/technical/resource-hints', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const preloads = [], prefetches = [], dnsPrefetches = [], preconnects = [];
     $('link[rel="preload"]').each((_, el) => preloads.push({ href: $(el).attr('href'), as: $(el).attr('as') }));
@@ -3516,9 +3459,8 @@ router.post('/technical/json-ld-lint', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const scripts = [];
     $('script[type="application/ld+json"]').each((_, el) => scripts.push($(el).html()));
@@ -3546,9 +3488,8 @@ router.post('/technical/og-image-dims', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const ogImage = $('meta[property="og:image"]').attr('content') || '';
     const ogWidth = $('meta[property="og:image:width"]').attr('content') || '';
@@ -3640,9 +3581,8 @@ router.post('/ai/cta-generator', async (req, res) => {
     let contentSnippet = '';
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         contentSnippet = $('h1').first().text() + ' ' + $('p').first().text();
       } catch (_) {}
@@ -3660,9 +3600,8 @@ router.post('/ai/key-takeaways', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 3000);
@@ -3679,9 +3618,8 @@ router.post('/ai/summary-generator', async (req, res) => {
   try {
     const { url, length = 'short', model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 3000);
@@ -3699,9 +3637,8 @@ router.post('/ai/tone-analyzer', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 2500);
@@ -3718,9 +3655,8 @@ router.post('/ai/content-grader', async (req, res) => {
   try {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 3500);
@@ -3738,9 +3674,8 @@ router.post('/ai/pull-quotes', async (req, res) => {
   try {
     const { url, count = 5, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 3000);
@@ -3758,9 +3693,8 @@ router.post('/ai/headline-hook', async (req, res) => {
     const { url, keyword, currentTitle, model = 'gpt-4o-mini' } = req.body || {};
     const title = currentTitle || (url ? await (async () => {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         return cheerio.load(html)('title').first().text();
       } catch (_) { return ''; }
     })() : '');
@@ -3778,9 +3712,8 @@ router.post('/ai/passage-optimizer', async (req, res) => {
   try {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const paragraphs = [];
@@ -3799,9 +3732,8 @@ router.post('/ai/content-repurpose', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().slice(0, 2000);
@@ -3891,9 +3823,8 @@ router.post('/links/external-authority', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const domain = new URL(url).hostname;
     const links = [];
@@ -3918,9 +3849,8 @@ router.post('/links/link-density', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const wordCount = $('body').text().split(/\s+/).length;
@@ -3939,9 +3869,8 @@ router.post('/links/outbound-audit', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const baseDomain = new URL(url).hostname;
     const outbound = [];
@@ -3965,9 +3894,8 @@ router.post('/trust/social-proof', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const shareButtons = $('[class*="share"],[class*="social"],[href*="twitter.com/intent"],[href*="facebook.com/share"],[href*="linkedin.com/share"]').length;
     const comments = $('[class*="comment"],[id*="comments"],#disqus_thread').length > 0;
@@ -3986,9 +3914,8 @@ router.post('/trust/citation-check', async (req, res) => {
   try {
     const { url } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const baseDomain = new URL(url).hostname;
     const allLinks = [];
@@ -4014,9 +3941,8 @@ router.post('/passage-indexing', async (req, res) => {
   try {
     const { url, keyword } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const passages = [];
@@ -4040,9 +3966,8 @@ router.post('/ai/content-visibility', async (req, res) => {
   try {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim();
@@ -4096,9 +4021,8 @@ router.post('/serp/feature-targets', async (req, res) => {
   try {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1200);
@@ -4133,9 +4057,8 @@ router.post('/serp/rich-result-check', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const schemaMatches = html.match(/"@type"\s*:\s*"([^"]+)"/g) || [];
     const schemaTypes = [...new Set(schemaMatches.map(m => m.match(/"([^"]+)"$/)?.[1]).filter(Boolean))];
     const hasBreadcrumb = schemaTypes.includes('BreadcrumbList');
@@ -4165,9 +4088,8 @@ router.post('/serp/rankbrain-advisor', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim();
@@ -4322,9 +4244,8 @@ router.post('/backlinks/internal-suggester', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const existingLinks = $('a[href]').map((_, el) => $(el).attr('href')).get().filter(h => h.startsWith('/') || h.includes(new URL(url).hostname)).slice(0, 20);
     $('script,style,nav,footer').remove();
@@ -4345,9 +4266,8 @@ router.post('/content/freshness-score', async (req, res) => {
   try {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const publishDate = $('meta[property="article:published_time"]').attr('content') || $('time[datetime]').first().attr('datetime') || '';
     const modDate = $('meta[property="article:modified_time"]').attr('content') || '';
@@ -4368,9 +4288,8 @@ router.post('/content/skyscraper-gap', async (req, res) => {
   try {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     $('script,style,nav,footer').remove();
     const text = $('body').text().replace(/\s+/g, ' ').trim();
@@ -4389,9 +4308,8 @@ router.post('/content/relaunch-advisor', async (req, res) => {
   try {
     const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const publishDate = $('meta[property="article:published_time"]').attr('content') || '';
     $('script,style,nav,footer').remove();
@@ -4414,9 +4332,8 @@ router.post('/content/semantic-enrichment', async (req, res) => {
     let text = '';
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         $('script,style,nav,footer').remove();
         text = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1000);
@@ -4836,9 +4753,8 @@ router.post('/serp/news-seo', async (req, res) => {
     const { url } = req.body || {};
     const model = req.body.model || 'gpt-4o-mini';
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Googlebot-News/2.1' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const title = $('title').text().slice(0, 120);
     const publishDate = $('meta[property="article:published_time"]').attr('content') || $('time').first().attr('datetime') || 'not found';
@@ -4862,9 +4778,8 @@ router.post('/serp/video-seo', async (req, res) => {
     let videoContext = { hasVideoSchema: false, hasVideoEmbed: false, title: 'not scraped' };
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         videoContext.title = $('title').text().slice(0, 100);
         videoContext.hasVideoSchema = html.includes('"VideoObject"');
@@ -4903,9 +4818,8 @@ router.post('/serp/review-schema', async (req, res) => {
     let pageCtx = {};
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         pageCtx.title = $('title').text().slice(0, 100);
         pageCtx.hasProduct = html.includes('"Product"');
@@ -4968,9 +4882,8 @@ router.post('/schema/duplicate-content', async (req, res) => {
     const { url } = req.body || {};
     const model = req.body.model || 'gpt-4o-mini';
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const canonical = $('link[rel="canonical"]').attr('href') || null;
     const noindex = $('meta[name="robots"]').attr('content')?.includes('noindex') || false;
@@ -4993,9 +4906,8 @@ router.post('/schema/hreflang', async (req, res) => {
     const { url, targetMarkets } = req.body || {};
     const model = req.body.model || 'gpt-4o-mini';
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const hreflangTags = $('link[hreflang]').map((_, el) => ({ lang: $(el).attr('hreflang'), href: $(el).attr('href') })).get();
     const langAttribute = $('html').attr('lang') || 'not set';
@@ -5100,9 +5012,8 @@ router.post('/ab/ab-test-advisor', async (req, res) => {
     const { url, pageType } = req.body || {};
     const model = req.body.model || 'gpt-4o-mini';
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const title = $('title').text().slice(0, 120);
     const metaDesc = $('meta[name="description"]').attr('content') || '';
@@ -5121,9 +5032,8 @@ router.post('/ab/content-refresh', async (req, res) => {
     const { url, publishDate } = req.body || {};
     const model = req.body.model || 'gpt-4o-mini';
     if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-    const fetchMod = (await import('node-fetch')).default;
-    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
-    const html = await r.text();
+    const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+    const { html } = await _fetchPageHtml(url, req);
     const $ = cheerio.load(html);
     const pubDateMeta = $('meta[property="article:modified_time"], meta[property="article:published_time"]').first().attr('content') || publishDate || 'unknown';
     const title = $('title').text().slice(0, 120);
@@ -5162,9 +5072,8 @@ router.post('/ab/meta-variants', async (req, res) => {
     let pageTitle = '';
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         currentMeta = $('meta[name="description"]').attr('content') || '';
         pageTitle = $('title').text().slice(0, 100);
@@ -5187,9 +5096,8 @@ router.post('/ab/bert-optimizer', async (req, res) => {
     let contentSnippet = '';
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         $('script,style,nav,footer').remove();
         contentSnippet = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1200);
@@ -5300,9 +5208,8 @@ router.post('/technical/international-seo', async (req, res) => {
     let siteCtx = {};
     if (url) {
       try {
-        const fetchMod = (await import('node-fetch')).default;
-        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
-        const html = await r.text();
+        const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
+        const { html } = await _fetchPageHtml(url, req);
         const $ = cheerio.load(html);
         siteCtx.lang = $('html').attr('lang') || 'not set';
         siteCtx.hreflangCount = $('link[hreflang]').length;

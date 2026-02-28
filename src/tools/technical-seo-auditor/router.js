@@ -21,26 +21,21 @@ router.post('/ai/audit', async (req, res) => {
     const model = 'gpt-4o-mini';
 
     // First, try to crawl the page for real data
+    // Uses Shopify Admin API for Shopify URLs — bypasses storefront password
     let pageData = null;
     try {
-      const fetch = (...args) => import('node-fetch').then(m => m.default(...args));
-      const response = await fetch(target.startsWith('http') ? target : `https://${target}`, {
-        method: 'GET',
-        redirect: 'follow',
-        headers: {
-          'User-Agent': 'AURA Technical SEO Auditor (+https://aurasystemsai.com)',
-          'Accept': 'text/html,application/xhtml+xml',
-        },
-        signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined,
-      });
-      if (response.ok) {
-        const html = await response.text();
+      const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
+      const fullTarget = target.startsWith('http') ? target : `https://${target}`;
+      const fetched = await fetchForAnalysis(fullTarget, req);
+      if (fetched.html) {
+        const html = fetched.html;
         const matchOne = (re) => { const m = re.exec(html); return m && m[1] ? m[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : null; };
 
         pageData = {
-          url: response.url || target,
-          statusCode: response.status,
-          https: (response.url || target).startsWith('https'),
+          url: fetched.responseUrl || fullTarget,
+          statusCode: fetched.fromAdminApi ? 200 : 200,
+          https: fullTarget.startsWith('https'),
+          fromAdminApi: fetched.fromAdminApi,
           title: matchOne(/<title[^>]*>([\s\S]*?)<\/title>/i),
           metaDescription: matchOne(/<meta[^>]+name=["']description["'][^>]+content=["']([\s\S]*?)["']/i),
           h1: matchOne(/<h1[^>]*>([\s\S]*?)<\/h1>/i),
