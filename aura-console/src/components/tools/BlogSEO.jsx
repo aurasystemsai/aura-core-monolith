@@ -877,7 +877,9 @@ export default function BlogSEO() {
     setScanning(true); setScanErr(""); setScanResult(null); setAiAnalysis(null);
     setRewriteResult(null); setRewriteErr(null); setFixes({}); setExpandedIssue(null);
     try {
-      const r = await apiFetchJSON(`${API}/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keywords: kwInput.trim() }) });
+      const selectedArt = selectedArticleId ? shopifyArticles.find(a => String(a.id) === String(selectedArticleId)) : null;
+      const analyzeBody = { url: url.trim(), keywords: kwInput.trim(), ...(selectedArt ? { articleId: selectedArt.id, blogId: selectedArt.blogId } : {}) };
+      const r = await apiFetchJSON(`${API}/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(analyzeBody) });
       if (!r.ok) throw new Error(r.error || "Scan failed");
       setScanResult(r);
       // Save to history

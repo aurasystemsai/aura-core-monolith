@@ -60,25 +60,71 @@ router.get('/health', (_req, res) => {
    ========================================================================= */
 router.post('/analyze', async (req, res) => {
   try {
-    const { url, keywords } = req.body || {};
+    const { url, keywords, articleId, blogId } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url is required' });
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    let response;
-    try {
-      response = await fetch(url, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'AuraBlogSEOBot/2.0 (+https://aurasystems.ai)', Accept: 'text/html' },
-        redirect: 'follow',
-      });
-    } catch (fetchErr) {
-      clearTimeout(timeout);
-      return res.status(502).json({ ok: false, error: `Failed to fetch: ${fetchErr.message}` });
-    }
-    clearTimeout(timeout);
+    let html;
 
-    const html = await response.text();
+    // If articleId+blogId provided, fetch directly from Shopify Admin API
+    // (bypasses storefront password on dev stores)
+    if (articleId && blogId) {
+      try {
+        const shopTokens = require('../../core/shopTokens');
+        const shop = req.session?.shop
+          || req.headers['x-shopify-shop-domain']
+          || (shopTokens.loadAll ? (() => { const all = shopTokens.loadAll(); const keys = Object.keys(all || {}); return keys.length === 1 ? keys[0] : null; })() : null)
+          || process.env.SHOPIFY_STORE_URL || null;
+        const token = shop && (shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null));
+        if (shop && token) {
+          const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+          const artRes = await fetch(
+            `https://${shop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}.json?fields=id,title,body_html,summary_html,tags,author,published_at,handle,image`,
+            { headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' } }
+          );
+          if (artRes.ok) {
+            const artJson = await artRes.json();
+            const a = artJson.article || {};
+            const summary = (a.summary_html || '').replace(/<[^>]+>/g, '').trim();
+            const blogHandle = url.match(/\/blogs\/([^/]+)\//)?.[1] || 'news';
+            html = `<!DOCTYPE html><html lang="en"><head>`
+              + `<title>${(a.title||'').replace(/</g,'&lt;')}</title>`
+              + (summary ? `<meta name="description" content="${summary.replace(/"/g, '&quot;').slice(0,320)}">` : '')
+              + (a.published_at ? `<meta property="article:published_time" content="${a.published_at}">` : '')
+              + (a.author ? `<meta name="author" content="${a.author.replace(/"/g,'&quot;')}">` : '')
+              + `<meta property="og:title" content="${(a.title||'').replace(/"/g,'&quot;')}">`
+              + (summary ? `<meta property="og:description" content="${summary.replace(/"/g,'&quot;').slice(0,320)}">` : '')
+              + (a.image?.src ? `<meta property="og:image" content="${a.image.src}">` : '')
+              + `<meta name="viewport" content="width=device-width, initial-scale=1">`
+              + `<link rel="canonical" href="${url}">`
+              + `</head><body>`
+              + `<article>`
+              + `<h1>${(a.title||'').replace(/</g,'&lt;')}</h1>`
+              + (a.tags ? `<div class="tags">${a.tags}</div>` : '')
+              + (a.body_html || '')
+              + `</article>`
+              + `</body></html>`;
+          }
+        }
+      } catch (_e) { /* fall through to URL fetch */ }
+    }
+
+    if (!html) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      let response;
+      try {
+        response = await fetch(url, {
+          signal: controller.signal,
+          headers: { 'User-Agent': 'AuraBlogSEOBot/2.0 (+https://aurasystems.ai)', Accept: 'text/html' },
+          redirect: 'follow',
+        });
+      } catch (fetchErr) {
+        clearTimeout(timeout);
+        return res.status(502).json({ ok: false, error: `Failed to fetch: ${fetchErr.message}` });
+      }
+      clearTimeout(timeout);
+      html = await response.text();
+    }
     const $ = cheerio.load(html);
     $('script, style, noscript, svg, iframe').remove();
 
