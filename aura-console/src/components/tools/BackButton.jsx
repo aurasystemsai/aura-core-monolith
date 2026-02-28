@@ -6,12 +6,14 @@ export default function BackButton({ style = {}, label = "← Go Back", onClick 
       onClick();
       return;
     }
-    if (typeof window !== "undefined" && typeof window.__AURA_TO_SUITE === 'function') {
-      window.__AURA_TO_SUITE();
-      return;
-    }
+    // Always prefer section history — goes back to wherever the user actually came from
     if (typeof window !== "undefined" && typeof window.__AURA_SECTION_BACK === 'function') {
       window.__AURA_SECTION_BACK();
+      return;
+    }
+    // Fallback: go to main suite
+    if (typeof window !== "undefined" && typeof window.__AURA_TO_SUITE === 'function') {
+      window.__AURA_TO_SUITE();
       return;
     }
     if (typeof window !== "undefined" && window.history?.back) {

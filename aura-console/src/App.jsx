@@ -397,7 +397,9 @@ function App() {
     window.__AURA_SECTION_BACK = () => {
       setSectionHistory(prev => {
         if (!prev.length) {
-          if (typeof window !== 'undefined' && window.history?.back) window.history.back();
+          // No history: go to dashboard (safe in Shopify iframe — don't call history.back())
+          navModeRef.current = 'back';
+          setActiveSectionRaw('dashboard');
           return prev;
         }
         const last = prev[prev.length - 1];
