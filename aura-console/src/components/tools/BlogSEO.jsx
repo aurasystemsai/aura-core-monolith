@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+﻿import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
 import { DOCS as DOCS_OBJ, MISSIONS, GLOSSARY } from "./BlogSEODocs";
@@ -5955,6 +5955,7 @@ export default function BlogSEO() {
           <>
             <div style={{ ...S.card, marginTop: 16 }}>
               <div style={S.cardTitle}>💡 AI Blog Outline</div>
+              <div style={{ fontSize: 12, color: "#71717a", marginBottom: 10 }}>Enter a topic to generate a structured outline — title, meta description, and section headings with word counts. Use it as a writing blueprint in your Shopify blog editor.</div>
               <div style={{ ...S.row, marginBottom: 10 }}>
                 <input style={{ ...S.input, maxWidth: 320 }} placeholder="Keyword or topic" value={blogOutlineKw} onChange={e => setBlogOutlineKw(e.target.value)} />
                 <input style={{ ...S.input, maxWidth: 200 }} placeholder="Audience" value={blogOutlineAudience} onChange={e => setBlogOutlineAudience(e.target.value)} />
@@ -5964,21 +5965,37 @@ export default function BlogSEO() {
               </div>
               {blogOutlineResult && (
                 <div style={{ fontSize: 13, color: "#d4d4d8" }}>
-                  <div style={{ fontWeight: 700 }}>{blogOutlineResult.title}</div>
-                  <div style={{ color: "#93c5fd", marginTop: 6 }}>{blogOutlineResult.metaDescription}</div>
-                  {(blogOutlineResult.sections || []).slice(0, 6).map((s, i) => <div key={i}>� {s.heading} ({s.suggestedWordCount}w)</div>)}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <div style={{ fontWeight: 700, flex: 1 }}>{blogOutlineResult.title}</div>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", flexShrink: 0 }} onClick={() => navigator.clipboard.writeText(blogOutlineResult.title)}>📋 Copy Title</button>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10, borderBottom: "1px solid #27272a", paddingBottom: 10 }}>
+                    <div style={{ color: "#93c5fd", flex: 1, fontSize: 12 }}>{blogOutlineResult.metaDescription}</div>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", flexShrink: 0 }} onClick={() => navigator.clipboard.writeText(blogOutlineResult.metaDescription)}>📋 Copy Meta</button>
+                  </div>
+                  <div style={{ marginBottom: 8, fontSize: 11, color: "#52525b", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Sections — copy any heading into your post editor as an H2</div>
+                  {(blogOutlineResult.sections || []).slice(0, 6).map((s, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: i < Math.min((blogOutlineResult.sections || []).length, 6) - 1 ? "1px solid #27272a" : "none" }}>
+                      <span style={{ color: "#a78bfa", fontWeight: 600, fontSize: 12, width: 18, flexShrink: 0 }}>{i + 1}.</span>
+                      <span style={{ flex: 1 }}>{s.heading}</span>
+                      <span style={{ color: "#52525b", fontSize: 11 }}>{s.suggestedWordCount}w</span>
+                      <button style={{ ...S.btn(), fontSize: 11, padding: "2px 8px", flexShrink: 0 }} onClick={() => navigator.clipboard.writeText(s.heading)}>📋</button>
+                    </div>
+                  ))}
+                  <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px", marginTop: 10 }} onClick={() => navigator.clipboard.writeText('# ' + blogOutlineResult.title + '\n\nMeta: ' + blogOutlineResult.metaDescription + '\n\n' + (blogOutlineResult.sections || []).map((s, i) => (i + 1) + '. ' + s.heading + ' (~' + s.suggestedWordCount + ' words)').join('\n'))}>📋 Copy Full Outline</button>
                 </div>
               )}
             </div>
 
             <div style={S.card}>
               <div style={S.cardTitle}>💡 AI Intro Generator</div>
+              <div style={{ fontSize: 12, color: "#71717a", marginBottom: 10 }}>Generate 3 opening paragraphs in different copywriting styles. Pick the one that fits your tone and paste it as the first paragraph of your blog post.</div>
               <div style={{ ...S.row, marginBottom: 10 }}>
                 <input style={{ ...S.input, maxWidth: 320 }} placeholder="Keyword or topic" value={introGenKw} onChange={e => setIntroGenKw(e.target.value)} />
-                <select style={{ ...S.input, maxWidth: 160 }} value={introGenStyle} onChange={e => setIntroGenStyle(e.target.value)}>
-                  <option value="PAS">PAS</option>
-                  <option value="AIDA">AIDA</option>
-                  <option value="Story">Story</option>
+                <select style={{ ...S.input, maxWidth: 190 }} value={introGenStyle} onChange={e => setIntroGenStyle(e.target.value)}>
+                  <option value="PAS">PAS — Problem, Agitate, Solve</option>
+                  <option value="AIDA">AIDA — Attention, Interest, Desire, Action</option>
+                  <option value="Story">Story — Hook with a narrative</option>
                 </select>
                 <button style={S.btn("primary")} onClick={runIntroGenerator} disabled={introGenLoading || !introGenKw.trim()}>
                   {introGenLoading ? <><span style={S.spinner} /> Generating�</> : "Generate (2 cr)"}
@@ -5986,13 +6003,20 @@ export default function BlogSEO() {
               </div>
               {introGenResult && (
                 <div style={{ fontSize: 13, color: "#d4d4d8" }}>
-                  {(introGenResult.intros || []).map((i, idx) => <div key={idx} style={{ marginBottom: 6 }}>� {i.text}</div>)}
+                  {(introGenResult.intros || []).map((intro, idx) => (
+                    <div key={idx} style={{ marginBottom: 10, padding: "10px 12px", background: "#18181b", borderRadius: 8, borderLeft: "3px solid #6366f1" }}>
+                      {intro.style && <div style={{ fontSize: 11, fontWeight: 700, color: "#818cf8", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>{intro.style}</div>}
+                      <div style={{ lineHeight: 1.6, marginBottom: 6 }}>{intro.text}</div>
+                      <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(intro.text)}>📋 Copy</button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
             <div style={S.card}>
               <div style={S.cardTitle}>💡 AI Title Ideas</div>
+              <div style={{ fontSize: 12, color: "#71717a", marginBottom: 10 }}>Get 8 click-worthy title options. Aim for 50–60 characters for best SEO performance — the character count is shown next to each title. Click Copy to grab it and paste it into your Shopify post title field.</div>
               <div style={{ ...S.row, marginBottom: 10 }}>
                 <input style={{ ...S.input, maxWidth: 320 }} placeholder="Keyword" value={titleIdeasKw} onChange={e => setTitleIdeasKw(e.target.value)} />
                 <button style={S.btn("primary")} onClick={runTitleIdeas} disabled={titleIdeasLoading || !titleIdeasKw.trim()}>
@@ -6001,14 +6025,21 @@ export default function BlogSEO() {
               </div>
               {titleIdeasResult && (
                 <div style={{ fontSize: 13, color: "#d4d4d8" }}>
-                  {(titleIdeasResult.titles || []).slice(0, 8).map((t, i) => <div key={i}>� {t.title}</div>)}
-                  {titleIdeasResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {titleIdeasResult.tip}</div>}
+                  {(titleIdeasResult.titles || []).slice(0, 8).map((t, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: i < Math.min((titleIdeasResult.titles || []).length, 8) - 1 ? "1px solid #27272a" : "none" }}>
+                      <span style={{ flex: 1 }}>{t.title}</span>
+                      <span style={{ fontSize: 11, color: (t.title || '').length >= 50 && (t.title || '').length <= 60 ? "#22c55e" : "#71717a", flexShrink: 0 }}>{(t.title || '').length}ch</span>
+                      <button style={{ ...S.btn(), fontSize: 11, padding: "2px 8px", flexShrink: 0 }} onClick={() => navigator.clipboard.writeText(t.title)}>📋 Copy</button>
+                    </div>
+                  ))}
+                  {titleIdeasResult.tip && <div style={{ color: "#93c5fd", marginTop: 10, fontSize: 12 }}>💡 {titleIdeasResult.tip}</div>}
                 </div>
               )}
             </div>
 
             <div style={S.card}>
               <div style={S.cardTitle}>💡 AI CTA Generator</div>
+              <div style={{ fontSize: 12, color: "#71717a", marginBottom: 10 }}>Generate call-to-action blocks for the end of your blog post. Each includes persuasive body copy and a suggested button label — paste the text into your post and add the button in your theme editor.</div>
               <div style={{ ...S.row, marginBottom: 10 }}>
                 <input style={{ ...S.input, maxWidth: 240 }} placeholder="Keyword" value={ctaGenKw} onChange={e => setCtaGenKw(e.target.value)} />
                 <select style={{ ...S.input, maxWidth: 160 }} value={ctaGenGoal} onChange={e => setCtaGenGoal(e.target.value)}>
@@ -6022,8 +6053,18 @@ export default function BlogSEO() {
               </div>
               {ctaGenResult && (
                 <div style={{ fontSize: 13, color: "#d4d4d8" }}>
-                  {(ctaGenResult.ctas || []).map((c, i) => <div key={i}>� {c.variant}: {c.text} [btn: {c.buttonText}]</div>)}
-                  {ctaGenResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {ctaGenResult.tip}</div>}
+                  {(ctaGenResult.ctas || []).map((cta, i) => (
+                    <div key={i} style={{ marginBottom: 10, padding: "10px 12px", background: "#18181b", borderRadius: 8, borderLeft: "3px solid #f59e0b" }}>
+                      {cta.variant && <div style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>{cta.variant}</div>}
+                      <div style={{ lineHeight: 1.6, marginBottom: 8 }}>{cta.text}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 11, background: "#292524", border: "1px solid #57534e", borderRadius: 6, padding: "3px 10px", color: "#fbbf24" }}>Button label: "{cta.buttonText}"</span>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(cta.text)}>📋 Copy Text</button>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(cta.text + '\n\n[' + cta.buttonText + ']')}>📋 Copy All</button>
+                      </div>
+                    </div>
+                  ))}
+                  {ctaGenResult.tip && <div style={{ color: "#93c5fd", marginTop: 6, fontSize: 12 }}>💡 {ctaGenResult.tip}</div>}
                 </div>
               )}
             </div>
