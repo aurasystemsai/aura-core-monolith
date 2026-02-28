@@ -2471,8 +2471,12 @@ export default function BlogSEO() {
       return { hint: 'Only one H1 per page. Open your post editor, change extra H1s to H2 or H3.', label: '\u270d\ufe0f Fix H1', action: () => runRewrite('h1') };
     if (m.includes('h1') && m.includes('align'))
       return { hint: 'Your title tag and H1 should share key terms. Edit one to match the other — Google uses both to understand your topic.', label: '\u270d\ufe0f Align H1 & Title', action: () => runRewrite('h1') };
-    if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin'))))
+    if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin') || m.includes('only') || m.includes('minimum') || m.includes('should be'))))
       return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { setSection('Write'); setTab('AI Create'); } };
+    if (m.includes('author'))
+      return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: '\u2699\ufe0f Add Author', action: () => { setSection('Technical'); setTab('Technical+'); } };
+    if (m.includes('date') || m.includes('freshness') || m.includes('publish') || m.includes('modified'))
+      return { hint: 'Freshness matters for blog rankings. Add datePublished and dateModified to your Schema markup so Google can accurately assess how current your content is.', label: '\U0001f517 Add Schema', action: () => { setSection('Schema'); setTab('Schema & Links'); } };
     if (m.includes('schema') || m.includes('structured data') || m.includes('json-ld'))
       return { hint: 'Add Article or BlogPosting schema to help Google display rich results. Use the Schema tool to generate and add it with one click.', label: '\U0001f517 Add Schema', action: () => { setSection('Schema'); setTab('Schema & Links'); } };
     if (m.includes('internal link'))
@@ -2772,7 +2776,7 @@ export default function BlogSEO() {
                                 {hint && <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{hint.hint}</div>}
                               </div>
                               {hint && (
-                                <button style={{ ...S.btn('primary'), fontSize: 11, padding: "4px 12px", whiteSpace: "nowrap", flexShrink: 0 }} onClick={hint.action}>{hint.label}</button>
+                                <button style={{ ...S.btn('primary'), fontSize: 11, padding: "4px 12px", whiteSpace: "nowrap", flexShrink: 0 }} onClick={() => { hint.action(); requestAnimationFrame(() => document.getElementById('rewrite-output')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })); }}>{hint.label}</button>
                               )}
                             </div>
                           );
@@ -2855,6 +2859,7 @@ export default function BlogSEO() {
                 </div>
 
                 {/* Rewrite loading / error / results — directly below buttons */}
+                <div id="rewrite-output" style={{ height: 0 }} />
                 {rewriteLoading && (
                   <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc" }}>
                     <span style={S.spinner} /> Generating AI rewrites for <strong style={{ color: "#e0e7ff" }}>{rewriteField}</strong>&hellip;

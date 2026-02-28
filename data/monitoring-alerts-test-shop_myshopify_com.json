@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1772281392050",
+    "shop": "test-shop.myshopify.com",
+    "type": "keyword-position",
+    "url": "https://example.com",
+    "keyword": "seo",
+    "createdAt": "2026-02-28T12:23:12.050Z",
+    "active": true
+  },
+  {
+    "id": "1772281583879",
+    "shop": "test-shop.myshopify.com",
+    "type": "keyword-position",
+    "url": "https://example.com",
+    "keyword": "seo",
+    "createdAt": "2026-02-28T12:26:23.879Z",
+    "active": true
+  }
+]

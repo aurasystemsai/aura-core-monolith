@@ -1,0 +1,4318 @@
+{
+  "ran": "2026-02-28T12:35:26.030Z",
+  "passed": 229,
+  "failed": 0,
+  "missing": 0,
+  "results": [
+    {
+      "group": "Health",
+      "name": "health check",
+      "method": "GET",
+      "path": "/health",
+      "status": 200,
+      "ms": 179,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "status": "Blog SEO Engine online",
+        "version": "2.0.0"
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Items",
+      "name": "GET items",
+      "method": "GET",
+      "path": "/items",
+      "status": 200,
+      "ms": 56,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "items": [
+          {
+            "id": 1,
+            "url": "https://example.com",
+            "keyword": "seo test",
+            "shop": "test-shop.myshopify.com",
+            "ts": "2026-02-28T12:33:13.500Z"
+          }
+        ]
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Items",
+      "name": "POST item",
+      "method": "POST",
+      "path": "/items",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 59,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analyse",
+      "name": "POST /analyze",
+      "method": "POST",
+      "path": "/analyze",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 54,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analyse",
+      "name": "POST /bulk-analyze",
+      "method": "POST",
+      "path": "/bulk-analyze",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 56,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/analyze",
+      "method": "POST",
+      "path": "/ai/analyze",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 57,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/content-brief",
+      "method": "POST",
+      "path": "/ai/content-brief",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 55,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/keyword-research",
+      "method": "POST",
+      "path": "/ai/keyword-research",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 57,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/rewrite",
+      "method": "POST",
+      "path": "/ai/rewrite",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 60,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/generate",
+      "method": "POST",
+      "path": "/ai/generate",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 57,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/blog-outline",
+      "method": "POST",
+      "path": "/ai/blog-outline",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/intro-generator",
+      "method": "POST",
+      "path": "/ai/intro-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/title-ideas",
+      "method": "POST",
+      "path": "/ai/title-ideas",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/cta-generator",
+      "method": "POST",
+      "path": "/ai/cta-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/key-takeaways",
+      "method": "POST",
+      "path": "/ai/key-takeaways",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/summary-generator",
+      "method": "POST",
+      "path": "/ai/summary-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 22,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/tone-analyzer",
+      "method": "POST",
+      "path": "/ai/tone-analyzer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 23,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/content-grader",
+      "method": "POST",
+      "path": "/ai/content-grader",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 24,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/pull-quotes",
+      "method": "POST",
+      "path": "/ai/pull-quotes",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 27,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/headline-hook",
+      "method": "POST",
+      "path": "/ai/headline-hook",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 30,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/passage-optimizer",
+      "method": "POST",
+      "path": "/ai/passage-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/content-repurpose",
+      "method": "POST",
+      "path": "/ai/content-repurpose",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "AI",
+      "name": "ai/content-visibility",
+      "method": "POST",
+      "path": "/ai/content-visibility",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/generate",
+      "method": "POST",
+      "path": "/schema/generate",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/breadcrumb",
+      "method": "POST",
+      "path": "/schema/breadcrumb",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 21,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/howto",
+      "method": "POST",
+      "path": "/schema/howto",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 22,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/video",
+      "method": "POST",
+      "path": "/schema/video",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 27,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/review",
+      "method": "POST",
+      "path": "/schema/review",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 31,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/organization",
+      "method": "POST",
+      "path": "/schema/organization",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 33,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/speakable",
+      "method": "POST",
+      "path": "/schema/speakable",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 34,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/product",
+      "method": "POST",
+      "path": "/schema/product",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/event",
+      "method": "POST",
+      "path": "/schema/event",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/person",
+      "method": "POST",
+      "path": "/schema/person",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/course",
+      "method": "POST",
+      "path": "/schema/course",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/recipe",
+      "method": "POST",
+      "path": "/schema/recipe",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/software",
+      "method": "POST",
+      "path": "/schema/software",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/local-business",
+      "method": "POST",
+      "path": "/schema/local-business",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 23,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "faq-schema/generate",
+      "method": "POST",
+      "path": "/faq-schema/generate",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 25,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "article-schema/validate",
+      "method": "POST",
+      "path": "/article-schema/validate",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 26,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/redirect-audit",
+      "method": "POST",
+      "path": "/schema/redirect-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 27,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/duplicate-content",
+      "method": "POST",
+      "path": "/schema/duplicate-content",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/hreflang",
+      "method": "POST",
+      "path": "/schema/hreflang",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Schema",
+      "name": "schema/mobile-seo",
+      "method": "POST",
+      "path": "/schema/mobile-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "metadata/analyze",
+      "method": "POST",
+      "path": "/metadata/analyze",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/evaluate",
+      "method": "POST",
+      "path": "/keywords/evaluate",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "research/score",
+      "method": "POST",
+      "path": "/research/score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/lsi",
+      "method": "POST",
+      "path": "/keywords/lsi",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keyword-density",
+      "method": "POST",
+      "path": "/keyword-density",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/prominence",
+      "method": "POST",
+      "path": "/keywords/prominence",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/tfidf",
+      "method": "POST",
+      "path": "/keywords/tfidf",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 21,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/co-occurrence",
+      "method": "POST",
+      "path": "/keywords/co-occurrence",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/secondary",
+      "method": "POST",
+      "path": "/keywords/secondary",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/voice-search",
+      "method": "POST",
+      "path": "/keywords/voice-search",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/negative-check",
+      "method": "POST",
+      "path": "/keywords/negative-check",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/featured-snippet",
+      "method": "POST",
+      "path": "/keywords/featured-snippet",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/low-difficulty-finder",
+      "method": "POST",
+      "path": "/keywords/low-difficulty-finder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Meta/KW",
+      "name": "keywords/cannibalization-detector",
+      "method": "POST",
+      "path": "/keywords/cannibalization-detector",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "title/ctr-signals",
+      "method": "POST",
+      "path": "/title/ctr-signals",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "title-h1-alignment",
+      "method": "POST",
+      "path": "/title-h1-alignment",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "heading-hierarchy",
+      "method": "POST",
+      "path": "/heading-hierarchy",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "meta-description-audit",
+      "method": "POST",
+      "path": "/meta-description-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "meta-description-optimizer",
+      "method": "POST",
+      "path": "/meta-description-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "image-seo",
+      "method": "POST",
+      "path": "/image-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "semantic-html",
+      "method": "POST",
+      "path": "/semantic-html",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "og-validator",
+      "method": "POST",
+      "path": "/og-validator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "On-Page",
+      "name": "serp/preview",
+      "method": "POST",
+      "path": "/serp/preview",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/advanced-readability",
+      "method": "POST",
+      "path": "/content/advanced-readability",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/sentence-variety",
+      "method": "POST",
+      "path": "/content/sentence-variety",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/emotional-tone",
+      "method": "POST",
+      "path": "/content/emotional-tone",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/jargon-detector",
+      "method": "POST",
+      "path": "/content/jargon-detector",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/expertise-signals",
+      "method": "POST",
+      "path": "/content/expertise-signals",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/multimedia-score",
+      "method": "POST",
+      "path": "/content/multimedia-score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/questions-count",
+      "method": "POST",
+      "path": "/content/questions-count",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/intro-quality",
+      "method": "POST",
+      "path": "/content/intro-quality",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/cta-audit",
+      "method": "POST",
+      "path": "/content/cta-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/formatting-score",
+      "method": "POST",
+      "path": "/content/formatting-score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/thin-content",
+      "method": "POST",
+      "path": "/content/thin-content",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/freshness-score",
+      "method": "POST",
+      "path": "/content/freshness-score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/skyscraper-gap",
+      "method": "POST",
+      "path": "/content/skyscraper-gap",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/relaunch-advisor",
+      "method": "POST",
+      "path": "/content/relaunch-advisor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/semantic-enrichment",
+      "method": "POST",
+      "path": "/content/semantic-enrichment",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/topic-cluster-builder",
+      "method": "POST",
+      "path": "/content/topic-cluster-builder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/visual-diversity",
+      "method": "POST",
+      "path": "/content/visual-diversity",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/time-to-value",
+      "method": "POST",
+      "path": "/content/time-to-value",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/content-pruning",
+      "method": "POST",
+      "path": "/content/content-pruning",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content/statistics-curator",
+      "method": "POST",
+      "path": "/content/statistics-curator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content-decay",
+      "method": "POST",
+      "path": "/content-decay",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "content-structure",
+      "method": "POST",
+      "path": "/content-structure",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "passage-indexing",
+      "method": "POST",
+      "path": "/passage-indexing",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "toc-generator",
+      "method": "POST",
+      "path": "/toc-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Content",
+      "name": "section-word-count",
+      "method": "POST",
+      "path": "/section-word-count",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/audit",
+      "method": "POST",
+      "path": "/technical/audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/url-analysis",
+      "method": "POST",
+      "path": "/technical/url-analysis",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/mobile-seo",
+      "method": "POST",
+      "path": "/technical/mobile-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/hreflang",
+      "method": "POST",
+      "path": "/technical/hreflang",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/amp-check",
+      "method": "POST",
+      "path": "/technical/amp-check",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/resource-hints",
+      "method": "POST",
+      "path": "/technical/resource-hints",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/json-ld-lint",
+      "method": "POST",
+      "path": "/technical/json-ld-lint",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/og-image-dims",
+      "method": "POST",
+      "path": "/technical/og-image-dims",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/https-status",
+      "method": "POST",
+      "path": "/technical/https-status",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/reading-level",
+      "method": "POST",
+      "path": "/technical/reading-level",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/tfidf-analyzer",
+      "method": "POST",
+      "path": "/technical/tfidf-analyzer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/content-length-advisor",
+      "method": "POST",
+      "path": "/technical/content-length-advisor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/cwv-advisor",
+      "method": "POST",
+      "path": "/technical/cwv-advisor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/page-speed-advisor",
+      "method": "POST",
+      "path": "/technical/page-speed-advisor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/crawl-budget",
+      "method": "POST",
+      "path": "/technical/crawl-budget",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/click-depth",
+      "method": "POST",
+      "path": "/technical/click-depth",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/log-file",
+      "method": "POST",
+      "path": "/technical/log-file",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/international-seo",
+      "method": "POST",
+      "path": "/technical/international-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "technical/google-news",
+      "method": "POST",
+      "path": "/technical/google-news",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "core-web-vitals",
+      "method": "POST",
+      "path": "/core-web-vitals",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "crawler-access",
+      "method": "POST",
+      "path": "/crawler-access",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "index-directives",
+      "method": "POST",
+      "path": "/index-directives",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "sitemap-check",
+      "method": "POST",
+      "path": "/sitemap-check",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Technical",
+      "name": "author-authority",
+      "method": "POST",
+      "path": "/author-authority",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp-features",
+      "method": "POST",
+      "path": "/serp-features",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/ctr-optimizer",
+      "method": "POST",
+      "path": "/serp/ctr-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/intent-classifier",
+      "method": "POST",
+      "path": "/serp/intent-classifier",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/feature-targets",
+      "method": "POST",
+      "path": "/serp/feature-targets",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/paa-generator",
+      "method": "POST",
+      "path": "/serp/paa-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/rich-result-check",
+      "method": "POST",
+      "path": "/serp/rich-result-check",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/rankbrain-advisor",
+      "method": "POST",
+      "path": "/serp/rankbrain-advisor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/longtail-embedder",
+      "method": "POST",
+      "path": "/serp/longtail-embedder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/meta-ab-variants",
+      "method": "POST",
+      "path": "/serp/meta-ab-variants",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/difficulty-score",
+      "method": "POST",
+      "path": "/serp/difficulty-score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/competitor-snapshot",
+      "method": "POST",
+      "path": "/serp/competitor-snapshot",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/news-seo",
+      "method": "POST",
+      "path": "/serp/news-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/video-seo",
+      "method": "POST",
+      "path": "/serp/video-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/entity-optimizer",
+      "method": "POST",
+      "path": "/serp/entity-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/review-schema",
+      "method": "POST",
+      "path": "/serp/review-schema",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "SERP",
+      "name": "serp/event-schema",
+      "method": "POST",
+      "path": "/serp/event-schema",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 6,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "intent-classifier",
+      "method": "POST",
+      "path": "/intent-classifier",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "ai-overview-eligibility",
+      "method": "POST",
+      "path": "/ai-overview-eligibility",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "topical-authority",
+      "method": "POST",
+      "path": "/topical-authority",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "competitor-gap",
+      "method": "POST",
+      "path": "/competitor-gap",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "cannibalization",
+      "method": "POST",
+      "path": "/cannibalization",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "anchor-text-audit",
+      "method": "POST",
+      "path": "/anchor-text-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "people-also-ask",
+      "method": "POST",
+      "path": "/people-also-ask",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "entity-detection",
+      "method": "POST",
+      "path": "/entity-detection",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "llm/score",
+      "method": "POST",
+      "path": "/llm/score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "links/check",
+      "method": "POST",
+      "path": "/links/check",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 5,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "links/internal-suggestions",
+      "method": "POST",
+      "path": "/links/internal-suggestions",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 6,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "links/external-authority",
+      "method": "POST",
+      "path": "/links/external-authority",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "links/link-density",
+      "method": "POST",
+      "path": "/links/link-density",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "links/outbound-audit",
+      "method": "POST",
+      "path": "/links/outbound-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "trust/social-proof",
+      "method": "POST",
+      "path": "/trust/social-proof",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Analysis",
+      "name": "trust/citation-check",
+      "method": "POST",
+      "path": "/trust/citation-check",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/link-gap",
+      "method": "POST",
+      "path": "/backlinks/link-gap",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/broken-backlinks",
+      "method": "POST",
+      "path": "/backlinks/broken-backlinks",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/anchor-text",
+      "method": "POST",
+      "path": "/backlinks/anchor-text",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/link-velocity",
+      "method": "POST",
+      "path": "/backlinks/link-velocity",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/opportunity-finder",
+      "method": "POST",
+      "path": "/backlinks/opportunity-finder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/outreach-generator",
+      "method": "POST",
+      "path": "/backlinks/outreach-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/bestof-finder",
+      "method": "POST",
+      "path": "/backlinks/bestof-finder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/anchor-optimizer",
+      "method": "POST",
+      "path": "/backlinks/anchor-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/strategy-builder",
+      "method": "POST",
+      "path": "/backlinks/strategy-builder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/internal-suggester",
+      "method": "POST",
+      "path": "/backlinks/internal-suggester",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Backlinks",
+      "name": "backlinks/link-reclamation",
+      "method": "POST",
+      "path": "/backlinks/link-reclamation",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Local",
+      "name": "local/gbp-optimizer",
+      "method": "POST",
+      "path": "/local/gbp-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Local",
+      "name": "local/citation-finder",
+      "method": "POST",
+      "path": "/local/citation-finder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Local",
+      "name": "local/local-keyword-gen",
+      "method": "POST",
+      "path": "/local/local-keyword-gen",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Local",
+      "name": "local/local-schema",
+      "method": "POST",
+      "path": "/local/local-schema",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Brand",
+      "name": "brand/eeat-scorer",
+      "method": "POST",
+      "path": "/brand/eeat-scorer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Brand",
+      "name": "brand/author-bio",
+      "method": "POST",
+      "path": "/brand/author-bio",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Brand",
+      "name": "brand/brand-signals",
+      "method": "POST",
+      "path": "/brand/brand-signals",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Brand",
+      "name": "brand/expert-quotes",
+      "method": "POST",
+      "path": "/brand/expert-quotes",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Brand",
+      "name": "brand/trust-builder",
+      "method": "POST",
+      "path": "/brand/trust-builder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Voice",
+      "name": "voice/voice-optimizer",
+      "method": "POST",
+      "path": "/voice/voice-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Voice",
+      "name": "voice/faq-generator",
+      "method": "POST",
+      "path": "/voice/faq-generator",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Voice",
+      "name": "voice/ai-overview-optimizer",
+      "method": "POST",
+      "path": "/voice/ai-overview-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 22,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Voice",
+      "name": "voice/conversational-keywords",
+      "method": "POST",
+      "path": "/voice/conversational-keywords",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/ab-test-advisor",
+      "method": "POST",
+      "path": "/ab/ab-test-advisor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/content-refresh",
+      "method": "POST",
+      "path": "/ab/content-refresh",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/title-variants",
+      "method": "POST",
+      "path": "/ab/title-variants",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/meta-variants",
+      "method": "POST",
+      "path": "/ab/meta-variants",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/bert-optimizer",
+      "method": "POST",
+      "path": "/ab/bert-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/secondary-keywords",
+      "method": "POST",
+      "path": "/ab/secondary-keywords",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "A/B",
+      "name": "ab/knowledge-graph",
+      "method": "POST",
+      "path": "/ab/knowledge-graph",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/content-calendar",
+      "method": "POST",
+      "path": "/ai/content-calendar",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 21,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/pillar-page",
+      "method": "POST",
+      "path": "/ai/pillar-page",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 21,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/programmatic-seo",
+      "method": "POST",
+      "path": "/ai/programmatic-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/content-roi",
+      "method": "POST",
+      "path": "/ai/content-roi",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/sge-optimizer",
+      "method": "POST",
+      "path": "/ai/sge-optimizer",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/topic-miner",
+      "method": "POST",
+      "path": "/ai/topic-miner",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "social/seo-score",
+      "method": "POST",
+      "path": "/social/seo-score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "competitor/full-audit",
+      "method": "POST",
+      "path": "/competitor/full-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/performance-predictor",
+      "method": "POST",
+      "path": "/ai/performance-predictor",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 21,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Growth",
+      "name": "ai/semantic-clusters",
+      "method": "POST",
+      "path": "/ai/semantic-clusters",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 23,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "VoiceProfile",
+      "name": "GET voice-profile",
+      "method": "GET",
+      "path": "/voice-profile",
+      "status": 200,
+      "ms": 5,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "profiles": []
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "VoiceProfile",
+      "name": "POST voice-profile",
+      "method": "POST",
+      "path": "/voice-profile",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 23,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "VoiceProfile",
+      "name": "POST voice-profile/save",
+      "method": "POST",
+      "path": "/voice-profile/save",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "VoiceProfile",
+      "name": "GET voice-profile/test-1",
+      "method": "GET",
+      "path": "/voice-profile/test-1",
+      "status": 404,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": false,
+        "error": "Profile not found"
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "VoiceProfile",
+      "name": "DELETE voice-profile/test-1",
+      "method": "DELETE",
+      "path": "/voice-profile/test-1",
+      "status": 200,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "GSC",
+      "name": "GET gsc/summary",
+      "method": "GET",
+      "path": "/gsc/summary",
+      "status": 200,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "total": 27,
+        "avgPosition": 0,
+        "breakdown": {
+          "pos1_3": 0,
+          "pos4_10": 0,
+          "pos11_20": 0,
+          "pos21plus": 0
+        },
+        "gscVerified": 0
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "POST crawl/start",
+      "method": "POST",
+      "path": "/crawl/start",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "GET crawl/status",
+      "method": "GET",
+      "path": "/crawl/status",
+      "status": 200,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "status": "idle",
+        "message": "No active crawl"
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "GET crawl/results",
+      "method": "GET",
+      "path": "/crawl/results",
+      "status": 200,
+      "ms": 12,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "status": "complete",
+        "id": "crawl_1772281583651",
+        "date": "2026-02-28T12:26:23.684Z",
+        "pagesFound": 0,
+        "issuesFound": 0,
+        "pages": [],
+        "issues": []
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "POST crawl/ai-summary",
+      "method": "POST",
+      "path": "/crawl/ai-summary",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "POST crawl/orphan-finder",
+      "method": "POST",
+      "path": "/crawl/orphan-finder",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "POST crawl/export-csv",
+      "method": "POST",
+      "path": "/crawl/export-csv",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 21,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "GET crawl/snapshots",
+      "method": "GET",
+      "path": "/crawl/snapshots",
+      "status": 200,
+      "ms": 9,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "snapshots": [
+          {
+            "id": "crawl_1772141935754",
+            "date": "2026-02-26T21:38:55.794Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772142046700",
+            "date": "2026-02-26T21:40:46.744Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772142061737",
+            "date": "2026-02-26T21:41:01.775Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772142267949",
+            "date": "2026-02-26T21:44:27.987Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772142378450",
+            "date": "2026-02-26T21:46:18.490Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772142629802",
+            "date": "2026-02-26T21:50:29.844Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772143447305",
+            "date": "2026-02-26T22:04:07.343Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772143538367",
+            "date": "2026-02-26T22:05:38.473Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772281391830",
+            "date": "2026-02-28T12:23:11.873Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          },
+          {
+            "id": "crawl_1772281583651",
+            "date": "2026-02-28T12:26:23.684Z",
+            "pagesFound": 0,
+            "issuesFound": 0
+          }
+        ]
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "POST crawl/compare",
+      "method": "POST",
+      "path": "/crawl/compare",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Crawl",
+      "name": "POST crawl/duplicate-detector",
+      "method": "POST",
+      "path": "/crawl/duplicate-detector",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/geo-health-score",
+      "method": "POST",
+      "path": "/geo/geo-health-score",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 13,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/llm-visibility-audit",
+      "method": "POST",
+      "path": "/geo/llm-visibility-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/prompt-simulation",
+      "method": "POST",
+      "path": "/geo/prompt-simulation",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/citation-gap-analysis",
+      "method": "POST",
+      "path": "/geo/citation-gap-analysis",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/ai-platform-tracker",
+      "method": "POST",
+      "path": "/geo/ai-platform-tracker",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 22,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/mention-gap",
+      "method": "POST",
+      "path": "/geo/mention-gap",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 25,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/brand-sentiment-ai",
+      "method": "POST",
+      "path": "/geo/brand-sentiment-ai",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 26,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "GEO",
+      "name": "geo/faq-for-llm",
+      "method": "POST",
+      "path": "/geo/faq-for-llm",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 15,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Monitoring",
+      "name": "POST monitoring/add-alert",
+      "method": "POST",
+      "path": "/monitoring/add-alert",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Monitoring",
+      "name": "GET monitoring/alerts",
+      "method": "GET",
+      "path": "/monitoring/alerts",
+      "status": 200,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "alerts": [
+          {
+            "id": "1772281392050",
+            "shop": "test-shop.myshopify.com",
+            "type": "keyword-position",
+            "url": "https://example.com",
+            "keyword": "seo",
+            "createdAt": "2026-02-28T12:23:12.050Z",
+            "active": true
+          },
+          {
+            "id": "1772281583879",
+            "shop": "test-shop.myshopify.com",
+            "type": "keyword-position",
+            "url": "https://example.com",
+            "keyword": "seo",
+            "createdAt": "2026-02-28T12:26:23.879Z",
+            "active": true
+          }
+        ],
+        "total": 2
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Monitoring",
+      "name": "POST monitoring/alerts",
+      "method": "POST",
+      "path": "/monitoring/alerts",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "GET shopify-data",
+      "method": "GET",
+      "path": "/shopify-data",
+      "status": 200,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "body": {
+        "ok": true,
+        "shop": "test-shop.myshopify.com",
+        "articles": [],
+        "products": [],
+        "warning": "No Shopify token — reconnect your store in Settings"
+      },
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/blog-template-audit",
+      "method": "POST",
+      "path": "/shopify/blog-template-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/collection-seo",
+      "method": "POST",
+      "path": "/shopify/collection-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 20,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/product-blog-links",
+      "method": "POST",
+      "path": "/shopify/product-blog-links",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 22,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/metafield-seo",
+      "method": "POST",
+      "path": "/shopify/metafield-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 24,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/tag-taxonomy",
+      "method": "POST",
+      "path": "/shopify/tag-taxonomy",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 26,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/blog-internal-links",
+      "method": "POST",
+      "path": "/shopify/blog-internal-links",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 7,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/image-compression",
+      "method": "POST",
+      "path": "/shopify/image-compression",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 8,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/duplicate-products",
+      "method": "POST",
+      "path": "/shopify/duplicate-products",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 10,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/breadcrumb-schema",
+      "method": "POST",
+      "path": "/shopify/breadcrumb-schema",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 11,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/review-schema-bulk",
+      "method": "POST",
+      "path": "/shopify/review-schema-bulk",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "status": 402,
+      "ms": 14,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/international-seo",
+      "method": "POST",
+      "path": "/shopify/international-seo",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 16,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/collection-keyword-gaps",
+      "method": "POST",
+      "path": "/shopify/collection-keyword-gaps",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 17,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/theme-seo-audit",
+      "method": "POST",
+      "path": "/shopify/theme-seo-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 18,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    },
+    {
+      "group": "Shopify",
+      "name": "shopify/speed-audit",
+      "method": "POST",
+      "path": "/shopify/speed-audit",
+      "body": {
+        "ok": false,
+        "error": "Insufficient credits. This action costs 1 credit, but you only have 0. Purchase a credit top-up pack to continue.",
+        "credit_error": true,
+        "credits_needed": 1,
+        "credits_available": 0
+      },
+      "ai": true,
+      "status": 402,
+      "ms": 19,
+      "pass": true,
+      "skip": false,
+      "routeMissing": false
+    }
+  ]
+}

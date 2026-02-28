@@ -1,0 +1,92 @@
+{
+  "test-shop.myshopify.com": {
+    "plan": "free",
+    "plan_credits": 10,
+    "topup_credits": 0,
+    "used_this_period": 10,
+    "period_start": "2026-02-28T12:23:06.192Z",
+    "lifetime_used": 10,
+    "transactions": [
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:32.887Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:33.125Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:42.068Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:45.154Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:48.236Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:51.785Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:33:56.877Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:34:12.271Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:34:18.097Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      },
+      {
+        "type": "deduct",
+        "action": "seo-analysis",
+        "cost": 1,
+        "timestamp": "2026-02-28T12:34:22.943Z",
+        "tool": "/api/blog-seo",
+        "model": "gpt-4o-mini"
+      }
+    ]
+  }
+}

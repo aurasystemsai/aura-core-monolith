@@ -1,22 +1,6 @@
 {
   "snapshots": [
     {
-      "id": "crawl_1772141369803",
-      "date": "2026-02-26T21:29:29.847Z",
-      "pagesFound": 0,
-      "issuesFound": 0,
-      "pages": [],
-      "issues": []
-    },
-    {
-      "id": "crawl_1772141921604",
-      "date": "2026-02-26T21:38:41.653Z",
-      "pagesFound": 0,
-      "issuesFound": 0,
-      "pages": [],
-      "issues": []
-    },
-    {
       "id": "crawl_1772141935754",
       "date": "2026-02-26T21:38:55.794Z",
       "pagesFound": 0,
@@ -75,6 +59,22 @@
     {
       "id": "crawl_1772143538367",
       "date": "2026-02-26T22:05:38.473Z",
+      "pagesFound": 0,
+      "issuesFound": 0,
+      "pages": [],
+      "issues": []
+    },
+    {
+      "id": "crawl_1772281391830",
+      "date": "2026-02-28T12:23:11.873Z",
+      "pagesFound": 0,
+      "issuesFound": 0,
+      "pages": [],
+      "issues": []
+    },
+    {
+      "id": "crawl_1772281583651",
+      "date": "2026-02-28T12:26:23.684Z",
       "pagesFound": 0,
       "issuesFound": 0,
       "pages": [],
