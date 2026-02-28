@@ -6261,6 +6261,12 @@ router.get('/voice-profile', (req, res) => {
   res.json({ ok: true, profiles: loadVoices(shop) });
 });
 
+// POST version used by the dashboard card which sends shop in the request body
+router.post('/voice-profile', (req, res) => {
+  const shop = req.body?.shop || req.headers['x-shopify-shop-domain'] || 'default';
+  res.json({ ok: true, profiles: loadVoices(shop) });
+});
+
 router.post('/voice-profile/save', (req, res) => {
   const shop = req.headers['x-shopify-shop-domain'] || 'default';
   const { id, name, tone, vocabulary, rules, sample, avoid } = req.body;
@@ -6616,6 +6622,18 @@ router.post('/crawl/orphan-finder', (req, res) => {
 
 router.get('/crawl/export-csv', (req, res) => {
   const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
+  if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
+  const rows = [['URL','Status','Title','Meta','H1 Count','Noindex','Issue Count','Issues']];
+  latest.pages.forEach(p => { rows.push([p.url, p.status, (p.title||'').replace(/,/g,''), (p.meta||'').replace(/,/g,'').substring(0,100), p.h1s?.length||0, p.noindex||false, p.issues?.length||0, (p.issues||[]).map(i=>i.type).join('|')]); });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv'); res.setHeader('Content-Disposition', 'attachment; filename="crawl-results.csv"');
+  res.send(csv);
+});
+
+// POST version used by the dashboard which sends shop in the request body
+router.post('/crawl/export-csv', (req, res) => {
+  const shop = req.body?.shop || req.headers['x-shopify-shop-domain'] || 'default';
   const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
   if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
   const rows = [['URL','Status','Title','Meta','H1 Count','Noindex','Issue Count','Issues']];
