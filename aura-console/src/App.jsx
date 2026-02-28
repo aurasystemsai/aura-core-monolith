@@ -422,6 +422,46 @@ function App() {
     setChangelogSeen(true);
     localStorage.setItem('auraChangelogSeen', '1');
   };
+  // Human-readable section labels for the breadcrumb
+  const SECTION_LABELS = {
+    'dashboard': 'Dashboard', 'all-tools': 'All Tools', 'main-suite': 'Suite',
+    'settings': 'Settings', 'credits': 'Credits', 'pricing': 'Pricing',
+    'blog-seo': 'Blog SEO Engine', 'blog-draft-engine': 'Blog Draft Engine',
+    'product-seo': 'Product SEO', 'keyword-research-suite': 'Keyword Research',
+    'on-page-seo-engine': 'On-Page SEO', 'technical-seo-auditor': 'Technical SEO',
+    'schema-rich-results-engine': 'Schema & Rich Results', 'image-alt-media-seo': 'Image & Media SEO',
+    'rank-visibility-tracker': 'Rank Tracker', 'ai-visibility-tracker': 'AI Visibility',
+    'seo-site-crawler': 'Site Crawler', 'internal-link-optimizer': 'Internal Links',
+    'ai-content-brief-generator': 'Content Brief', 'content-scoring-optimization': 'Content Scoring',
+    'backlink-explorer': 'Backlink Explorer', 'link-intersect-outreach': 'Link Outreach',
+    'local-seo-toolkit': 'Local SEO', 'competitive-analysis': 'Competitive Analysis',
+    'ai-content-image-gen': 'AI Content & Images', 'weekly-blog-content-engine': 'Weekly Blog Engine',
+    'email-automation-builder': 'Email Automation', 'abandoned-checkout-winback': 'Checkout Winback',
+    'returns-rma-automation': 'Returns Automation', 'automation-templates': 'Automation Templates',
+    'ai-support-assistant': 'AI Support', 'inbox-assistant': 'Inbox Assistant',
+    'review-ugc-engine': 'Reviews & UGC', 'self-service-portal': 'Self-Service Portal',
+    'social-scheduler-content-engine': 'Social Scheduler', 'brand-mention-tracker': 'Brand Mentions',
+    'social-media-analytics-listening': 'Social Analytics', 'brand-intelligence-layer': 'Brand Intelligence',
+    'creative-automation-engine': 'Creative Automation', 'advanced-analytics-attribution': 'Analytics Attribution',
+    'predictive-analytics-widgets': 'Predictive Analytics', 'self-service-analytics': 'Self-Service Analytics',
+    'auto-insights': 'Auto Insights', 'reporting-integrations': 'Reporting Integrations',
+    'custom-dashboard-builder': 'Custom Dashboards', 'scheduled-export': 'Scheduled Export',
+    'data-warehouse-connector': 'Data Warehouse', 'dynamic-pricing-engine': 'Dynamic Pricing',
+    'upsell-cross-sell-engine': 'Upsell & Cross-sell', 'customer-data-platform': 'Customer Data Platform',
+    'personalization-recommendation-engine': 'Personalization', 'advanced-personalization-engine': 'Advanced Personalization',
+    'ltv-churn-predictor': 'LTV & Churn', 'churn-prediction-playbooks': 'Churn Playbooks',
+    'customer-segmentation-engine': 'Customer Segments', 'customer-journey-mapping': 'Journey Mapping',
+    'data-enrichment-suite': 'Data Enrichment', 'finance-autopilot': 'Finance Autopilot',
+    'inventory-supplier-sync': 'Inventory Sync', 'inventory-forecasting': 'Inventory Forecasting',
+    'aura-operations-ai': 'Operations AI', 'ai-launch-planner': 'Launch Planner',
+    'aura-api-sdk': 'API & SDK', 'webhook-api-triggers': 'Webhooks & API',
+    'loyalty-referral-programs': 'Loyalty & Referrals', 'reports': 'Reports',
+    'products': 'Products', 'tools': 'Tools',
+  };
+
+  const currentPageLabel = SECTION_LABELS[activeSection] || activeSection;
+  const prevPageLabel = sectionHistory.length > 0 ? (SECTION_LABELS[sectionHistory[sectionHistory.length - 1]] || sectionHistory[sectionHistory.length - 1]) : null;
+
   return (
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
@@ -435,11 +475,25 @@ function App() {
           plan={plan}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          {/* Slim top bar — brand actions only */}
+          {/* Slim top bar — persistent back + breadcrumb + plan badge */}
           <header className="top-bar-slim">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Back button — always visible when history exists */}
+              {sectionHistory.length > 0 && (
+                <button
+                  onClick={() => window.__AURA_SECTION_BACK && window.__AURA_SECTION_BACK()}
+                  title={prevPageLabel ? `Back to ${prevPageLabel}` : 'Go back'}
+                  style={{ background: '#27272a', border: '1px solid #3f3f46', borderRadius: 7, padding: '5px 12px', color: '#a1a1aa', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, lineHeight: 1, flexShrink: 0, transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#3f3f46'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#27272a'}
+                >
+                  &#8592; {prevPageLabel && <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prevPageLabel}</span>}
+                </button>
+              )}
+              {/* Current page name */}
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#e4e4e7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{currentPageLabel}</span>
               {plan && (
-                <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: plan === 'free' ? '#27272a' : `${PLAN_COLOUR[plan]}18`, color: PLAN_COLOUR[plan] || '#a1a1aa', border: `1px solid ${PLAN_COLOUR[plan] || '#27272a'}44`, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: plan === 'free' ? '#27272a' : `${PLAN_COLOUR[plan]}18`, color: PLAN_COLOUR[plan] || '#a1a1aa', border: `1px solid ${PLAN_COLOUR[plan] || '#27272a'}44`, letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0 }}>
                   {PLAN_LABEL[plan]}
                 </span>
               )}
