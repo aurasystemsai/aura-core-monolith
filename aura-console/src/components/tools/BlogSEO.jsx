@@ -959,6 +959,10 @@ export default function BlogSEO() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId: art.id, blogId: art.blogId, field, value, shop: shopDomain }),
       });
+      if (r.ok) {
+        // Mirror the change locally so the page reflects the new value immediately
+        setScanResult(prev => prev ? { ...prev, [field === 'h1' ? 'h1' : field]: value } : prev);
+      }
       setApplyResult(p => ({ ...p, [idx]: r.ok ? 'ok' : `error: ${r.error || 'Failed'}` }));
     } catch (e) {
       setApplyResult(p => ({ ...p, [idx]: `error: ${e.message}` }));
