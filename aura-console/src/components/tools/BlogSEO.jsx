@@ -2727,11 +2727,27 @@ export default function BlogSEO() {
                         </div>)}
                       {rewriteResult && !rewriteLoading && (
                         <div style={{ ...S.card, marginTop: 10 }}>
-                          <div style={{ ...S.cardTitle, marginBottom: 12 }}>✅ AI Suggestions — pick one and copy it into Shopify</div>
+                          <div style={{ ...S.cardTitle, marginBottom: 4 }}>✅ AI Suggestions</div>
+                          {selectedArticleId
+                            ? <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Click <strong style={{ color: "#a5b4fc" }}>Apply to Shopify</strong> to update the post title automatically, or copy it manually.</div>
+                            : <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>No article selected — copy a suggestion and paste it into Shopify, or select an article above to apply directly.</div>}
                           {(rewriteResult.variants || []).map((v, i) => (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: i < (rewriteResult.variants.length - 1) ? "1px solid #27272a" : "none" }}>
-                              <span style={{ flex: 1, fontSize: 13, color: "#e0e7ff" }}>{v.text}</span>
-                              <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
+                            <div key={i} style={{ padding: "10px 0", borderBottom: i < (rewriteResult.variants.length - 1) ? "1px solid #27272a" : "none" }}>
+                              <div style={{ fontSize: 13, color: "#e0e7ff", marginBottom: 8 }}>{v.text}</div>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                                <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard.writeText(v.text)}>📋 Copy</button>
+                                {selectedArticleId && (
+                                  <button
+                                    style={{ ...S.btn(applyResult[i] === "ok" ? undefined : "primary"), fontSize: 11, padding: "4px 12px" }}
+                                    disabled={applyResult[i] === "loading"}
+                                    onClick={() => applyRewrite(v.text, rewriteField || 'title', i)}>
+                                    {applyResult[i] === "loading" ? <><span style={S.spinner} /> Applying…</>
+                                      : applyResult[i] === "ok" ? "✅ Applied!"
+                                      : "🚀 Apply to Shopify"}
+                                  </button>)}
+                                {typeof applyResult[i] === "string" && applyResult[i].startsWith("error:") && (
+                                  <span style={{ fontSize: 11, color: "#f87171" }}>{applyResult[i].slice(7)}</span>)}
+                              </div>
                             </div>))}
                           {rewriteResult.tip && <div style={{ marginTop: 8, fontSize: 12, color: "#93c5fd" }}>💡 {rewriteResult.tip}</div>}
                         </div>)}
