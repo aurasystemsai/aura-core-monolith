@@ -109,11 +109,36 @@ export default function WeeklyBlogContentEngine() {
   const [stats, setStats] = useState(null);
   const [aiRun, setAiRun] = useState(null);
   const [error, setError] = useState("");
+  const [publishingSlug, setPublishingSlug] = useState(null);
+  const [publishResults, setPublishResults] = useState({});
 
   const plan = useMemo(
     () => buildPlan({ brand, niche, audience, cadence, themes, tone, market: "Worldwide", weekNumber }),
     [audience, brand, cadence, niche, themes, tone, weekNumber]
   );
+
+  const publishPostToShopify = async (post) => {
+    const key = post.slug;
+    setPublishingSlug(key);
+    try {
+      const res = await apiFetchJSON("/api/weekly-blog-content-engine/shopify/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: post.title,
+          bodyHtml: `<h1>${post.title}</h1><p>${post.metaDescription}</p>`,
+          metaDescription: post.metaDescription,
+          tags: `${post.angle},${post.primaryKeyword}`,
+          asDraft: true,
+        }),
+      });
+      setPublishResults(p => ({ ...p, [key]: res.ok ? `ok:${res.handle || "published"}` : `error: ${res.error || "Failed"}` }));
+    } catch (e) {
+      setPublishResults(p => ({ ...p, [key]: `error: ${e.message}` }));
+    } finally {
+      setPublishingSlug(null);
+    }
+  };
 
   const readiness = useMemo(() => {
     const ready = SAMPLE_CALENDAR.reduce((acc, w) => acc + (w.posts || []).filter((p) => p.status === "ready").length, 0);
@@ -292,12 +317,28 @@ export default function WeeklyBlogContentEngine() {
             <div className="metric-pill"><span>Links</span>Internal 12</div>
           </div>
           <div className="wbe-list">
-            {plan.posts.map((p) => (
-              <div key={p.slug} className="wbe-list-item">
-                <strong>{p.title}</strong>
-                <span>{p.metaDescription}</span>
-              </div>
-            ))}
+            {plan.posts.map((p) => {
+              const res = publishResults[p.slug];
+              const isOk = res?.startsWith("ok:");
+              const isErr = res?.startsWith("error:");
+              return (
+                <div key={p.slug} className="wbe-list-item" style={{ flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <strong style={{ display: "block", marginBottom: 2 }}>{p.title}</strong>
+                    <span style={{ fontSize: 12 }}>{p.metaDescription}</span>
+                    {isErr && <div style={{ fontSize: 11, color: "#f87171", marginTop: 3 }}>{res.slice(7)}</div>}
+                    {isOk && <div style={{ fontSize: 11, color: "#86efac", marginTop: 3 }}>✅ Published as draft on Shopify</div>}
+                  </div>
+                  <button
+                    onClick={() => publishPostToShopify(p)}
+                    disabled={publishingSlug === p.slug || isOk}
+                    style={{ background: isOk ? "#22c55e" : "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "5px 14px", fontWeight: 700, fontSize: 12, cursor: publishingSlug === p.slug || isOk ? "not-allowed" : "pointer", opacity: publishingSlug === p.slug ? 0.7 : 1, flexShrink: 0 }}
+                  >
+                    {publishingSlug === p.slug ? "⌛ Publishing…" : isOk ? "✅ Published" : "🚀 Publish to Shopify"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 

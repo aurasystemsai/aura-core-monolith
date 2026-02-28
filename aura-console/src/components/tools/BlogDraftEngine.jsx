@@ -77,8 +77,33 @@ export default function BlogDraftEngine() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [publishingDraftId, setPublishingDraftId] = useState(null);
+  const [publishResults, setPublishResults] = useState({});
 
   const outlineGrade = useMemo(() => gradeOutline(SAMPLE_OUTLINE), []);
+
+  const publishDraftToShopify = async (d) => {
+    const draftId = d.id || d.title;
+    setPublishingDraftId(draftId);
+    try {
+      const res = await apiFetchJSON("/api/blog-draft-engine/shopify/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: d.title,
+          bodyHtml: d.body_html || d.bodyHtml || d.content || `<h1>${d.title}</h1>`,
+          metaDescription: d.metaDescription || "",
+          tags: d.tags || "",
+          asDraft: true,
+        }),
+      });
+      setPublishResults(p => ({ ...p, [draftId]: res.ok ? "ok" : `error: ${res.error || "Failed"}` }));
+    } catch (e) {
+      setPublishResults(p => ({ ...p, [draftId]: `error: ${e.message}` }));
+    } finally {
+      setPublishingDraftId(null);
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -429,6 +454,18 @@ export default function BlogDraftEngine() {
                         <td>
                           <button className="bde-icon-btn" onClick={() => setSelectedItem(d)}>?</button>
                           <button className="bde-icon-btn" onClick={() => deleteItem("draft", d.id)}>?</button>
+                          <button
+                            className="bde-icon-btn"
+                            disabled={publishingDraftId === (d.id || d.title)}
+                            onClick={() => publishDraftToShopify(d)}
+                            title="Publish to Shopify as draft"
+                            style={{ background: publishResults[d.id || d.title] === "ok" ? "#22c55e" : publishResults[d.id || d.title]?.startsWith("error:") ? "#ef4444" : "#4f46e5", color: "#fff", borderRadius: 6, padding: "3px 8px", fontSize: 11, border: "none", cursor: "pointer", fontWeight: 700 }}
+                          >
+                            {publishingDraftId === (d.id || d.title) ? "⌛" : publishResults[d.id || d.title] === "ok" ? "✅" : "🚀"}
+                          </button>
+                          {publishResults[d.id || d.title]?.startsWith("error:") && (
+                            <div style={{ fontSize: 10, color: "#f87171", marginTop: 2 }}>{publishResults[d.id || d.title].slice(7)}</div>
+                          )}
                         </td>
                       </tr>
                     ))

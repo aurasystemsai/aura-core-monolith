@@ -154,6 +154,8 @@ export default function ProductSEOEngine() {
   const [focusKeywords, setFocusKeywords] = useState([]);
   const [kwInput, setKwInput] = useState("");
   const [fieldGenerating, setFieldGenerating] = useState({});
+  const [shopifyPushing, setShopifyPushing] = useState(false);
+  const [shopifyPushResult, setShopifyPushResult] = useState(null);
   const [config, setConfig] = useState({
     model: "claude-3.5-sonnet",
     channel: "amazon",
@@ -286,6 +288,34 @@ export default function ProductSEOEngine() {
 
   const fetchAbTests = async () => {
     await callEndpoint("/api/product-seo/ab-tests", {}, (data) => setAbTests(data.tests || []));
+  };
+
+  const pushToShopify = async () => {
+    if (!selectedProduct) return;
+    setShopifyPushing(true);
+    setShopifyPushResult(null);
+    try {
+      const res = await apiFetchJSON("/api/product-seo/shopify/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: selectedProduct.shopifyId || selectedProduct.id,
+          title: selectedProduct.title,
+          body_html: selectedProduct.description,
+          handle: selectedProduct.slug,
+          metaDescription: selectedProduct.metaDescription,
+          seoTitle: selectedProduct.seoTitle,
+        }),
+      });
+      if (!res.ok) throw new Error(res.error || "Shopify update failed");
+      setShopifyPushResult({ ok: true, message: res.message || "Product updated on Shopify" });
+      showToast("✅ Pushed to Shopify!");
+    } catch (err) {
+      setShopifyPushResult({ ok: false, message: err.message });
+      showToast("Shopify push failed: " + err.message);
+    } finally {
+      setShopifyPushing(false);
+    }
   };
 
   const createAbTest = async () => {
@@ -494,6 +524,16 @@ export default function ProductSEOEngine() {
                     className="btn"
                     disabled={loading}
                   >Save Product</button>
+                  <button
+                    onClick={pushToShopify}
+                    disabled={shopifyPushing || !selectedProduct.shopifyId && !selectedProduct.id}
+                    style={{ background: shopifyPushResult?.ok ? "#22c55e" : "#4f46e5", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 14, cursor: shopifyPushing ? "not-allowed" : "pointer", opacity: shopifyPushing ? 0.7 : 1 }}
+                  >
+                    {shopifyPushing ? "⌛ Pushing…" : shopifyPushResult?.ok ? "✅ Pushed!" : "🚀 Push to Shopify"}
+                  </button>
+                  {shopifyPushResult && !shopifyPushResult.ok && (
+                    <span style={{ fontSize: 12, color: "#f87171" }}>{shopifyPushResult.message}</span>
+                  )}
                 </div>
               </div>
             )}

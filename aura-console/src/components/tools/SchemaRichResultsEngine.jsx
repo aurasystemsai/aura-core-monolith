@@ -11,7 +11,35 @@ export default function SchemaRichResultsEngine() {
   const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const [applyType, setApplyType] = useState("article");
+  const [applyEntityId, setApplyEntityId] = useState("");
+  const [applyBlogId, setApplyBlogId] = useState("");
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyResult, setApplyResult] = useState(null);
   const fileInputRef = useRef();
+
+  const applySchemaToShopify = async () => {
+    if (!response || !applyEntityId) return;
+    setApplyLoading(true);
+    setApplyResult(null);
+    try {
+      const res = await apiFetchJSON("/api/schema-rich-results-engine/shopify/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: applyType,
+          entityId: applyEntityId,
+          blogId: applyBlogId || undefined,
+          schema: `<script type="application/ld+json">${response}</script>`,
+        }),
+      });
+      setApplyResult(res.ok ? { ok: true, message: res.message } : { ok: false, message: res.error });
+    } catch (e) {
+      setApplyResult({ ok: false, message: e.message });
+    } finally {
+      setApplyLoading(false);
+    }
+  };
 
   // Fetch history
   const fetchHistory = async () => {
@@ -137,6 +165,29 @@ export default function SchemaRichResultsEngine() {
             <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e4e4e7" }}>{response}</div>
+          {/* Apply schema to Shopify */}
+          <div style={{ marginTop: 14, padding: "12px 14px", background: "#18181b", borderRadius: 10, border: "1px solid #3f3f46" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>🚀 Inject Schema into Shopify</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <select value={applyType} onChange={e => setApplyType(e.target.value)} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #3f3f46", borderRadius: 8, padding: "6px 10px", fontSize: 13 }}>
+                <option value="article">Blog Article</option>
+                <option value="product">Product</option>
+              </select>
+              <input value={applyEntityId} onChange={e => setApplyEntityId(e.target.value)} placeholder={applyType === 'article' ? 'Article ID' : 'Product ID'} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #3f3f46", borderRadius: 8, padding: "6px 10px", fontSize: 13, width: 140 }} />
+              {applyType === "article" && (
+                <input value={applyBlogId} onChange={e => setApplyBlogId(e.target.value)} placeholder="Blog ID" style={{ background: "#27272a", color: "#fafafa", border: "1px solid #3f3f46", borderRadius: 8, padding: "6px 10px", fontSize: 13, width: 120 }} />
+              )}
+              <button
+                onClick={applySchemaToShopify}
+                disabled={applyLoading || !applyEntityId}
+                style={{ background: applyResult?.ok ? "#22c55e" : "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 700, fontSize: 13, cursor: applyLoading || !applyEntityId ? "not-allowed" : "pointer", opacity: applyLoading || !applyEntityId ? 0.6 : 1 }}
+              >
+                {applyLoading ? "⌛ Injecting…" : applyResult?.ok ? "✅ Injected!" : "🚀 Apply to Shopify"}
+              </button>
+            </div>
+            {applyResult && !applyResult.ok && <div style={{ fontSize: 12, color: "#f87171", marginTop: 6 }}>{applyResult.message}</div>}
+            {applyResult?.ok && <div style={{ fontSize: 12, color: "#86efac", marginTop: 6 }}>{applyResult.message}</div>}
+          </div>
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}

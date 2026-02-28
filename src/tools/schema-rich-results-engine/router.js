@@ -128,4 +128,19 @@ router.get('/health', (req, res) => {
   res.json({ ok: true, tool: 'schema-rich-results-engine', ts: new Date().toISOString() });
 });
 
+// ── Inject schema into a Shopify article or product body_html ─────────────────
+router.post('/shopify/apply', async (req, res) => {
+  try {
+    const { type, entityId, blogId, schema } = req.body;
+    if (!type || !entityId || !schema) return res.status(400).json({ ok: false, error: 'type, entityId and schema are required' });
+    const shop = req.headers['x-shopify-shop-domain'] || req.body.shop;
+    if (!shop) return res.status(400).json({ ok: false, error: 'No shop domain — add x-shopify-shop-domain header' });
+    const { applySchemaToEntity } = require('../../core/shopifyApply');
+    const result = await applySchemaToEntity(shop, { type, entityId, blogId, schema });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;

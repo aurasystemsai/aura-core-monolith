@@ -1289,3 +1289,18 @@ router.get('/diagnostics/memory', (_req, res) => {
     }
   });
 });
+
+// ── Publish a draft to Shopify as a blog article ──────────────────────────────
+router.post('/shopify/publish', async (req, res) => {
+  try {
+    const { title, bodyHtml, metaDescription, tags, blogId, asDraft = true } = req.body;
+    if (!title) return res.status(400).json({ ok: false, error: 'title required' });
+    const shop = req.headers['x-shopify-shop-domain'] || req.body.shop;
+    if (!shop) return res.status(400).json({ ok: false, error: 'No shop domain — add x-shopify-shop-domain header' });
+    const { publishArticle } = require('../../core/shopifyApply');
+    const result = await publishArticle(shop, { title, bodyHtml, metaDescription, tags, blogId, asDraft });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});

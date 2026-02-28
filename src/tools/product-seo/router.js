@@ -314,4 +314,19 @@ router.delete('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Push AI-generated fields to a Shopify product ─────────────────────────────
+router.post('/shopify/apply', async (req, res) => {
+  try {
+    const { productId, title, body_html, handle, tags, metaDescription, seoTitle } = req.body;
+    if (!productId) return res.status(400).json({ ok: false, error: 'productId required' });
+    const shop = req.headers['x-shopify-shop-domain'] || req.body.shop;
+    if (!shop) return res.status(400).json({ ok: false, error: 'No shop domain — add x-shopify-shop-domain header' });
+    const { applyProductFields } = require('../../core/shopifyApply');
+    const result = await applyProductFields(shop, productId, { title, body_html, handle, tags, metaDescription, seoTitle });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
