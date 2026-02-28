@@ -2802,7 +2802,7 @@ export default function BlogSEO() {
                         </div>))}
                     </div>
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <button style={{ ...S.btn('primary'), fontSize: 14, padding: "10px 20px" }} disabled={simpleDraftLoading} onClick={async () => { setSimpleDraftLoading(true); setSimpleDraftResult(null); try { const r = await apiFetch(`${API}/ai/full-blog-writer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic: blogOutlineKw, shop: shopDomain }) }); const d = await r.json(); setSimpleDraftResult(d); } catch(e) { setSimpleDraftResult({ ok: false, error: e.message }); } setSimpleDraftLoading(false); }}>{simpleDraftLoading ? <><span style={S.spinner} /> Writing your post…</> : '✍️ Write the full post →'}</button>
+                      <button style={{ ...S.btn('primary'), fontSize: 14, padding: "10px 20px" }} disabled={simpleDraftLoading} onClick={async () => { setSimpleDraftLoading(true); setSimpleDraftResult(null); try { const r = await apiFetch(`${API}/ai/full-blog-writer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: blogOutlineResult.title, keyword: blogOutlineKw, outline: (blogOutlineResult.sections||[]).map(s=>s.heading), niche: shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,' ') : 'e-commerce', shop: shopDomain }) }); const d = await r.json(); setSimpleDraftResult(d); } catch(e) { setSimpleDraftResult({ ok: false, error: e.message }); } setSimpleDraftLoading(false); }}>{simpleDraftLoading ? <><span style={S.spinner} /> Writing your post…</> : '✍️ Write the full post →'}</button>
                       <button style={{ ...S.btn(), fontSize: 13 }} onClick={() => navigator.clipboard.writeText('# ' + blogOutlineResult.title + '\n\n' + (blogOutlineResult.sections || []).map((s, i) => (i+1) + '. ' + s.heading + ' (~' + s.suggestedWordCount + ' words)').join('\n'))}>📋 Copy Outline</button>
                     </div>
                     {simpleDraftResult && (
@@ -2813,10 +2813,10 @@ export default function BlogSEO() {
                           <>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
                               <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>📄 Your full post is ready!</div>
-                              <button style={{ ...S.btn('primary'), fontSize: 13, padding: "8px 16px" }} onClick={() => { const text = (simpleDraftResult.title ? '# ' + simpleDraftResult.title + '\n\n' : '') + (simpleDraftResult.content || simpleDraftResult.body || JSON.stringify(simpleDraftResult, null, 2)); navigator.clipboard.writeText(text); }}>📋 Copy Full Post</button>
+                              <button style={{ ...S.btn('primary'), fontSize: 13, padding: "8px 16px" }} onClick={() => { const text = (simpleDraftResult.title ? '# ' + simpleDraftResult.title + '\n\n' : '') + (simpleDraftResult.fullArticle || simpleDraftResult.content || simpleDraftResult.body || ''); navigator.clipboard.writeText(text); }}>📋 Copy Full Post</button>
                             </div>
                             <div style={{ fontSize: 13, color: "#71717a", marginBottom: 10 }}>Copy the post above and paste it into your Shopify blog editor.</div>
-                            <div style={{ maxHeight: 380, overflowY: "auto", fontSize: 13, color: "#d4d4d8", lineHeight: 1.7, whiteSpace: "pre-wrap", background: "#18181b", borderRadius: 8, padding: "14px 16px" }}>{simpleDraftResult.content || simpleDraftResult.body || JSON.stringify(simpleDraftResult, null, 2)}</div>
+                            <div style={{ maxHeight: 380, overflowY: "auto", fontSize: 13, color: "#d4d4d8", lineHeight: 1.7, whiteSpace: "pre-wrap", background: "#18181b", borderRadius: 8, padding: "14px 16px" }}>{simpleDraftResult.fullArticle || simpleDraftResult.content || simpleDraftResult.body || JSON.stringify(simpleDraftResult, null, 2)}</div>
                           </>
                         )}
                       </div>
