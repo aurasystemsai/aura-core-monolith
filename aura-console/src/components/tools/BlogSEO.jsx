@@ -233,6 +233,8 @@ export default function BlogSEO() {
   // IDs of the article that was most recently scanned — used by applyRewrite so it never relies on stale selectedArticleId
   const [scannedArticleId, setScannedArticleId] = useState(null);
   const [scannedBlogId, setScannedBlogId] = useState(null);
+  // Fields that have been successfully applied to Shopify — used to auto-dismiss matching issue cards
+  const [fixedFields, setFixedFields] = useState(new Set());
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [showHeadings, setShowHeadings] = useState(false);
@@ -879,7 +881,7 @@ export default function BlogSEO() {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null); setAiAnalysis(null);
     setRewriteResult(null); setRewriteErr(null); setFixes({}); setExpandedIssue(null);
-    setScannedArticleId(null); setScannedBlogId(null);
+    setScannedArticleId(null); setScannedBlogId(null); setFixedFields(new Set()); setApplyResult({});
     try {
       const selectedArt = selectedArticleId ? shopifyArticles.find(a => String(a.id) === String(selectedArticleId)) : null;
       const analyzeBody = { url: url.trim(), keywords: kwInput.trim(), ...(selectedArt ? { articleId: selectedArt.id, blogId: selectedArt.blogId } : {}) };
@@ -982,9 +984,34 @@ export default function BlogSEO() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId, blogId, field, value, shop: shopDomain }),
       });
-      if (r.ok && field !== 'headings') {
-        // Mirror the change locally so the UI reflects the new value immediately
-        setScanResult(prev => prev ? { ...prev, [field]: r.handle || value } : prev);
+      if (r.ok) {
+        if (field === 'headings') {
+          // Mirror applied H2s into scanResult so heading count and issue cards update immediately
+          const newH2s = value.split(/\s*\|\s*/).filter(Boolean).map(t => ({ tag: 'H2', text: t.trim() }));
+          setScanResult(prev => {
+            if (!prev) return prev;
+            const existing = (prev.headings || []).filter(h => h.tag !== 'H2');
+            const updated = [...existing, ...newH2s];
+            // Rebuild scored.issues to remove the h2/subheading issue now it's fixed
+            const updatedIssues = (prev.scored?.issues || []).filter(i => {
+              const m = i.msg.toLowerCase();
+              return !((m.includes('h2') || m.includes('subheading') || m.includes('subhead')) &&
+                       (m.includes('no ') || m.includes('missing') || m.includes('lack') || m.includes('needs') || m.includes('structure') || m.includes('clear')));
+            });
+            return { ...prev, headings: updated, scored: prev.scored ? { ...prev.scored, issues: updatedIssues } : prev.scored };
+          });
+        } else {
+          // Mirror scalar field changes locally (title, metaDescription, handle, h1)
+          setScanResult(prev => prev ? { ...prev, [field]: r.handle || value } : prev);
+          // Remove matching issues from scored.issues so the fix cards disappear immediately
+          setScanResult(prev => {
+            if (!prev?.scored?.issues) return prev;
+            const updatedIssues = prev.scored.issues.filter(i => !isIssueForField(field, i.msg));
+            return { ...prev, scored: { ...prev.scored, issues: updatedIssues } };
+          });
+        }
+        // Track which fields have been fixed (for any remaining derived issue displays)
+        setFixedFields(prev => new Set([...prev, field]));
       }
       setApplyResult(p => ({ ...p, [idx]: r.ok ? 'ok' : `error: ${r.error || 'Shopify update failed — check permissions'}` }));
     } catch (e) {
@@ -2496,6 +2523,18 @@ export default function BlogSEO() {
 
   const issues = scanResult?.scored?.issues || [];
   const filteredIssues = issues.filter(i => (filterCat === "all" || i.cat === filterCat) && (filterSev === "all" || i.sev === filterSev));
+
+  // Maps a rewrite field name to a function that detects matching issue messages.
+  // Used to auto-dismiss issue cards after a successful apply.
+  const isIssueForField = (field, msg) => {
+    const m = (msg || '').toLowerCase();
+    if (field === 'headings') return (m.includes('h2') || m.includes('subheading') || m.includes('subhead')) && (m.includes('no ') || m.includes('missing') || m.includes('lack') || m.includes('needs') || m.includes('structure') || m.includes('clear'));
+    if (field === 'handle')  return m.includes('keyword') && (m.includes('url') || m.includes('slug') || m.includes('handle'));
+    if (field === 'title')   return m.includes('title') && (m.includes('missing') || m.includes('short') || m.includes('long') || m.includes('keyword'));
+    if (field === 'metaDescription') return m.includes('meta desc') || (m.includes('meta') && m.includes('description'));
+    if (field === 'h1')      return m.includes('h1') && (m.includes('missing') || m.includes('no h1') || m.includes('keyword') || m.includes('multiple'));
+    return false;
+  };
 
   const getIssueHint = (msg) => {
     const m = (msg || '').toLowerCase();

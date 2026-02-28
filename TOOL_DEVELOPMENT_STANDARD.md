@@ -794,15 +794,63 @@ const applyRewrite = useCallback(async (value, field, idx) => {
 
 ### 4d. Local state mirror after apply
 
-After a successful apply, mirror the change locally so the UI reflects it immediately without needing a rescan:
+After a successful apply, mirror the change locally so the UI reflects it **immediately** — without needing a rescan.
 
+**Scalar fields (title, metaDescription, handle, h1):**
 ```jsx
-if (r.ok && field !== 'headings' && field !== 'body_html') {
-  // Simple fields: mirror directly
-  setScanResult(prev => prev ? { ...prev, [field]: r.handle || value } : prev);
-}
-// Don't mirror body_html/headings — too complex to reconstruct locally
+setScanResult(prev => prev ? { ...prev, [field]: r.handle || value } : prev);
+// Auto-dismiss the matching issue card
+setScanResult(prev => {
+  if (!prev?.scored?.issues) return prev;
+  const updatedIssues = prev.scored.issues.filter(i => !isIssueForField(field, i.msg));
+  return { ...prev, scored: { ...prev.scored, issues: updatedIssues } };
+});
 ```
+
+**Headings / body_html fields:**
+```jsx
+// Parse applied H2s back into heading objects
+const newH2s = value.split(/\s*\|\s*/).filter(Boolean).map(t => ({ tag: 'H2', text: t.trim() }));
+setScanResult(prev => {
+  if (!prev) return prev;
+  const existing = (prev.headings || []).filter(h => h.tag !== 'H2');
+  const updatedIssues = (prev.scored?.issues || []).filter(i => !isIssueForField('headings', i.msg));
+  return {
+    ...prev,
+    headings: [...existing, ...newH2s],
+    scored: prev.scored ? { ...prev.scored, issues: updatedIssues } : prev.scored,
+  };
+});
+```
+
+**Issue-to-field matcher helper** — add this inside the component before your issue card renderer:
+```jsx
+// Maps a rewrite field name to whether a given issue message belongs to it.
+// Used to auto-dismiss issue cards after a successful apply.
+const isIssueForField = (field, msg) => {
+  const m = (msg || '').toLowerCase();
+  if (field === 'headings') return (m.includes('h2') || m.includes('subheading') || m.includes('subhead')) &&
+                                    (m.includes('no ') || m.includes('missing') || m.includes('lack') || m.includes('needs') || m.includes('structure') || m.includes('clear'));
+  if (field === 'handle')  return m.includes('keyword') && (m.includes('url') || m.includes('slug') || m.includes('handle'));
+  if (field === 'title')   return m.includes('title') && (m.includes('missing') || m.includes('short') || m.includes('long') || m.includes('keyword'));
+  if (field === 'metaDescription') return m.includes('meta desc') || (m.includes('meta') && m.includes('description'));
+  if (field === 'h1')      return m.includes('h1') && (m.includes('missing') || m.includes('no h1') || m.includes('keyword') || m.includes('multiple'));
+  return false;
+};
+```
+
+**Track fixed fields** — add this state and reset it on every new scan:
+```jsx
+const [fixedFields, setFixedFields] = useState(new Set());
+
+// In your scan reset:
+setFixedFields(new Set()); setApplyResult({});
+
+// After successful apply:
+setFixedFields(prev => new Set([...prev, field]));
+```
+
+**Rule:** Issue cards must disappear the moment a fix is applied. Never require a rescan to see the result of an action the user just took.
 
 ---
 
@@ -1005,6 +1053,7 @@ These are the bugs we kept hitting. This standard prevents them.
 |---|---|---|
 | Apply button does nothing | `useCallback` stale closure on `selectedArticleId` | Capture IDs at scan time into dedicated state vars |
 | No feedback on failure | `if (!art) return` — silent | Always set error state, never silent return |
+| Issue cards stay showing after fix | `scanResult.scored.issues` never updated after apply | Strip matching issues from `scanResult.scored.issues` in the apply callback; mirror headings back into `scanResult.headings` |
 | H2 suggestions Copy-only | Assumed body_html patching was risky | It's fine — GET body, replace `<h2>` tags, PUT back |
 | Schema only Copy-only | No Shopify apply endpoint | Added `applySchemaToEntity()` in shared module |
 | ProductSEO AI output not pushable | No `/shopify/apply` endpoint | Added endpoint using shared `applyProductFields()` |
