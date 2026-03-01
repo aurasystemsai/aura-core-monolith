@@ -924,7 +924,7 @@ export default function BlogSEO() {
               HOME DASHBOARD
           ════════════════════════════ */}
           {!section && (
-            <div style={{ maxWidth: section || expertMode ? 800 : 900, margin: "0 auto", paddingTop: 32 }}>
+            <div style={{ maxWidth: expertMode ? 900 : 700, margin: "0 auto", paddingTop: 32 }}>
 
               {/* Store status banner */}
               {shopLoading ? (
@@ -941,37 +941,87 @@ export default function BlogSEO() {
                 </div>
               )}
 
-              {/* Heading */}
-              <div style={{ textAlign: "center", marginBottom: 32 }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: C.text, marginBottom: 8 }}>What would you like to do?</div>
-                <div style={{ fontSize: 14, color: C.dim }}>Pick a goal &mdash; we will take care of the rest.</div>
-              </div>
-
-              {/* Beginner section cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 32 }}>
-                {visibleSections.map(s => (
-                  <div key={s.id}
-                    onClick={() => setSection(s.id)}
-                    style={{ background: "#18181b", border: "1px solid #27272a", borderLeft: `3px solid ${s.color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 6 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#1f1f23"; e.currentTarget.style.borderLeftColor = s.color; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#18181b"; }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.title}</div>
-                    <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
-                    <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#8594;</div>
+              {/* ── Beginner mode: 2 big action cards ── */}
+              {!expertMode ? (
+                <>
+                  <div style={{ textAlign: "center", marginBottom: 28 }}>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: C.text, marginBottom: 6 }}>What do you want to do?</div>
+                    <div style={{ fontSize: 14, color: C.dim }}>Pick one &mdash; we&apos;ll guide you through the rest.</div>
                   </div>
-                ))}
-              </div>
 
-              {/* Expert mode hint */}
-              {!expertMode && (
-                <div style={{ textAlign: "center" }}>
-                  <button
-                    style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => setExpertMode(true)}>
-                    I know SEO &mdash; switch to Expert Mode for all advanced tools
-                  </button>
-                </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 32 }}>
+                    {/* Card 1: Check a post */}
+                    <div
+                      onClick={() => setSection("Analyze")}
+                      style={{ background: "#0f0e2a", border: "1px solid #312e81", borderRadius: 16, padding: "28px 28px 24px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 10 }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#16154e"}
+                      onMouseLeave={e => e.currentTarget.style.background = "#0f0e2a"}
+                    >
+                      <div style={{ fontSize: 28 }}>📊</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>Check a post</div>
+                      <div style={{ fontSize: 13, color: "#a5b4fc", lineHeight: 1.6, flex: 1 }}>
+                        Paste a blog post URL and we&apos;ll give you a full SEO score &mdash; with exact fixes to boost your ranking.
+                      </div>
+                      <button style={{ marginTop: 8, padding: "11px 0", borderRadius: 10, background: C.indigo, color: "#fff", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", width: "100%" }}>
+                        Check my post
+                      </button>
+                    </div>
+
+                    {/* Card 2: Create a post */}
+                    <div
+                      onClick={() => setSection("Write")}
+                      style={{ background: "#052e16", border: "1px solid #14532d", borderRadius: 16, padding: "28px 28px 24px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 10 }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#0a3d1e"}
+                      onMouseLeave={e => e.currentTarget.style.background = "#052e16"}
+                    >
+                      <div style={{ fontSize: 28 }}>✍️</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>Create a post</div>
+                      <div style={{ fontSize: 13, color: "#86efac", lineHeight: 1.6, flex: 1 }}>
+                        Tell us your topic and AI will write a full SEO-optimised blog post you can copy straight into Shopify.
+                      </div>
+                      <button style={{ marginTop: 8, padding: "11px 0", borderRadius: 10, background: "#16a34a", color: "#fff", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", width: "100%" }}>
+                        Create a post
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "center" }}>
+                    <button
+                      style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+                      onClick={() => setExpertMode(true)}>
+                      I know SEO &mdash; switch to Expert Mode for all advanced tools
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* ── Expert mode: full section grid ── */
+                <>
+                  <div style={{ textAlign: "center", marginBottom: 24 }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>All Tools</div>
+                    <div style={{ fontSize: 13, color: C.dim }}>Full suite of SEO tools for your Shopify store.</div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 32 }}>
+                    {visibleSections.map(s => (
+                      <div key={s.id}
+                        onClick={() => setSection(s.id)}
+                        style={{ background: "#18181b", border: "1px solid #27272a", borderLeft: `3px solid ${s.color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 6 }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#1f1f23"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#18181b"; }}
+                      >
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.title}</div>
+                        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
+                        <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#8594;</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <button
+                      style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+                      onClick={() => setExpertMode(false)}>
+                      Switch back to Simple Mode
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           )}
