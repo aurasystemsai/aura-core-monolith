@@ -921,6 +921,7 @@ export default function BlogSEO() {
     if (m.includes("h1")) return "h1";
     if ((m.includes("h2") || m.includes("subheading") || m.includes("heading")) && !m.includes("url")) return "headings";
     if (m.includes("url") || m.includes("slug") || m.includes("handle")) return "handle";
+    if (m.includes("word") || m.includes("too short") || m.includes("thin") || m.includes("300") || m.includes("500") || m.includes("1000") || m.includes("character")) return "body_append";
     return null;
   };
 
@@ -930,18 +931,31 @@ export default function BlogSEO() {
     if (!scanResult) { if (!silent) showToast("Scan a post first"); return false; }
     if (!scannedArtId || !scannedBlogId) { if (!silent) showToast("Select a post from the store dropdown first"); return false; }
     setBannerFixState(p => ({ ...p, [issueKey]: "loading" }));
-    const h2s = (scanResult.headings || []).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
-    const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: h2s || scanResult.h1 || scanResult.title, handle: scanResult.handle || (scanResult.url||"").split("/").pop() || scanResult.title };
-    const currentValue = currentValueMap[field] || scanResult.title || "";
     try {
-      const rw = await apiFetchJSON(`${API}/ai/rewrite`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ field, currentValue, url: scanResult.url, keywords: kwInput }),
-      });
-      if (!rw.ok) throw new Error(rw.error || "Rewrite failed");
-      const val = rw.structured?.variants?.[0]?.text || rw.value || rw.suggestion;
-      if (!val) throw new Error("AI returned no suggestion");
+      let val = "";
+      if (field === "body_append") {
+        // AI writes new content sections and appends them to the post
+        const rw = await apiFetchJSON(`${API}/ai/expand-content`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: scanResult.title, h1: scanResult.h1, keywords: kwInput || scanResult.title, url: scanResult.url, currentWordCount: scanResult.wordCount || 0 }),
+        });
+        if (!rw.ok) throw new Error(rw.error || "Content generation failed");
+        val = rw.html;
+        if (!val) throw new Error("AI returned no content");
+      } else {
+        const h2s = (scanResult.headings || []).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
+        const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: h2s || scanResult.h1 || scanResult.title, handle: scanResult.handle || (scanResult.url||"").split("/").pop() || scanResult.title };
+        const currentValue = currentValueMap[field] || scanResult.title || "";
+        const rw = await apiFetchJSON(`${API}/ai/rewrite`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ field, currentValue, url: scanResult.url, keywords: kwInput }),
+        });
+        if (!rw.ok) throw new Error(rw.error || "Rewrite failed");
+        val = rw.structured?.variants?.[0]?.text || rw.value || rw.suggestion;
+        if (!val) throw new Error("AI returned no suggestion");
+      }
       const ap = await apiFetchJSON(`${API}/apply-field`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -950,7 +964,7 @@ export default function BlogSEO() {
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
-      if (!silent) showToast(`✓ ${field} updated in Shopify`);
+      if (!silent) showToast(field === "body_append" ? "✓ AI content added to your post" : `✓ ${field} updated in Shopify`);
       return true;
     } catch(e) {
       setBannerFixState(p => ({ ...p, [issueKey]: "error" }));
@@ -1041,11 +1055,27 @@ export default function BlogSEO() {
       apiFetchJSON(`${API}/schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, h1: scanResult.h1, metaDescription: scanResult.metaDescription, keywords: kwInput, articleBody: scanResult.h1 || scanResult.title }) })
         .then(r => upd("schema", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("schema", { status:"error", error: e.message })),
-      (qHeadings.length > 0
-        ? apiFetchJSON(`${API}/faq-schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ questionHeadings: qHeadings, useAI: true, url: scanResult.url }) })
-          .then(r => upd("faq", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"No question headings found — add How/What/Why H2s first" }))
-          .catch(e => upd("faq", { status:"error", error: e.message }))
-        : Promise.resolve(upd("faq", { status:"error", error: "No question-form headings found on this post. Add H2s starting with How, What, Why, etc. to generate an FAQ schema" }))),
+      // FAQ: use question H2s if available, otherwise fall back to People Also Ask AI generation
+      (async () => {
+        try {
+          let headingsForFaq = qHeadings;
+          let aiGenerated = false;
+          if (headingsForFaq.length === 0) {
+            // No question-style H2s — generate questions via PAA then build FAQ from those
+            upd("faq", { status:"loading" });
+            const paa = await apiFetchJSON(`${API}/people-also-ask`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ keyword: kwInput || scanResult.title, url: scanResult.url }) });
+            if (paa.ok && (paa.questions||[]).length > 0) {
+              headingsForFaq = paa.questions.slice(0, 6).map(q => ({ text: typeof q === "string" ? q : (q.question || q.text || String(q)) }));
+              aiGenerated = true;
+            } else {
+              upd("faq", { status:"error", error: "Could not generate FAQ questions — try entering a target keyword in the header first" });
+              return;
+            }
+          }
+          const r = await apiFetchJSON(`${API}/faq-schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ questionHeadings: headingsForFaq, useAI: true, url: scanResult.url }) });
+          upd("faq", r.ok ? { status:"done", result: { ...r, _aiGenerated: aiGenerated } } : { status:"error", error: r.error || "FAQ generation failed" });
+        } catch(e) { upd("faq", { status:"error", error: e.message }); }
+      })(),
       apiFetchJSON(`${API}/toc-generator`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
         .then(r => upd("toc", r.ok && r.headingCount > 0 ? { status:"done", result: r } : { status:"error", error: r.error || "No headings found on this post — add H2 subheadings first" }))
         .catch(e => upd("toc", { status:"error", error: e.message })),

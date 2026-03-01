@@ -660,6 +660,37 @@ router.post('/ai/fix-code', async (req, res) => {
 // NOTE: AI internal-link suggestions → use /api/internal-link-optimizer/ai/suggest
 
 /* =========================================================================
+   AI: EXPAND CONTENT — generate full HTML sections to pad out a thin post
+   ========================================================================= */
+router.post('/ai/expand-content', async (req, res) => {
+  try {
+    const { title, h1, keywords, url, currentWordCount, targetWords } = req.body || {};
+    if (!title && !h1) return res.status(400).json({ ok: false, error: 'title or h1 required' });
+    const target = targetWords || 350;
+    const current = currentWordCount || 0;
+    const needed = Math.max(target - current, 200);
+    const systemPrompt = `You are an expert SEO content writer for Shopify e-commerce blogs. Write high-quality, unique blog content in clean HTML. Use only these tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>. No <html>/<body>/<head> tags. No markdown. No code blocks. Write naturally, include the keyword multiple times, and make the content genuinely useful to readers.`;
+    const userPrompt = `Post title: "${title || h1}"
+Target keyword: ${keywords || title || h1}
+URL: ${url || 'N/A'}
+Current word count: ${current} words
+
+Write approximately ${needed} more words of useful content to add to this post. Include 2-3 subheadings (h2), several paragraphs, and where relevant a list. Make it feel like a natural continuation of the article. Return only the HTML content, nothing else.`;
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.7,
+    });
+    const html = completion.choices[0]?.message?.content?.trim() || '';
+    if (!html) return res.status(500).json({ ok: false, error: 'AI returned no content' });
+    const wordCount = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+    res.json({ ok: true, html, wordCount });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
    AI: CHAT — blog SEO assistant
    ========================================================================= */
 router.post('/ai/generate', async (req, res) => {
