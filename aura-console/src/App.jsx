@@ -340,6 +340,8 @@ function App() {
  // Expose globals used by BackButton + tool internals
  useEffect(() => {
  window.__AURA_SECTION_BACK = navigateBack;
+ // Used by tool components (e.g. credit error modal) to navigate without a prop callback
+ window.__AURA_NAVIGATE = (section, url) => navigateTo(section, url);
  window.__AURA_TO_SUITE = (groupId) => {
  try {
  const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || '{}') || {};

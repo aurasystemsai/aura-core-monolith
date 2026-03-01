@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
+import { useCreditError } from "../../globalCreditError";
 import BackButton from "./BackButton";
 
 const API = "/api/blog-seo";
@@ -91,6 +92,9 @@ export default function BlogSEO() {
   const [simpleFlow,        setSimpleFlow]        = useState(null); // null | 'fix' | 'write'
   const [simpleTopics,      setSimpleTopics]      = useState(null);
   const [simpleTopicsLoading, setSimpleTopicsLoading] = useState(false);
+
+  /* ── Credit error modal ── */
+  const [creditErr, dismissCreditErr] = useCreditError();
 
   /* ── Toast ── */
   const [toast, setToast] = useState(null);
@@ -1238,6 +1242,7 @@ export default function BlogSEO() {
   const activeSec = section ? SECTIONS.find(s => s.id === section) : null;
 
   return (
+    <>
     <div style={S.page}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
@@ -3308,5 +3313,44 @@ export default function BlogSEO() {
         </div>
       </div>
     </div>
+
+    {/* ── Credit error modal ──────────────────────────────────────────── */}
+    {creditErr && (
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
+        <div style={{ background: "#18181b", border: "2px solid #7c3aed", borderRadius: 16, padding: "36px 32px", maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 25px 60px rgba(0,0,0,0.6)" }}>
+          <div style={{ fontSize: 40, marginBottom: 14 }}>💳</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#fafafa", marginBottom: 8 }}>
+            {creditErr.credits_available === 0 ? "No Credits Left" : "Not Enough Credits"}
+          </div>
+          <div style={{ fontSize: 14, color: "#a1a1aa", lineHeight: 1.6, marginBottom: 20 }}>
+            This action needs{" "}
+            <strong style={{ color: "#e9d5ff" }}>
+              {creditErr.credits_needed ?? 1} credit{(creditErr.credits_needed ?? 1) !== 1 ? "s" : ""}
+            </strong>
+            {" "}but you only have{" "}
+            <strong style={{ color: "#fca5a5" }}>{creditErr.credits_available ?? 0}</strong> remaining.
+            <br />
+            {creditErr.credits_available === 0
+              ? "Top up to keep using AI features."
+              : "Credits refresh monthly — or top up now to continue."}
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              style={{ padding: "11px 26px", borderRadius: 8, background: "#7c3aed", color: "#fff", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer" }}
+              onClick={() => { dismissCreditErr(); window.__AURA_NAVIGATE?.("credits"); }}
+            >
+              Top Up Credits
+            </button>
+            <button
+              style={{ padding: "11px 26px", borderRadius: 8, background: "#3f3f46", color: "#d4d4d8", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer" }}
+              onClick={dismissCreditErr}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

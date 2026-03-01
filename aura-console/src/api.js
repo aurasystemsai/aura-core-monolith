@@ -1,6 +1,7 @@
 // src/api.js
 // Simple OAuth-friendly fetch helper (no App Bridge)
 import { setApiError } from './globalApiError';
+import { setCreditError } from './globalCreditError';
 
 const MAX_RETRIES = 3;
 const BASE_RETRY_MS = 750;
@@ -82,5 +83,9 @@ export async function apiFetchJSON(url, options = {}) {
   const resp = await apiFetch(url, options);
   let data = {};
   try { data = await resp.json(); } catch {}
+  // Intercept credit errors so every component gets a modal automatically
+  if (resp.status === 402 && data.credit_error) {
+    setCreditError(data);
+  }
   return { ...data, ok: resp.ok, status: resp.status };
 }
