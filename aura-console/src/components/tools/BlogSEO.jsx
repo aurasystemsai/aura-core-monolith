@@ -929,14 +929,19 @@ export default function BlogSEO() {
     if (!scanResult) { showToast("Scan a post first"); return; }
     if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the dropdown first so we know which Shopify article to update."); return; }
     setBannerFixState(p => ({ ...p, [issueIdx]: "loading" }));
+    // Map field → current value so the backend has something to rewrite
+    const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: scanResult.h1 || scanResult.title, handle: scanResult.handle || scanResult.url };
+    const currentValue = currentValueMap[field] || scanResult.title || "";
     try {
       const rw = await apiFetchJSON(`${API}/ai/rewrite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ field, url: scanResult.url, title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, keywords: kwInput, wordCount: scanResult.wordCount }),
+        body: JSON.stringify({ field, currentValue, url: scanResult.url, keywords: kwInput }),
       });
       if (!rw.ok) throw new Error(rw.error || "Rewrite failed");
-      const val = rw.value || rw.suggestion;
+      // Backend returns { structured: { variants: [{text}] } } — pick best variant
+      const val = rw.structured?.variants?.[0]?.text || rw.value || rw.suggestion;
+      if (!val) throw new Error("AI returned no suggestion");
       const ap = await apiFetchJSON(`${API}/apply-field`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -945,7 +950,7 @@ export default function BlogSEO() {
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueIdx]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
-      showToast(`✓ ${field} fixed and saved to Shopify`);
+      showToast(`✓ ${field} updated in Shopify`);
     } catch(e) {
       setBannerFixState(p => ({ ...p, [issueIdx]: "error" }));
       showToast(`Fix failed: ${e.message}`);
@@ -991,17 +996,19 @@ export default function BlogSEO() {
     setSmartFixApplied(new Set());
     setSmartFixApplying({});
     const upd = (id, patch) => setSmartFixCards(p => p.map(c => c.id === id ? { ...c, ...patch } : c));
+    // Backend requires currentValue for each field
+    const cvMap = { title: scanResult.title||"untitled", metaDescription: scanResult.metaDescription||scanResult.title||"", h1: scanResult.h1||scanResult.title||"", headings: scanResult.h1||scanResult.title||"" };
     const calls = [
-      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"title", ...base }) })
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"title", currentValue: cvMap.title, url: base.url, keywords: base.keywords }) })
         .then(r => upd("title", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("title", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"metaDescription", ...base }) })
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"metaDescription", currentValue: cvMap.metaDescription, url: base.url, keywords: base.keywords }) })
         .then(r => upd("meta", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("meta", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"h1", ...base }) })
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"h1", currentValue: cvMap.h1, url: base.url, keywords: base.keywords }) })
         .then(r => upd("h1", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("h1", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"headings", ...base }) })
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"headings", currentValue: cvMap.headings, url: base.url, keywords: base.keywords }) })
         .then(r => upd("headings", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("headings", { status:"error", error: e.message })),
       apiFetchJSON(`${API}/schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, articleBody: scanResult.h1||scanResult.title }) })
@@ -1010,7 +1017,7 @@ export default function BlogSEO() {
       apiFetchJSON(`${API}/backlinks/internal-suggester`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
         .then(r => upd("links", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("links", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/meta-description-optimizer`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, currentMeta: scanResult.metaDescription, keywords: kwInput }) })
+      apiFetchJSON(`${API}/meta-description-optimizer`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, currentMeta: scanResult.metaDescription||scanResult.title||"", keyword: kwInput }) })
         .then(r => upd("metaopt", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("metaopt", { status:"error", error: e.message })),
     ];
@@ -1021,8 +1028,12 @@ export default function BlogSEO() {
   /* ── Smart Fix — apply a single card to Shopify ── */
   const applySmartCard = useCallback(async (card) => {
     if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown first"); return; }
-    const val = card.result?.value || card.result?.suggestion || card.result?.optimizedMeta || card.result?.schema;
-    if (!val) { showToast("No value to apply for this fix"); return; }
+    // Backend /ai/rewrite returns structured.variants[0].text; fallback to direct value keys
+    const val = card.result?.structured?.variants?.[0]?.text
+      || (card.id === "metaopt" ? card.result?.variants?.[card.result?.bestVariant ?? 0]?.text : null)
+      || card.result?.value || card.result?.suggestion
+      || card.result?.optimizedMeta || card.result?.schema;
+    if (!val) { showToast("AI returned no suggestion for this fix"); return; }
     setSmartFixApplying(p => ({ ...p, [card.id]: true }));
     try {
       const r = await apiFetchJSON(`${API}/apply-field`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field: card.applyField, value: val, shop: shopDomain }) });
@@ -1114,7 +1125,7 @@ export default function BlogSEO() {
 
       {/* ── Toast notification ── */}
       {toast && (
-        <div style={{ position: "fixed", bottom: 20, right: 20, background: "#1f2937", border: "1px solid #374151", borderRadius: 10, padding: "12px 18px", color: C.text, fontSize: 13, zIndex: 9999, maxWidth: 340 }}>
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: "#1f2937", border: "1px solid #4f46e5", borderRadius: 10, padding: "12px 22px", color: "#fafafa", fontSize: 13, fontWeight: 600, zIndex: 999999, maxWidth: 420, boxShadow: "0 4px 24px #0008", pointerEvents: "none", textAlign: "center", whiteSpace: "nowrap" }}>
           {toast}
         </div>
       )}
@@ -2960,7 +2971,11 @@ export default function BlogSEO() {
                     {smartFixCards.map(card => {
                       const applied   = smartFixApplied.has(card.id);
                       const applying  = smartFixApplying[card.id];
-                      const val       = card.result?.value || card.result?.suggestion || card.result?.optimizedMeta || card.result?.schema;
+                      // /ai/rewrite returns structured.variants[0].text; metaopt returns variants[bestVariant].text
+                      const val       = card.result?.structured?.variants?.[0]?.text
+                        || (card.id === "metaopt" ? card.result?.variants?.[card.result?.bestVariant ?? 0]?.text : null)
+                        || card.result?.value || card.result?.suggestion
+                        || card.result?.optimizedMeta || card.result?.schema;
                       const oppsList  = card.result?.suggestedLinkOpportunities || card.result?.opportunities || [];
                       return (
                         <div key={card.id} style={{ background:"#18181b", border:`1px solid ${card.status==="error" ? "#7f1d1d" : card.status==="done" ? (applied ? "#14532d" : "#7c3aed") : "#3f3f46"}`, borderRadius:12, overflow:"hidden" }}>
