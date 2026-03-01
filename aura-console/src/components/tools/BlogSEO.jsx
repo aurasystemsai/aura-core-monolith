@@ -1547,18 +1547,30 @@ export default function BlogSEO() {
                       </div>
                       {scannedArtId && (() => {
                         const fixableCount = shown.filter(iss => fixableField(iss.msg)).length;
-                        return fixableCount > 0 ? (
-                          <button
-                            style={{ ...S.btn("primary"), fontSize:10, padding:"3px 12px", flexShrink:0, opacity: bulkFixing ? 0.6 : 1 }}
-                            onClick={runBulkFix}
-                            disabled={bulkFixing}
-                            title={`Auto-fixes ${fixableCount} of ${shown.length} issues (title, meta, H1, headings, URL slug). Other issues need manual content changes.`}
+                        const manualCount  = shown.length - fixableCount;
+                        if (fixableCount > 0) {
+                          return (
+                            <button
+                              style={{ ...S.btn("primary"), fontSize:10, padding:"3px 12px", flexShrink:0, opacity: bulkFixing ? 0.6 : 1 }}
+                              onClick={runBulkFix}
+                              disabled={bulkFixing}
+                              title={manualCount > 0 ? `${manualCount} issue${manualCount>1?"s":""} (word count, citations, etc.) need manual content edits and cannot be auto-fixed.` : "Auto-fix all listed issues"}
+                            >
+                              {bulkFixing
+                                ? `Fixing ${(bulkFixProgress?.done ?? 0) + 1} of ${bulkFixProgress?.total ?? "?"}…`
+                                : `🔧 Auto-Fix ${fixableCount} of ${shown.length}`}
+                            </button>
+                          );
+                        }
+                        // All issues need manual work — show a greyed-out button that explains why
+                        return (
+                          <span
+                            style={{ fontSize:10, color:"#71717a", background:"#18181b", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 12px", cursor:"default" }}
+                            title="These issues require manual content edits (e.g. adding more words, citations, author links). No fields can be auto-rewritten."
                           >
-                            {bulkFixing
-                              ? `Fixing ${(bulkFixProgress?.done ?? 0) + 1} of ${bulkFixProgress?.total ?? "?"}…`
-                              : `🔧 Auto-Fix ${fixableCount} of ${shown.length}`}
-                          </button>
-                        ) : null;
+                            ⚠️ {shown.length} issue{shown.length>1?"s":""} — manual fixes needed
+                          </span>
+                        );
                       })()}
                     </div>
                     {/* bulk progress bar */}
