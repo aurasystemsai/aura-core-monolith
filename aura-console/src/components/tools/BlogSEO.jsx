@@ -1169,41 +1169,43 @@ export default function BlogSEO() {
 
   const getIssueAction = useCallback((msg) => {
     const m = (msg || "").toLowerCase();
+    // AI fix actions include credits: 1 so the button can show a badge
+    const ai = (label, field) => ({ label, action: () => runBannerFix(field, msg), credits: 1 });
     /* ── Title fixes — fix & apply directly ── */
     if (m.includes("title") && (m.includes("short") || m.includes("below") || m.includes("too few")))
-      return { label: "Fix Title", action: () => runBannerFix("title", msg) };
+      return ai("Fix Title", "title");
     if (m.includes("title") && (m.includes("long") || m.includes("truncat") || m.includes("over 60")))
-      return { label: "Shorten Title", action: () => runBannerFix("title", msg) };
+      return ai("Shorten Title", "title");
     if (m.includes("title") && (m.includes("keyword") || m.includes("missing from")))
-      return { label: "Fix Title", action: () => runBannerFix("title", msg) };
+      return ai("Fix Title", "title");
     if (m.includes("title") && (m.includes("missing") || m.includes("no title")))
-      return { label: "Write Title", action: () => runBannerFix("title", msg) };
+      return ai("Write Title", "title");
     if (m.includes("title"))
-      return { label: "Fix Title", action: () => runBannerFix("title", msg) };
+      return ai("Fix Title", "title");
     /* ── Meta description fixes ── */
     if ((m.includes("meta description") || m.includes("meta desc")) && (m.includes("missing") || m.includes("empty") || m.includes("no meta")))
-      return { label: "Write Meta", action: () => runBannerFix("metaDescription", msg) };
+      return ai("Write Meta", "metaDescription");
     if (m.includes("meta description") || m.includes("meta desc"))
-      return { label: "Fix Meta", action: () => runBannerFix("metaDescription", msg) };
+      return ai("Fix Meta", "metaDescription");
     /* ── H1 fixes ── */
     if (m.includes("h1") && (m.includes("missing") || m.includes("no h1") || m.includes("0 h1")))
-      return { label: "Generate H1", action: () => runBannerFix("h1", msg) };
+      return ai("Generate H1", "h1");
     if (m.includes("h1"))
-      return { label: "Fix H1", action: () => runBannerFix("h1", msg) };
+      return ai("Fix H1", "h1");
     /* ── H2 / headings ── */
     if ((m.includes("h2") || m.includes("subheading")) && (m.includes("missing") || m.includes("no ") || m.includes("lack")))
-      return { label: "Add H2s", action: () => runBannerFix("headings", msg) };
+      return ai("Add H2s", "headings");
     if (m.includes("heading") && (m.includes("jump") || m.includes("skip") || m.includes("level")))
-      return { label: "Fix Headings", action: () => runBannerFix("headings", msg) };
+      return ai("Fix Headings", "headings");
     /* ── URL / slug ── */
     if (m.includes("url") || m.includes("slug") || m.includes("handle"))
-      return { label: "Fix URL Slug", action: () => runBannerFix("handle", msg) };
+      return ai("Fix URL Slug", "handle");
     /* ── Schema / structured data ── */
     if (m.includes("schema") || m.includes("structured data") || m.includes("json-ld"))
-      return { label: "Add Schema", action: () => runBannerFix("schema", msg) };
+      return ai("Add Schema", "schema");
     /* ── Word count / thin content ── */
     if (m.includes("word count") || m.includes("word") || m.includes("too short") || m.includes("thin") || (m.includes("words") && (m.includes("short") || m.includes("below"))))
-      return { label: "Expand with AI", action: () => runBannerFix("body_append", msg) };
+      return ai("Expand with AI", "body_append");
     /* ── Non-auto-fixable: navigate to relevant section ── */
     if (m.includes("date") || m.includes("freshness") || m.includes("publish") || m.includes("modified"))
       return { label: "Add Schema", action: () => { setSection("Schema"); } };
@@ -1406,6 +1408,7 @@ export default function BlogSEO() {
                         <button style={{ ...S.btn("primary"), width: "100%", fontSize: 15, padding: "12px 20px", justifyContent: "center" }} onClick={runScan} disabled={!url.trim() || scanning}>
                           {scanning ? <><span style={S.spinner} /> Checking your post...</> : "Check My Post"}
                         </button>
+                        <div style={{ fontSize: 11, color: "#71717a", textAlign: "center", marginTop: 6 }}>Uses 1 credit</div>
                         {scanErr && <div style={{ marginTop: 10, fontSize: 12, color: "#f87171" }}>{scanErr}</div>}
                       </div>
                     </>
@@ -1450,7 +1453,12 @@ export default function BlogSEO() {
                               <div key={i} style={{ background: "#18181b", border: `1px solid ${issue.sev === "high" ? "#7f1d1d" : "#78350f"}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10 }}>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: issue.sev === "high" ? "#f87171" : "#fbbf24", marginBottom: 4 }}>{issue.sev === "high" ? "High priority" : "Worth fixing"}</div>
                                 <div style={{ fontSize: 13, color: "#d4d4d8", marginBottom: act ? 10 : 0 }}>{issue.msg}</div>
-                                {act && <button style={{ ...S.btn("primary"), fontSize: 13, padding: "8px 18px" }} onClick={act.action}>{act.label}</button>}
+                                {act && (
+                                  <button style={{ ...S.btn("primary"), fontSize: 13, padding: "8px 18px", display: "inline-flex", alignItems: "center", gap: 6 }} onClick={act.action}>
+                                    {act.label}
+                                    {act.credits && <span style={{ fontSize: 11, opacity: 0.75, fontWeight: 500 }}>· {act.credits} credit</span>}
+                                  </button>
+                                )}
                               </div>
                             ); })}
                           </>
@@ -1760,9 +1768,10 @@ export default function BlogSEO() {
                               <div style={{ fontSize: 13, color: C.text, marginBottom: act ? 4 : 0 }}>{issue.msg}</div>
                             </div>
                             {act && (
-                              <button style={{ ...S.btn("primary"), fontSize: 12, padding: "5px 14px", flexShrink: 0 }}
+                              <button style={{ ...S.btn("primary"), fontSize: 12, padding: "5px 14px", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5 }}
                                 onClick={act.action}>
                                 {act.label}
+                                {act.credits && <span style={{ fontSize: 10, opacity: 0.75 }}>· {act.credits} cr</span>}
                               </button>
                             )}
                           </div>

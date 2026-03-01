@@ -152,7 +152,9 @@ const toolRouters = [
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
-  { path: '/api/blog-seo', router: require('./tools/blog-seo/router'), middleware: requireTool('blog-seo'), creditAction: 'seo-analysis' },
+  { path: '/api/blog-seo', router: require('./tools/blog-seo/router'), middleware: requireTool('blog-seo'), creditAction: 'seo-analysis',
+    // These paths are deterministic (no OpenAI) — skip credit check so 0-credit merchants can still use them
+    noCreditPaths: ['/serp/preview', '/metadata/analyze', '/keywords/evaluate', '/research/score', '/items'] },
   { path: '/api/tools/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
   { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router'), middleware: requireTool('on-page-seo-engine'), creditAction: 'seo-analysis' },
   { path: '/api/ai-content-brief-generator', router: require('./tools/ai-content-brief-generator/router'), middleware: requireTool('ai-content-brief-generator'), creditAction: 'content-brief' },
@@ -193,12 +195,28 @@ const toolRouters = [
   { path: '/api/main-suite', router: require('./tools/main-suite/router') },
   { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers'), creditAction: 'generic-ai' },
 ];
-toolRouters.forEach(({ path, router, middleware, creditAction }) => {
+toolRouters.forEach((t) => {
+  const { path, router, middleware, creditAction, noCreditPaths } = t;
   try {
     console.log(`[Router Registration] ${path}:`, typeof router, Array.isArray(router), router && router.stack ? 'Express Router' : typeof router);
     const mws = [];
     if (middleware) mws.push(middleware);
-    if (creditAction) mws.push(requireCreditsOnMutation(creditAction));
+    if (creditAction) {
+      if (noCreditPaths && noCreditPaths.length) {
+        // Path-aware credit middleware: skip credit check for deterministic non-AI routes
+        const baseCredit = requireCreditsOnMutation(creditAction);
+        mws.push((req, res, next) => {
+          if (noCreditPaths.some(p => req.path === p || req.path.startsWith(p + '/'))) {
+            req.creditCheck = { allowed: true, cost: 0, unlimited: true };
+            req.deductCredits = () => ({ ok: true, cost: 0 });
+            return next();
+          }
+          return baseCredit(req, res, next);
+        });
+      } else {
+        mws.push(requireCreditsOnMutation(creditAction));
+      }
+    }
     if (mws.length > 0) {
       app.use(path, ...mws, router);
     } else {
