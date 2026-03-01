@@ -930,7 +930,8 @@ export default function BlogSEO() {
     if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the dropdown first so we know which Shopify article to update."); return; }
     setBannerFixState(p => ({ ...p, [issueIdx]: "loading" }));
     // Map field → current value so the backend has something to rewrite
-    const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: scanResult.h1 || scanResult.title, handle: scanResult.handle || scanResult.url };
+    const h2s = (scanResult.headings || []).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
+    const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: h2s || scanResult.h1 || scanResult.title, handle: scanResult.handle || scanResult.url };
     const currentValue = currentValueMap[field] || scanResult.title || "";
     try {
       const rw = await apiFetchJSON(`${API}/ai/rewrite`, {
@@ -997,7 +998,8 @@ export default function BlogSEO() {
     setSmartFixApplying({});
     const upd = (id, patch) => setSmartFixCards(p => p.map(c => c.id === id ? { ...c, ...patch } : c));
     // Backend requires currentValue for each field
-    const cvMap = { title: scanResult.title||"untitled", metaDescription: scanResult.metaDescription||scanResult.title||"", h1: scanResult.h1||scanResult.title||"", headings: scanResult.h1||scanResult.title||"" };
+    const h2Texts = (scanResult.headings||[]).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
+    const cvMap = { title: scanResult.title||"untitled", metaDescription: scanResult.metaDescription||scanResult.title||"", h1: scanResult.h1||scanResult.title||"", headings: h2Texts || scanResult.h1 || scanResult.title || "" };
     const calls = [
       apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"title", currentValue: cvMap.title, url: base.url, keywords: base.keywords }) })
         .then(r => upd("title", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
@@ -1011,7 +1013,7 @@ export default function BlogSEO() {
       apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"headings", currentValue: cvMap.headings, url: base.url, keywords: base.keywords }) })
         .then(r => upd("headings", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("headings", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, articleBody: scanResult.h1||scanResult.title }) })
+      apiFetchJSON(`${API}/schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, h1: scanResult.h1, metaDescription: scanResult.metaDescription, keywords: kwInput, articleBody: scanResult.h1 || scanResult.title }) })
         .then(r => upd("schema", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("schema", { status:"error", error: e.message })),
       apiFetchJSON(`${API}/backlinks/internal-suggester`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
@@ -1029,10 +1031,12 @@ export default function BlogSEO() {
   const applySmartCard = useCallback(async (card) => {
     if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown first"); return; }
     // Backend /ai/rewrite returns structured.variants[0].text; fallback to direct value keys
+    // schema/generate returns jsonLd (the string apply-field expects)
     const val = card.result?.structured?.variants?.[0]?.text
       || (card.id === "metaopt" ? card.result?.variants?.[card.result?.bestVariant ?? 0]?.text : null)
+      || (card.id === "schema"  ? card.result?.jsonLd : null)
       || card.result?.value || card.result?.suggestion
-      || card.result?.optimizedMeta || card.result?.schema;
+      || card.result?.optimizedMeta;
     if (!val) { showToast("AI returned no suggestion for this fix"); return; }
     setSmartFixApplying(p => ({ ...p, [card.id]: true }));
     try {
@@ -2972,10 +2976,12 @@ export default function BlogSEO() {
                       const applied   = smartFixApplied.has(card.id);
                       const applying  = smartFixApplying[card.id];
                       // /ai/rewrite returns structured.variants[0].text; metaopt returns variants[bestVariant].text
+                      // schema/generate returns jsonLd (string) for display + apply
                       const val       = card.result?.structured?.variants?.[0]?.text
                         || (card.id === "metaopt" ? card.result?.variants?.[card.result?.bestVariant ?? 0]?.text : null)
+                        || (card.id === "schema"  ? card.result?.jsonLd : null)
                         || card.result?.value || card.result?.suggestion
-                        || card.result?.optimizedMeta || card.result?.schema;
+                        || card.result?.optimizedMeta;
                       const oppsList  = card.result?.suggestedLinkOpportunities || card.result?.opportunities || [];
                       return (
                         <div key={card.id} style={{ background:"#18181b", border:`1px solid ${card.status==="error" ? "#7f1d1d" : card.status==="done" ? (applied ? "#14532d" : "#7c3aed") : "#3f3f46"}`, borderRadius:12, overflow:"hidden" }}>
