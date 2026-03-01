@@ -2557,7 +2557,7 @@ export default function BlogSEO() {
  if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin') || m.includes('only') || m.includes('minimum') || m.includes('should be'))))
  return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: 'Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,'') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,3)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
  if (m.includes('author'))
- return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: 'Add Author', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: 'Add Author', action: () => { setSimpleMode(false); setSection('Local'); setTab('E-E-A-T & Brand'); } };
  if (m.includes('date') || m.includes('freshness') || m.includes('publish') || m.includes('modified'))
  return { hint: 'Freshness matters for blog rankings. Add datePublished and dateModified to your Schema markup so Google can accurately assess how current your content is.', label: 'Add Schema', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
  if (m.includes('schema') || m.includes('structured data') || m.includes('json-ld'))
@@ -3035,9 +3035,9 @@ export default function BlogSEO() {
  <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>Quick Actions</div>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
  {[
- { icon: "", label: "Fix a Post", desc: "Scan for issues and apply AI fixes", color: "#f59e0b", action: () => { setSection("Analyze"); setTab("Overview"); } },
+ { icon: "", label: "Fix a Post", desc: "Scan for issues and apply AI fixes", color: "#f59e0b", action: () => { setSection("Analyze"); setTab("Analyzer"); } },
  { icon: "", label: "Write a Post", desc: "AI outlines, intros, titles & drafts", color: "#8b5cf6", action: () => { setSection("Write"); setTab("AI Create"); } },
- { icon: "", label: "Find Keywords", desc: "Research topics and keyword clusters", color: "#06b6d4", action: () => { setSection("Keywords"); setTab("Research"); } },
+ { icon: "", label: "Find Keywords", desc: "Research topics and keyword clusters", color: "#06b6d4", action: () => { setSection("Keywords"); setTab("Keywords"); } },
  ].map(q => (
  <div key={q.label} onClick={q.action} style={{ background: "#18181b", border: `1px solid ${q.color}33`, borderRadius: 12, padding: "18px 16px", cursor: "pointer", transition: "border-color 0.15s", display: "flex", flexDirection: "column", gap: 6 }}
  onMouseEnter={e => e.currentTarget.style.borderColor = q.color}
