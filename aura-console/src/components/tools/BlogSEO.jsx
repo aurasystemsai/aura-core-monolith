@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
 
@@ -984,27 +984,38 @@ export default function BlogSEO() {
       keywords: kwInput, wordCount: scanResult.wordCount,
     };
     const MODULES = [
-      { id: "title",   icon: "✏️",  label: "Optimise Page Title",        applyField: "title" },
-      { id: "meta",    icon: "📝",  label: "Rewrite Meta Description",   applyField: "metaDescription" },
-      { id: "h1",      icon: "📌",  label: "Fix Main Heading (H1)",      applyField: "h1" },
-      { id: "headings",icon: "📋",  label: "Improve Sub-headings",       applyField: "headings" },
-      { id: "schema",  icon: "🗂️",  label: "Generate Schema Markup",     applyField: "schema" },
-      { id: "links",   icon: "🔗",  label: "Internal Link Suggestions",  applyField: null },
-      { id: "metaopt", icon: "🎯",  label: "Meta Description Optimiser", applyField: "metaDescription" },
+      // ── FIXABLE: AI rewrites these fields and applies them straight to Shopify ──
+      { id: "title",   icon: "✏️",  label: "Page Title",            group: "Fix",  applyField: "title" },
+      { id: "meta",    icon: "📝",  label: "Meta Description",      group: "Fix",  applyField: "metaDescription" },
+      { id: "h1",      icon: "📌",  label: "Main Heading (H1)",     group: "Fix",  applyField: "h1" },
+      { id: "headings",icon: "📋",  label: "Sub-headings (H2s)",    group: "Fix",  applyField: "headings" },
+      { id: "handle",  icon: "🔗",  label: "URL Slug",              group: "Fix",  applyField: "handle" },
+      { id: "schema",  icon: "🗂️",  label: "Article Schema Markup", group: "Fix",  applyField: "schema" },
+      { id: "faq",     icon: "❓",  label: "FAQ Schema (featured snippets)", group: "Fix", applyField: "body_append" },
+      { id: "toc",     icon: "📑",  label: "Table of Contents",     group: "Fix",  applyField: "body_append" },
+      // ── AUDITS: run the tool and show what needs doing (you fix manually or AI guides you) ──
+      { id: "links",   icon: "🔗",  label: "Internal Link Gaps",    group: "Audit", applyField: null },
+      { id: "images",  icon: "🖼️",  label: "Image SEO & Alt Text",  group: "Audit", applyField: null },
+      { id: "og",      icon: "📣",  label: "Open Graph / Social Tags", group: "Audit", applyField: null },
+      { id: "anchors", icon: "⚓",  label: "Anchor Text Quality",   group: "Audit", applyField: null },
+      { id: "kwdens",  icon: "🔑",  label: "Keyword Density",       group: "Audit", applyField: null },
+      { id: "sections",icon: "📊",  label: "Section Word Count",    group: "Audit", applyField: null },
     ];
     setSmartFixCards(MODULES.map(m => ({ ...m, status: "loading", result: null, error: null })));
     setSmartFixRunning(true);
     setSmartFixApplied(new Set());
     setSmartFixApplying({});
     const upd = (id, patch) => setSmartFixCards(p => p.map(c => c.id === id ? { ...c, ...patch } : c));
-    // Backend requires currentValue for each field
+    // Backend requires currentValue for each rewrite field
     const h2Texts = (scanResult.headings||[]).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
-    const cvMap = { title: scanResult.title||"untitled", metaDescription: scanResult.metaDescription||scanResult.title||"", h1: scanResult.h1||scanResult.title||"", headings: h2Texts || scanResult.h1 || scanResult.title || "" };
+    const cvMap = { title: scanResult.title||"untitled", metaDescription: scanResult.metaDescription||scanResult.title||"", h1: scanResult.h1||scanResult.title||"", headings: h2Texts || scanResult.h1 || scanResult.title || "", handle: scanResult.handle || (scanResult.url||"").split("/").pop() || scanResult.title || "my-post" };
+    const qHeadings = (scanResult.questionHeadings || []).length > 0 ? scanResult.questionHeadings : (scanResult.headings||[]).filter(h => /^(how|what|why|when|where|who|which|is|are|can|do|does|did|will|should)\b/i.test(h.text));
     const calls = [
+      // Fixable rewrites
       apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"title", currentValue: cvMap.title, url: base.url, keywords: base.keywords }) })
         .then(r => upd("title", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("title", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"metaDescription", currentValue: cvMap.metaDescription, url: base.url, keywords: base.keywords }) })
+      apiFetchJSON(`${API}/meta-description-optimizer`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, currentMeta: scanResult.metaDescription||"", keyword: kwInput }) })
         .then(r => upd("meta", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("meta", { status:"error", error: e.message })),
       apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"h1", currentValue: cvMap.h1, url: base.url, keywords: base.keywords }) })
@@ -1013,15 +1024,41 @@ export default function BlogSEO() {
       apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"headings", currentValue: cvMap.headings, url: base.url, keywords: base.keywords }) })
         .then(r => upd("headings", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("headings", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"handle", currentValue: cvMap.handle, url: base.url, keywords: base.keywords }) })
+        .then(r => upd("handle", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("handle", { status:"error", error: e.message })),
       apiFetchJSON(`${API}/schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, h1: scanResult.h1, metaDescription: scanResult.metaDescription, keywords: kwInput, articleBody: scanResult.h1 || scanResult.title }) })
         .then(r => upd("schema", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("schema", { status:"error", error: e.message })),
+      (qHeadings.length > 0
+        ? apiFetchJSON(`${API}/faq-schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ questionHeadings: qHeadings, useAI: true, url: scanResult.url }) })
+          .then(r => upd("faq", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"No question headings found — add How/What/Why H2s first" }))
+          .catch(e => upd("faq", { status:"error", error: e.message }))
+        : Promise.resolve(upd("faq", { status:"error", error: "No question-form headings found on this post. Add H2s starting with How, What, Why, etc. to generate an FAQ schema" }))),
+      apiFetchJSON(`${API}/toc-generator`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
+        .then(r => upd("toc", r.ok && r.headingCount > 0 ? { status:"done", result: r } : { status:"error", error: r.error || "No headings found on this post — add H2 subheadings first" }))
+        .catch(e => upd("toc", { status:"error", error: e.message })),
+      // Audits
       apiFetchJSON(`${API}/backlinks/internal-suggester`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
         .then(r => upd("links", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
         .catch(e => upd("links", { status:"error", error: e.message })),
-      apiFetchJSON(`${API}/meta-description-optimizer`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, currentMeta: scanResult.metaDescription||scanResult.title||"", keyword: kwInput }) })
-        .then(r => upd("metaopt", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
-        .catch(e => upd("metaopt", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/image-seo`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, keyword: kwInput }) })
+        .then(r => upd("images", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("images", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/og-validator`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
+        .then(r => upd("og", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("og", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/anchor-text-audit`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
+        .then(r => upd("anchors", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("anchors", { status:"error", error: e.message })),
+      (kwInput.trim()
+        ? apiFetchJSON(`${API}/keyword-density`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, keyword: kwInput }) })
+          .then(r => upd("kwdens", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+          .catch(e => upd("kwdens", { status:"error", error: e.message }))
+        : Promise.resolve(upd("kwdens", { status:"error", error: "Enter a target keyword in the page header first to run keyword density analysis" }))),
+      apiFetchJSON(`${API}/section-word-count`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
+        .then(r => upd("sections", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("sections", { status:"error", error: e.message })),
     ];
     await Promise.allSettled(calls);
     setSmartFixRunning(false);
@@ -1030,13 +1067,21 @@ export default function BlogSEO() {
   /* ── Smart Fix — apply a single card to Shopify ── */
   const applySmartCard = useCallback(async (card) => {
     if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown first"); return; }
-    // Backend /ai/rewrite returns structured.variants[0].text; fallback to direct value keys
-    // schema/generate returns jsonLd (the string apply-field expects)
-    const val = card.result?.structured?.variants?.[0]?.text
-      || (card.id === "metaopt" ? card.result?.variants?.[card.result?.bestVariant ?? 0]?.text : null)
-      || (card.id === "schema"  ? card.result?.jsonLd : null)
-      || card.result?.value || card.result?.suggestion
-      || card.result?.optimizedMeta;
+    // Extract the correct value for each card type before applying to Shopify
+    let val = null;
+    if (["title","h1","headings","handle"].includes(card.id)) {
+      val = card.result?.structured?.variants?.[0]?.text;
+    } else if (card.id === "meta") {
+      val = card.result?.variants?.[card.result?.bestVariant ?? 0]?.text;
+    } else if (card.id === "schema") {
+      val = card.result?.jsonLd;
+    } else if (card.id === "faq") {
+      val = card.result?.scriptTag;
+    } else if (card.id === "toc") {
+      val = card.result?.tocHtml;
+    } else {
+      val = card.result?.value || card.result?.suggestion || card.result?.optimizedMeta;
+    }
     if (!val) { showToast("AI returned no suggestion for this fix"); return; }
     setSmartFixApplying(p => ({ ...p, [card.id]: true }));
     try {
@@ -2975,66 +3020,172 @@ export default function BlogSEO() {
                     {smartFixCards.map(card => {
                       const applied   = smartFixApplied.has(card.id);
                       const applying  = smartFixApplying[card.id];
-                      // /ai/rewrite returns structured.variants[0].text; metaopt returns variants[bestVariant].text
-                      // schema/generate returns jsonLd (string) for display + apply
-                      const val       = card.result?.structured?.variants?.[0]?.text
-                        || (card.id === "metaopt" ? card.result?.variants?.[card.result?.bestVariant ?? 0]?.text : null)
-                        || (card.id === "schema"  ? card.result?.jsonLd : null)
-                        || card.result?.value || card.result?.suggestion
-                        || card.result?.optimizedMeta;
-                      const oppsList  = card.result?.suggestedLinkOpportunities || card.result?.opportunities || [];
+                      let val = null;
+                      if (["title","h1","headings","handle"].includes(card.id)) {
+                        val = card.result?.structured?.variants?.[0]?.text;
+                      } else if (card.id === "meta") {
+                        val = card.result?.variants?.[card.result?.bestVariant ?? 0]?.text;
+                      } else if (card.id === "schema") {
+                        val = card.result?.jsonLd;
+                      } else if (card.id === "faq") {
+                        val = card.result?.scriptTag;
+                      } else if (card.id === "toc") {
+                        val = card.result?.tocHtml;
+                      }
+                      const oppsList    = card.result?.suggestedLinkOpportunities || [];
+                      const issuesList  = card.result?.issues || [];
+                      const sectionList = card.result?.sections || [];
+                      const anchorsList = card.result?.topAnchors || [];
+                      const badgeColor  = card.group === "Fix" ? "#7c3aed" : "#0e7490";
                       return (
-                        <div key={card.id} style={{ background:"#18181b", border:`1px solid ${card.status==="error" ? "#7f1d1d" : card.status==="done" ? (applied ? "#14532d" : "#7c3aed") : "#3f3f46"}`, borderRadius:12, overflow:"hidden" }}>
+                        <div key={card.id} style={{ background:"#18181b", border:`1px solid ${card.status==="error" ? "#7f1d1d" : card.status==="done" ? (applied ? "#14532d" : badgeColor) : "#3f3f46"}`, borderRadius:12, overflow:"hidden" }}>
                           {/* Card header */}
                           <div style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 16px", background:"#1c1c1f" }}>
                             <span style={{ fontSize:20, lineHeight:1 }}>{card.icon}</span>
-                            <div style={{ flex:1, fontSize:14, fontWeight:700, color:"#fafafa" }}>{card.label}</div>
-                            {card.status === "loading" && <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#a78bfa" }}><span style={S.spinner} /> Analysing…</div>}
-                            {card.status === "done"    && !applied && <div style={{ fontSize:11, fontWeight:700, color:"#a78bfa", background:"#2e1065", borderRadius:6, padding:"3px 10px" }}>Ready to apply</div>}
+                            <div style={{ flex:1 }}>
+                              <div style={{ fontSize:14, fontWeight:700, color:"#fafafa" }}>{card.label}</div>
+                              {card.group && <div style={{ fontSize:10, color: card.group === "Fix" ? "#a78bfa" : "#22d3ee", marginTop:1 }}>{card.group === "Fix" ? "Auto-Fix" : "Audit"}</div>}
+                            </div>
+                            {card.status === "loading" && <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#a78bfa" }}><span style={S.spinner} /> Running…</div>}
+                            {card.status === "done"    && !applied && card.applyField && <div style={{ fontSize:11, fontWeight:700, color:"#a78bfa", background:"#2e1065", borderRadius:6, padding:"3px 10px" }}>Ready to apply</div>}
                             {card.status === "done"    && applied  && <div style={{ fontSize:11, fontWeight:700, color:"#22c55e", background:"#0c1a0c", borderRadius:6, padding:"3px 10px" }}>✓ Applied</div>}
-                            {card.status === "error"   && <div style={{ fontSize:11, fontWeight:700, color:"#f87171", background:"#1c0000", borderRadius:6, padding:"3px 10px" }}>Error</div>}
+                            {card.status === "done"    && !card.applyField && <div style={{ fontSize:11, fontWeight:700, color:"#22d3ee", background:"#083344", borderRadius:6, padding:"3px 10px" }}>✓ Done</div>}
+                            {card.status === "error"   && <div style={{ fontSize:11, fontWeight:700, color:"#f87171", background:"#1c0000", borderRadius:6, padding:"3px 10px" }}>Info</div>}
                           </div>
                           {/* Card body */}
                           {card.status === "done" && (
                             <div style={{ padding:"12px 16px" }}>
-                              {/* Text value (title, meta, h1, headings) */}
-                              {val && typeof val === "string" && !val.startsWith("{") && (
-                                <div style={{ fontSize:13, color:"#d4d4d8", background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"10px 14px", marginBottom: card.applyField ? 10 : 0, lineHeight:1.6, whiteSpace:"pre-wrap" }}>{val}</div>
+                              {/* Text rewrite (title, meta, h1, headings, handle) */}
+                              {val && typeof val === "string" && !val.startsWith("{") && !val.startsWith("<") && (
+                                <div style={{ fontSize:13, color:"#d4d4d8", background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"10px 14px", marginBottom:10, lineHeight:1.6, whiteSpace:"pre-wrap" }}>{val}</div>
                               )}
-                              {/* Schema (JSON) */}
-                              {val && typeof val === "string" && val.startsWith("{") && (
-                                <div style={{ fontSize:11, fontFamily:"monospace", color:"#86efac", background:"#09090b", border:"1px solid #14532d", borderRadius:8, padding:"10px 14px", marginBottom: card.applyField ? 10 : 0, maxHeight:160, overflow:"auto", whiteSpace:"pre-wrap" }}>{val}</div>
+                              {/* Schema JSON-LD */}
+                              {card.id === "schema" && val && (
+                                <div style={{ fontSize:11, fontFamily:"monospace", color:"#86efac", background:"#09090b", border:"1px solid #14532d", borderRadius:8, padding:"10px 14px", marginBottom:10, maxHeight:160, overflow:"auto", whiteSpace:"pre-wrap" }}>{val}</div>
                               )}
-                              {/* Schema object */}
-                              {val && typeof val === "object" && (
-                                <div style={{ fontSize:11, fontFamily:"monospace", color:"#86efac", background:"#09090b", border:"1px solid #14532d", borderRadius:8, padding:"10px 14px", marginBottom: card.applyField ? 10 : 0, maxHeight:160, overflow:"auto", whiteSpace:"pre-wrap" }}>{JSON.stringify(val, null, 2)}</div>
+                              {/* FAQ schema */}
+                              {card.id === "faq" && (
+                                <>
+                                  {(card.result?.faqs||[]).length > 0 && (
+                                    <div style={{ display:"flex", flexDirection:"column", gap:6, marginBottom:10 }}>
+                                      {(card.result.faqs).slice(0,5).map((f,i) => (
+                                        <div key={i} style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 12px" }}>
+                                          <div style={{ fontSize:12, fontWeight:600, color:"#fafafa", marginBottom:4 }}>{f.question}</div>
+                                          <div style={{ fontSize:11, color:"#a1a1aa", lineHeight:1.5 }}>{f.answer}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {val && <div style={{ fontSize:10, color:"#71717a", marginBottom:10 }}>FAQ schema ready — clicking Apply will append the &lt;script&gt; tag to your post body.</div>}
+                                </>
                               )}
-                              {/* Internal links list */}
-                              {card.id === "links" && oppsList.length > 0 && (
-                                <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:4 }}>
-                                  {oppsList.slice(0,5).map((opp, i) => (
-                                    <div key={i} style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"flex-start", gap:10 }}>
-                                      <div style={{ flex:1 }}>
-                                        <div style={{ fontSize:12, fontWeight:600, color:"#fafafa" }}>{opp.targetPage || opp.page || opp.url || "Suggested page"}</div>
-                                        {opp.anchorText && <div style={{ fontSize:11, color:"#a78bfa", marginTop:2 }}>Anchor: “{opp.anchorText}”</div>}
-                                        {opp.importance  && <div style={{ fontSize:10, color:"#71717a", marginTop:1 }}>{opp.importance}</div>}
-                                      </div>
-                                      <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => { navigator.clipboard.writeText(opp.anchorText || opp.url || ""); showToast("Copied!"); }}>Copy anchor</button>
+                              {/* Table of Contents */}
+                              {card.id === "toc" && val && (
+                                <div style={{ fontSize:11, color:"#d4d4d8", background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"10px 14px", marginBottom:10, maxHeight:160, overflow:"auto" }} dangerouslySetInnerHTML={{ __html: val }} />
+                              )}
+                              {/* Internal links */}
+                              {card.id === "links" && (
+                                <>
+                                  {oppsList.length > 0 ? (
+                                    <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:4 }}>
+                                      {oppsList.slice(0,5).map((opp, i) => (
+                                        <div key={i} style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"flex-start", gap:10 }}>
+                                          <div style={{ flex:1 }}>
+                                            <div style={{ fontSize:12, fontWeight:600, color:"#fafafa" }}>{opp.targetPage || opp.page || opp.url || "Suggested page"}</div>
+                                            {opp.anchorText && <div style={{ fontSize:11, color:"#a78bfa", marginTop:2 }}>Anchor: "{opp.anchorText}"</div>}
+                                            {opp.importance && <div style={{ fontSize:10, color:"#71717a", marginTop:1 }}>{opp.importance}</div>}
+                                          </div>
+                                          <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => { navigator.clipboard.writeText(opp.anchorText || opp.url || ""); showToast("Copied!"); }}>Copy</button>
+                                        </div>
+                                      ))}
+                                      {oppsList.length > 5 && <div style={{ fontSize:11, color:"#71717a" }}>+{oppsList.length - 5} more — see Internal Links section</div>}
+                                    </div>
+                                  ) : (
+                                    <div style={{ fontSize:12, color:"#a1a1aa" }}>{card.result?.assessment || "No link opportunities found."}</div>
+                                  )}
+                                  {card.result?.internalLinkScore != null && <div style={{ fontSize:11, color:"#71717a", marginTop:6 }}>Link score: {card.result.internalLinkScore}/100</div>}
+                                </>
+                              )}
+                              {/* Image SEO */}
+                              {card.id === "images" && (
+                                <>
+                                  <div style={{ display:"flex", gap:12, marginBottom:10, flexWrap:"wrap" }}>
+                                    <div style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 14px", textAlign:"center", minWidth:70 }}><div style={{ fontSize:22, fontWeight:800, color:(card.result?.altScore||0)>=80?"#22c55e":"#f59e0b" }}>{card.result?.altScore??"-"}</div><div style={{ fontSize:10, color:"#71717a" }}>Alt Score</div></div>
+                                    <div style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 14px", textAlign:"center", minWidth:70 }}><div style={{ fontSize:22, fontWeight:800, color:"#fafafa" }}>{card.result?.totalImages??0}</div><div style={{ fontSize:10, color:"#71717a" }}>Total</div></div>
+                                    <div style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 14px", textAlign:"center", minWidth:70 }}><div style={{ fontSize:22, fontWeight:800, color:"#f87171" }}>{card.result?.missing??0}</div><div style={{ fontSize:10, color:"#71717a" }}>Missing alt</div></div>
+                                  </div>
+                                  {issuesList.length > 0 ? issuesList.slice(0,4).map((iss,i) => (
+                                    <div key={i} style={{ background:"#09090b", border:"1px solid #450a0a", borderRadius:8, padding:"7px 12px", fontSize:11, color:"#fca5a5", marginBottom:6 }}>{typeof iss==="string"?iss:(iss.message||iss.issue||JSON.stringify(iss))}</div>
+                                  )) : <div style={{ fontSize:12, color:"#22c55e" }}>All images have alt text!</div>}
+                                  {issuesList.length > 4 && <div style={{ fontSize:11, color:"#71717a" }}>+{issuesList.length-4} more issues — see Image SEO section</div>}
+                                </>
+                              )}
+                              {/* OG / Social */}
+                              {card.id === "og" && (
+                                <>
+                                  {issuesList.length > 0 ? issuesList.slice(0,5).map((iss,i) => (
+                                    <div key={i} style={{ background:"#09090b", border:"1px solid #450a0a", borderRadius:8, padding:"7px 12px", fontSize:11, color:"#fca5a5", marginBottom:6 }}>{typeof iss==="string"?iss:(iss.message||iss.issue||JSON.stringify(iss))}</div>
+                                  )) : <div style={{ fontSize:12, color:"#22c55e" }}>Open Graph tags look good!</div>}
+                                  {card.result?.og?.title && <div style={{ fontSize:11, color:"#71717a", marginTop:8 }}>OG title: {card.result.og.title}</div>}
+                                </>
+                              )}
+                              {/* Anchor text */}
+                              {card.id === "anchors" && (
+                                <>
+                                  {card.result?.genericAnchorCount > 0 && (
+                                    <div style={{ background:"#09090b", border:"1px solid #450a0a", borderRadius:8, padding:"8px 12px", fontSize:12, color:"#fca5a5", marginBottom:8 }}>⚠️ {card.result.genericAnchorCount} generic anchor{card.result.genericAnchorCount>1?"s":""} ("click here", "read more"…)</div>
+                                  )}
+                                  {issuesList.slice(0,3).map((iss,i) => (
+                                    <div key={i} style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"7px 12px", fontSize:11, color:"#fca5a5", marginBottom:6 }}>{typeof iss==="string"?iss:(iss.message||iss.issue||JSON.stringify(iss))}</div>
+                                  ))}
+                                  {anchorsList.slice(0,4).map((a,i) => (
+                                    <div key={i} style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#d4d4d8", padding:"3px 0", borderBottom:"1px solid #27272a" }}>
+                                      <span>"{a.text||a.anchor}"</span><span style={{ color:"#71717a" }}>x{a.count||a.frequency||1}</span>
                                     </div>
                                   ))}
-                                  {oppsList.length > 5 && <div style={{ fontSize:11, color:"#71717a" }}>+{oppsList.length - 5} more — visit Internal Links section for full list</div>}
-                                </div>
+                                  {issuesList.length===0 && anchorsList.length===0 && <div style={{ fontSize:12, color:"#22c55e" }}>Anchor text looks good!</div>}
+                                </>
                               )}
-                              {card.id === "links" && oppsList.length === 0 && (
-                                <div style={{ fontSize:12, color:"#a1a1aa" }}>{card.result?.assessment || "No opportunities detected at this time."}</div>
+                              {/* Keyword density */}
+                              {card.id === "kwdens" && (
+                                <>
+                                  {card.result?.density != null && (
+                                    <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:10 }}>
+                                      <div style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 14px", textAlign:"center" }}>
+                                        <div style={{ fontSize:22, fontWeight:800, color:card.result.density>=1&&card.result.density<=3?"#22c55e":"#f59e0b" }}>{typeof card.result.density?.toFixed==="function"?card.result.density.toFixed(1):card.result.density}%</div>
+                                        <div style={{ fontSize:10, color:"#71717a" }}>Density</div>
+                                      </div>
+                                      <div style={{ fontSize:12, color:"#a1a1aa" }}>{card.result.density<1?"Below recommended (1-3%)":card.result.density>3?"Above recommended - may look spammy":"In the ideal range (1-3%)"}</div>
+                                    </div>
+                                  )}
+                                  {issuesList.slice(0,3).map((iss,i) => (
+                                    <div key={i} style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"7px 12px", fontSize:11, color:"#fca5a5", marginBottom:6 }}>{typeof iss==="string"?iss:(iss.message||iss.issue||JSON.stringify(iss))}</div>
+                                  ))}
+                                </>
                               )}
-                              {/* Apply button */}
+                              {/* Section word count */}
+                              {card.id === "sections" && (
+                                <>
+                                  {card.result?.thinSections > 0 && (
+                                    <div style={{ background:"#09090b", border:"1px solid #450a0a", borderRadius:8, padding:"8px 12px", fontSize:12, color:"#fca5a5", marginBottom:8 }}>Thin section{card.result.thinSections>1?"s":""}: {card.result.thinSections} under 150 words</div>
+                                  )}
+                                  {card.result?.avgPerSection && <div style={{ fontSize:11, color:"#71717a", marginBottom:8 }}>Avg: {Math.round(card.result.avgPerSection)} words/section</div>}
+                                  {sectionList.slice(0,5).map((sec,i) => (
+                                    <div key={i} style={{ display:"flex", justifyContent:"space-between", fontSize:12, padding:"5px 0", borderBottom:"1px solid #27272a" }}>
+                                      <span style={{ color:"#d4d4d8", flex:1, marginRight:8, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sec.heading||sec.section||"Section "+(i+1)}</span>
+                                      <span style={{ color:(sec.wordCount||sec.words||0)<150?"#f87171":"#22c55e", fontWeight:700, flexShrink:0 }}>{sec.wordCount||sec.words||0}w</span>
+                                    </div>
+                                  ))}
+                                  {sectionList.length===0 && issuesList.length===0 && <div style={{ fontSize:12, color:"#22c55e" }}>Section word counts look good!</div>}
+                                </>
+                              )}
+                              {/* Apply button (Fix cards only) */}
                               {card.applyField && val && !applied && (
                                 <button
-                                  style={{ ...S.btn("primary"), fontSize:12, padding:"7px 18px", background:"#16a34a", borderColor:"#16a34a", opacity: applying ? 0.7 : 1 }}
+                                  style={{ ...S.btn("primary"), fontSize:12, padding:"7px 18px", marginTop:8, background:"#16a34a", borderColor:"#16a34a", opacity:applying?0.7:1 }}
                                   disabled={applying}
                                   onClick={() => applySmartCard(card)}>
-                                  {applying ? <><span style={S.spinner} /> Applying…</> : "✓ Apply to Shopify"}
+                                  {applying ? <><span style={S.spinner} /> Applying...</> : "Apply to Shopify"}
                                 </button>
                               )}
                             </div>
@@ -3044,6 +3195,7 @@ export default function BlogSEO() {
                           )}
                         </div>
                       );
+                    })}
                     })}
                   </div>
                 )}
