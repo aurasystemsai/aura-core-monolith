@@ -8047,21 +8047,17 @@ router.post('/apply-field', async (req, res) => {
       return res.json({ ok: true, message: 'Meta description updated on post' });
     }
     if (field === 'headings') {
-      // value is pipe-separated H2 list: "Heading A | Heading B | ..."
       const newH2s = value.split(/\s*\|\s*/).map(h => h.trim()).filter(Boolean);
       if (!newH2s.length) return res.status(400).json({ ok: false, error: 'No headings provided' });
-      // Fetch current article body
       const getRes = await fetch(`${articleBase}.json`, { headers: { 'X-Shopify-Access-Token': token } });
       if (!getRes.ok) throw new Error(`Could not fetch article (${getRes.status})`);
       const { article: existingArticle } = await getRes.json();
       let body = existingArticle.body_html || '';
-      // Replace existing <h2> tags in order; append any extras
       let idx = 0;
       body = body.replace(/<h2[^>]*>.*?<\/h2>/gis, () => {
         if (idx < newH2s.length) return `<h2>${newH2s[idx++]}</h2>`;
-        return ''; // remove surplus h2s
+        return '';
       });
-      // Append any remaining new headings as a structure block at the end
       if (idx < newH2s.length) {
         const extras = newH2s.slice(idx).map(h => `<h2>${h}</h2>`).join('\n');
         body = body + '\n' + extras;
@@ -8071,8 +8067,37 @@ router.post('/apply-field', async (req, res) => {
         method: 'PUT', headers,
         body: JSON.stringify({ article: { id: articleId, body_html: body } }),
       });
-      if (!putRes.ok) throw new Error(`Shopify body update failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
+      if (!putRes.ok) throw new Error(`Shopify headings update failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
       return res.json({ ok: true, message: `${newH2s.length} H2 headings applied to post` });
+    }
+    if (field === 'schema') {
+      // Inject JSON-LD script tag into the article's body_html
+      const getRes = await fetch(`${articleBase}.json`, { headers: { 'X-Shopify-Access-Token': token } });
+      if (!getRes.ok) throw new Error(`Could not fetch article (${getRes.status})`);
+      const { article: existingArticle } = await getRes.json();
+      let body = existingArticle.body_html || '';
+      // Remove any existing ld+json block first
+      body = body.replace(/<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi, '').trim();
+      body = body + `\n<script type="application/ld+json">\n${value}\n</script>`;
+      const putRes = await fetch(`${articleBase}.json`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ article: { id: articleId, body_html: body } }),
+      });
+      if (!putRes.ok) throw new Error(`Shopify schema inject failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'Schema markup added to your post' });
+    }
+    if (field === 'body_append') {
+      // Append HTML content to the end of the article body
+      const getRes = await fetch(`${articleBase}.json`, { headers: { 'X-Shopify-Access-Token': token } });
+      if (!getRes.ok) throw new Error(`Could not fetch article (${getRes.status})`);
+      const { article: existingArticle } = await getRes.json();
+      const body = (existingArticle.body_html || '').trim() + '\n\n' + value;
+      const putRes = await fetch(`${articleBase}.json`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ article: { id: articleId, body_html: body } }),
+      });
+      if (!putRes.ok) throw new Error(`Shopify body append failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'Content added to your post' });
     }
     return res.status(400).json({ ok: false, error: `Unsupported field: ${field}` });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }

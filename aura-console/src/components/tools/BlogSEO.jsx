@@ -378,6 +378,88 @@ export default function BlogSEO() {
     if (section === "History") loadHistory();
   }, [section]);
 
+  /* ── Auto-populate advanced section inputs from store data ── */
+  useEffect(() => {
+    if (!section) return;
+    const storeNiche = shopDomain
+      ? shopDomain.replace(".myshopify.com", "").replace(/-/g, " ")
+      : (products[0]?.productType || products[0]?.vendor || "ecommerce");
+    const storeBrand = shopDomain ? shopDomain.replace(".myshopify.com", "") : "";
+    const storeRootUrl = shopDomain ? `https://${shopDomain}` : "";
+    if (section === "Schema") {
+      if (!schemaAuthorName && storeBrand) setSchemaAuthorName(storeBrand);
+      if (!schemaPublisherName && storeBrand) setSchemaPublisherName(storeBrand);
+    }
+    if (section === "SERP") {
+      if (!ctrTitle && scanResult?.title) setCtrTitle(scanResult.title);
+      if (!ctrMeta && scanResult?.metaDescription) setCtrMeta(scanResult.metaDescription);
+      if (!ctrKeyword && kwInput) setCtrKeyword(kwInput);
+      if (!intentKeyword && kwInput) setIntentKeyword(kwInput);
+      if (!paaKeyword && kwInput) setPaaKeyword(kwInput);
+      if (!paaNiche && storeNiche) setPaaNiche(storeNiche);
+      if (!snapKeyword && kwInput) setSnapKeyword(kwInput);
+      if (!diffKeyword && kwInput) setDiffKeyword(kwInput);
+      if (!diffNiche && storeNiche) setDiffNiche(storeNiche);
+    }
+    if (section === "Backlinks") {
+      if (!backlinkNiche && storeNiche) setBacklinkNiche(storeNiche);
+      if (!linkGapDomain && shopDomain) setLinkGapDomain(shopDomain);
+      if (!linkGapNiche && storeNiche) setLinkGapNiche(storeNiche);
+      if (!anchorTextDomain && shopDomain) setAnchorTextDomain(shopDomain);
+      if (!outreachContentTitle && scanResult?.title) setOutreachContentTitle(scanResult.title);
+    }
+    if (section === "AB") {
+      if (!abVariantUrl && url) setAbVariantUrl(url);
+    }
+    if (section === "Local") {
+      if (!gbpBusiness && storeBrand) setGbpBusiness(storeBrand);
+      if (!citationBusiness && storeBrand) setCitationBusiness(storeBrand);
+      if (!localKwService && storeNiche) setLocalKwService(storeNiche);
+    }
+    if (section === "Voice") {
+      if (!voiceOptKeyword && kwInput) setVoiceOptKeyword(kwInput);
+      if (!faqGenTopic && kwInput) setFaqGenTopic(kwInput);
+      if (!aiOverviewKeyword && kwInput) setAiOverviewKeyword(kwInput);
+      if (!convKwTopic && kwInput) setConvKwTopic(kwInput);
+    }
+    if (section === "AIGrowth") {
+      // uses `url` which is already set from analyzer
+    }
+    if (section === "Rank") {
+      if (!rankDomain && shopDomain) setRankDomain(shopDomain);
+      if (!rankKeywords && kwInput) setRankKeywords(kwInput);
+    }
+    if (section === "Crawl") {
+      if (!crawlUrl && storeRootUrl) setCrawlUrl(storeRootUrl);
+    }
+    if (section === "GEO") {
+      if (!geoUrl && (url || storeRootUrl)) setGeoUrl(url || storeRootUrl);
+      if (!promptSimBrand && storeBrand) setPromptSimBrand(storeBrand);
+      if (!promptSimQuery && kwInput) setPromptSimQuery(`best ${kwInput}`);
+    }
+    if (section === "Trends") {
+      if (!trendNiche && storeNiche) setTrendNiche(storeNiche);
+    }
+  }, [section]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── Push a field value back to Shopify ── */
+  const applyFieldToShopify = useCallback(async (field, value) => {
+    if (!scannedArtId || !scannedBlogId) {
+      showToast("Scan a post first so we know which Shopify article to update.");
+      return;
+    }
+    try {
+      const r = await apiFetch(`${API}/apply-field`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field, value }),
+      });
+      const d = await r.json();
+      if (d.ok) showToast(`Saved to Shopify: ${d.message || field}`);
+      else showToast(`Shopify error: ${d.error}`);
+    } catch (e) { showToast(`Error: ${e.message}`); }
+  }, [scannedArtId, scannedBlogId, showToast]);
+
   /* ── Analyzer ── */
   const runScan = useCallback(async () => {
     if (!url.trim()) return;
@@ -1704,6 +1786,11 @@ export default function BlogSEO() {
           {/* ════════ TECHNICAL SEO ════════ */}
           {section === "Technical" && (
             <>
+              {(url || shopDomain) && (
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#86efac" }}>
+                  Checking: <strong>{url || `https://${shopDomain}`}</strong> — your store data is pre-loaded.
+                </div>
+              )}
               <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {[["audit","Technical Audit"],["pagespeed","Page Speed"],["cwv","Core Web Vitals"],["sitemap","Sitemap Check"]].map(([k,l]) => (
                   <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:techSub===k?C.indigo:C.muted, color:techSub===k?"#fff":"#d4d4d8" }} onClick={() => setTechSub(k)}>{l}</button>
@@ -1769,6 +1856,11 @@ export default function BlogSEO() {
           {/* ════════ SCHEMA & LINKS ════════ */}
           {section === "Schema" && (
             <>
+              {(schemaAuthorName || schemaPublisherName) && (
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#86efac" }}>
+                  Pre-filled from your store: <strong>{schemaAuthorName}</strong>. Hit Generate — the JSON-LD will be added to your post automatically.
+                </div>
+              )}
               <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {[["article","Article Schema"],["faq","FAQ Schema"],["howto","HowTo Schema"]].map(([k,l]) => (
                   <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:schemaSub===k?C.indigo:C.muted, color:schemaSub===k?"#fff":"#d4d4d8" }} onClick={() => setSchemaSub(k)}>{l}</button>
@@ -1777,6 +1869,7 @@ export default function BlogSEO() {
               {schemaSub === "article" && (
                 <div style={S.card}>
                   <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>Article Schema Generator</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Tells Google your post is quality content — improves rich results and trust signals.</div>
                   <div style={S.row}>
                     <input style={S.input} placeholder="Author name" value={schemaAuthorName} onChange={e => setSchemaAuthorName(e.target.value)} />
                     <input style={S.input} placeholder="Publisher name" value={schemaPublisherName} onChange={e => setSchemaPublisherName(e.target.value)} />
@@ -1787,8 +1880,9 @@ export default function BlogSEO() {
                   {schemaGenErr && <div style={{ ...S.err, marginTop:8 }}>{schemaGenErr}</div>}
                   {generatedSchema && (
                     <div style={{ marginTop:14 }}>
-                      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                      <div style={{ display:"flex", gap:8, marginBottom:8, flexWrap:"wrap" }}>
                         <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(JSON.stringify(generatedSchema.schema || generatedSchema, null, 2))}>Copy JSON-LD</button>
+                        <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => applyFieldToShopify("schema", JSON.stringify(generatedSchema.schema || generatedSchema, null, 2))}>Add to Post in Shopify</button>
                       </div>
                       <pre style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
                         {JSON.stringify(generatedSchema.schema || generatedSchema, null, 2)}
@@ -1800,20 +1894,27 @@ export default function BlogSEO() {
               {schemaSub === "faq" && (
                 <div style={S.card}>
                   <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>FAQ Schema Generator</div>
-                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Extracts question headings from your analyzed post and generates FAQ schema.</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Extracts question headings from your analyzed post and generates FAQ schema. This helps your post appear in People Also Ask on Google.</div>
                   <button style={S.btn("primary")} onClick={runFaqSchema} disabled={faqSchemaLoading || !url.trim()}>
                     {faqSchemaLoading ? <><span style={S.spinner} /> Generating...</> : "Generate FAQ Schema"}
                   </button>
                   {faqSchemaResult && (
-                    <pre style={{ marginTop:14, background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
-                      {JSON.stringify(faqSchemaResult.schema || faqSchemaResult, null, 2)}
-                    </pre>
+                    <div style={{ marginTop:14 }}>
+                      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(JSON.stringify(faqSchemaResult.schema || faqSchemaResult, null, 2))}>Copy JSON-LD</button>
+                        <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => applyFieldToShopify("schema", JSON.stringify(faqSchemaResult.schema || faqSchemaResult, null, 2))}>Add to Post in Shopify</button>
+                      </div>
+                      <pre style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
+                        {JSON.stringify(faqSchemaResult.schema || faqSchemaResult, null, 2)}
+                      </pre>
+                    </div>
                   )}
                 </div>
               )}
               {schemaSub === "howto" && (
                 <div style={S.card}>
                   <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>HowTo Schema Generator</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Creates step-by-step schema that can show in Google as a visual rich result.</div>
                   <div style={S.row}>
                     <input style={S.input} placeholder="HowTo title (e.g. How to make cold brew coffee)" value={howtoTitle} onChange={e => setHowtoTitle(e.target.value)} onKeyDown={e => e.key === "Enter" && runHowtoSchema()} />
                     <button style={S.btn("primary")} onClick={runHowtoSchema} disabled={howtoLoading || !howtoTitle.trim()}>
@@ -1821,9 +1922,15 @@ export default function BlogSEO() {
                     </button>
                   </div>
                   {howtoResult && (
-                    <pre style={{ marginTop:14, background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
-                      {JSON.stringify(howtoResult.schema || howtoResult, null, 2)}
-                    </pre>
+                    <div style={{ marginTop:14 }}>
+                      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(JSON.stringify(howtoResult.schema || howtoResult, null, 2))}>Copy JSON-LD</button>
+                        <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => applyFieldToShopify("schema", JSON.stringify(howtoResult.schema || howtoResult, null, 2))}>Add to Post in Shopify</button>
+                      </div>
+                      <pre style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
+                        {JSON.stringify(howtoResult.schema || howtoResult, null, 2)}
+                      </pre>
+                    </div>
                   )}
                 </div>
               )}
@@ -1833,6 +1940,11 @@ export default function BlogSEO() {
           {/* ════════ SERP & CTR ════════ */}
           {section === "SERP" && (
             <>
+              {(ctrTitle || ctrKeyword) && (
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#86efac" }}>
+                  Fields pre-filled from your last analyzed post. Edit them or hit Optimise.
+                </div>
+              )}
               <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {[["ctr","CTR Optimizer"],["intent","Intent Classifier"],["paa","PAA Generator"],["snapshot","Competitor Snapshot"],["difficulty","Difficulty Score"]].map(([k,l]) => (
                   <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:serpSub===k?C.indigo:C.muted, color:serpSub===k?"#fff":"#d4d4d8" }} onClick={() => setSerpSub(k)}>{l}</button>
@@ -1841,6 +1953,7 @@ export default function BlogSEO() {
               {serpSub === "ctr" && (
                 <div style={S.card}>
                   <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>CTR Optimizer</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>AI rewrites your title and meta description to get more people to click your link on Google. Results can be applied to your post with one click.</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
                     <input style={S.input} placeholder="Title tag" value={ctrTitle} onChange={e => setCtrTitle(e.target.value)} />
                     <input style={S.input} placeholder="Meta description" value={ctrMeta} onChange={e => setCtrMeta(e.target.value)} />
@@ -1851,11 +1964,24 @@ export default function BlogSEO() {
                       </button>
                     </div>
                   </div>
-                  {ctrOptimizerResult && (
-                    <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
-                      {typeof ctrOptimizerResult === "string" ? ctrOptimizerResult : JSON.stringify(ctrOptimizerResult, null, 2)}
-                    </div>
-                  )}
+                  {ctrOptimizerResult && (() => {
+                    const res = typeof ctrOptimizerResult === "string" ? ctrOptimizerResult : JSON.stringify(ctrOptimizerResult, null, 2);
+                    const titleMatch = res.match(/(?:title|recommended title|optimised title)[^:]*:?\s*["']?([^"'\n]{10,120})["']?/i);
+                    const metaMatch = res.match(/(?:meta|description|recommended meta)[^:]*:?\s*["']?([^"'\n]{20,160})["']?/i);
+                    const sugTitle = titleMatch?.[1]?.trim();
+                    const sugMeta = metaMatch?.[1]?.trim();
+                    return (
+                      <div style={{ marginTop:12 }}>
+                        {(sugTitle || sugMeta) && (
+                          <div style={{ display:"flex", gap:8, marginBottom:12, flexWrap:"wrap" }}>
+                            {sugTitle && <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => applyFieldToShopify("title", sugTitle)}>Apply Title to Post</button>}
+                            {sugMeta && <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => applyFieldToShopify("metaDescription", sugMeta)}>Apply Meta to Post</button>}
+                          </div>
+                        )}
+                        <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>{res}</div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
               {serpSub === "intent" && (
@@ -2023,9 +2149,9 @@ export default function BlogSEO() {
           {section === "AB" && (
             <div style={S.card}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Meta A/B Variants</div>
-              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Generate multiple title + meta description variants to A/B test for higher CTR.</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Generate multiple title + meta description variants so you can pick the best one and apply it to your Shopify post with one click.</div>
               <div style={S.row}>
-                <input style={S.input} placeholder="Post URL (or leave blank to use analyzed URL)" value={abVariantUrl} onChange={e => setAbVariantUrl(e.target.value)} />
+                <input style={S.input} placeholder="Post URL (pre-filled from your last scan)" value={abVariantUrl} onChange={e => setAbVariantUrl(e.target.value)} />
                 <button style={S.btn("primary")} onClick={runAbVariants} disabled={abVariantLoading || (!abVariantUrl.trim() && !url.trim())}>
                   {abVariantLoading ? <><span style={S.spinner} /> Generating...</> : "Generate A/B Variants"}
                 </button>
@@ -2036,7 +2162,11 @@ export default function BlogSEO() {
                     <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 14px", marginBottom:8 }}>
                       <div style={{ fontSize:11, color:C.dim, fontWeight:700, textTransform:"uppercase", marginBottom:4 }}>Variant {i + 1}</div>
                       <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>{v.title || v.headline}</div>
-                      <div style={{ fontSize:12, color:C.sub }}>{v.metaDescription || v.description || v.text}</div>
+                      <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>{v.metaDescription || v.description || v.text}</div>
+                      <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                        {(v.title || v.headline) && <button style={{ ...S.btn("primary"), fontSize:11, padding:"5px 12px" }} onClick={() => applyFieldToShopify("title", v.title || v.headline)}>Apply Title</button>}
+                        {(v.metaDescription || v.description) && <button style={{ ...S.btn("primary"), fontSize:11, padding:"5px 12px" }} onClick={() => applyFieldToShopify("metaDescription", v.metaDescription || v.description)}>Apply Meta</button>}
+                      </div>
                     </div>
                   ))}
                   {!abVariantResult.variants && !abVariantResult.options && (
@@ -2050,6 +2180,11 @@ export default function BlogSEO() {
           {/* ════════ LOCAL & E-E-A-T ════════ */}
           {section === "Local" && (
             <>
+              {gbpBusiness && (
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#86efac" }}>
+                  Business name pre-filled from your store: <strong>{gbpBusiness}</strong>
+                </div>
+              )}
               <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {[["gbp","GBP Optimizer"],["citations","Citation Finder"],["localkw","Local Keywords"],["eeat","E-E-A-T Score"]].map(([k,l]) => (
                   <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:localSub===k?C.indigo:C.muted, color:localSub===k?"#fff":"#d4d4d8" }} onClick={() => setLocalSub(k)}>{l}</button>
@@ -2209,13 +2344,21 @@ export default function BlogSEO() {
           {section === "AIGrowth" && (
             <div style={S.card}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Passage Optimizer</div>
-              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>AI identifies and rewrites the most important passages in your post to rank in passage-based results.</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>AI finds the most important paragraphs in your post and rewrites them to rank better in Google's passage-based results. Runs on your currently analyzed post.</div>
               <button style={S.btn("primary")} onClick={runPassageOptimizer} disabled={passageLoading || !url.trim()}>
-                {passageLoading ? <><span style={S.spinner} /> Optimising...</> : "Optimise Passages"}
+                {passageLoading ? <><span style={S.spinner} /> Optimising passages...</> : "Optimise My Post Passages"}
               </button>
               {passageResult && (
-                <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
-                  {typeof passageResult === "string" ? passageResult : JSON.stringify(passageResult, null, 2)}
+                <div style={{ marginTop:14 }}>
+                  <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                    <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => {
+                      const txt = typeof passageResult === "string" ? passageResult : JSON.stringify(passageResult, null, 2);
+                      applyFieldToShopify("body_append", `<div><h2>Optimised Passages</h2>${txt.split("\n").map(l => `<p>${l}</p>`).join("")}</div>`);
+                    }}>Add to Post in Shopify</button>
+                  </div>
+                  <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                    {typeof passageResult === "string" ? passageResult : JSON.stringify(passageResult, null, 2)}
+                  </div>
                 </div>
               )}
             </div>
@@ -2225,7 +2368,7 @@ export default function BlogSEO() {
           {section === "Rank" && (
             <div style={S.card}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Rank Tracker</div>
-              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Track your keyword rankings over time for your domain.</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Track how your Shopify store ranks on Google for your target keywords. Domain and keywords are pre-filled from your store.</div>
               <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
                 <input style={S.input} placeholder="Your domain (e.g. yourstore.myshopify.com)" value={rankDomain} onChange={e => setRankDomain(e.target.value)} />
                 <textarea style={{ ...S.textarea, minHeight:80 }} placeholder={"One keyword per line:\nbest running shoes\nshopify seo tips"} value={rankKeywords} onChange={e => setRankKeywords(e.target.value)} />
@@ -2264,9 +2407,9 @@ export default function BlogSEO() {
           {section === "Crawl" && (
             <div style={S.card}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Site Crawl</div>
-              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Crawls your site to detect broken links, missing tags, orphan pages and technical issues.</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Crawls your Shopify store to find broken links, missing tags, orphan pages and technical issues. Your store URL is pre-filled.</div>
               <div style={S.row}>
-                <input style={S.input} placeholder="Domain to crawl (e.g. https://yourstore.myshopify.com)" value={crawlUrl} onChange={e => setCrawlUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runCrawl()} />
+                <input style={S.input} placeholder="Domain to crawl (pre-filled from your store)" value={crawlUrl} onChange={e => setCrawlUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runCrawl()} />
                 <button style={S.btn("primary")} onClick={runCrawl} disabled={crawlLoading || !crawlUrl.trim()}>
                   {crawlLoading ? <><span style={S.spinner} /> Crawling...</> : "Start Crawl"}
                 </button>
@@ -2283,6 +2426,11 @@ export default function BlogSEO() {
           {/* ════════ GEO & LLM ════════ */}
           {section === "GEO" && (
             <>
+              {geoUrl && (
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#86efac" }}>
+                  Checking: <strong>{geoUrl}</strong> — pre-filled from your store.
+                </div>
+              )}
               <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {[["health","GEO Health Score"],["prompt","Prompt Simulation"],["llmstxt","LLMs.txt Generator"]].map(([k,l]) => (
                   <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:geoSub===k?C.indigo:C.muted, color:geoSub===k?"#fff":"#d4d4d8" }} onClick={() => setGeoSub(k)}>{l}</button>
@@ -2352,6 +2500,11 @@ export default function BlogSEO() {
           {/* ════════ TREND SCOUT ════════ */}
           {section === "Trends" && (
             <>
+              {trendNiche && (
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#86efac" }}>
+                  Niche pre-filled from your store: <strong>{trendNiche}</strong> — hit Find to see what\'s trending for your store.
+                </div>
+              )}
               <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {[["rising","Rising Trends"],["seasonal","Seasonal Trends"],["surge","Trend Surge"]].map(([k,l]) => (
                   <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:trendSub===k?C.indigo:C.muted, color:trendSub===k?"#fff":"#d4d4d8" }} onClick={() => setTrendSub(k)}>{l}</button>
