@@ -1,6 +1,7 @@
 const express = require('express');
 const OpenAI = require('openai');
 const cheerio = require('cheerio');
+const rateLimit = require('express-rate-limit');
 const researchEngine = require('./research-intent-engine');
 const keywordEngine = require('./keyword-cluster-engine');
 const briefEngine = require('./content-brief-engine');
@@ -12,6 +13,26 @@ const performanceEngine = require('./performance-analytics-engine');
 const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
 
 const router = express.Router();
+
+/* ── Rate limiting ──────────────────────────────────────────────────────── */
+// Key by shop domain — each merchant has their own bucket, no IP needed
+const shopKey = (req) => req.headers['x-shopify-shop-domain'] || 'anonymous';
+
+const _rl = (max, msg) => rateLimit({ windowMs: 60_000, max, keyGenerator: shopKey, standardHeaders: true, legacyHeaders: false, ...(msg ? { message: msg } : {}) });
+const generalLimiter = _rl(120);
+const aiLimiter      = _rl(30,  { ok: false, error: 'Too many AI requests \u2014 slow down a little' });
+const bulkLimiter    = _rl(8,   { ok: false, error: 'Too many bulk requests \u2014 wait a moment' });
+
+router.use(generalLimiter);
+router.post('/ai/analyze',           aiLimiter);
+router.post('/ai/rewrite',           aiLimiter);
+router.post('/ai/expand-content',    aiLimiter);
+router.post('/ai/content-brief',     aiLimiter);
+router.post('/ai/keyword-research',  aiLimiter);
+router.post('/ai/generate',          aiLimiter);
+router.post('/bulk-analyze',         bulkLimiter);
+router.post('/links/check',          bulkLimiter);
+router.post('/competitor-gap',       bulkLimiter);
 
 /* ── Flesch-Kincaid readability helpers ──────────────────────────────────── */
 function countSyllables(word) {
@@ -46,9 +67,22 @@ function getOpenAI() {
   return _openai;
 }
 
-/* ── In-memory history store ─────────────────────────────────────────────── */
-const historyStore = new Map();
-let historySeq = 0;
+/* ── Persistent scan history (SQLite) ───────────────────────────────────── */
+const coreDb = require('../../core/db');
+try {
+  coreDb.exec(`CREATE TABLE IF NOT EXISTS blog_seo_history (
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    shop  TEXT    NOT NULL DEFAULT '',
+    type  TEXT,
+    url   TEXT,
+    title TEXT,
+    score INTEGER,
+    grade TEXT,
+    issue_count INTEGER,
+    data  TEXT,
+    ts    TEXT    NOT NULL DEFAULT (datetime('now'))
+  )`);
+} catch (e) { console.warn('[blog-seo] History table init:', e.message); }
 
 /* =========================================================================
    HEALTH
@@ -814,23 +848,40 @@ router.post('/schema/generate', (req, res) => {
 });
 
 /* =========================================================================
-   HISTORY CRUD
+   HISTORY CRUD  (SQLite — survives restarts, scoped per shop)
    ========================================================================= */
 router.post('/items', (req, res) => {
-  const id = ++historySeq;
-  const item = { id, ...req.body, ts: req.body.ts || new Date().toISOString() };
-  historyStore.set(id, item);
-  res.json({ ok: true, item });
+  try {
+    const shop = req.headers['x-shopify-shop-domain'] || req.session?.shop || '';
+    const { type, url, title, score, grade, issueCount, ts, ...rest } = req.body || {};
+    const extra = Object.keys(rest).length ? JSON.stringify(rest) : null;
+    const timestamp = ts || new Date().toISOString();
+    coreDb.query(
+      `INSERT INTO blog_seo_history (shop, type, url, title, score, grade, issue_count, data, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [shop, type || null, url || null, title || null, score ?? null, grade || null, issueCount ?? null, extra, timestamp]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.json({ ok: true }); } // non-fatal
 });
 
-router.get('/items', (_req, res) => {
-  res.json({ ok: true, items: Array.from(historyStore.values()) });
+router.get('/items', (req, res) => {
+  try {
+    const shop = req.headers['x-shopify-shop-domain'] || req.session?.shop || '';
+    const items = coreDb.queryAll(
+      `SELECT * FROM blog_seo_history WHERE shop = ? ORDER BY id DESC LIMIT 100`,
+      [shop]
+    );
+    res.json({ ok: true, items: items || [] });
+  } catch (e) { res.json({ ok: true, items: [] }); }
 });
 
 router.delete('/items/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  historyStore.delete(id);
-  res.json({ ok: true });
+  try {
+    const shop = req.headers['x-shopify-shop-domain'] || req.session?.shop || '';
+    const id = parseInt(req.params.id, 10);
+    coreDb.query(`DELETE FROM blog_seo_history WHERE id = ? AND shop = ?`, [id, shop]);
+    res.json({ ok: true });
+  } catch (e) { res.json({ ok: true }); }
 });
 
 /* =========================================================================
@@ -1043,7 +1094,8 @@ router.post('/llm/score', async (req, res) => {
 
     if (!html && url) {
       const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
-      const { html } = await _fetchPageHtml(url, req);
+      const fetched = await _fetchPageHtml(url, req);
+      html = fetched.html || '';
     }
     if (!html) return res.status(400).json({ ok: false, error: 'url or content required' });
 
@@ -1357,7 +1409,8 @@ router.post('/content/advanced-readability', async (req, res) => {
 
     if (!html && url) {
       const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
-      const { html } = await _fetchPageHtml(url, req);
+      const fetched = await _fetchPageHtml(url, req);
+      html = fetched.html || '';
     }
     if (!html) return res.status(400).json({ ok: false, error: 'url or content required' });
 
@@ -1871,14 +1924,14 @@ router.post('/index-directives', async (req, res) => {
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
     const { fetchForAnalysis: _fetchPageHtml } = require('../../core/shopifyContentFetcher');
-    const { html } = await _fetchPageHtml(url, req);
-    const headers = Object.fromEntries(r.headers.entries());
+    const fetched = await _fetchPageHtml(url, req);
+    const html = fetched.html || '';
+    const xRobotsHeader = ''; // HTTP response headers not available via Shopify HTML fetch
     const $ = cheerio.load(html);
 
     // Meta robots tags
     const metaRobots = $('meta[name="robots"]').attr('content') || '';
     const metaGooglebot = $('meta[name="googlebot"]').attr('content') || '';
-    const xRobotsHeader = headers['x-robots-tag'] || '';
     const canonicalTag = $('link[rel="canonical"]').attr('href') || '';
 
     const allDirectives = [metaRobots, metaGooglebot, xRobotsHeader].join(',').toLowerCase();
