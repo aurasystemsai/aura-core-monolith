@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const OpenAI = require('openai');
 const cheerio = require('cheerio');
 const rateLimit = require('express-rate-limit');
@@ -33,6 +33,14 @@ router.post('/ai/generate',          aiLimiter);
 router.post('/bulk-analyze',         bulkLimiter);
 router.post('/links/check',          bulkLimiter);
 router.post('/competitor-gap',       bulkLimiter);
+
+/* ── Shop resolution ─────────────────────────────────────────────────────── */
+// Returns the authenticated shop domain, or null if not present.
+// All data-scoped routes MUST call this and return 400 when null — prevents
+// data leaking between merchants or being written to a "default" bucket.
+function getShop(req) {
+  return req.session?.shop || req.headers['x-shopify-shop-domain'] || null;
+}
 
 /* ── Flesch-Kincaid readability helpers ──────────────────────────────────── */
 function countSyllables(word) {
@@ -6309,18 +6317,21 @@ function saveVoices(shop, data) {
 }
 
 router.get('/voice-profile', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   res.json({ ok: true, profiles: loadVoices(shop) });
 });
 
 // POST version used by the dashboard card which sends shop in the request body
 router.post('/voice-profile', (req, res) => {
-  const shop = req.body?.shop || req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   res.json({ ok: true, profiles: loadVoices(shop) });
 });
 
 router.post('/voice-profile/save', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { id, name, tone, vocabulary, rules, sample, avoid } = req.body;
   if (!name) return res.status(400).json({ ok: false, error: 'name required' });
   const profiles = loadVoices(shop);
@@ -6333,14 +6344,16 @@ router.post('/voice-profile/save', (req, res) => {
 });
 
 router.get('/voice-profile/:id', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const profile = loadVoices(shop).find(p => p.id === req.params.id);
   if (!profile) return res.status(404).json({ ok: false, error: 'Profile not found' });
   res.json({ ok: true, profile });
 });
 
 router.delete('/voice-profile/:id', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const profiles = loadVoices(shop).filter(p => p.id !== req.params.id);
   saveVoices(shop, profiles);
   res.json({ ok: true });
@@ -6355,7 +6368,8 @@ function loadRankData(shop) { try { return JSON.parse(fs.readFileSync(getRankPat
 function saveRankData(shop, data) { fs.writeFileSync(getRankPath(shop), JSON.stringify(data, null, 2)); }
 
 router.post('/rank/add-keyword', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { keyword, targetUrl, tags } = req.body;
   if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
   const data = loadRankData(shop);
@@ -6366,13 +6380,15 @@ router.post('/rank/add-keyword', (req, res) => {
 });
 
 router.get('/rank/list', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadRankData(shop);
   res.json({ ok: true, keywords: data.keywords, total: data.keywords.length });
 });
 
 router.delete('/rank/keyword/:id', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadRankData(shop);
   data.keywords = data.keywords.filter(k => k.id !== req.params.id);
   delete data.history[req.params.id];
@@ -6381,7 +6397,8 @@ router.delete('/rank/keyword/:id', (req, res) => {
 });
 
 router.post('/rank/check-position', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { keyword, targetUrl, engine = 'google' } = req.body;
   if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
   try {
@@ -6398,14 +6415,16 @@ router.post('/rank/check-position', async (req, res) => {
 });
 
 router.get('/rank/history/:keywordId', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadRankData(shop);
   const history = data.history[req.params.keywordId] || [];
   res.json({ ok: true, history });
 });
 
 router.post('/rank/bulk-check', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { keywordIds } = req.body;
   const data = loadRankData(shop);
   const targets = keywordIds ? data.keywords.filter(k => keywordIds.includes(k.id)) : data.keywords.slice(0, 20);
@@ -6440,7 +6459,8 @@ router.post('/rank/competitor-compare', async (req, res) => {
 });
 
 router.post('/rank/position-alert', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { keywordId, threshold = 5, direction = 'down', notifyEmail } = req.body;
   const data = loadRankData(shop);
   const kw = data.keywords.find(k => k.id === keywordId);
@@ -6451,7 +6471,8 @@ router.post('/rank/position-alert', (req, res) => {
 });
 
 router.post('/rank/ai-forecast', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { keywordId } = req.body;
   const data = loadRankData(shop);
   const kw = data.keywords.find(k => k.id === keywordId);
@@ -6468,7 +6489,8 @@ router.post('/rank/ai-forecast', async (req, res) => {
 });
 
 router.post('/rank/yoy-comparison', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadRankData(shop);
   const now = new Date(); const lastYear = new Date(now); lastYear.setFullYear(lastYear.getFullYear() - 1);
   const results = data.keywords.map(kw => {
@@ -6480,7 +6502,8 @@ router.post('/rank/yoy-comparison', async (req, res) => {
 });
 
 router.post('/rank/keyword-velocity', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadRankData(shop);
   const results = data.keywords.map(kw => {
     const hist = (data.history[kw.id] || []).slice(-14);
@@ -6520,7 +6543,8 @@ router.post('/rank/cannibalization-live', async (req, res) => {
 });
 
 router.post('/gsc/import-csv', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { csvData } = req.body;
   if (!csvData) return res.status(400).json({ ok: false, error: 'csvData required' });
   try {
@@ -6543,7 +6567,8 @@ router.post('/gsc/import-csv', (req, res) => {
 });
 
 router.get('/gsc/summary', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadRankData(shop);
   const kws = data.keywords;
   const pos1_3 = kws.filter(k => k.currentPosition >= 1 && k.currentPosition <= 3).length;
@@ -6567,7 +6592,8 @@ function saveCrawlData(shop, data) { fs.writeFileSync(getCrawlPath(shop), JSON.s
 const crawlStore = new Map();
 
 router.post('/crawl/start', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { url, maxPages = 200, userAgent = 'AURABot/1.0' } = req.body;
   if (!url) return res.status(400).json({ ok: false, error: 'url required' });
   const crawlId = `crawl_${Date.now()}`;
@@ -6626,14 +6652,16 @@ router.post('/crawl/start', async (req, res) => {
 });
 
 router.get('/crawl/status', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const state = crawlStore.get(`${shop}_active`);
   if (!state) return res.json({ ok: true, status: 'idle', message: 'No active crawl' });
   res.json({ ok: true, status: state.status, progress: state.progress, pagesFound: state.pagesFound, issuesFound: state.issuesFound, crawlId: state.id });
 });
 
 router.get('/crawl/results', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const state = crawlStore.get(`${shop}_active`);
   if (state && state.pages) return res.json({ ok: true, ...state });
   const data = loadCrawlData(shop);
@@ -6643,7 +6671,8 @@ router.get('/crawl/results', (req, res) => {
 });
 
 router.post('/crawl/ai-summary', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const model = req.body.model || 'gpt-4o-mini';
   const state = crawlStore.get(`${shop}_active`);
   const data = loadCrawlData(shop);
@@ -6662,7 +6691,8 @@ router.post('/crawl/ai-summary', async (req, res) => {
 });
 
 router.post('/crawl/orphan-finder', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
   if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
   const allUrls = new Set(latest.pages.map(p => p.url));
@@ -6673,7 +6703,8 @@ router.post('/crawl/orphan-finder', (req, res) => {
 });
 
 router.get('/crawl/export-csv', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
   if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
   const rows = [['URL','Status','Title','Meta','H1 Count','Noindex','Issue Count','Issues']];
@@ -6685,7 +6716,8 @@ router.get('/crawl/export-csv', (req, res) => {
 
 // POST version used by the dashboard which sends shop in the request body
 router.post('/crawl/export-csv', (req, res) => {
-  const shop = req.body?.shop || req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
   if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
   const rows = [['URL','Status','Title','Meta','H1 Count','Noindex','Issue Count','Issues']];
@@ -6696,7 +6728,8 @@ router.post('/crawl/export-csv', (req, res) => {
 });
 
 router.post('/crawl/compare', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { snapshotId1, snapshotId2 } = req.body;
   const data = loadCrawlData(shop);
   const s1 = snapshotId1 ? data.snapshots.find(s => s.id === snapshotId1) : data.snapshots[data.snapshots.length - 2];
@@ -6714,13 +6747,15 @@ router.post('/crawl/compare', (req, res) => {
 });
 
 router.get('/crawl/snapshots', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadCrawlData(shop);
   res.json({ ok: true, snapshots: data.snapshots.map(s => ({ id: s.id, date: s.date, pagesFound: s.pagesFound, issuesFound: s.issuesFound })) });
 });
 
 router.post('/crawl/duplicate-detector', (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const data = loadCrawlData(shop); const latest = data.snapshots[data.snapshots.length - 1];
   if (!latest) return res.status(400).json({ ok: false, error: 'No crawl data' });
   const titleMap = {}; const metaMap = {};
@@ -6804,7 +6839,8 @@ router.post('/geo/citation-gap-analysis', async (req, res) => {
 });
 
 router.post('/geo/ai-platform-tracker', async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'default';
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   const { brandName, queries = [], competitors = [] } = req.body;
   if (!brandName) return res.status(400).json({ ok: false, error: 'brandName required' });
   try {
