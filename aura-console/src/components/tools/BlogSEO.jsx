@@ -86,6 +86,11 @@ export default function BlogSEO() {
   const [section,    setSection]    = useState(null);   // null = home
   const [expertMode, setExpertMode] = useState(false);  // false = beginner
 
+  /* ── Simple-mode flow ── */
+  const [simpleFlow,        setSimpleFlow]        = useState(null); // null | 'fix' | 'write'
+  const [simpleTopics,      setSimpleTopics]      = useState(null);
+  const [simpleTopicsLoading, setSimpleTopicsLoading] = useState(false);
+
   /* ── Toast ── */
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
@@ -921,10 +926,11 @@ export default function BlogSEO() {
         <div style={S.main}>
 
           {/* ════════════════════════════
+          {/* ════════════════════════════
               HOME DASHBOARD
           ════════════════════════════ */}
           {!section && (
-            <div style={{ maxWidth: expertMode ? 900 : 700, margin: "0 auto", paddingTop: 32 }}>
+            <div style={{ maxWidth: expertMode ? 900 : 680, margin: "0 auto", paddingTop: 32 }}>
 
               {/* Store status banner */}
               {shopLoading ? (
@@ -932,69 +938,174 @@ export default function BlogSEO() {
                   <span style={S.spinner} /> Connecting to your store...
                 </div>
               ) : shopDomain ? (
-                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 20, fontSize: 13, color: "#86efac" }}>
-                  Connected to <strong>{shopDomain}</strong> &middot; {articles.length} post{articles.length !== 1 ? "s" : ""} ready
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 20, fontSize: 13, color: "#86efac", display: "flex", alignItems: "center", gap: 8 }}>
+                  Connected to <strong style={{ margin: "0 4px" }}>{shopDomain}</strong> &middot; {articles.length} post{articles.length !== 1 ? "s" : ""} ready
                 </div>
               ) : (
                 <div style={{ background: "#1c1007", border: "1px solid #92400e", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#d97706" }}>
-                  No store connected &mdash; you can still paste a URL below
+                  No store connected — you can still paste a URL below
                 </div>
               )}
 
-              {/* ── Beginner mode: 2 big action cards ── */}
-              {!expertMode ? (
+              {/* ── Simple mode ── */}
+              {!expertMode && (
                 <>
-                  <div style={{ textAlign: "center", marginBottom: 28 }}>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: C.text, marginBottom: 6 }}>What do you want to do?</div>
-                    <div style={{ fontSize: 14, color: C.dim }}>Pick one &mdash; we&apos;ll guide you through the rest.</div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 32 }}>
-                    {/* Card 1: Check a post */}
-                    <div
-                      onClick={() => setSection("Analyze")}
-                      style={{ background: "#0f0e2a", border: "1px solid #312e81", borderRadius: 16, padding: "28px 28px 24px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 10 }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#16154e"}
-                      onMouseLeave={e => e.currentTarget.style.background = "#0f0e2a"}
-                    >
-                      <div style={{ fontSize: 28 }}>📊</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>Check a post</div>
-                      <div style={{ fontSize: 13, color: "#a5b4fc", lineHeight: 1.6, flex: 1 }}>
-                        Paste a blog post URL and we&apos;ll give you a full SEO score &mdash; with exact fixes to boost your ranking.
+                  {simpleFlow === null && (
+                    <>
+                      <div style={{ textAlign: "center", marginBottom: 28 }}>
+                        <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>What would you like to do?</div>
+                        <div style={{ fontSize: 14, color: "#71717a" }}>Pick a goal — we'll take care of the rest.</div>
                       </div>
-                      <button style={{ marginTop: 8, padding: "11px 0", borderRadius: 10, background: C.indigo, color: "#fff", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", width: "100%" }}>
-                        Check my post
-                      </button>
-                    </div>
-
-                    {/* Card 2: Create a post */}
-                    <div
-                      onClick={() => setSection("Write")}
-                      style={{ background: "#052e16", border: "1px solid #14532d", borderRadius: 16, padding: "28px 28px 24px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 10 }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#0a3d1e"}
-                      onMouseLeave={e => e.currentTarget.style.background = "#052e16"}
-                    >
-                      <div style={{ fontSize: 28 }}>✍️</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>Create a post</div>
-                      <div style={{ fontSize: 13, color: "#86efac", lineHeight: 1.6, flex: 1 }}>
-                        Tell us your topic and AI will write a full SEO-optimised blog post you can copy straight into Shopify.
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 28 }}>
+                        <div onClick={() => { setSimpleFlow("fix"); setScanResult(null); }}
+                          style={{ background: "#0f172a", border: "2px solid #3730a3", borderRadius: 14, padding: "28px 22px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "border-color 0.15s" }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = "#6366f1"}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = "#3730a3"}>
+                          <span style={{ fontSize: 40, lineHeight: 1 }}></span>
+                          <div style={{ fontSize: 17, fontWeight: 700, color: "#e0e7ff" }}>Fix an existing post</div>
+                          <div style={{ fontSize: 13, color: "#818cf8", lineHeight: 1.6 }}>{"We'll scan your post, find what's hurting your ranking, and fix it in one click."}</div>
+                          <div style={{ marginTop: 8, background: "#312e81", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#c7d2fe" }}>Check my post</div>
+                        </div>
+                        <div onClick={() => {
+                            setSimpleFlow("write"); setDraftKw(""); setDraftResult(null);
+                            setSimpleTopics(null); setSimpleTopicsLoading(true);
+                            (async () => {
+                              try {
+                                const niche = shopDomain ? shopDomain.replace(".myshopify.com","").replace(/-/g,"") : (products[0]?.title || "e-commerce");
+                                const resp = await apiFetch(`${API}/ai/topic-miner`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche, targetAudience: "online shoppers" }) });
+                                const d = await resp.json();
+                                if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0, 3)); else setSimpleTopics([]);
+                              } catch { setSimpleTopics([]); }
+                              setSimpleTopicsLoading(false);
+                            })();
+                          }}
+                          style={{ background: "#0c1a0c", border: "2px solid #14532d", borderRadius: 14, padding: "28px 22px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "border-color 0.15s" }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = "#22c55e"}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = "#14532d"}>
+                          <span style={{ fontSize: 40, lineHeight: 1 }}></span>
+                          <div style={{ fontSize: 17, fontWeight: 700, color: "#dcfce7" }}>Write a new blog post</div>
+                          <div style={{ fontSize: 13, color: "#86efac", lineHeight: 1.6 }}>{"Tell us a topic and AI will create a full structured post you can copy straight into Shopify."}</div>
+                          <div style={{ marginTop: 8, background: "#14532d", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#bbf7d0" }}>Create a post</div>
+                        </div>
                       </div>
-                      <button style={{ marginTop: 8, padding: "11px 0", borderRadius: 10, background: "#16a34a", color: "#fff", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", width: "100%" }}>
-                        Create a post
-                      </button>
-                    </div>
-                  </div>
+                      <div style={{ textAlign: "center" }}>
+                        <button style={{ background: "none", border: "none", color: "#52525b", fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(true)}>I know SEO — switch to Expert Mode</button>
+                      </div>
+                    </>
+                  )}
 
-                  <div style={{ textAlign: "center" }}>
-                    <button
-                      style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
-                      onClick={() => setExpertMode(true)}>
-                      I know SEO &mdash; switch to Expert Mode for all advanced tools
-                    </button>
-                  </div>
+                  {simpleFlow === "fix" && !scanResult && (
+                    <>
+                      <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setSimpleFlow(null)}>Back</button>
+                      <div style={{ background: "#0f172a", border: "1px solid #3730a3", borderRadius: 14, padding: "28px 24px" }}>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: "#e0e7ff", marginBottom: 6 }}>Which post do you want to check?</div>
+                        <div style={{ fontSize: 13, color: "#818cf8", marginBottom: 20 }}>{"We'll analyse it and show you exactly what to fix."}</div>
+                        {articles.length > 0 ? (
+                          <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Pick from your store:</div>
+                            <select style={{ ...S.input, width: "100%" }} value={selectedArtId} onChange={e => handleArticleSelect(e.target.value)}>
+                              <option value="">Choose a blog post</option>
+                              {articles.map(a => <option key={a.id} value={String(a.id)}>{a.title}</option>)}
+                            </select>
+                          </div>
+                        ) : (
+                          <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Paste your blog post URL:</div>
+                            <input style={{ ...S.input, width: "100%" }} placeholder="https://yourstore.com/blogs/news/your-post" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runScan()} />
+                          </div>
+                        )}
+                        <button style={{ ...S.btn("primary"), width: "100%", fontSize: 15, padding: "12px 20px", justifyContent: "center" }} onClick={runScan} disabled={!url.trim() || scanning}>
+                          {scanning ? <><span style={S.spinner} /> Checking your post...</> : "Check My Post"}
+                        </button>
+                        {scanErr && <div style={{ marginTop: 10, fontSize: 12, color: "#f87171" }}>{scanErr}</div>}
+                      </div>
+                    </>
+                  )}
+
+                  {simpleFlow === "fix" && scanResult && (() => {
+                    const score = scanResult.scored?.overall ?? 0;
+                    const grade = scanResult.scored?.grade ?? "?";
+                    const sc = score >= 75 ? "#22c55e" : score >= 50 ? "#eab308" : "#ef4444";
+                    const scMsg = score >= 75 ? "Looking good! A few tweaks will make it even better." : score >= 50 ? "Room for improvement — fix the issues below." : "Needs some work but the fixes below will help a lot.";
+                    const topIssues = (scanResult.scored?.issues || []).filter(i => i.sev === "high" || i.sev === "medium").sort((a, b) => a.sev === "high" ? -1 : 1);
+                    return (
+                      <>
+                        <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setScanResult(null)}>Check a different post</button>
+                        <div style={{ background: "#18181b", border: `2px solid ${sc}`, borderRadius: 14, padding: "20px 24px", marginBottom: 20, display: "flex", alignItems: "center", gap: 20 }}>
+                          <div style={{ width: 72, height: 72, borderRadius: "50%", border: `4px solid ${sc}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <span style={{ fontSize: 26, fontWeight: 800, color: sc }}>{score}</span>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: "#fafafa" }}>Your post scored {score}/100 <span style={{ fontSize: 15, color: sc, fontWeight: 600 }}>({grade})</span></div>
+                            <div style={{ fontSize: 13, color: "#a1a1aa", marginTop: 4 }}>{scMsg}</div>
+                          </div>
+                        </div>
+                        {topIssues.length === 0 && <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#86efac", textAlign: "center" }}>No major issues found — your post is in great shape!</div>}
+                        {topIssues.length > 0 && (
+                          <>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>{"Here's what to fix:"}</div>
+                            {topIssues.map((issue, i) => { const act = getIssueAction(issue.msg); return (
+                              <div key={i} style={{ background: "#18181b", border: `1px solid ${issue.sev === "high" ? "#7f1d1d" : "#78350f"}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: issue.sev === "high" ? "#f87171" : "#fbbf24", marginBottom: 4 }}>{issue.sev === "high" ? "High priority" : "Worth fixing"}</div>
+                                <div style={{ fontSize: 13, color: "#d4d4d8", marginBottom: act ? 10 : 0 }}>{issue.msg}</div>
+                                {act && <button style={{ ...S.btn("primary"), fontSize: 13, padding: "8px 18px" }} onClick={act.action}>{act.label}</button>}
+                              </div>
+                            ); })}
+                          </>
+                        )}
+                        {rewriting && <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc", marginTop: 10 }}><span style={S.spinner} /> AI is generating a fix...</div>}
+                        {rewriteResult && !rewriting && (
+                          <div style={{ background: "#0f172a", border: "1px solid #3730a3", borderRadius: 12, padding: "16px 18px", marginTop: 12 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#a5b4fc", marginBottom: 8 }}>AI Suggestion:</div>
+                            <div style={{ fontSize: 13, color: "#e0e7ff", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{typeof rewriteResult === "string" ? rewriteResult : JSON.stringify(rewriteResult, null, 2)}</div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+
+                  {simpleFlow === "write" && (
+                    <>
+                      <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => { if (draftResult) setDraftResult(null); else setSimpleFlow(null); }}>Back</button>
+                      {simpleTopicsLoading && <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc", fontSize: 13 }}><span style={S.spinner} /> Reading your store and finding the best blog ideas for you...</div>}
+                      {simpleTopics && simpleTopics.length > 0 && !simpleTopicsLoading && (
+                        <div style={{ marginBottom: 20 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>AI picked these ideas for your store — click one to use it:</div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+                            {simpleTopics.map((t, i) => (
+                              <div key={i} onClick={() => setDraftKw(t.targetKeyword || t.title)}
+                                style={{ background: draftKw === (t.targetKeyword || t.title) ? "#1e1b4b" : "#18181b", border: `1px solid ${draftKw === (t.targetKeyword || t.title) ? "#6366f1" : "#27272a"}`, borderRadius: 10, padding: "12px 14px", cursor: "pointer", transition: "border-color 0.15s" }}>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: "#e0e7ff", marginBottom: 4 }}>{t.title}</div>
+                                <div style={{ fontSize: 11, color: "#818cf8" }}>Keyword: {t.targetKeyword}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 14, padding: "24px", marginBottom: draftResult ? 16 : 0 }}>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#dcfce7", marginBottom: 4 }}>{draftKw ? `Writing about: ${draftKw}` : "Or type your own topic"}</div>
+                        <div style={{ fontSize: 13, color: "#86efac", marginBottom: 14 }}>AI will generate a full structured blog post ready to paste into Shopify.</div>
+                        <input style={{ ...S.input, width: "100%", marginBottom: 12 }} placeholder="e.g. best snowboards for beginners" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && !draftLoading && draftKw.trim() && runDraft()} />
+                        <button style={{ ...S.btn("primary"), width: "100%", fontSize: 15, padding: "12px 20px", justifyContent: "center" }} onClick={runDraft} disabled={draftLoading || !draftKw.trim()}>
+                          {draftLoading ? <><span style={S.spinner} /> Writing your post...</> : "Create My Blog Post (2 credits)"}
+                        </button>
+                      </div>
+                      {draftResult && !draftLoading && (
+                        <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "24px" }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>Your post is ready!</div>
+                          <div style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>Copy it into your Shopify blog editor.</div>
+                          {draftResult.title && <div style={{ fontSize: 14, fontWeight: 700, color: "#e0e7ff", marginBottom: 8 }}>{draftResult.title}</div>}
+                          {draftResult.fullArticle && <div style={{ maxHeight: 300, overflowY: "auto", background: "#09090b", borderRadius: 8, padding: 12, fontSize: 13, color: "#d4d4d8", lineHeight: 1.6, whiteSpace: "pre-wrap", marginBottom: 12 }}>{draftResult.fullArticle}</div>}
+                          <button style={{ ...S.btn("primary") }} onClick={() => { navigator.clipboard.writeText(draftResult.fullArticle || draftResult.title || ""); showToast("Copied to clipboard!"); }}>Copy to clipboard</button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </>
-              ) : (
-                /* ── Expert mode: full section grid ── */
+              )}
+
+              {/* ── Expert mode grid ── */}
+              {expertMode && (
                 <>
                   <div style={{ textAlign: "center", marginBottom: 24 }}>
                     <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>All Tools</div>
@@ -1002,12 +1113,10 @@ export default function BlogSEO() {
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 32 }}>
                     {visibleSections.map(s => (
-                      <div key={s.id}
-                        onClick={() => setSection(s.id)}
+                      <div key={s.id} onClick={() => setSection(s.id)}
                         style={{ background: "#18181b", border: "1px solid #27272a", borderLeft: `3px solid ${s.color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 6 }}
                         onMouseEnter={e => { e.currentTarget.style.background = "#1f1f23"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "#18181b"; }}
-                      >
+                        onMouseLeave={e => { e.currentTarget.style.background = "#18181b"; }}>
                         <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.title}</div>
                         <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
                         <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#8594;</div>
@@ -1015,11 +1124,7 @@ export default function BlogSEO() {
                     ))}
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <button
-                      style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
-                      onClick={() => setExpertMode(false)}>
-                      Switch back to Simple Mode
-                    </button>
+                    <button style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(false)}>Switch back to Simple Mode</button>
                   </div>
                 </>
               )}
