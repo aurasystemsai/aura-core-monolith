@@ -64,6 +64,7 @@ const SECTIONS = [
   { id: "Chat",      title: "Ask AI",                 desc: "Chat with an SEO expert AI. Get instant tailored advice.",  color: "#be185d", level: "beginner",  tab: "AI Chat"     },
   { id: "BulkScan",  title: "Scan Multiple Posts",    desc: "Audit all blog posts at once to find what needs work.",     color: "#0f766e", level: "beginner",  tab: "Bulk Scan"   },
   { id: "History",   title: "History",                desc: "Browse past scans and revisit previous reports.",           color: "#475569", level: "beginner",  tab: "History"     },
+  { id: "SmartFix",  title: "Auto-Optimize Post",     desc: "AI runs every fix automatically — title, meta, schema, links — one click.", color: "#7c3aed", level: "beginner",  tab: "Auto Fix"    },
   { id: "Technical", title: "Technical SEO",          desc: "Core Web Vitals, crawl issues, indexing, speed.",           color: "#7c3aed", level: "advanced",  tab: "Technical+"  },
   { id: "Schema",    title: "Schema & Links",         desc: "Generate JSON-LD schema markup. Audit redirects.",          color: "#1d4ed8", level: "advanced",  tab: "Schema"      },
   { id: "SERP",      title: "SERP & CTR",             desc: "Featured snippets, click-through rate optimisation.",       color: "#0e7490", level: "advanced",  tab: "SERP & CTR"  },
@@ -339,6 +340,12 @@ export default function BlogSEO() {
   const [bannerFixState,   setBannerFixState]   = useState({}); // {issueIdx: "loading"|"ok"|"error"}
   const [bulkFixing,       setBulkFixing]       = useState(false);
   const [bulkFixProgress,  setBulkFixProgress]  = useState(null); // {done, total}
+
+  /* ── Smart-Fix (one-click all tools) state ── */
+  const [smartFixCards,    setSmartFixCards]    = useState([]); // [{id, icon, label, status, result, applyField}]
+  const [smartFixRunning,  setSmartFixRunning]  = useState(false);
+  const [smartFixApplied,  setSmartFixApplied]  = useState(new Set()); // card ids applied
+  const [smartFixApplying, setSmartFixApplying] = useState({});  // {cardId: bool}
 
   /* ═══════════════════════════
      API FUNCTIONS
@@ -962,6 +969,76 @@ export default function BlogSEO() {
     showToast(`All ${fixable.length} fix${fixable.length !== 1 ? "es" : ""} applied to Shopify!`);
   }, [scanResult, runBannerFix, showToast]);
 
+  /* ── Smart Fix — run ALL tools on the scanned post in parallel ── */
+  const runSmartFix = useCallback(async () => {
+    if (!scanResult) { showToast("Scan a post first"); return; }
+    const base = {
+      url: scanResult.url, title: scanResult.title,
+      metaDescription: scanResult.metaDescription, h1: scanResult.h1,
+      keywords: kwInput, wordCount: scanResult.wordCount,
+    };
+    const MODULES = [
+      { id: "title",   icon: "✏️",  label: "Optimise Page Title",        applyField: "title" },
+      { id: "meta",    icon: "📝",  label: "Rewrite Meta Description",   applyField: "metaDescription" },
+      { id: "h1",      icon: "📌",  label: "Fix Main Heading (H1)",      applyField: "h1" },
+      { id: "headings",icon: "📋",  label: "Improve Sub-headings",       applyField: "headings" },
+      { id: "schema",  icon: "🗂️",  label: "Generate Schema Markup",     applyField: "schema" },
+      { id: "links",   icon: "🔗",  label: "Internal Link Suggestions",  applyField: null },
+      { id: "metaopt", icon: "🎯",  label: "Meta Description Optimiser", applyField: "metaDescription" },
+    ];
+    setSmartFixCards(MODULES.map(m => ({ ...m, status: "loading", result: null, error: null })));
+    setSmartFixRunning(true);
+    setSmartFixApplied(new Set());
+    setSmartFixApplying({});
+    const upd = (id, patch) => setSmartFixCards(p => p.map(c => c.id === id ? { ...c, ...patch } : c));
+    const calls = [
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"title", ...base }) })
+        .then(r => upd("title", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("title", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"metaDescription", ...base }) })
+        .then(r => upd("meta", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("meta", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"h1", ...base }) })
+        .then(r => upd("h1", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("h1", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"headings", ...base }) })
+        .then(r => upd("headings", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("headings", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/schema/generate`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, articleBody: scanResult.h1||scanResult.title }) })
+        .then(r => upd("schema", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("schema", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/backlinks/internal-suggester`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url }) })
+        .then(r => upd("links", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("links", { status:"error", error: e.message })),
+      apiFetchJSON(`${API}/meta-description-optimizer`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, currentMeta: scanResult.metaDescription, keywords: kwInput }) })
+        .then(r => upd("metaopt", r.ok ? { status:"done", result: r } : { status:"error", error: r.error||"Failed" }))
+        .catch(e => upd("metaopt", { status:"error", error: e.message })),
+    ];
+    await Promise.allSettled(calls);
+    setSmartFixRunning(false);
+  }, [scanResult, kwInput, showToast]);
+
+  /* ── Smart Fix — apply a single card to Shopify ── */
+  const applySmartCard = useCallback(async (card) => {
+    if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown first"); return; }
+    const val = card.result?.value || card.result?.suggestion || card.result?.optimizedMeta || card.result?.schema;
+    if (!val) { showToast("No value to apply for this fix"); return; }
+    setSmartFixApplying(p => ({ ...p, [card.id]: true }));
+    try {
+      const r = await apiFetchJSON(`${API}/apply-field`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field: card.applyField, value: val, shop: shopDomain }) });
+      if (r.ok) { setSmartFixApplied(p => new Set([...p, card.id])); setFixedFields(p => new Set([...p, card.applyField])); showToast(`✓ ${card.label} applied to Shopify`); }
+      else showToast(`Shopify error: ${r.error}`);
+    } catch(e) { showToast(`Error: ${e.message}`); }
+    setSmartFixApplying(p => ({ ...p, [card.id]: false }));
+  }, [scannedArtId, scannedBlogId, shopDomain, showToast]);
+
+  /* ── Smart Fix — apply ALL done cards ── */
+  const applyAllSmartCards = useCallback(async () => {
+    const toApply = smartFixCards.filter(c => c.status === "done" && c.applyField && !smartFixApplied.has(c.id));
+    for (const card of toApply) await applySmartCard(card);
+    showToast("All fixes applied to Shopify!");
+  }, [smartFixCards, smartFixApplied, applySmartCard, showToast]);
+
   const getIssueAction = useCallback((msg) => {
     const m = (msg || "").toLowerCase();
     /* ── Title fixes ── */
@@ -1216,7 +1293,7 @@ export default function BlogSEO() {
                     return (
                       <>
                         <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setScanResult(null)}>Check a different post</button>
-                        <div style={{ background: "#18181b", border: `2px solid ${sc}`, borderRadius: 14, padding: "20px 24px", marginBottom: 20, display: "flex", alignItems: "center", gap: 20 }}>
+                        <div style={{ background: "#18181b", border: `2px solid ${sc}`, borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", gap: 20 }}>
                           <div style={{ width: 72, height: 72, borderRadius: "50%", border: `4px solid ${sc}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <span style={{ fontSize: 26, fontWeight: 800, color: sc }}>{score}</span>
                           </div>
@@ -1224,6 +1301,19 @@ export default function BlogSEO() {
                             <div style={{ fontSize: 18, fontWeight: 700, color: "#fafafa" }}>Your post scored {score}/100 <span style={{ fontSize: 15, color: sc, fontWeight: 600 }}>({grade})</span></div>
                             <div style={{ fontSize: 13, color: "#a1a1aa", marginTop: 4 }}>{scMsg}</div>
                           </div>
+                        </div>
+                        {/* ═ One-click all tools CTA ═ */}
+                        <div style={{ background:"#130d1f", border:"2px solid #7c3aed", borderRadius:12, padding:"18px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+                          <span style={{ fontSize:28, lineHeight:1 }}>⚡</span>
+                          <div style={{ flex:1, minWidth:180 }}>
+                            <div style={{ fontSize:14, fontWeight:700, color:"#e9d5ff", marginBottom:3 }}>Fix everything automatically</div>
+                            <div style={{ fontSize:12, color:"#a78bfa" }}>AI rewrites your title, meta, headings, schema and finds internal link gaps — all on one screen.</div>
+                          </div>
+                          <button
+                            style={{ ...S.btn("primary"), fontSize:13, padding:"10px 22px", background:"#7c3aed", borderColor:"#7c3aed", flexShrink:0 }}
+                            onClick={() => setSection("SmartFix")}>
+                            Run All Tools &rarr;
+                          </button>
                         </div>
                         {topIssues.length === 0 && <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#86efac", textAlign: "center" }}>No major issues found — your post is in great shape!</div>}
                         {topIssues.length > 0 && (
@@ -2789,6 +2879,166 @@ export default function BlogSEO() {
               )}
             </>
           )}
+
+          {/* ═════════════════════════════════════════════════
+              SMART FIX — Auto-Optimize All Tools On One Page
+          ════════════════════════════════════════════════ */}
+          {section === "SmartFix" && (() => {
+            const score   = scanResult?.scored?.overall ?? null;
+            const grade   = scanResult?.scored?.grade ?? "?";
+            const sc      = score === null ? "#71717a" : score >= 75 ? "#22c55e" : score >= 50 ? "#eab308" : "#ef4444";
+            const doneCards   = smartFixCards.filter(c => c.status === "done" && c.applyField);
+            const unapplied   = doneCards.filter(c => !smartFixApplied.has(c.id));
+            const allDone     = smartFixCards.length > 0 && smartFixCards.every(c => c.status !== "loading");
+            return (
+              <>
+                {/* Header */}
+                <div style={{ background:"#130d1f", border:"2px solid #7c3aed", borderRadius:14, padding:"22px 24px", marginBottom:20, display:"flex", alignItems:"center", gap:20, flexWrap:"wrap" }}>
+                  <div style={{ flex:1, minWidth:220 }}>
+                    <div style={{ fontSize:20, fontWeight:800, color:"#e9d5ff", marginBottom:4 }}>⚡ Auto-Optimize This Post</div>
+                    <div style={{ fontSize:13, color:"#a78bfa" }}>AI runs every tool at once — rewrites your title, meta, headings, schema, and finds internal link gaps. No switching tabs.</div>
+                  </div>
+                  {scanResult ? (
+                    <div style={{ display:"flex", alignItems:"center", gap:14, flexShrink:0 }}>
+                      {score !== null && (
+                        <div style={{ width:56, height:56, borderRadius:"50%", border:`3px solid ${sc}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          <span style={{ fontSize:18, fontWeight:800, color:sc }}>{score}</span>
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize:13, fontWeight:600, color:"#fafafa", maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{scanResult.title || scanResult.url}</div>
+                        <div style={{ fontSize:11, color:"#a1a1aa", marginTop:2 }}>Grade {grade} · {scanResult.wordCount || "—"} words</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize:13, color:"#f87171", background:"#1c0000", border:"1px solid #7f1d1d", borderRadius:8, padding:"10px 16px" }}>No post scanned yet — go to Analyze a Post first.</div>
+                  )}
+                </div>
+
+                {/* Action row */}
+                {scanResult && (
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, flexWrap:"wrap" }}>
+                    <button
+                      style={{ ...S.btn("primary"), fontSize:14, padding:"11px 28px", background:"#7c3aed", borderColor:"#7c3aed", opacity: smartFixRunning ? 0.7 : 1 }}
+                      disabled={smartFixRunning}
+                      onClick={runSmartFix}>
+                      {smartFixRunning
+                        ? <><span style={S.spinner} /> Running all tools…</>
+                        : smartFixCards.length > 0 ? "🔄 Re-run All Tools" : "🚀 Run All Tools Now"}
+                    </button>
+                    {allDone && unapplied.length > 0 && (
+                      <button
+                        style={{ ...S.btn("primary"), fontSize:14, padding:"11px 28px", background:"#16a34a", borderColor:"#16a34a" }}
+                        onClick={applyAllSmartCards}>
+                        ✔️ Apply All Fixes to Shopify ({unapplied.length})
+                      </button>
+                    )}
+                    {allDone && unapplied.length === 0 && smartFixCards.length > 0 && (
+                      <div style={{ fontSize:13, color:"#22c55e", fontWeight:600 }}>✅ All fixes applied to Shopify!</div>
+                    )}
+                  </div>
+                )}
+
+                {/* Running progress bar */}
+                {smartFixRunning && (() => {
+                  const done  = smartFixCards.filter(c => c.status !== "loading").length;
+                  const total = smartFixCards.length;
+                  const pct   = total ? Math.round((done / total) * 100) : 0;
+                  return (
+                    <div style={{ marginBottom:20 }}>
+                      <div style={{ height:6, background:"#27272a", borderRadius:999, overflow:"hidden" }}>
+                        <div style={{ height:"100%", background:"#7c3aed", borderRadius:999, width:`${pct}%`, transition:"width 0.4s" }} />
+                      </div>
+                      <div style={{ fontSize:11, color:"#a78bfa", marginTop:6 }}>Running tools… {done}/{total} complete</div>
+                    </div>
+                  );
+                })()}
+
+                {/* Cards */}
+                {smartFixCards.length > 0 && (
+                  <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+                    {smartFixCards.map(card => {
+                      const applied   = smartFixApplied.has(card.id);
+                      const applying  = smartFixApplying[card.id];
+                      const val       = card.result?.value || card.result?.suggestion || card.result?.optimizedMeta || card.result?.schema;
+                      const oppsList  = card.result?.suggestedLinkOpportunities || card.result?.opportunities || [];
+                      return (
+                        <div key={card.id} style={{ background:"#18181b", border:`1px solid ${card.status==="error" ? "#7f1d1d" : card.status==="done" ? (applied ? "#14532d" : "#7c3aed") : "#3f3f46"}`, borderRadius:12, overflow:"hidden" }}>
+                          {/* Card header */}
+                          <div style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 16px", background:"#1c1c1f" }}>
+                            <span style={{ fontSize:20, lineHeight:1 }}>{card.icon}</span>
+                            <div style={{ flex:1, fontSize:14, fontWeight:700, color:"#fafafa" }}>{card.label}</div>
+                            {card.status === "loading" && <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color:"#a78bfa" }}><span style={S.spinner} /> Analysing…</div>}
+                            {card.status === "done"    && !applied && <div style={{ fontSize:11, fontWeight:700, color:"#a78bfa", background:"#2e1065", borderRadius:6, padding:"3px 10px" }}>Ready to apply</div>}
+                            {card.status === "done"    && applied  && <div style={{ fontSize:11, fontWeight:700, color:"#22c55e", background:"#0c1a0c", borderRadius:6, padding:"3px 10px" }}>✓ Applied</div>}
+                            {card.status === "error"   && <div style={{ fontSize:11, fontWeight:700, color:"#f87171", background:"#1c0000", borderRadius:6, padding:"3px 10px" }}>Error</div>}
+                          </div>
+                          {/* Card body */}
+                          {card.status === "done" && (
+                            <div style={{ padding:"12px 16px" }}>
+                              {/* Text value (title, meta, h1, headings) */}
+                              {val && typeof val === "string" && !val.startsWith("{") && (
+                                <div style={{ fontSize:13, color:"#d4d4d8", background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"10px 14px", marginBottom: card.applyField ? 10 : 0, lineHeight:1.6, whiteSpace:"pre-wrap" }}>{val}</div>
+                              )}
+                              {/* Schema (JSON) */}
+                              {val && typeof val === "string" && val.startsWith("{") && (
+                                <div style={{ fontSize:11, fontFamily:"monospace", color:"#86efac", background:"#09090b", border:"1px solid #14532d", borderRadius:8, padding:"10px 14px", marginBottom: card.applyField ? 10 : 0, maxHeight:160, overflow:"auto", whiteSpace:"pre-wrap" }}>{val}</div>
+                              )}
+                              {/* Schema object */}
+                              {val && typeof val === "object" && (
+                                <div style={{ fontSize:11, fontFamily:"monospace", color:"#86efac", background:"#09090b", border:"1px solid #14532d", borderRadius:8, padding:"10px 14px", marginBottom: card.applyField ? 10 : 0, maxHeight:160, overflow:"auto", whiteSpace:"pre-wrap" }}>{JSON.stringify(val, null, 2)}</div>
+                              )}
+                              {/* Internal links list */}
+                              {card.id === "links" && oppsList.length > 0 && (
+                                <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:4 }}>
+                                  {oppsList.slice(0,5).map((opp, i) => (
+                                    <div key={i} style={{ background:"#09090b", border:"1px solid #27272a", borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"flex-start", gap:10 }}>
+                                      <div style={{ flex:1 }}>
+                                        <div style={{ fontSize:12, fontWeight:600, color:"#fafafa" }}>{opp.targetPage || opp.page || opp.url || "Suggested page"}</div>
+                                        {opp.anchorText && <div style={{ fontSize:11, color:"#a78bfa", marginTop:2 }}>Anchor: “{opp.anchorText}”</div>}
+                                        {opp.importance  && <div style={{ fontSize:10, color:"#71717a", marginTop:1 }}>{opp.importance}</div>}
+                                      </div>
+                                      <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => { navigator.clipboard.writeText(opp.anchorText || opp.url || ""); showToast("Copied!"); }}>Copy anchor</button>
+                                    </div>
+                                  ))}
+                                  {oppsList.length > 5 && <div style={{ fontSize:11, color:"#71717a" }}>+{oppsList.length - 5} more — visit Internal Links section for full list</div>}
+                                </div>
+                              )}
+                              {card.id === "links" && oppsList.length === 0 && (
+                                <div style={{ fontSize:12, color:"#a1a1aa" }}>{card.result?.assessment || "No opportunities detected at this time."}</div>
+                              )}
+                              {/* Apply button */}
+                              {card.applyField && val && !applied && (
+                                <button
+                                  style={{ ...S.btn("primary"), fontSize:12, padding:"7px 18px", background:"#16a34a", borderColor:"#16a34a", opacity: applying ? 0.7 : 1 }}
+                                  disabled={applying}
+                                  onClick={() => applySmartCard(card)}>
+                                  {applying ? <><span style={S.spinner} /> Applying…</> : "✓ Apply to Shopify"}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                          {card.status === "error" && (
+                            <div style={{ padding:"10px 16px", fontSize:12, color:"#f87171" }}>{card.error || "Something went wrong"}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Prompt when no scan yet */}
+                {!scanResult && (
+                  <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:12, padding:"28px 24px", textAlign:"center" }}>
+                    <div style={{ fontSize:32, marginBottom:12 }}>🔍</div>
+                    <div style={{ fontSize:16, fontWeight:700, color:"#fafafa", marginBottom:8 }}>Scan a post first</div>
+                    <div style={{ fontSize:13, color:"#71717a", marginBottom:16 }}>Go to “Analyze a Post”, pick your blog post, then come back here to run all tools at once.</div>
+                    <button style={{ ...S.btn("primary"), fontSize:13, padding:"10px 20px" }} onClick={() => setSection("Analyze")}>Go to Analyze a Post &rarr;</button>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
         </div>
       </div>
