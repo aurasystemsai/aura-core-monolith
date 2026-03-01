@@ -847,21 +847,21 @@ export default function BlogSEO() {
       return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
     if (m.includes("faq") || (m.includes("question") && m.includes("answer")))
       return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
-    /* ── Advanced sections (setExpertMode REQUIRED) ── */
+    /* ── Advanced sections ── */
     if (m.includes("schema") || m.includes("structured data") || m.includes("json-ld"))
-      return { label: "Add Schema", action: () => { setExpertMode(true); setSection("Schema"); } };
+      return { label: "Add Schema", action: () => { setSection("Schema"); } };
     if (m.includes("date") || m.includes("freshness") || m.includes("publish") || m.includes("modified"))
-      return { label: "Add Schema", action: () => { setExpertMode(true); setSection("Schema"); } };
+      return { label: "Add Schema", action: () => { setSection("Schema"); } };
     if (m.includes("author"))
-      return { label: "Add Author", action: () => { setExpertMode(true); setSection("Local"); } };
+      return { label: "Add Author", action: () => { setSection("Local"); } };
     if (m.includes("internal link"))
-      return { label: "Internal Links", action: () => { setExpertMode(true); setSection("Backlinks"); } };
+      return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
     if (m.includes("backlink") || m.includes("link build"))
-      return { label: "Backlinks", action: () => { setExpertMode(true); setSection("Backlinks"); } };
+      return { label: "Backlinks", action: () => { setSection("Backlinks"); } };
     if (m.includes("canonical") || m.includes("robots") || m.includes("noindex") || m.includes("https") || m.includes("image") || m.includes("alt") || m.includes("og:") || m.includes("open graph") || m.includes("technical") || m.includes("core web") || m.includes("speed"))
-      return { label: "Technical SEO", action: () => { setExpertMode(true); setSection("Technical"); } };
+      return { label: "Technical SEO", action: () => { setSection("Technical"); } };
     return null;
-  }, [runRewrite, setSection, setExpertMode]);
+  }, [runRewrite, setSection]);
   /* ═══════════════════════════
      RENDER
   ═══════════════════════════ */
@@ -891,19 +891,13 @@ export default function BlogSEO() {
         )}
         <span style={S.badge}>AI-Powered</span>
         <div style={{ flex: 1 }} />
-        <button
-          style={{ ...S.btn(expertMode ? undefined : "primary"), fontSize: 12, padding: "6px 14px", background: expertMode ? C.muted : "#166534", color: expertMode ? "#d4d4d8" : "#bbf7d0" }}
-          onClick={() => { setExpertMode(m => !m); if (section && SECTIONS.find(s => s.id === section)?.level === "advanced" && expertMode) setSection(null); }}
-        >
-          {expertMode ? "Simple Mode" : "Expert Mode"}
-        </button>
       </div>
 
       {/* ── Body layout ── */}
       <div style={S.layout}>
 
-        {/* ── Sidebar — hidden on the home / simple-mode dashboard ── */}
-        {(section || expertMode) && <nav style={S.sidebar}>
+        {/* ── Sidebar — shown when a section is active ── */}
+        {section && <nav style={S.sidebar}>
           <div style={{ padding: "8px 14px 10px", borderBottom: `1px solid ${C.surface}`, marginBottom: 6 }}>
             <button style={{ fontSize: 13, fontWeight: 700, color: section ? C.indigoL : C.text, background: "none", border: "none", cursor: "pointer", padding: 0 }}
               onClick={() => setSection(null)}>
@@ -927,7 +921,7 @@ export default function BlogSEO() {
               HOME DASHBOARD
           ════════════════════════════ */}
           {!section && (
-            <div style={{ maxWidth: expertMode ? 900 : 680, margin: "0 auto", paddingTop: 32 }}>
+            <div style={{ maxWidth: 720, margin: "0 auto", paddingTop: 32 }}>
 
               {/* Store status banner */}
               {shopLoading ? (
@@ -944,9 +938,8 @@ export default function BlogSEO() {
                 </div>
               )}
 
-              {/* ── Simple mode ── */}
-              {!expertMode && (
-                <>
+              {/* ── Home ── */}
+              <>
                   {simpleFlow === null && (
                     <>
                       <div style={{ textAlign: "center", marginBottom: 28 }}>
@@ -985,8 +978,40 @@ export default function BlogSEO() {
                           <div style={{ marginTop: 8, background: "#14532d", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#bbf7d0" }}>Create a post</div>
                         </div>
                       </div>
-                      <div style={{ textAlign: "center" }}>
-                        <button style={{ background: "none", border: "none", color: "#52525b", fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(true)}>I know SEO — switch to Expert Mode</button>
+                      <div style={{ borderTop: "1px solid #27272a", marginTop: 8, paddingTop: 28 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 12 }}>Or go straight to a tool:</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#3f3f46", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8, marginTop: 4 }}>Core Tools</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                          {SECTIONS.filter(s => s.level === "beginner").map(s => (
+                            <div key={s.id} onClick={() => setSection(s.id)}
+                              style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 12, padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s" }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
+                              <div style={{ width: 4, height: 38, borderRadius: 3, background: s.color, flexShrink: 0 }} />
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 2 }}>{s.title}</div>
+                                <div style={{ fontSize: 12, color: "#71717a" }}>{s.desc}</div>
+                              </div>
+                              <div style={{ background: `${s.color}22`, borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#3f3f46", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Advanced Tools</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
+                          {SECTIONS.filter(s => s.level === "advanced").map(s => (
+                            <div key={s.id} onClick={() => setSection(s.id)}
+                              style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 12, padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s" }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
+                              <div style={{ width: 4, height: 38, borderRadius: 3, background: s.color, flexShrink: 0 }} />
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 2 }}>{s.title}</div>
+                                <div style={{ fontSize: 12, color: "#71717a" }}>{s.desc}</div>
+                              </div>
+                              <div style={{ background: `${s.color}22`, borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </>
                   )}
@@ -1099,48 +1124,8 @@ export default function BlogSEO() {
                     </>
                   )}
                 </>
-              )}
 
-              {/* ── Expert mode grid ── */}
-              {expertMode && (() => {
-                const beginnerSecs = SECTIONS.filter(s => s.level === "beginner");
-                const advancedSecs = SECTIONS.filter(s => s.level === "advanced");
-                const SectionCard = ({ s }) => (
-                  <div onClick={() => setSection(s.id)}
-                    style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 14, padding: "18px 22px", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, transition: "border-color 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
-                    <div style={{ width: 5, height: 44, borderRadius: 4, background: s.color, flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>{s.title}</div>
-                      <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{s.desc}</div>
-                    </div>
-                    <div style={{ background: `${s.color}22`, borderRadius: 8, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
-                  </div>
-                );
-                return (
-                  <>
-                    <div style={{ textAlign: "center", marginBottom: 28 }}>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>All SEO Tools</div>
-                      <div style={{ fontSize: 14, color: "#71717a" }}>Everything you need to grow your store's traffic.</div>
-                    </div>
 
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 10 }}>Core Tools</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-                      {beginnerSecs.map(s => <SectionCard key={s.id} s={s} />)}
-                    </div>
-
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 10 }}>Advanced Tools</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
-                      {advancedSecs.map(s => <SectionCard key={s.id} s={s} />)}
-                    </div>
-
-                    <div style={{ textAlign: "center" }}>
-                      <button style={{ background: "none", border: "none", color: "#52525b", fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(false)}>Switch back to Simple Mode</button>
-                    </div>
-                  </>
-                );
-              })()}
             </div>
           )}
           {/* ════════════════════════════
