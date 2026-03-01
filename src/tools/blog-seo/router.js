@@ -576,6 +576,7 @@ router.post('/ai/analyze', async (req, res) => {
     });
     const raw = completion.choices[0]?.message?.content || '{}';
     let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'seo-analysis' });
     res.json({ ok: true, analysis: raw, structured });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -601,6 +602,7 @@ router.post('/ai/content-brief', async (req, res) => {
     });
     const raw = completion.choices[0]?.message?.content || '{}';
     let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'content-brief' });
     res.json({ ok: true, brief: raw, structured });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -626,6 +628,7 @@ router.post('/ai/keyword-research', async (req, res) => {
     });
     const raw = completion.choices[0]?.message?.content || '{}';
     let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'keyword-research' });
     res.json({ ok: true, research: raw, structured });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -660,6 +663,7 @@ router.post('/ai/rewrite', async (req, res) => {
     });
     const raw = completion.choices[0]?.message?.content || '{}';
     let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'seo-analysis' });
     res.json({ ok: true, field, suggestions: raw, structured });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -685,6 +689,7 @@ router.post('/ai/fix-code', async (req, res) => {
     });
     const raw = completion.choices[0]?.message?.content || '{}';
     let fix; try { fix = JSON.parse(raw); } catch { fix = { explanation: raw, code: '', fixType: 'html', priority: 'recommended', location: 'unknown' }; }
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'seo-analysis' });
     res.json({ ok: true, fix });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -718,6 +723,7 @@ Write approximately ${needed} more words of useful content to add to this post. 
     const html = completion.choices[0]?.message?.content?.trim() || '';
     if (!html) return res.status(500).json({ ok: false, error: 'AI returned no content' });
     const wordCount = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'blog-draft' });
     res.json({ ok: true, html, wordCount });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -738,6 +744,7 @@ router.post('/ai/generate', async (req, res) => {
       temperature: 0.6,
     });
     const reply = completion.choices[0]?.message?.content || '';
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'generic-ai' });
     res.json({ ok: true, reply });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

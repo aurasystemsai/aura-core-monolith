@@ -363,7 +363,10 @@ export default function BlogSEO() {
           setProducts(r.products || []);
           if (r.shopDomain) setShopDomain(r.shopDomain);
         }
-      } catch {}
+      } catch (e) {
+        console.warn('[BlogSEO] Failed to load store data:', e.message);
+        // Non-fatal — user can still scan URLs manually
+      }
       setShopLoading(false);
     })();
   }, []);
