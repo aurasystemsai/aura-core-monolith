@@ -212,7 +212,7 @@ export default function WeeklyBlogContentEngine() {
  <div className="wbe-header">
  <div>
  <h2>Weekly Blog Content Engine</h2>
- <div className="wbe-subtitle">Research > Calendar > Briefs > Outlines > SEO > Distribution > Collaboration > Performance</div>
+ <div className="wbe-subtitle">Research {'>'} Calendar {'>'} Briefs {'>'} Outlines {'>'} SEO {'>'} Distribution {'>'} Collaboration {'>'} Performance</div>
  </div>
  <div className="wbe-actions">
  <BackButton />
@@ -238,7 +238,7 @@ export default function WeeklyBlogContentEngine() {
  {items.map((item) => (
  <div key={item} className="wbe-tab-chip">
  <span>{item}</span>
- <span>></span>
+ <span>{'>'}</span>
  </div>
  ))}
  </div>

@@ -1429,7 +1429,8 @@ function HistoryTab({ items, loading, onRefresh, onSelect, onDelete }) {
  return groups;
  }, [items]);
 
- const [viewMode, setViewMode] = useState('list'); // 'list'or 'trends'return (
+ const [viewMode, setViewMode] = useState('list'); // 'list' or 'trends'
+ return (
  <>
  <div style={{ ...S.card, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
  <h2 style={{ ...S.h2, margin: 0 }}>Analysis History ({items.length})</h2>
