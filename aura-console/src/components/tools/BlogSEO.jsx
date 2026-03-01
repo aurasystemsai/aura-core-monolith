@@ -174,6 +174,157 @@ export default function BlogSEO() {
   /* ── History state ── */
   const [history,        setHistory]        = useState([]);
   const [histLoading,    setHistLoading]    = useState(false);
+
+  /* ── Technical SEO state ── */
+  const [techSub,        setTechSub]        = useState("audit");
+  const [techResult,     setTechResult]     = useState(null);
+  const [techLoading,    setTechLoading]    = useState(false);
+  const [techErr,        setTechErr]        = useState("");
+  const [pageSpeedResult,   setPageSpeedResult]   = useState(null);
+  const [pageSpeedLoading,  setPageSpeedLoading]  = useState(false);
+  const [cwvResult,      setCwvResult]      = useState(null);
+  const [cwvLoading,     setCwvLoading]     = useState(false);
+  const [sitemapResult,  setSitemapResult]  = useState(null);
+  const [sitemapLoading, setSitemapLoading] = useState(false);
+
+  /* ── Schema & Links state ── */
+  const [schemaSub,          setSchemaSub]          = useState("article");
+  const [schemaGenLoading,   setSchemaGenLoading]   = useState(false);
+  const [schemaGenErr,       setSchemaGenErr]       = useState("");
+  const [generatedSchema,    setGeneratedSchema]    = useState(null);
+  const [schemaAuthorName,   setSchemaAuthorName]   = useState("");
+  const [schemaPublisherName,setSchemaPublisherName]= useState("");
+  const [faqSchemaResult,    setFaqSchemaResult]    = useState(null);
+  const [faqSchemaLoading,   setFaqSchemaLoading]   = useState(false);
+  const [howtoTitle,         setHowtoTitle]         = useState("");
+  const [howtoResult,        setHowtoResult]        = useState(null);
+  const [howtoLoading,       setHowtoLoading]       = useState(false);
+
+  /* ── SERP & CTR state ── */
+  const [serpSub,             setSerpSub]             = useState("ctr");
+  const [ctrTitle,            setCtrTitle]            = useState("");
+  const [ctrMeta,             setCtrMeta]             = useState("");
+  const [ctrKeyword,          setCtrKeyword]          = useState("");
+  const [ctrOptimizerResult,  setCtrOptimizerResult]  = useState(null);
+  const [ctrLoading,          setCtrLoading]          = useState(false);
+  const [intentKeyword,       setIntentKeyword]       = useState("");
+  const [intentResult,        setIntentResult]        = useState(null);
+  const [intentLoading,       setIntentLoading]       = useState(false);
+  const [paaKeyword,          setPaaKeyword]          = useState("");
+  const [paaNiche,            setPaaNiche]            = useState("");
+  const [paaResult,           setPaaResult]           = useState(null);
+  const [paaLoading,          setPaaLoading]          = useState(false);
+  const [snapKeyword,         setSnapKeyword]         = useState("");
+  const [competitorSnapshotResult, setCompetitorSnapshotResult] = useState(null);
+  const [snapLoading,         setSnapLoading]         = useState(false);
+  const [diffKeyword,         setDiffKeyword]         = useState("");
+  const [diffNiche,           setDiffNiche]           = useState("");
+  const [difficultyResult,    setDifficultyResult]    = useState(null);
+  const [diffLoading,         setDiffLoading]         = useState(false);
+
+  /* ── Backlinks state ── */
+  const [backlinkSub,         setBacklinkSub]         = useState("opportunities");
+  const [backlinkNiche,       setBacklinkNiche]       = useState("");
+  const [backlinkOppsResult,  setBacklinkOppsResult]  = useState(null);
+  const [backlinkOppsLoading, setBacklinkOppsLoading] = useState(false);
+  const [linkGapDomain,       setLinkGapDomain]       = useState("");
+  const [linkGapComp1,        setLinkGapComp1]        = useState("");
+  const [linkGapComp2,        setLinkGapComp2]        = useState("");
+  const [linkGapNiche,        setLinkGapNiche]        = useState("");
+  const [linkGapResult,       setLinkGapResult]       = useState(null);
+  const [linkGapLoading,      setLinkGapLoading]      = useState(false);
+  const [outreachTarget,      setOutreachTarget]      = useState("");
+  const [outreachContentTitle,setOutreachContentTitle]= useState("");
+  const [outreachType,        setOutreachType]        = useState("guest-post");
+  const [outreachResult,      setOutreachResult]      = useState(null);
+  const [outreachLoading,     setOutreachLoading]     = useState(false);
+  const [anchorTextDomain,    setAnchorTextDomain]    = useState("");
+  const [anchorTextResult,    setAnchorTextResult]    = useState(null);
+  const [anchorTextLoading,   setAnchorTextLoading]   = useState(false);
+
+  /* ── Local & E-E-A-T state ── */
+  const [localSub,         setLocalSub]         = useState("gbp");
+  const [gbpBusiness,      setGbpBusiness]      = useState("");
+  const [gbpLocation,      setGbpLocation]      = useState("");
+  const [gbpCategory,      setGbpCategory]      = useState("");
+  const [gbpResult,        setGbpResult]        = useState(null);
+  const [gbpLoading,       setGbpLoading]       = useState(false);
+  const [citationBusiness, setCitationBusiness] = useState("");
+  const [citationLocation, setCitationLocation] = useState("");
+  const [citationCategory, setCitationCategory] = useState("");
+  const [citationResult,   setCitationResult]   = useState(null);
+  const [citationLoading,  setCitationLoading]  = useState(false);
+  const [localKwService,   setLocalKwService]   = useState("");
+  const [localKwCity,      setLocalKwCity]      = useState("");
+  const [localKwResult,    setLocalKwResult]    = useState(null);
+  const [localKwLoading,   setLocalKwLoading]   = useState(false);
+  const [eeatResult,       setEeatResult]       = useState(null);
+  const [eeatLoading,      setEeatLoading]      = useState(false);
+
+  /* ── Voice & AI Search state ── */
+  const [voiceSub,          setVoiceSub]          = useState("voice");
+  const [voiceOptKeyword,   setVoiceOptKeyword]   = useState("");
+  const [voiceOptResult,    setVoiceOptResult]    = useState(null);
+  const [voiceOptLoading,   setVoiceOptLoading]   = useState(false);
+  const [faqGenTopic,       setFaqGenTopic]       = useState("");
+  const [faqGenResult,      setFaqGenResult]      = useState(null);
+  const [faqGenLoading,     setFaqGenLoading]     = useState(false);
+  const [aiOverviewKeyword, setAiOverviewKeyword] = useState("");
+  const [aiOverviewResult,  setAiOverviewResult]  = useState(null);
+  const [aiOverviewLoading, setAiOverviewLoading] = useState(false);
+  const [convKwTopic,       setConvKwTopic]       = useState("");
+  const [convKwResult,      setConvKwResult]      = useState(null);
+  const [convKwLoading,     setConvKwLoading]     = useState(false);
+
+  /* ── AI Growth state ── */
+  const [passageResult,    setPassageResult]    = useState(null);
+  const [passageLoading,   setPassageLoading]   = useState(false);
+
+  /* ── GEO & LLM state ── */
+  const [geoSub,           setGeoSub]           = useState("health");
+  const [geoUrl,           setGeoUrl]           = useState("");
+  const [geoScore,         setGeoScore]         = useState(null);
+  const [geoLoading,       setGeoLoading]       = useState(false);
+  const [geoErr,           setGeoErr]           = useState("");
+  const [promptSimBrand,   setPromptSimBrand]   = useState("");
+  const [promptSimQuery,   setPromptSimQuery]   = useState("");
+  const [promptSimResult,  setPromptSimResult]  = useState(null);
+  const [promptSimLoading, setPromptSimLoading] = useState(false);
+  const [llmsTxtResult,    setLlmsTxtResult]    = useState(null);
+  const [llmsTxtLoading,   setLlmsTxtLoading]   = useState(false);
+
+  /* ── Rank Tracker state ── */
+  const [rankKeywords,     setRankKeywords]     = useState("");
+  const [rankDomain,       setRankDomain]       = useState("");
+  const [rankResult,       setRankResult]       = useState(null);
+  const [rankLoading,      setRankLoading]      = useState(false);
+  const [rankErr,          setRankErr]          = useState("");
+
+  /* ── Site Crawl state ── */
+  const [crawlUrl,         setCrawlUrl]         = useState("");
+  const [crawlResult,      setCrawlResult]      = useState(null);
+  const [crawlLoading,     setCrawlLoading]     = useState(false);
+  const [crawlErr,         setCrawlErr]         = useState("");
+  const [crawlSub,         setCrawlSub]         = useState("crawl");
+
+  /* ── Trend Scout state ── */
+  const [trendSub,             setTrendSub]             = useState("rising");
+  const [trendNiche,           setTrendNiche]           = useState("");
+  const [trendIndustry,        setTrendIndustry]        = useState("");
+  const [trendRising,          setTrendRising]          = useState(null);
+  const [trendLoading,         setTrendLoading]         = useState(false);
+  const [trendErr,             setTrendErr]             = useState("");
+  const [trendSeasonal,        setTrendSeasonal]        = useState(null);
+  const [trendSeasonalLoading, setTrendSeasonalLoading] = useState(false);
+  const [trendSurge,           setTrendSurge]           = useState(null);
+  const [trendSurgeLoading,    setTrendSurgeLoading]    = useState(false);
+
+  /* ── A/B & Content Refresh state ── */
+  const [abSub,            setAbSub]            = useState("ab");
+  const [abVariantUrl,     setAbVariantUrl]     = useState("");
+  const [abVariantResult,  setAbVariantResult]  = useState(null);
+  const [abVariantLoading, setAbVariantLoading] = useState(false);
+
   /* ═══════════════════════════
      API FUNCTIONS
   ═══════════════════════════ */
@@ -382,6 +533,259 @@ export default function BlogSEO() {
     try { await apiFetch(`${API}/items/${id}`, { method: "DELETE" }); } catch {}
     setHistory(p => p.filter(h => h.id !== id));
   }, []);
+
+  /* ── Phase 2 API functions ── */
+
+  // Technical SEO
+  const runTechAudit = useCallback(async () => {
+    if (!url.trim()) return;
+    setTechLoading(true); setTechErr(""); setTechResult(null);
+    try { const r = await apiFetchJSON(`${API}/technical/audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); setTechResult(r); }
+    catch (e) { setTechErr(e.message || "Audit failed"); } finally { setTechLoading(false); }
+  }, [url]);
+
+  const runPageSpeed = useCallback(async () => {
+    if (!url.trim()) return;
+    setPageSpeedLoading(true); setPageSpeedResult(null);
+    try { const r = await apiFetchJSON(`${API}/technical/page-speed-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); setPageSpeedResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setPageSpeedLoading(false); }
+  }, [url]);
+
+  const runCwv = useCallback(async () => {
+    if (!url.trim()) return;
+    setCwvLoading(true); setCwvResult(null);
+    try { const r = await apiFetchJSON(`${API}/technical/cwv-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); setCwvResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setCwvLoading(false); }
+  }, [url]);
+
+  const runSitemapCheck = useCallback(async () => {
+    if (!url.trim()) return;
+    setSitemapLoading(true); setSitemapResult(null);
+    try { const r = await apiFetchJSON(`${API}/sitemap-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); setSitemapResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setSitemapLoading(false); }
+  }, [url]);
+
+  // Schema & Links
+  const runSchemaGen = useCallback(async () => {
+    if (!url.trim()) return;
+    setSchemaGenLoading(true); setSchemaGenErr(""); setGeneratedSchema(null);
+    try { const r = await apiFetchJSON(`${API}/schema/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), author: schemaAuthorName, publisher: schemaPublisherName }) }); setGeneratedSchema(r); }
+    catch (e) { setSchemaGenErr(e.message || "Failed"); } finally { setSchemaGenLoading(false); }
+  }, [url, schemaAuthorName, schemaPublisherName]);
+
+  const runFaqSchema = useCallback(async () => {
+    if (!url.trim()) return;
+    setFaqSchemaLoading(true); setFaqSchemaResult(null);
+    try { const r = await apiFetchJSON(`${API}/faq-schema/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); setFaqSchemaResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setFaqSchemaLoading(false); }
+  }, [url]);
+
+  const runHowtoSchema = useCallback(async () => {
+    if (!howtoTitle.trim()) return;
+    setHowtoLoading(true); setHowtoResult(null);
+    try { const r = await apiFetchJSON(`${API}/schema/howto`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: howtoTitle.trim() }) }); setHowtoResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setHowtoLoading(false); }
+  }, [howtoTitle]);
+
+  // SERP & CTR
+  const runCtrOptimizer = useCallback(async () => {
+    if (!ctrKeyword.trim()) return;
+    setCtrLoading(true); setCtrOptimizerResult(null);
+    try { const r = await apiFetchJSON(`${API}/serp/ctr-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: ctrTitle, metaDescription: ctrMeta, keyword: ctrKeyword }) }); setCtrOptimizerResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setCtrLoading(false); }
+  }, [ctrTitle, ctrMeta, ctrKeyword]);
+
+  const runIntentClassifier = useCallback(async () => {
+    if (!intentKeyword.trim()) return;
+    setIntentLoading(true); setIntentResult(null);
+    try { const r = await apiFetchJSON(`${API}/serp/intent-classifier`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: intentKeyword }) }); setIntentResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setIntentLoading(false); }
+  }, [intentKeyword]);
+
+  const runPaaGenerator = useCallback(async () => {
+    if (!paaKeyword.trim()) return;
+    setPaaLoading(true); setPaaResult(null);
+    try { const r = await apiFetchJSON(`${API}/serp/paa-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: paaKeyword, niche: paaNiche }) }); setPaaResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setPaaLoading(false); }
+  }, [paaKeyword, paaNiche]);
+
+  const runCompetitorSnapshot = useCallback(async () => {
+    if (!snapKeyword.trim()) return;
+    setSnapLoading(true); setCompetitorSnapshotResult(null);
+    try { const r = await apiFetchJSON(`${API}/serp/competitor-snapshot`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: snapKeyword, url: url.trim() }) }); setCompetitorSnapshotResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setSnapLoading(false); }
+  }, [snapKeyword, url]);
+
+  const runDifficultyScore = useCallback(async () => {
+    if (!diffKeyword.trim()) return;
+    setDiffLoading(true); setDifficultyResult(null);
+    try { const r = await apiFetchJSON(`${API}/serp/difficulty-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: diffKeyword, niche: diffNiche }) }); setDifficultyResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setDiffLoading(false); }
+  }, [diffKeyword, diffNiche]);
+
+  // Backlinks
+  const runBacklinkOpps = useCallback(async () => {
+    if (!backlinkNiche.trim()) return;
+    setBacklinkOppsLoading(true); setBacklinkOppsResult(null);
+    try { const r = await apiFetchJSON(`${API}/backlinks/opportunity-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: backlinkNiche, url: url.trim() }) }); setBacklinkOppsResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setBacklinkOppsLoading(false); }
+  }, [backlinkNiche, url]);
+
+  const runLinkGap = useCallback(async () => {
+    if (!linkGapDomain.trim()) return;
+    setLinkGapLoading(true); setLinkGapResult(null);
+    try { const r = await apiFetchJSON(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ yourDomain: linkGapDomain, competitor1: linkGapComp1, competitor2: linkGapComp2, niche: linkGapNiche }) }); setLinkGapResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setLinkGapLoading(false); }
+  }, [linkGapDomain, linkGapComp1, linkGapComp2, linkGapNiche]);
+
+  const runOutreachGen = useCallback(async () => {
+    if (!outreachTarget.trim()) return;
+    setOutreachLoading(true); setOutreachResult(null);
+    try { const r = await apiFetchJSON(`${API}/backlinks/outreach-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetSite: outreachTarget, contentTitle: outreachContentTitle, outreachType }) }); setOutreachResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setOutreachLoading(false); }
+  }, [outreachTarget, outreachContentTitle, outreachType]);
+
+  const runAnchorTextAnalysis = useCallback(async () => {
+    if (!anchorTextDomain.trim()) return;
+    setAnchorTextLoading(true); setAnchorTextResult(null);
+    try { const r = await apiFetchJSON(`${API}/backlinks/anchor-text`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: anchorTextDomain, niche: backlinkNiche }) }); setAnchorTextResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setAnchorTextLoading(false); }
+  }, [anchorTextDomain, backlinkNiche]);
+
+  // Local & E-E-A-T
+  const runGbpOptimizer = useCallback(async () => {
+    if (!gbpBusiness.trim()) return;
+    setGbpLoading(true); setGbpResult(null);
+    try { const r = await apiFetchJSON(`${API}/local/gbp-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: gbpBusiness, location: gbpLocation, category: gbpCategory }) }); setGbpResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setGbpLoading(false); }
+  }, [gbpBusiness, gbpLocation, gbpCategory]);
+
+  const runCitationFinder = useCallback(async () => {
+    if (!citationBusiness.trim()) return;
+    setCitationLoading(true); setCitationResult(null);
+    try { const r = await apiFetchJSON(`${API}/local/citation-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: citationBusiness, location: citationLocation, category: citationCategory }) }); setCitationResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setCitationLoading(false); }
+  }, [citationBusiness, citationLocation, citationCategory]);
+
+  const runLocalKwGen = useCallback(async () => {
+    if (!localKwService.trim()) return;
+    setLocalKwLoading(true); setLocalKwResult(null);
+    try { const r = await apiFetchJSON(`${API}/local/local-keyword-gen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service: localKwService, city: localKwCity }) }); setLocalKwResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setLocalKwLoading(false); }
+  }, [localKwService, localKwCity]);
+
+  const runEeatScorer = useCallback(async () => {
+    if (!url.trim()) return;
+    setEeatLoading(true); setEeatResult(null);
+    try { const r = await apiFetchJSON(`${API}/brand/eeat-scorer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); setEeatResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setEeatLoading(false); }
+  }, [url]);
+
+  // Voice & AI Search
+  const runVoiceOptimizer = useCallback(async () => {
+    if (!voiceOptKeyword.trim()) return;
+    setVoiceOptLoading(true); setVoiceOptResult(null);
+    try { const r = await apiFetchJSON(`${API}/voice/voice-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: voiceOptKeyword }) }); setVoiceOptResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setVoiceOptLoading(false); }
+  }, [voiceOptKeyword]);
+
+  const runFaqGenerator = useCallback(async () => {
+    if (!faqGenTopic.trim()) return;
+    setFaqGenLoading(true); setFaqGenResult(null);
+    try { const r = await apiFetchJSON(`${API}/voice/faq-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: faqGenTopic }) }); setFaqGenResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setFaqGenLoading(false); }
+  }, [faqGenTopic]);
+
+  const runAiOverview = useCallback(async () => {
+    if (!aiOverviewKeyword.trim()) return;
+    setAiOverviewLoading(true); setAiOverviewResult(null);
+    try { const r = await apiFetchJSON(`${API}/voice/ai-overview-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: aiOverviewKeyword, url: url.trim() }) }); setAiOverviewResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setAiOverviewLoading(false); }
+  }, [aiOverviewKeyword, url]);
+
+  const runConvKeywords = useCallback(async () => {
+    if (!convKwTopic.trim()) return;
+    setConvKwLoading(true); setConvKwResult(null);
+    try { const r = await apiFetchJSON(`${API}/voice/conversational-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: convKwTopic }) }); setConvKwResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setConvKwLoading(false); }
+  }, [convKwTopic]);
+
+  // AI Growth
+  const runPassageOptimizer = useCallback(async () => {
+    if (!url.trim()) return;
+    setPassageLoading(true); setPassageResult(null);
+    try { const r = await apiFetchJSON(`${API}/ai/passage-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: kwInput.trim() }) }); setPassageResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setPassageLoading(false); }
+  }, [url, kwInput]);
+
+  // GEO & LLM
+  const runGeoHealth = useCallback(async () => {
+    if (!geoUrl.trim()) return;
+    setGeoLoading(true); setGeoErr(""); setGeoScore(null);
+    try { const r = await apiFetchJSON(`${API}/geo-health-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: geoUrl.trim() }) }); setGeoScore(r); }
+    catch (e) { setGeoErr(e.message || "Failed"); } finally { setGeoLoading(false); }
+  }, [geoUrl]);
+
+  const runPromptSim = useCallback(async () => {
+    if (!promptSimBrand.trim()) return;
+    setPromptSimLoading(true); setPromptSimResult(null);
+    try { const r = await apiFetchJSON(`${API}/ai-platform-tracker`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ brand: promptSimBrand, query: promptSimQuery }) }); setPromptSimResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setPromptSimLoading(false); }
+  }, [promptSimBrand, promptSimQuery]);
+
+  const runLlmsTxt = useCallback(async () => {
+    if (!geoUrl.trim()) return;
+    setLlmsTxtLoading(true); setLlmsTxtResult(null);
+    try { const r = await apiFetchJSON(`${API}/llms-txt-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: geoUrl.trim() }) }); setLlmsTxtResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setLlmsTxtLoading(false); }
+  }, [geoUrl]);
+
+  // Rank Tracker
+  const runRankTracker = useCallback(async () => {
+    if (!rankKeywords.trim() || !rankDomain.trim()) return;
+    setRankLoading(true); setRankErr(""); setRankResult(null);
+    try { const r = await apiFetchJSON(`${API}/rank-tracker`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keywords: rankKeywords.split("\n").map(k => k.trim()).filter(Boolean), domain: rankDomain.trim() }) }); setRankResult(r); }
+    catch (e) { setRankErr(e.message || "Failed"); } finally { setRankLoading(false); }
+  }, [rankKeywords, rankDomain]);
+
+  // Site Crawl
+  const runCrawl = useCallback(async () => {
+    if (!crawlUrl.trim()) return;
+    setCrawlLoading(true); setCrawlErr(""); setCrawlResult(null);
+    try { const r = await apiFetchJSON(`${API}/crawler-access`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: crawlUrl.trim() }) }); setCrawlResult(r); }
+    catch (e) { setCrawlErr(e.message || "Failed"); } finally { setCrawlLoading(false); }
+  }, [crawlUrl]);
+
+  // Trend Scout
+  const runTrendRising = useCallback(async () => {
+    if (!trendNiche.trim()) return;
+    setTrendLoading(true); setTrendErr(""); setTrendRising(null);
+    try { const r = await apiFetchJSON(`${API}/trends/rising`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: trendNiche, industry: trendIndustry }) }); setTrendRising(r); }
+    catch (e) { setTrendErr(e.message || "Failed"); } finally { setTrendLoading(false); }
+  }, [trendNiche, trendIndustry]);
+
+  const runTrendSeasonal = useCallback(async () => {
+    if (!trendNiche.trim()) return;
+    setTrendSeasonalLoading(true); setTrendSeasonal(null);
+    try { const r = await apiFetchJSON(`${API}/trends/seasonal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: trendNiche, industry: trendIndustry }) }); setTrendSeasonal(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setTrendSeasonalLoading(false); }
+  }, [trendNiche, trendIndustry]);
+
+  const runTrendSurge = useCallback(async () => {
+    if (!trendNiche.trim()) return;
+    setTrendSurgeLoading(true); setTrendSurge(null);
+    try { const r = await apiFetchJSON(`${API}/trends/surge`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: trendNiche }) }); setTrendSurge(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setTrendSurgeLoading(false); }
+  }, [trendNiche]);
+
+  // A/B & Content Refresh
+  const runAbVariants = useCallback(async () => {
+    if (!abVariantUrl.trim()) return;
+    setAbVariantLoading(true); setAbVariantResult(null);
+    try { const r = await apiFetchJSON(`${API}/serp/meta-ab-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: abVariantUrl.trim(), keyword: kwInput.trim() }) }); setAbVariantResult(r); }
+    catch (e) { showToast(e.message || "Failed"); } finally { setAbVariantLoading(false); }
+  }, [abVariantUrl, kwInput]);
+
   /* ═══════════════════════════
      ISSUE HINT MAPPER
      Maps an issue message -> { hint, label, action }
@@ -1144,21 +1548,712 @@ export default function BlogSEO() {
               ))}
             </>
           )}
-          {/* ════════════════════════════
-              ADVANCED SECTION STUBS
-          ════════════════════════════ */}
-          {["Technical","Schema","SERP","Backlinks","AB","Local","Voice","AIGrowth","Rank","Crawl","GEO","Trends"].includes(section) && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 300, gap: 16 }}>
-              <div style={{ fontSize: 40 }}>🚧</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>{SECTIONS.find(s => s.id === section)?.title || section}</div>
-              <div style={{ fontSize: 14, color: C.sub, textAlign: "center", maxWidth: 420, lineHeight: 1.7 }}>
-                This advanced section is coming in Phase 2. The foundation has been built — full functionality will be added in the next update.
+          {/* ════════ TECHNICAL SEO ════════ */}
+          {section === "Technical" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["audit","Technical Audit"],["pagespeed","Page Speed"],["cwv","Core Web Vitals"],["sitemap","Sitemap Check"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:techSub===k?C.indigo:C.muted, color:techSub===k?"#fff":"#d4d4d8" }} onClick={() => setTechSub(k)}>{l}</button>
+                ))}
               </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <button style={S.btn()} onClick={() => setSection(null)}>Back to Home</button>
-                <button style={S.btn("primary")} onClick={() => { setSection("Analyze"); setExpertMode(false); }}>Go to Analyze</button>
+              {techSub === "audit" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>Technical SEO Audit</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Uses your analyzed URL. Run an analysis first.</div>
+                  <button style={S.btn("primary")} onClick={runTechAudit} disabled={techLoading || !url.trim()}>
+                    {techLoading ? <><span style={S.spinner} /> Auditing...</> : "Run Technical Audit"}
+                  </button>
+                  {techErr && <div style={{ ...S.err, marginTop:10 }}>{techErr}</div>}
+                  {techResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof techResult === "string" ? techResult : JSON.stringify(techResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {techSub === "pagespeed" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>Page Speed Advisor</div>
+                  <button style={S.btn("primary")} onClick={runPageSpeed} disabled={pageSpeedLoading || !url.trim()}>
+                    {pageSpeedLoading ? <><span style={S.spinner} /> Analysing...</> : "Analyse Page Speed"}
+                  </button>
+                  {pageSpeedResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof pageSpeedResult === "string" ? pageSpeedResult : JSON.stringify(pageSpeedResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {techSub === "cwv" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>Core Web Vitals Advisor</div>
+                  <button style={S.btn("primary")} onClick={runCwv} disabled={cwvLoading || !url.trim()}>
+                    {cwvLoading ? <><span style={S.spinner} /> Checking...</> : "Check Core Web Vitals"}
+                  </button>
+                  {cwvResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof cwvResult === "string" ? cwvResult : JSON.stringify(cwvResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {techSub === "sitemap" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>Sitemap Check</div>
+                  <button style={S.btn("primary")} onClick={runSitemapCheck} disabled={sitemapLoading || !url.trim()}>
+                    {sitemapLoading ? <><span style={S.spinner} /> Checking...</> : "Check Sitemap"}
+                  </button>
+                  {sitemapResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof sitemapResult === "string" ? sitemapResult : JSON.stringify(sitemapResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ SCHEMA & LINKS ════════ */}
+          {section === "Schema" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["article","Article Schema"],["faq","FAQ Schema"],["howto","HowTo Schema"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:schemaSub===k?C.indigo:C.muted, color:schemaSub===k?"#fff":"#d4d4d8" }} onClick={() => setSchemaSub(k)}>{l}</button>
+                ))}
               </div>
+              {schemaSub === "article" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>Article Schema Generator</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Author name" value={schemaAuthorName} onChange={e => setSchemaAuthorName(e.target.value)} />
+                    <input style={S.input} placeholder="Publisher name" value={schemaPublisherName} onChange={e => setSchemaPublisherName(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runSchemaGen} disabled={schemaGenLoading || !url.trim()}>
+                      {schemaGenLoading ? <><span style={S.spinner} /> Generating...</> : "Generate Schema"}
+                    </button>
+                  </div>
+                  {schemaGenErr && <div style={{ ...S.err, marginTop:8 }}>{schemaGenErr}</div>}
+                  {generatedSchema && (
+                    <div style={{ marginTop:14 }}>
+                      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(JSON.stringify(generatedSchema.schema || generatedSchema, null, 2))}>Copy JSON-LD</button>
+                      </div>
+                      <pre style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
+                        {JSON.stringify(generatedSchema.schema || generatedSchema, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+              {schemaSub === "faq" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>FAQ Schema Generator</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Extracts question headings from your analyzed post and generates FAQ schema.</div>
+                  <button style={S.btn("primary")} onClick={runFaqSchema} disabled={faqSchemaLoading || !url.trim()}>
+                    {faqSchemaLoading ? <><span style={S.spinner} /> Generating...</> : "Generate FAQ Schema"}
+                  </button>
+                  {faqSchemaResult && (
+                    <pre style={{ marginTop:14, background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
+                      {JSON.stringify(faqSchemaResult.schema || faqSchemaResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              )}
+              {schemaSub === "howto" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>HowTo Schema Generator</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="HowTo title (e.g. How to make cold brew coffee)" value={howtoTitle} onChange={e => setHowtoTitle(e.target.value)} onKeyDown={e => e.key === "Enter" && runHowtoSchema()} />
+                    <button style={S.btn("primary")} onClick={runHowtoSchema} disabled={howtoLoading || !howtoTitle.trim()}>
+                      {howtoLoading ? <><span style={S.spinner} /> Generating...</> : "Generate HowTo Schema"}
+                    </button>
+                  </div>
+                  {howtoResult && (
+                    <pre style={{ marginTop:14, background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:"#a5b4fc", overflowX:"auto", maxHeight:400 }}>
+                      {JSON.stringify(howtoResult.schema || howtoResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ SERP & CTR ════════ */}
+          {section === "SERP" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["ctr","CTR Optimizer"],["intent","Intent Classifier"],["paa","PAA Generator"],["snapshot","Competitor Snapshot"],["difficulty","Difficulty Score"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:serpSub===k?C.indigo:C.muted, color:serpSub===k?"#fff":"#d4d4d8" }} onClick={() => setSerpSub(k)}>{l}</button>
+                ))}
+              </div>
+              {serpSub === "ctr" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>CTR Optimizer</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
+                    <input style={S.input} placeholder="Title tag" value={ctrTitle} onChange={e => setCtrTitle(e.target.value)} />
+                    <input style={S.input} placeholder="Meta description" value={ctrMeta} onChange={e => setCtrMeta(e.target.value)} />
+                    <div style={S.row}>
+                      <input style={S.input} placeholder="Target keyword" value={ctrKeyword} onChange={e => setCtrKeyword(e.target.value)} onKeyDown={e => e.key === "Enter" && runCtrOptimizer()} />
+                      <button style={S.btn("primary")} onClick={runCtrOptimizer} disabled={ctrLoading || !ctrKeyword.trim()}>
+                        {ctrLoading ? <><span style={S.spinner} /> Optimising...</> : "Optimise CTR"}
+                      </button>
+                    </div>
+                  </div>
+                  {ctrOptimizerResult && (
+                    <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof ctrOptimizerResult === "string" ? ctrOptimizerResult : JSON.stringify(ctrOptimizerResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {serpSub === "intent" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Search Intent Classifier</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Keyword to classify" value={intentKeyword} onChange={e => setIntentKeyword(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntentClassifier()} />
+                    <button style={S.btn("primary")} onClick={runIntentClassifier} disabled={intentLoading || !intentKeyword.trim()}>
+                      {intentLoading ? <><span style={S.spinner} /> Classifying...</> : "Classify Intent"}
+                    </button>
+                  </div>
+                  {intentResult && (
+                    <div style={{ marginTop:14, background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px" }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.indigo, marginBottom:8 }}>{intentResult.intent || intentResult.type || "Intent"}</div>
+                      <div style={{ fontSize:13, color:C.text, lineHeight:1.7 }}>{intentResult.explanation || intentResult.description || JSON.stringify(intentResult)}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {serpSub === "paa" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>People Also Ask Generator</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Keyword" value={paaKeyword} onChange={e => setPaaKeyword(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:200 }} placeholder="Niche (optional)" value={paaNiche} onChange={e => setPaaNiche(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runPaaGenerator} disabled={paaLoading || !paaKeyword.trim()}>
+                      {paaLoading ? <><span style={S.spinner} /> Generating...</> : "Generate PAA"}
+                    </button>
+                  </div>
+                  {paaResult && (
+                    <div style={{ marginTop:14 }}>
+                      {(paaResult.questions || paaResult.paa || []).map((q, i) => (
+                        <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"10px 14px", marginBottom:6, fontSize:13, color:C.text }}>{typeof q === "string" ? q : q.question || q.text}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {serpSub === "snapshot" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Competitor SERP Snapshot</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Keyword to analyse" value={snapKeyword} onChange={e => setSnapKeyword(e.target.value)} onKeyDown={e => e.key === "Enter" && runCompetitorSnapshot()} />
+                    <button style={S.btn("primary")} onClick={runCompetitorSnapshot} disabled={snapLoading || !snapKeyword.trim()}>
+                      {snapLoading ? <><span style={S.spinner} /> Analysing...</> : "Analyse Competitors"}
+                    </button>
+                  </div>
+                  {competitorSnapshotResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof competitorSnapshotResult === "string" ? competitorSnapshotResult : JSON.stringify(competitorSnapshotResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {serpSub === "difficulty" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Keyword Difficulty Score</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Keyword" value={diffKeyword} onChange={e => setDiffKeyword(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:200 }} placeholder="Niche" value={diffNiche} onChange={e => setDiffNiche(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runDifficultyScore} disabled={diffLoading || !diffKeyword.trim()}>
+                      {diffLoading ? <><span style={S.spinner} /> Scoring...</> : "Get Difficulty Score"}
+                    </button>
+                  </div>
+                  {difficultyResult && (
+                    <div style={{ marginTop:14 }}>
+                      {difficultyResult.score != null && (
+                        <div style={{ fontSize:36, fontWeight:900, color:difficultyResult.score > 70 ? C.red : difficultyResult.score > 40 ? C.yellow : C.green, marginBottom:8 }}>{difficultyResult.score}/100</div>
+                      )}
+                      <div style={{ fontSize:13, color:C.text, lineHeight:1.7 }}>{difficultyResult.explanation || difficultyResult.analysis || JSON.stringify(difficultyResult)}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ BACKLINKS ════════ */}
+          {section === "Backlinks" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["opportunities","Opportunities"],["linkgap","Link Gap"],["outreach","Outreach"],["anchor","Anchor Text"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:backlinkSub===k?C.indigo:C.muted, color:backlinkSub===k?"#fff":"#d4d4d8" }} onClick={() => setBacklinkSub(k)}>{l}</button>
+                ))}
+              </div>
+              {backlinkSub === "opportunities" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Backlink Opportunity Finder</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Your niche (e.g. fitness, ecommerce)" value={backlinkNiche} onChange={e => setBacklinkNiche(e.target.value)} onKeyDown={e => e.key === "Enter" && runBacklinkOpps()} />
+                    <button style={S.btn("primary")} onClick={runBacklinkOpps} disabled={backlinkOppsLoading || !backlinkNiche.trim()}>
+                      {backlinkOppsLoading ? <><span style={S.spinner} /> Finding...</> : "Find Opportunities"}
+                    </button>
+                  </div>
+                  {backlinkOppsResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof backlinkOppsResult === "string" ? backlinkOppsResult : JSON.stringify(backlinkOppsResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {backlinkSub === "linkgap" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Link Gap Analysis</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
+                    <input style={S.input} placeholder="Your domain" value={linkGapDomain} onChange={e => setLinkGapDomain(e.target.value)} />
+                    <input style={S.input} placeholder="Competitor 1" value={linkGapComp1} onChange={e => setLinkGapComp1(e.target.value)} />
+                    <input style={S.input} placeholder="Competitor 2 (optional)" value={linkGapComp2} onChange={e => setLinkGapComp2(e.target.value)} />
+                    <div style={S.row}>
+                      <input style={S.input} placeholder="Niche" value={linkGapNiche} onChange={e => setLinkGapNiche(e.target.value)} />
+                      <button style={S.btn("primary")} onClick={runLinkGap} disabled={linkGapLoading || !linkGapDomain.trim()}>
+                        {linkGapLoading ? <><span style={S.spinner} /> Analysing...</> : "Run Link Gap"}
+                      </button>
+                    </div>
+                  </div>
+                  {linkGapResult && (
+                    <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof linkGapResult === "string" ? linkGapResult : JSON.stringify(linkGapResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {backlinkSub === "outreach" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Outreach Email Generator</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
+                    <input style={S.input} placeholder="Target site URL" value={outreachTarget} onChange={e => setOutreachTarget(e.target.value)} />
+                    <input style={S.input} placeholder="Your content title" value={outreachContentTitle} onChange={e => setOutreachContentTitle(e.target.value)} />
+                    <div style={S.row}>
+                      <select style={{ ...S.input, flex:"0 0 auto", width:200 }} value={outreachType} onChange={e => setOutreachType(e.target.value)}>
+                        {["guest-post","resource-page","broken-link","scholarship","interview"].map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <button style={S.btn("primary")} onClick={runOutreachGen} disabled={outreachLoading || !outreachTarget.trim()}>
+                        {outreachLoading ? <><span style={S.spinner} /> Generating...</> : "Generate Email"}
+                      </button>
+                    </div>
+                  </div>
+                  {outreachResult && (
+                    <div style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {outreachResult.email || outreachResult.template || JSON.stringify(outreachResult)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {backlinkSub === "anchor" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Anchor Text Analysis</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Domain (e.g. yourstore.com)" value={anchorTextDomain} onChange={e => setAnchorTextDomain(e.target.value)} onKeyDown={e => e.key === "Enter" && runAnchorTextAnalysis()} />
+                    <button style={S.btn("primary")} onClick={runAnchorTextAnalysis} disabled={anchorTextLoading || !anchorTextDomain.trim()}>
+                      {anchorTextLoading ? <><span style={S.spinner} /> Analysing...</> : "Analyse Anchors"}
+                    </button>
+                  </div>
+                  {anchorTextResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof anchorTextResult === "string" ? anchorTextResult : JSON.stringify(anchorTextResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ A/B & CONTENT REFRESH ════════ */}
+          {section === "AB" && (
+            <div style={S.card}>
+              <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Meta A/B Variants</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Generate multiple title + meta description variants to A/B test for higher CTR.</div>
+              <div style={S.row}>
+                <input style={S.input} placeholder="Post URL (or leave blank to use analyzed URL)" value={abVariantUrl} onChange={e => setAbVariantUrl(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runAbVariants} disabled={abVariantLoading || (!abVariantUrl.trim() && !url.trim())}>
+                  {abVariantLoading ? <><span style={S.spinner} /> Generating...</> : "Generate A/B Variants"}
+                </button>
+              </div>
+              {abVariantResult && (
+                <div style={{ marginTop:14 }}>
+                  {(abVariantResult.variants || abVariantResult.options || []).map((v, i) => (
+                    <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 14px", marginBottom:8 }}>
+                      <div style={{ fontSize:11, color:C.dim, fontWeight:700, textTransform:"uppercase", marginBottom:4 }}>Variant {i + 1}</div>
+                      <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>{v.title || v.headline}</div>
+                      <div style={{ fontSize:12, color:C.sub }}>{v.metaDescription || v.description || v.text}</div>
+                    </div>
+                  ))}
+                  {!abVariantResult.variants && !abVariantResult.options && (
+                    <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap" }}>{JSON.stringify(abVariantResult, null, 2)}</div>
+                  )}
+                </div>
+              )}
             </div>
+          )}
+
+          {/* ════════ LOCAL & E-E-A-T ════════ */}
+          {section === "Local" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["gbp","GBP Optimizer"],["citations","Citation Finder"],["localkw","Local Keywords"],["eeat","E-E-A-T Score"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:localSub===k?C.indigo:C.muted, color:localSub===k?"#fff":"#d4d4d8" }} onClick={() => setLocalSub(k)}>{l}</button>
+                ))}
+              </div>
+              {localSub === "gbp" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Google Business Profile Optimizer</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Business name" value={gbpBusiness} onChange={e => setGbpBusiness(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:240 }} placeholder="Location (city, country)" value={gbpLocation} onChange={e => setGbpLocation(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:200 }} placeholder="Category" value={gbpCategory} onChange={e => setGbpCategory(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runGbpOptimizer} disabled={gbpLoading || !gbpBusiness.trim()}>
+                      {gbpLoading ? <><span style={S.spinner} /> Optimising...</> : "Optimise GBP"}
+                    </button>
+                  </div>
+                  {gbpResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof gbpResult === "string" ? gbpResult : JSON.stringify(gbpResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {localSub === "citations" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Citation Finder</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Business name" value={citationBusiness} onChange={e => setCitationBusiness(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:200 }} placeholder="Location" value={citationLocation} onChange={e => setCitationLocation(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:180 }} placeholder="Category" value={citationCategory} onChange={e => setCitationCategory(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runCitationFinder} disabled={citationLoading || !citationBusiness.trim()}>
+                      {citationLoading ? <><span style={S.spinner} /> Finding...</> : "Find Citations"}
+                    </button>
+                  </div>
+                  {citationResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof citationResult === "string" ? citationResult : JSON.stringify(citationResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {localSub === "localkw" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Local Keyword Generator</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Service (e.g. plumber, SEO agency)" value={localKwService} onChange={e => setLocalKwService(e.target.value)} />
+                    <input style={{ ...S.input, maxWidth:240 }} placeholder="City" value={localKwCity} onChange={e => setLocalKwCity(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runLocalKwGen} disabled={localKwLoading || !localKwService.trim()}>
+                      {localKwLoading ? <><span style={S.spinner} /> Generating...</> : "Generate Keywords"}
+                    </button>
+                  </div>
+                  {localKwResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof localKwResult === "string" ? localKwResult : JSON.stringify(localKwResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {localSub === "eeat" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>E-E-A-T Scorer</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Scores your content against Google&apos;s Experience, Expertise, Authoritativeness, Trustworthiness signals.</div>
+                  <button style={S.btn("primary")} onClick={runEeatScorer} disabled={eeatLoading || !url.trim()}>
+                    {eeatLoading ? <><span style={S.spinner} /> Scoring...</> : "Score E-E-A-T"}
+                  </button>
+                  {eeatResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof eeatResult === "string" ? eeatResult : JSON.stringify(eeatResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ VOICE & AI SEARCH ════════ */}
+          {section === "Voice" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["voice","Voice Optimizer"],["faq","FAQ Generator"],["aioverview","AI Overview"],["conv","Conversational KWs"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:voiceSub===k?C.indigo:C.muted, color:voiceSub===k?"#fff":"#d4d4d8" }} onClick={() => setVoiceSub(k)}>{l}</button>
+                ))}
+              </div>
+              {voiceSub === "voice" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Voice Search Optimizer</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Keyword or question (e.g. best coffee near me)" value={voiceOptKeyword} onChange={e => setVoiceOptKeyword(e.target.value)} onKeyDown={e => e.key === "Enter" && runVoiceOptimizer()} />
+                    <button style={S.btn("primary")} onClick={runVoiceOptimizer} disabled={voiceOptLoading || !voiceOptKeyword.trim()}>
+                      {voiceOptLoading ? <><span style={S.spinner} /> Optimising...</> : "Optimise for Voice"}
+                    </button>
+                  </div>
+                  {voiceOptResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof voiceOptResult === "string" ? voiceOptResult : JSON.stringify(voiceOptResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {voiceSub === "faq" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>FAQ Generator (Voice-Ready)</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Topic (e.g. running shoe care)" value={faqGenTopic} onChange={e => setFaqGenTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runFaqGenerator()} />
+                    <button style={S.btn("primary")} onClick={runFaqGenerator} disabled={faqGenLoading || !faqGenTopic.trim()}>
+                      {faqGenLoading ? <><span style={S.spinner} /> Generating...</> : "Generate FAQs"}
+                    </button>
+                  </div>
+                  {faqGenResult && (
+                    <div style={{ marginTop:14 }}>
+                      {(faqGenResult.faqs || faqGenResult.questions || []).map((q, i) => (
+                        <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 14px", marginBottom:8 }}>
+                          <div style={{ fontSize:13, fontWeight:600, color:C.indigo, marginBottom:4 }}>Q: {q.question || q.q || q}</div>
+                          <div style={{ fontSize:12, color:C.sub, lineHeight:1.6 }}>{q.answer || q.a || ""}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {voiceSub === "aioverview" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>AI Overview Optimizer</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Target keyword" value={aiOverviewKeyword} onChange={e => setAiOverviewKeyword(e.target.value)} onKeyDown={e => e.key === "Enter" && runAiOverview()} />
+                    <button style={S.btn("primary")} onClick={runAiOverview} disabled={aiOverviewLoading || !aiOverviewKeyword.trim()}>
+                      {aiOverviewLoading ? <><span style={S.spinner} /> Analysing...</> : "Optimise for AI Overview"}
+                    </button>
+                  </div>
+                  {aiOverviewResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof aiOverviewResult === "string" ? aiOverviewResult : JSON.stringify(aiOverviewResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {voiceSub === "conv" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:10 }}>Conversational Keywords</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Topic" value={convKwTopic} onChange={e => setConvKwTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runConvKeywords()} />
+                    <button style={S.btn("primary")} onClick={runConvKeywords} disabled={convKwLoading || !convKwTopic.trim()}>
+                      {convKwLoading ? <><span style={S.spinner} /> Generating...</> : "Get Conversational KWs"}
+                    </button>
+                  </div>
+                  {convKwResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof convKwResult === "string" ? convKwResult : JSON.stringify(convKwResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ AI GROWTH ════════ */}
+          {section === "AIGrowth" && (
+            <div style={S.card}>
+              <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Passage Optimizer</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>AI identifies and rewrites the most important passages in your post to rank in passage-based results.</div>
+              <button style={S.btn("primary")} onClick={runPassageOptimizer} disabled={passageLoading || !url.trim()}>
+                {passageLoading ? <><span style={S.spinner} /> Optimising...</> : "Optimise Passages"}
+              </button>
+              {passageResult && (
+                <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                  {typeof passageResult === "string" ? passageResult : JSON.stringify(passageResult, null, 2)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════ RANK TRACKER ════════ */}
+          {section === "Rank" && (
+            <div style={S.card}>
+              <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Rank Tracker</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Track your keyword rankings over time for your domain.</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
+                <input style={S.input} placeholder="Your domain (e.g. yourstore.myshopify.com)" value={rankDomain} onChange={e => setRankDomain(e.target.value)} />
+                <textarea style={{ ...S.textarea, minHeight:80 }} placeholder={"One keyword per line:\nbest running shoes\nshopify seo tips"} value={rankKeywords} onChange={e => setRankKeywords(e.target.value)} />
+              </div>
+              <button style={S.btn("primary")} onClick={runRankTracker} disabled={rankLoading || !rankDomain.trim() || !rankKeywords.trim()}>
+                {rankLoading ? <><span style={S.spinner} /> Tracking...</> : "Track Rankings"}
+              </button>
+              {rankErr && <div style={{ ...S.err, marginTop:10 }}>{rankErr}</div>}
+              {rankResult && (
+                <div style={{ marginTop:14 }}>
+                  <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+                    <thead>
+                      <tr>
+                        {["Keyword","Position","Change","URL"].map(h => (
+                          <th key={h} style={{ textAlign:"left", padding:"6px 10px", borderBottom:`1px solid ${C.border}`, fontSize:11, color:C.dim, fontWeight:700, textTransform:"uppercase" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(rankResult.rankings || rankResult.results || []).map((r, i) => (
+                        <tr key={i}>
+                          <td style={{ padding:"8px 10px", borderBottom:`1px solid ${C.border}`, color:C.text }}>{r.keyword}</td>
+                          <td style={{ padding:"8px 10px", borderBottom:`1px solid ${C.border}`, color:r.position <= 10 ? C.green : r.position <= 30 ? C.yellow : C.sub, fontWeight:700 }}>{r.position ?? "—"}</td>
+                          <td style={{ padding:"8px 10px", borderBottom:`1px solid ${C.border}`, color:r.change > 0 ? C.green : r.change < 0 ? C.red : C.dim }}>{r.change > 0 ? `+${r.change}` : r.change ?? "—"}</td>
+                          <td style={{ padding:"8px 10px", borderBottom:`1px solid ${C.border}`, color:C.indigo, maxWidth:200, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.url || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════ SITE CRAWL ════════ */}
+          {section === "Crawl" && (
+            <div style={S.card}>
+              <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Site Crawl</div>
+              <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Crawls your site to detect broken links, missing tags, orphan pages and technical issues.</div>
+              <div style={S.row}>
+                <input style={S.input} placeholder="Domain to crawl (e.g. https://yourstore.myshopify.com)" value={crawlUrl} onChange={e => setCrawlUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runCrawl()} />
+                <button style={S.btn("primary")} onClick={runCrawl} disabled={crawlLoading || !crawlUrl.trim()}>
+                  {crawlLoading ? <><span style={S.spinner} /> Crawling...</> : "Start Crawl"}
+                </button>
+              </div>
+              {crawlErr && <div style={{ ...S.err, marginTop:10 }}>{crawlErr}</div>}
+              {crawlResult && (
+                <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                  {typeof crawlResult === "string" ? crawlResult : JSON.stringify(crawlResult, null, 2)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════ GEO & LLM ════════ */}
+          {section === "GEO" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["health","GEO Health Score"],["prompt","Prompt Simulation"],["llmstxt","LLMs.txt Generator"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:geoSub===k?C.indigo:C.muted, color:geoSub===k?"#fff":"#d4d4d8" }} onClick={() => setGeoSub(k)}>{l}</button>
+                ))}
+              </div>
+              {geoSub === "health" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>GEO Health Score</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Scores how well your content is optimised for Generative Engine results (ChatGPT, Perplexity, Gemini).</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Your article URL" value={geoUrl} onChange={e => setGeoUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runGeoHealth()} />
+                    <button style={S.btn("primary")} onClick={runGeoHealth} disabled={geoLoading || !geoUrl.trim()}>
+                      {geoLoading ? <><span style={S.spinner} /> Scoring...</> : "Score GEO Health"}
+                    </button>
+                  </div>
+                  {geoErr && <div style={{ ...S.err, marginTop:10 }}>{geoErr}</div>}
+                  {geoScore && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof geoScore === "string" ? geoScore : JSON.stringify(geoScore, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {geoSub === "prompt" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>AI Platform Tracker</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Simulate how ChatGPT/Perplexity mention your brand in a given query.</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Your brand name" value={promptSimBrand} onChange={e => setPromptSimBrand(e.target.value)} />
+                    <input style={S.input} placeholder="Query to simulate" value={promptSimQuery} onChange={e => setPromptSimQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && runPromptSim()} />
+                    <button style={S.btn("primary")} onClick={runPromptSim} disabled={promptSimLoading || !promptSimBrand.trim()}>
+                      {promptSimLoading ? <><span style={S.spinner} /> Simulating...</> : "Simulate"}
+                    </button>
+                  </div>
+                  {promptSimResult && (
+                    <div style={{ marginTop:14, fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                      {typeof promptSimResult === "string" ? promptSimResult : JSON.stringify(promptSimResult, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+              {geoSub === "llmstxt" && (
+                <div style={S.card}>
+                  <div style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>LLMs.txt Generator</div>
+                  <div style={{ fontSize:12, color:C.dim, marginBottom:12 }}>Generate an llms.txt file that tells AI crawlers what to index about your site.</div>
+                  <div style={S.row}>
+                    <input style={S.input} placeholder="Your site URL" value={geoUrl} onChange={e => setGeoUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runLlmsTxt()} />
+                    <button style={S.btn("primary")} onClick={runLlmsTxt} disabled={llmsTxtLoading || !geoUrl.trim()}>
+                      {llmsTxtLoading ? <><span style={S.spinner} /> Generating...</> : "Generate LLMs.txt"}
+                    </button>
+                  </div>
+                  {llmsTxtResult && (
+                    <div style={{ marginTop:14 }}>
+                      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(llmsTxtResult.content || "")}>Copy</button>
+                      </div>
+                      <pre style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", fontSize:12, color:C.text, overflowX:"auto", maxHeight:400 }}>
+                        {llmsTxtResult.content || JSON.stringify(llmsTxtResult, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ════════ TREND SCOUT ════════ */}
+          {section === "Trends" && (
+            <>
+              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {[["rising","Rising Trends"],["seasonal","Seasonal Trends"],["surge","Trend Surge"]].map(([k,l]) => (
+                  <button key={k} style={{ ...S.btn(), padding:"7px 16px", background:trendSub===k?C.indigo:C.muted, color:trendSub===k?"#fff":"#d4d4d8" }} onClick={() => setTrendSub(k)}>{l}</button>
+                ))}
+              </div>
+              <div style={S.card}>
+                <div style={S.row}>
+                  <input style={S.input} placeholder="Niche (e.g. fitness, SaaS, ecommerce)" value={trendNiche} onChange={e => setTrendNiche(e.target.value)} />
+                  <input style={{ ...S.input, maxWidth:200 }} placeholder="Industry (optional)" value={trendIndustry} onChange={e => setTrendIndustry(e.target.value)} />
+                  {trendSub === "rising" && (
+                    <button style={S.btn("primary")} onClick={runTrendRising} disabled={trendLoading || !trendNiche.trim()}>
+                      {trendLoading ? <><span style={S.spinner} /> Fetching...</> : "Find Rising Trends"}
+                    </button>
+                  )}
+                  {trendSub === "seasonal" && (
+                    <button style={S.btn("primary")} onClick={runTrendSeasonal} disabled={trendSeasonalLoading || !trendNiche.trim()}>
+                      {trendSeasonalLoading ? <><span style={S.spinner} /> Fetching...</> : "Get Seasonal Trends"}
+                    </button>
+                  )}
+                  {trendSub === "surge" && (
+                    <button style={S.btn("primary")} onClick={runTrendSurge} disabled={trendSurgeLoading || !trendNiche.trim()}>
+                      {trendSurgeLoading ? <><span style={S.spinner} /> Fetching...</> : "Detect Surge"}
+                    </button>
+                  )}
+                </div>
+              </div>
+              {trendErr && <div style={S.err}>{trendErr}</div>}
+              {trendSub === "rising" && trendRising && (
+                <div style={S.card}>
+                  <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>Rising Trends in &ldquo;{trendNiche}&rdquo;</div>
+                  {(trendRising.trends || trendRising.topics || []).map((t, i) => (
+                    <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"10px 14px", marginBottom:8 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:C.text }}>{t.topic || t.keyword || t.title || t}</div>
+                      {t.growth && <div style={{ fontSize:11, color:C.green, marginTop:2 }}>+{t.growth}% growth</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {trendSub === "seasonal" && trendSeasonal && (
+                <div style={S.card}>
+                  <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>Seasonal Content Opportunities</div>
+                  <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                    {typeof trendSeasonal === "string" ? trendSeasonal : JSON.stringify(trendSeasonal, null, 2)}
+                  </div>
+                </div>
+              )}
+              {trendSub === "surge" && trendSurge && (
+                <div style={S.card}>
+                  <div style={{ fontSize:14, fontWeight:700, marginBottom:12 }}>Trend Surge Detection</div>
+                  <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.7 }}>
+                    {typeof trendSurge === "string" ? trendSurge : JSON.stringify(trendSurge, null, 2)}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
         </div>
