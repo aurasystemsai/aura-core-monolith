@@ -2563,7 +2563,7 @@ export default function BlogSEO() {
  if (m.includes('schema') || m.includes('structured data') || m.includes('json-ld'))
  return { hint: 'Add Article or BlogPosting schema to help Google display rich results. Use the Schema tool to generate and add it with one click.', label: 'Add Schema', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
  if (m.includes('internal link'))
- return { hint: 'Link to 2-5 related posts or product pages within your store. It helps Google discover pages and keeps readers engaged longer.', label: 'Internal Links', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
+ return { hint: 'Link to 2-5 related posts or product pages within your store. It helps Google discover pages and keeps readers engaged longer.', label: 'Internal Links', action: () => { setSimpleMode(false); setSection('Backlinks'); setTab('Backlinks'); } };
  if (m.includes('image') && (m.includes('alt') || m.includes('missing alt')))
  return { hint: 'Add descriptive alt text to every image. Describe whats in the image, include your keyword where it fits naturally. Keep it under 125 characters.', label: 'Fix Image Alt', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('canonical'))
@@ -2573,29 +2573,29 @@ export default function BlogSEO() {
  if (m.includes('https') || m.includes('mixed content') || m.includes('http:'))
  return { hint: 'All resources (images, scripts, stylesheets) must load over HTTPS. Mixed content warnings hurt trust and rankings.', label: 'Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('heading') && (m.includes('jump') || m.includes('skip') || m.includes('level')))
- return { hint: 'Headings must flow in order: H1 \u2192 H2 \u2192 H3. Open your post editor and promote/demote any headings that skip a level.', label: 'Optimize Post', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Headings must flow in order: H1 \u2192 H2 \u2192 H3. Open your post editor and promote/demote any headings that skip a level.', label: 'Optimize Post', action: () => { setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('sentence') || m.includes('passive voice'))
- return { hint: 'Shorten sentences to under 20 words. Replace passive constructions ("was done by") with active voice ("we did"). Use the Optimize tool to scan and fix.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Shorten sentences to under 20 words. Replace passive constructions ("was done by") with active voice ("we did"). Use the Optimize tool to scan and fix.', label: 'Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('paragraph') && (m.includes('long') || m.includes('exceed') || m.includes('words')))
- return { hint: 'Break large paragraphs into 2-4 sentence chunks. Google and readers both prefer scannable content with clear visual breaks.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Break large paragraphs into 2-4 sentence chunks. Google and readers both prefer scannable content with clear visual breaks.', label: 'Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('transition'))
- return { hint: 'Add linking words like however, therefore, in addition, as a result to improve flow. Yoast recommends \u226530% of sentences start with a transition word.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Add linking words like however, therefore, in addition, as a result to improve flow. Yoast recommends \u226530% of sentences start with a transition word.', label: 'Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('og:') || m.includes('open graph') || m.includes('twitter card') || m.includes('social'))
  return { hint: 'Add Open Graph tags to your theme: og:title, og:description, og:image. This controls how your post appears when shared on social media.', label: 'Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('backlink') || m.includes('link build'))
  return { hint: 'Build links by writing guest posts, creating share-worthy resources, or getting listed in niche directories. Use the Backlinks tool to find opportunities.', label: 'Backlinks', action: () => { setSimpleMode(false); setSection('Backlinks'); setTab('Backlinks'); } };
  if (m.includes('keyword') && (m.includes('density') || m.includes('stuffing') || m.includes('repeated')))
- return { hint: 'Reduce exact keyword repeats. Use natural synonyms and related phrases. Aim for 1-2% keyword density use the Keywords tool to check.', label: 'Find Keywords', action: () => { setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
+ return { hint: 'Reduce exact keyword repeats. Use natural synonyms and related phrases. Aim for 1-2% keyword density use the Keywords tool to check.', label: 'Find Keywords', action: () => { setSection('Keywords'); setTab('Keywords'); } };
  if (m.includes('keyword') && (m.includes('missing') || m.includes('not found') || m.includes('absent')))
- return { hint: 'Include your target keyword in the first paragraph and at least 2-3 more times naturally throughout the post.', label: 'Keywords', action: () => { setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
+ return { hint: 'Include your target keyword in the first paragraph and at least 2-3 more times naturally throughout the post.', label: 'Keywords', action: () => { setSection('Keywords'); setTab('Keywords'); } };
  if (m.includes('keyword') && (m.includes('url') || m.includes('slug') || m.includes('handle')))
  return { hint: 'The URL slug should contain your primary keyword. AI will generate clean keyword-rich slugs you can apply directly to Shopify with one click.', label: 'Fix URL Slug', action: () => runRewrite('handle') };
  if ((m.includes('h2') || m.includes('subheading') || m.includes('sub-heading') || m.includes('subhead')) && (m.includes('no ') || m.includes('missing') || m.includes('lack') || m.includes('needs') || m.includes('structure') || m.includes('clear')))
  return { hint: 'H2 headings break up your post and signal topic structure to Google. AI will suggest 4-6 H2s you can paste into your post editor.', label: 'Suggest H2s', action: () => runRewrite('headings') };
  if (m.includes('faq') || (m.includes('question') && m.includes('answer')))
- return { hint: 'Adding an FAQ section helps target voice search and question-based queries. Expand with the AI Optimize tools.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Adding an FAQ section helps target voice search and question-based queries. Expand with the AI Optimize tools.', label: 'Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('reading') || m.includes('readability') || m.includes('flesch'))
- return { hint: 'Aim for a reading level accessible to your audience. Use shorter sentences, simpler words, and active voice.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Aim for a reading level accessible to your audience. Use shorter sentences, simpler words, and active voice.', label: 'Optimize Content', action: () => { setSection('Optimize'); setTab('Content+'); } };
  return null;
  };
 
