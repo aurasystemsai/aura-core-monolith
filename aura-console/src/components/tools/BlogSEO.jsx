@@ -865,7 +865,7 @@ export default function BlogSEO() {
   /* ═══════════════════════════
      RENDER
   ═══════════════════════════ */
-  const visibleSections = SECTIONS.filter(s => s.level === "beginner");
+  const visibleSections = SECTIONS;
   const activeSec = section ? SECTIONS.find(s => s.id === section) : null;
 
   return (
@@ -1102,32 +1102,45 @@ export default function BlogSEO() {
               )}
 
               {/* ── Expert mode grid ── */}
-              {expertMode && (
-                <>
-                  <div style={{ textAlign: "center", marginBottom: 28 }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>All SEO Tools</div>
-                    <div style={{ fontSize: 14, color: "#71717a" }}>Choose a tool to get started.</div>
+              {expertMode && (() => {
+                const beginnerSecs = SECTIONS.filter(s => s.level === "beginner");
+                const advancedSecs = SECTIONS.filter(s => s.level === "advanced");
+                const SectionCard = ({ s }) => (
+                  <div onClick={() => setSection(s.id)}
+                    style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 14, padding: "18px 22px", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, transition: "border-color 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
+                    <div style={{ width: 5, height: 44, borderRadius: 4, background: s.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>{s.title}</div>
+                      <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{s.desc}</div>
+                    </div>
+                    <div style={{ background: `${s.color}22`, borderRadius: 8, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-                    {visibleSections.map(s => (
-                      <div key={s.id} onClick={() => setSection(s.id)}
-                        style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 14, padding: "20px 24px", cursor: "pointer", display: "flex", alignItems: "center", gap: 18, transition: "border-color 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
-                        <div style={{ width: 6, height: 48, borderRadius: 4, background: s.color, flexShrink: 0 }} />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>{s.title}</div>
-                          <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{s.desc}</div>
-                        </div>
-                        <div style={{ background: `${s.color}22`, borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <button style={{ background: "none", border: "none", color: "#52525b", fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(false)}>Switch back to Simple Mode</button>
-                  </div>
-                </>
-              )}
+                );
+                return (
+                  <>
+                    <div style={{ textAlign: "center", marginBottom: 28 }}>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>All SEO Tools</div>
+                      <div style={{ fontSize: 14, color: "#71717a" }}>Everything you need to grow your store's traffic.</div>
+                    </div>
+
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 10 }}>Core Tools</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+                      {beginnerSecs.map(s => <SectionCard key={s.id} s={s} />)}
+                    </div>
+
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 10 }}>Advanced Tools</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
+                      {advancedSecs.map(s => <SectionCard key={s.id} s={s} />)}
+                    </div>
+
+                    <div style={{ textAlign: "center" }}>
+                      <button style={{ background: "none", border: "none", color: "#52525b", fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(false)}>Switch back to Simple Mode</button>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
           {/* ════════════════════════════
