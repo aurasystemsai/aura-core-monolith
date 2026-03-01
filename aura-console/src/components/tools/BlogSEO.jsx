@@ -865,7 +865,7 @@ export default function BlogSEO() {
   /* ═══════════════════════════
      RENDER
   ═══════════════════════════ */
-  const visibleSections = expertMode ? SECTIONS : SECTIONS.filter(s => s.level === "beginner");
+  const visibleSections = SECTIONS.filter(s => s.level === "beginner");
   const activeSec = section ? SECTIONS.find(s => s.id === section) : null;
 
   return (
@@ -914,9 +914,6 @@ export default function BlogSEO() {
           {visibleSections.map(s => (
             <div key={s.id} style={S.sItem(section === s.id)}
               onClick={() => setSection(s.id)}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: s.color, marginRight: 6, opacity: 0.9 }}>
-                {s.level === "advanced" ? "PRO" : ""}
-              </span>
               {s.title}
             </div>
           ))}
