@@ -335,6 +335,11 @@ export default function BlogSEO() {
   const [abVariantResult,  setAbVariantResult]  = useState(null);
   const [abVariantLoading, setAbVariantLoading] = useState(false);
 
+  /* ── Banner inline-fix state ── */
+  const [bannerFixState,   setBannerFixState]   = useState({}); // {issueIdx: "loading"|"ok"|"error"}
+  const [bulkFixing,       setBulkFixing]       = useState(false);
+  const [bulkFixProgress,  setBulkFixProgress]  = useState(null); // {done, total}
+
   /* ═══════════════════════════
      API FUNCTIONS
   ═══════════════════════════ */
@@ -901,6 +906,62 @@ export default function BlogSEO() {
        - BEGINNER sections (Analyze, Keywords, Write, Optimize, Chat, BulkScan, History)
          must NOT call setExpertMode(true)
   ═══════════════════════════ */
+  /* ── Map an issue message → the field name that can be AI-fixed ── */
+  const fixableField = (msg) => {
+    const m = (msg || "").toLowerCase();
+    if (m.includes("title")) return "title";
+    if (m.includes("meta description") || m.includes("meta desc")) return "metaDescription";
+    if (m.includes("h1")) return "h1";
+    if ((m.includes("h2") || m.includes("subheading") || m.includes("heading")) && !m.includes("url")) return "headings";
+    if (m.includes("url") || m.includes("slug") || m.includes("handle")) return "handle";
+    return null;
+  };
+
+  /* ── AI rewrite a field then immediately apply to Shopify (no navigation) ── */
+  const runBannerFix = useCallback(async (field, issueIdx) => {
+    if (!scanResult) { showToast("Scan a post first"); return; }
+    if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the dropdown first so we know which Shopify article to update."); return; }
+    setBannerFixState(p => ({ ...p, [issueIdx]: "loading" }));
+    try {
+      const rw = await apiFetchJSON(`${API}/ai/rewrite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field, url: scanResult.url, title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, keywords: kwInput, wordCount: scanResult.wordCount }),
+      });
+      if (!rw.ok) throw new Error(rw.error || "Rewrite failed");
+      const val = rw.value || rw.suggestion;
+      const ap = await apiFetchJSON(`${API}/apply-field`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field, value: val, shop: shopDomain }),
+      });
+      if (!ap.ok) throw new Error(ap.error || "Apply failed");
+      setBannerFixState(p => ({ ...p, [issueIdx]: "ok" }));
+      setFixedFields(p => new Set([...p, field]));
+      showToast(`✓ ${field} fixed and saved to Shopify`);
+    } catch(e) {
+      setBannerFixState(p => ({ ...p, [issueIdx]: "error" }));
+      showToast(`Fix failed: ${e.message}`);
+    }
+  }, [scanResult, scannedArtId, scannedBlogId, kwInput, shopDomain, showToast]);
+
+  /* ── Bulk fix all auto-fixable issues in scanResult ── */
+  const runBulkFix = useCallback(async () => {
+    const issues = scanResult?.scored?.issues ?? [];
+    const fixable = issues
+      .map((iss, i) => ({ ...iss, idx: i, field: fixableField(iss.msg) }))
+      .filter(x => x.field);
+    if (!fixable.length) { showToast("No auto-fixable issues found"); return; }
+    setBulkFixing(true);
+    setBulkFixProgress({ done: 0, total: fixable.length });
+    for (const item of fixable) {
+      await runBannerFix(item.field, item.idx);
+      setBulkFixProgress(p => ({ ...p, done: (p?.done ?? 0) + 1 }));
+    }
+    setBulkFixing(false);
+    showToast(`All ${fixable.length} fix${fixable.length !== 1 ? "es" : ""} applied to Shopify!`);
+  }, [scanResult, runBannerFix, showToast]);
+
   const getIssueAction = useCallback((msg) => {
     const m = (msg || "").toLowerCase();
     /* ── Title fixes ── */
@@ -1249,6 +1310,131 @@ export default function BlogSEO() {
                   {articles.map(a => <option key={a.id} value={String(a.id)}>{a.title?.slice(0, 50)}</option>)}
                 </select>
               )}
+            </div>
+          )}
+
+          {/* ════════════════════════════
+              POST CONTEXT BANNER
+              Shown on every section (except Analyze) when a post has been scanned.
+              Lets the user see at a glance which post they are working on and what issues were found.
+          ════════════════════════════ */}
+          {section && section !== "Analyze" && scanResult && (() => {
+            const score   = scanResult.scored?.overall ?? null;
+            const grade   = scanResult.scored?.grade   ?? "";
+            const issues  = scanResult.scored?.issues  ?? [];
+            const scoreColor = score === null ? C.dim : score >= 75 ? C.green : score >= 50 ? C.yellow : C.red;
+            /* filter issues relevant to current section */
+            const relevance = {
+              Technical: ["speed","core web","canonical","robots","https","og:","open graph","image","alt"],
+              Schema:    ["schema","structured","json-ld","author","publisher"],
+              SERP:      ["title","meta description","ctr","snippet","intent"],
+              Backlinks: ["internal link","orphan"],
+              AB:        ["title","meta"],
+              Local:     ["local","author","e-e-a-t","eeat","brand"],
+              Voice:     ["question","faq","voice","ai overview"],
+              AIGrowth:  ["passage","content","word"],
+              Rank:      ["keyword","ranking","position"],
+              Crawl:     ["crawl","broken","redirect","sitemap"],
+              GEO:       ["ai","llm","geo","generative"],
+              Trends:    ["fresh","trend","outdated","stale"],
+            };
+            const keywords = relevance[section] || [];
+            const relevant = keywords.length
+              ? issues.filter(i => keywords.some(k => (i.msg || "").toLowerCase().includes(k)))
+              : issues.slice(0, 5);
+            const shown = (relevant.length ? relevant : issues).slice(0, 6);
+            return (
+              <div style={{ background:"#0d0d1a", border:"1px solid #1e1b4b", borderRadius:12, padding:"14px 18px", marginBottom:18 }}>
+                {/* post info row */}
+                <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap", marginBottom: shown.length ? 12 : 0 }}>
+                  {score !== null && (
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:52, height:52, borderRadius:"50%", border:`2px solid ${scoreColor}`, color:scoreColor, fontWeight:800, fontSize:18, flexShrink:0 }}>
+                      {score}
+                    </div>
+                  )}
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                      {scanResult.title || "Untitled post"}
+                    </div>
+                    <div style={{ fontSize:11, color:C.dim, marginTop:2, display:"flex", gap:8, flexWrap:"wrap" }}>
+                      {grade && <span style={{ color: scoreColor, fontWeight:600 }}>Grade {grade}</span>}
+                      {scanResult.wordCount && <span>{scanResult.wordCount} words</span>}
+                      {scanResult.url && <span style={{ overflow:"hidden", textOverflow:"ellipsis", maxWidth:260 }}>{scanResult.url.replace(/^https?:\/\//, "")}</span>}
+                    </div>
+                  </div>
+                  <button
+                    style={{ ...S.btn(), fontSize:11, padding:"4px 12px", flexShrink:0 }}
+                    onClick={() => setSection("Analyze")}
+                  >View full report</button>
+                </div>
+                {/* relevant issues */}
+                {shown.length > 0 && (
+                  <div style={{ borderTop:`1px solid #1e1b4b`, paddingTop:10 }}>
+                    {/* section header + Fix All button */}
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:7, flexWrap:"wrap", gap:6 }}>
+                      <div style={{ fontSize:10, fontWeight:700, color:"#6366f1", textTransform:"uppercase", letterSpacing:"0.8px" }}>
+                        {relevant.length ? "Issues relevant to this section" : "Top issues to fix"}
+                      </div>
+                      {scannedArtId && (
+                        <button
+                          style={{ ...S.btn("primary"), fontSize:10, padding:"3px 12px", flexShrink:0, opacity: bulkFixing ? 0.6 : 1 }}
+                          onClick={runBulkFix}
+                          disabled={bulkFixing}
+                        >
+                          {bulkFixing
+                            ? `Fixing ${(bulkFixProgress?.done ?? 0) + 1} of ${bulkFixProgress?.total ?? "?"}…`
+                            : "🔧 Auto-Fix All"}
+                        </button>
+                      )}
+                    </div>
+                    {/* bulk progress bar */}
+                    {bulkFixing && bulkFixProgress && (
+                      <div style={{ height:4, background:"#1e1b4b", borderRadius:2, marginBottom:8, overflow:"hidden" }}>
+                        <div style={{ height:"100%", background:"#6366f1", width:`${Math.round(((bulkFixProgress.done) / bulkFixProgress.total) * 100)}%`, transition:"width 0.3s" }} />
+                      </div>
+                    )}
+                    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                      {shown.map((issue, i) => {
+                        const sev      = issue.severity || issue.sev || "low";
+                        const sevColor = sev === "high" ? "#fca5a5" : sev === "medium" ? "#fbbf24" : "#93c5fd";
+                        const fField   = fixableField(issue.msg);
+                        const fixSt    = bannerFixState[i];
+                        const alreadyFixed = fixSt === "ok" || fixedFields.has(fField || "");
+                        return (
+                          <div key={i} style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                            {/* severity dot or fixed tick */}
+                            {alreadyFixed
+                              ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
+                              : <span style={{ width:6, height:6, borderRadius:"50%", background:sevColor, flexShrink:0, marginTop:1 }} />}
+                            <span style={{ fontSize:12, color: alreadyFixed ? C.dim : C.sub, flex:1, textDecoration: alreadyFixed ? "line-through" : "none" }}>{issue.msg}</span>
+                            {/* Fix & Apply inline button — stays on this section */}
+                            {fField && scannedArtId && !alreadyFixed && (
+                              <button
+                                style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background:"#059669", borderColor:"#059669", opacity: fixSt === "loading" ? 0.6 : 1 }}
+                                onClick={() => runBannerFix(fField, i)}
+                                disabled={fixSt === "loading" || bulkFixing}
+                              >
+                                {fixSt === "loading" ? "Fixing…" : "Fix & Apply"}
+                              </button>
+                            )}
+                            {fixSt === "error" && (
+                              <span style={{ fontSize:10, color:"#fca5a5" }}>✗ failed</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* prompt to scan if no post yet and not on Analyze */}
+          {section && section !== "Analyze" && !scanResult && (
+            <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:12, padding:"14px 18px", marginBottom:18, fontSize:13, color:"#fbbf24", display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+              <span>⚡ <strong>No post scanned yet.</strong> Go to <em>Analyse a Post</em> first to load your blog post data — then every section will show what needs fixing.</span>
+              <button style={{ ...S.btn("primary"), fontSize:12, padding:"5px 14px" }} onClick={() => setSection("Analyze")}>Analyse a Post →</button>
             </div>
           )}
 
