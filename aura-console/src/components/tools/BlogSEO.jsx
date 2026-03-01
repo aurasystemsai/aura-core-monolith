@@ -2537,65 +2537,65 @@ export default function BlogSEO() {
  const getIssueHint = (msg) => {
  const m = (msg || '').toLowerCase();
  if ((m.includes('meta description') || m.includes('meta desc')) && (m.includes('missing') || m.includes('no meta') || m.includes('empty') || m.includes('0/160') || m.includes('not set')))
- return { hint: 'Write a 150-160 character summary with your target keyword naturally included. This is the text shown in Google results.', label: '\u270d\ufe0f Write Meta Description', action: () => runRewrite('metaDescription') };
+ return { hint: 'Write a 150-160 character summary with your target keyword naturally included. This is the text shown in Google results.', label: 'Write Meta Description', action: () => runRewrite('metaDescription') };
  if (m.includes('meta description') || m.includes('meta desc'))
- return { hint: 'Your meta description affects click-through rate from Google. Keep it 150-160 chars and include your primary keyword.', label: '\u270d\ufe0f Rewrite Meta', action: () => runRewrite('metaDescription') };
+ return { hint: 'Your meta description affects click-through rate from Google. Keep it 150-160 chars and include your primary keyword.', label: 'Rewrite Meta', action: () => runRewrite('metaDescription') };
  if (m.includes('title') && (m.includes('short') || m.includes('too few') || m.includes('below')))
- return { hint: 'Aim for 50-60 characters. Put your primary keyword near the start, add a benefit or hook to improve clicks.', label: '\u270d\ufe0f Rewrite Title', action: () => runRewrite('title') };
+ return { hint: 'Aim for 50-60 characters. Put your primary keyword near the start, add a benefit or hook to improve clicks.', label: 'Rewrite Title', action: () => runRewrite('title') };
  if (m.includes('title') && (m.includes('long') || m.includes('truncat') || m.includes('exceeds') || m.includes('over 60')))
- return { hint: 'Google cuts titles over ~60 characters in search results. Remove filler words and keep your keyword + main benefit.', label: '\u270d\ufe0f Shorten Title', action: () => runRewrite('title') };
+ return { hint: 'Google cuts titles over ~60 characters in search results. Remove filler words and keep your keyword + main benefit.', label: 'Shorten Title', action: () => runRewrite('title') };
  if (m.includes('title') && (m.includes('keyword') || m.includes('not in title') || m.includes('missing from')))
- return { hint: 'Place your primary keyword in the first 60 characters of the title ideally as close to the start as possible.', label: '\u270d\ufe0f Rewrite Title', action: () => runRewrite('title') };
+ return { hint: 'Place your primary keyword in the first 60 characters of the title ideally as close to the start as possible.', label: 'Rewrite Title', action: () => runRewrite('title') };
  if (m.includes('title') && (m.includes('missing') || m.includes('no title')))
- return { hint: 'Every page needs a unique title tag (50-60 chars) with your target keyword near the start.', label: '\u270d\ufe0f Write Title', action: () => runRewrite('title') };
+ return { hint: 'Every page needs a unique title tag (50-60 chars) with your target keyword near the start.', label: 'Write Title', action: () => runRewrite('title') };
  if (m.includes('h1') && (m.includes('missing') || m.includes('no h1') || m.includes('0 h1')))
- return { hint: 'Add one H1 at the top of your post body with your primary keyword. In Shopify blogs, check your theme sometimes it auto-generates the H1 from the post title.', label: '\u270d\ufe0f Generate H1', action: () => runRewrite('h1') };
+ return { hint: 'Add one H1 at the top of your post body with your primary keyword. In Shopify blogs, check your theme sometimes it auto-generates the H1 from the post title.', label: 'Generate H1', action: () => runRewrite('h1') };
  if (m.includes('h1') && (m.includes('multiple') || m.includes('h1 tags found') || m.includes('more than one')))
- return { hint: 'Only one H1 per page. Open your post editor, change extra H1s to H2 or H3.', label: '\u270d\ufe0f Fix H1', action: () => runRewrite('h1') };
+ return { hint: 'Only one H1 per page. Open your post editor, change extra H1s to H2 or H3.', label: 'Fix H1', action: () => runRewrite('h1') };
  if (m.includes('h1') && m.includes('align'))
- return { hint: 'Your title tag and H1 should share key terms. Edit one to match the other Google uses both to understand your topic.', label: '\u270d\ufe0f Align H1 & Title', action: () => runRewrite('h1') };
+ return { hint: 'Your title tag and H1 should share key terms. Edit one to match the other Google uses both to understand your topic.', label: 'Align H1 & Title', action: () => runRewrite('h1') };
  if (m.includes('word count') || (m.includes('words') && (m.includes('short') || m.includes('low') || m.includes('below') || m.includes('thin') || m.includes('only') || m.includes('minimum') || m.includes('should be'))))
- return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: '\u270d\ufe0f Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,'') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,3)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
+ return { hint: 'Posts under 800 words are often seen as thin content. Add an FAQ, step-by-step guide, examples, or expand each section to reach 1,200+ words.', label: 'Expand with AI', action: () => { if (simpleMode) { setSimpleFlow('write'); setSimpleTopics(null); setSimpleTopicsLoading(true); setSimpleDraftResult(null); setSimpleDraftLoading(false); (async () => { try { const niche = shopDomain ? shopDomain.replace('.myshopify.com','').replace(/-/g,'') : (shopifyProducts[0]?.title || 'e-commerce'); const resp = await apiFetch(`${API}/ai/topic-miner`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({niche, targetAudience:'online shoppers'}) }); const d = await resp.json(); if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0,3)); else setSimpleTopics([]); } catch(e) { setSimpleTopics([]); } setSimpleTopicsLoading(false); })(); } else { setSection('Write'); setTab('AI Create'); } } };
  if (m.includes('author'))
- return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: '\u2699\ufe0f Add Author', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'Add a visible author byline and include author details in your Schema markup. This strengthens E-E-A-T signals Google uses to assess expertise and trustworthiness.', label: 'Add Author', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('date') || m.includes('freshness') || m.includes('publish') || m.includes('modified'))
- return { hint: 'Freshness matters for blog rankings. Add datePublished and dateModified to your Schema markup so Google can accurately assess how current your content is.', label: '\U0001f517 Add Schema', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
+ return { hint: 'Freshness matters for blog rankings. Add datePublished and dateModified to your Schema markup so Google can accurately assess how current your content is.', label: 'Add Schema', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
  if (m.includes('schema') || m.includes('structured data') || m.includes('json-ld'))
- return { hint: 'Add Article or BlogPosting schema to help Google display rich results. Use the Schema tool to generate and add it with one click.', label: '\U0001f517 Add Schema', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
+ return { hint: 'Add Article or BlogPosting schema to help Google display rich results. Use the Schema tool to generate and add it with one click.', label: 'Add Schema', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
  if (m.includes('internal link'))
- return { hint: 'Link to 2-5 related posts or product pages within your store. It helps Google discover pages and keeps readers engaged longer.', label: '\U0001f517 Internal Links', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
+ return { hint: 'Link to 2-5 related posts or product pages within your store. It helps Google discover pages and keeps readers engaged longer.', label: 'Internal Links', action: () => { setSimpleMode(false); setSection('Schema'); setTab('Schema & Links'); } };
  if (m.includes('image') && (m.includes('alt') || m.includes('missing alt')))
- return { hint: 'Add descriptive alt text to every image. Describe whats in the image, include your keyword where it fits naturally. Keep it under 125 characters.', label: '\U0001f5bc\ufe0f Fix Image Alt', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'Add descriptive alt text to every image. Describe whats in the image, include your keyword where it fits naturally. Keep it under 125 characters.', label: 'Fix Image Alt', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('canonical'))
- return { hint: 'Add a self-referencing canonical tag in your page <head>: <link rel="canonical"href="YOUR-PAGE-URL">. In Shopify, edit your theme or use a meta fields app.', label: '\u2699\ufe0f Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'Add a self-referencing canonical tag in your page <head>: <link rel="canonical"href="YOUR-PAGE-URL">. In Shopify, edit your theme or use a meta fields app.', label: 'Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('robots') || m.includes('noindex') || m.includes('blocked'))
- return { hint: 'Check your robots.txt file and any noindex meta tags. Make sure the page is not accidentally blocked from search crawlers.', label: '\u2699\ufe0f Check Technical', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'Check your robots.txt file and any noindex meta tags. Make sure the page is not accidentally blocked from search crawlers.', label: 'Check Technical', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('https') || m.includes('mixed content') || m.includes('http:'))
- return { hint: 'All resources (images, scripts, stylesheets) must load over HTTPS. Mixed content warnings hurt trust and rankings.', label: '\u2699\ufe0f Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'All resources (images, scripts, stylesheets) must load over HTTPS. Mixed content warnings hurt trust and rankings.', label: 'Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('heading') && (m.includes('jump') || m.includes('skip') || m.includes('level')))
- return { hint: 'Headings must flow in order: H1 \u2192 H2 \u2192 H3. Open your post editor and promote/demote any headings that skip a level.', label: '\u26a1 Optimize Post', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Headings must flow in order: H1 \u2192 H2 \u2192 H3. Open your post editor and promote/demote any headings that skip a level.', label: 'Optimize Post', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('sentence') || m.includes('passive voice'))
- return { hint: 'Shorten sentences to under 20 words. Replace passive constructions ("was done by") with active voice ("we did"). Use the Optimize tool to scan and fix.', label: '\u26a1 Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Shorten sentences to under 20 words. Replace passive constructions ("was done by") with active voice ("we did"). Use the Optimize tool to scan and fix.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('paragraph') && (m.includes('long') || m.includes('exceed') || m.includes('words')))
- return { hint: 'Break large paragraphs into 2-4 sentence chunks. Google and readers both prefer scannable content with clear visual breaks.', label: '\u26a1 Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Break large paragraphs into 2-4 sentence chunks. Google and readers both prefer scannable content with clear visual breaks.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('transition'))
- return { hint: 'Add linking words like however, therefore, in addition, as a result to improve flow. Yoast recommends \u226530% of sentences start with a transition word.', label: '\u26a1 Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Add linking words like however, therefore, in addition, as a result to improve flow. Yoast recommends \u226530% of sentences start with a transition word.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('og:') || m.includes('open graph') || m.includes('twitter card') || m.includes('social'))
- return { hint: 'Add Open Graph tags to your theme: og:title, og:description, og:image. This controls how your post appears when shared on social media.', label: '\u2699\ufe0f Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
+ return { hint: 'Add Open Graph tags to your theme: og:title, og:description, og:image. This controls how your post appears when shared on social media.', label: 'Technical SEO', action: () => { setSimpleMode(false); setSection('Technical'); setTab('Technical+'); } };
  if (m.includes('backlink') || m.includes('link build'))
- return { hint: 'Build links by writing guest posts, creating share-worthy resources, or getting listed in niche directories. Use the Backlinks tool to find opportunities.', label: '\U0001f517 Backlinks', action: () => { setSimpleMode(false); setSection('Backlinks'); setTab('Backlinks'); } };
+ return { hint: 'Build links by writing guest posts, creating share-worthy resources, or getting listed in niche directories. Use the Backlinks tool to find opportunities.', label: 'Backlinks', action: () => { setSimpleMode(false); setSection('Backlinks'); setTab('Backlinks'); } };
  if (m.includes('keyword') && (m.includes('density') || m.includes('stuffing') || m.includes('repeated')))
- return { hint: 'Reduce exact keyword repeats. Use natural synonyms and related phrases. Aim for 1-2% keyword density use the Keywords tool to check.', label: '\U0001f3af Find Keywords', action: () => { setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
+ return { hint: 'Reduce exact keyword repeats. Use natural synonyms and related phrases. Aim for 1-2% keyword density use the Keywords tool to check.', label: 'Find Keywords', action: () => { setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
  if (m.includes('keyword') && (m.includes('missing') || m.includes('not found') || m.includes('absent')))
- return { hint: 'Include your target keyword in the first paragraph and at least 2-3 more times naturally throughout the post.', label: '\U0001f3af Keywords', action: () => { setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
+ return { hint: 'Include your target keyword in the first paragraph and at least 2-3 more times naturally throughout the post.', label: 'Keywords', action: () => { setSimpleMode(false); setSection('Keywords'); setTab('Keywords'); } };
  if (m.includes('keyword') && (m.includes('url') || m.includes('slug') || m.includes('handle')))
- return { hint: 'The URL slug should contain your primary keyword. AI will generate clean keyword-rich slugs you can apply directly to Shopify with one click.', label: '\U0001f517 Fix URL Slug', action: () => runRewrite('handle') };
+ return { hint: 'The URL slug should contain your primary keyword. AI will generate clean keyword-rich slugs you can apply directly to Shopify with one click.', label: 'Fix URL Slug', action: () => runRewrite('handle') };
  if ((m.includes('h2') || m.includes('subheading') || m.includes('sub-heading') || m.includes('subhead')) && (m.includes('no ') || m.includes('missing') || m.includes('lack') || m.includes('needs') || m.includes('structure') || m.includes('clear')))
- return { hint: 'H2 headings break up your post and signal topic structure to Google. AI will suggest 4-6 H2s you can paste into your post editor.', label: '\u270d\ufe0f Suggest H2s', action: () => runRewrite('headings') };
+ return { hint: 'H2 headings break up your post and signal topic structure to Google. AI will suggest 4-6 H2s you can paste into your post editor.', label: 'Suggest H2s', action: () => runRewrite('headings') };
  if (m.includes('faq') || (m.includes('question') && m.includes('answer')))
- return { hint: 'Adding an FAQ section helps target voice search and question-based queries. Expand with the AI Optimize tools.', label: '\u26a1 Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Adding an FAQ section helps target voice search and question-based queries. Expand with the AI Optimize tools.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
  if (m.includes('reading') || m.includes('readability') || m.includes('flesch'))
- return { hint: 'Aim for a reading level accessible to your audience. Use shorter sentences, simpler words, and active voice.', label: '\u26a1 Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
+ return { hint: 'Aim for a reading level accessible to your audience. Use shorter sentences, simpler words, and active voice.', label: 'Optimize Content', action: () => { setSimpleMode(false); setSection('Optimize'); setTab('Content+'); } };
  return null;
  };
 
@@ -3204,7 +3204,7 @@ export default function BlogSEO() {
  if (!topIssues.length) return null;
  return (
  <div style={{ background: "#0f0f10", border: "1px solid #3f3f46", borderRadius: 12, padding: "14px 18px", marginBottom: 4 }}>
- <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 10 }}>\u26a1 Fix These First</div>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 10 }}>Fix These First</div>
  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
  {topIssues.map((issue, i) => {
  const hint = getIssueHint(issue.msg);
