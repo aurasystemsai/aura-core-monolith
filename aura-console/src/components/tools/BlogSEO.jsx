@@ -897,8 +897,8 @@ export default function BlogSEO() {
       {/* ── Body layout ── */}
       <div style={S.layout}>
 
-        {/* ── Sidebar ── */}
-        <nav style={S.sidebar}>
+        {/* ── Sidebar — hidden on the home / simple-mode dashboard ── */}
+        {(section || expertMode) && <nav style={S.sidebar}>
           <div style={{ padding: "8px 14px 10px", borderBottom: `1px solid ${C.surface}`, marginBottom: 6 }}>
             <button style={{ fontSize: 13, fontWeight: 700, color: section ? C.indigoL : C.text, background: "none", border: "none", cursor: "pointer", padding: 0 }}
               onClick={() => setSection(null)}>
@@ -915,7 +915,7 @@ export default function BlogSEO() {
               {s.title}
             </div>
           ))}
-        </nav>
+        </nav>}
 
         {/* ── Main content ── */}
         <div style={S.main}>
@@ -924,7 +924,7 @@ export default function BlogSEO() {
               HOME DASHBOARD
           ════════════════════════════ */}
           {!section && (
-            <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 24 }}>
+            <div style={{ maxWidth: section || expertMode ? 800 : 900, margin: "0 auto", paddingTop: 32 }}>
 
               {/* Store status banner */}
               {shopLoading ? (
@@ -948,17 +948,17 @@ export default function BlogSEO() {
               </div>
 
               {/* Beginner section cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14, marginBottom: 32 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 32 }}>
                 {visibleSections.map(s => (
                   <div key={s.id}
                     onClick={() => setSection(s.id)}
-                    style={{ background: C.surface, border: `1px solid ${C.border}`, borderLeft: `4px solid ${s.color}`, borderRadius: 12, padding: "18px 16px", cursor: "pointer", transition: "border-color 0.15s, background 0.15s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#1f1f23"}
-                    onMouseLeave={e => e.currentTarget.style.background = C.surface}
+                    style={{ background: "#18181b", border: "1px solid #27272a", borderLeft: `3px solid ${s.color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 6 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#1f1f23"; e.currentTarget.style.borderLeftColor = s.color; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#18181b"; }}
                   >
-                    <div style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 6 }}>{s.title}</div>
-                    <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.55 }}>{s.desc}</div>
-                    <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 10 }}>Open &#8594;</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
+                    <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#8594;</div>
                   </div>
                 ))}
               </div>
