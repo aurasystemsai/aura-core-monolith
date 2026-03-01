@@ -975,14 +975,17 @@ export default function BlogSEO() {
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
-      if (!silent) showToast(field === "body_append" ? "✓ AI content added to your post" : field === "schema" ? "✓ Article schema added to your post" : `✓ ${field} updated in Shopify`);
+      if (!silent) {
+        showToast(field === "body_append" ? "✓ AI content added — rescanning post..." : field === "schema" ? "✓ Schema added — rescanning post..." : `✓ ${field} updated — rescanning post...`);
+        setTimeout(() => runScan(), 1500);
+      }
       return true;
     } catch(e) {
       setBannerFixState(p => ({ ...p, [issueKey]: "error" }));
       if (!silent) showToast(`Fix failed: ${e.message}`);
       return false;
     }
-  }, [scanResult, scannedArtId, scannedBlogId, kwInput, shopDomain, showToast]);
+  }, [scanResult, scannedArtId, scannedBlogId, kwInput, shopDomain, showToast, runScan]);
 
   /* ── Bulk fix all auto-fixable issues in scanResult ── */
   const runBulkFix = useCallback(async () => {
@@ -1003,13 +1006,14 @@ export default function BlogSEO() {
     }
     setBulkFixing(false);
     if (successes === fixable.length) {
-      showToast(`✓ All ${successes} fix${successes !== 1 ? "es" : ""} applied to Shopify!`);
+      showToast(`✓ All ${successes} fix${successes !== 1 ? "es" : ""} applied — rescanning to update issues...`);
     } else if (successes > 0) {
-      showToast(`${successes} of ${fixable.length} fixes applied — ${fixable.length - successes} failed (check console)`);
+      showToast(`${successes} of ${fixable.length} fixes applied — rescanning...`);
     } else {
       showToast(`All ${fixable.length} fixes failed — check that the post is selected and try again`);
     }
-  }, [scanResult, scannedArtId, scannedBlogId, runBannerFix, showToast]);
+    if (successes > 0) setTimeout(() => runScan(), 1500);
+  }, [scanResult, scannedArtId, scannedBlogId, runBannerFix, showToast, runScan]);
 
   /* ── Smart Fix — run ALL tools on the scanned post in parallel ── */
   const runSmartFix = useCallback(async () => {
