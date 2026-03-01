@@ -1107,24 +1107,27 @@ export default function BlogSEO() {
               {/* ── Expert mode grid ── */}
               {expertMode && (
                 <>
-                  <div style={{ textAlign: "center", marginBottom: 24 }}>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>All Tools</div>
-                    <div style={{ fontSize: 13, color: C.dim }}>Full suite of SEO tools for your Shopify store.</div>
+                  <div style={{ textAlign: "center", marginBottom: 28 }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>All SEO Tools</div>
+                    <div style={{ fontSize: 14, color: "#71717a" }}>Choose a tool to get started.</div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 32 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
                     {visibleSections.map(s => (
                       <div key={s.id} onClick={() => setSection(s.id)}
-                        style={{ background: "#18181b", border: "1px solid #27272a", borderLeft: `3px solid ${s.color}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer", transition: "all .15s", display: "flex", flexDirection: "column", gap: 6 }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "#1f1f23"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "#18181b"; }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.title}</div>
-                        <div style={{ fontSize: 12, color: C.dim, lineHeight: 1.5, flex: 1 }}>{s.desc}</div>
-                        <div style={{ fontSize: 12, color: s.color, fontWeight: 600, marginTop: 4 }}>Open &#8594;</div>
+                        style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 14, padding: "20px 24px", cursor: "pointer", display: "flex", alignItems: "center", gap: 18, transition: "border-color 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
+                        <div style={{ width: 6, height: 48, borderRadius: 4, background: s.color, flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>{s.title}</div>
+                          <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{s.desc}</div>
+                        </div>
+                        <div style={{ background: `${s.color}22`, borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
                       </div>
                     ))}
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <button style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(false)}>Switch back to Simple Mode</button>
+                    <button style={{ background: "none", border: "none", color: "#52525b", fontSize: 12, cursor: "pointer", textDecoration: "underline" }} onClick={() => setExpertMode(false)}>Switch back to Simple Mode</button>
                   </div>
                 </>
               )}
