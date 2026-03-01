@@ -67,7 +67,7 @@ const SECTIONS = [
   { id: "Technical", title: "Technical SEO",          desc: "Core Web Vitals, crawl issues, indexing, speed.",           color: "#7c3aed", level: "advanced",  tab: "Technical+"  },
   { id: "Schema",    title: "Schema & Links",         desc: "Generate JSON-LD schema markup. Audit redirects.",          color: "#1d4ed8", level: "advanced",  tab: "Schema"      },
   { id: "SERP",      title: "SERP & CTR",             desc: "Featured snippets, click-through rate optimisation.",       color: "#0e7490", level: "advanced",  tab: "SERP & CTR"  },
-  { id: "Backlinks", title: "Backlinks",              desc: "Link gaps, broken backlinks, anchor text opportunities.",   color: "#b45309", level: "advanced",  tab: "Backlinks"   },
+  { id: "Backlinks", title: "Internal Links",          desc: "Find which pages on your site to link to from this post.", color: "#b45309", level: "advanced",  tab: "Internal Links" },
   { id: "AB",        title: "A/B & Content Refresh",  desc: "Test title variants, refresh stale content.",              color: "#374151", level: "advanced",  tab: "A/B Refresh" },
   { id: "Local",     title: "Local & E-E-A-T",        desc: "Local SEO, author authority, brand mentions.",              color: "#065f46", level: "advanced",  tab: "E-E-A-T"     },
   { id: "Voice",     title: "Voice & AI Search",      desc: "Optimise for voice queries and AI overviews.",             color: "#6d28d9", level: "advanced",  tab: "Voice"       },
@@ -227,7 +227,12 @@ export default function BlogSEO() {
   const [difficultyResult,    setDifficultyResult]    = useState(null);
   const [diffLoading,         setDiffLoading]         = useState(false);
 
-  /* ── Backlinks state ── */
+  /* ── Internal Links state ── */
+  const [internalLinksUrl,     setInternalLinksUrl]     = useState("");
+  const [internalLinksResult,  setInternalLinksResult]  = useState(null);
+  const [internalLinksLoading, setInternalLinksLoading] = useState(false);
+  const [internalLinksErr,     setInternalLinksErr]     = useState("");
+  /* kept for legacy / outreach sub-tool */
   const [backlinkSub,         setBacklinkSub]         = useState("opportunities");
   const [backlinkNiche,       setBacklinkNiche]       = useState("");
   const [backlinkOppsResult,  setBacklinkOppsResult]  = useState(null);
@@ -402,6 +407,9 @@ export default function BlogSEO() {
       if (!diffNiche && storeNiche) setDiffNiche(storeNiche);
     }
     if (section === "Backlinks") {
+      // Internal Links — auto-fill the current post URL
+      if (!internalLinksUrl && url) setInternalLinksUrl(url);
+      // keep legacy backlink state filled too
       if (!backlinkNiche && storeNiche) setBacklinkNiche(storeNiche);
       if (!linkGapDomain && shopDomain) setLinkGapDomain(shopDomain);
       if (!linkGapNiche && storeNiche) setLinkGapNiche(storeNiche);
@@ -739,6 +747,18 @@ export default function BlogSEO() {
     catch (e) { showToast(e.message || "Failed"); } finally { setAnchorTextLoading(false); }
   }, [anchorTextDomain, backlinkNiche]);
 
+  /* ── Internal Links ── */
+  const runInternalLinks = useCallback(async () => {
+    const targetUrl = internalLinksUrl.trim() || url.trim();
+    if (!targetUrl) return;
+    setInternalLinksLoading(true); setInternalLinksErr(""); setInternalLinksResult(null);
+    try {
+      const r = await apiFetchJSON(`${API}/backlinks/internal-suggester`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: targetUrl }) });
+      if (r.ok) setInternalLinksResult(r); else setInternalLinksErr(r.error || "Failed to analyse internal links");
+    } catch (e) { setInternalLinksErr(e.message || "Failed"); }
+    setInternalLinksLoading(false);
+  }, [internalLinksUrl, url]);
+
   // Local & E-E-A-T
   const runGbpOptimizer = useCallback(async () => {
     if (!gbpBusiness.trim()) return;
@@ -939,7 +959,7 @@ export default function BlogSEO() {
     if (m.includes("internal link"))
       return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
     if (m.includes("backlink") || m.includes("link build"))
-      return { label: "Backlinks", action: () => { setSection("Backlinks"); } };
+      return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
     if (m.includes("canonical") || m.includes("robots") || m.includes("noindex") || m.includes("https") || m.includes("image") || m.includes("alt") || m.includes("og:") || m.includes("open graph") || m.includes("technical") || m.includes("core web") || m.includes("speed"))
       return { label: "Technical SEO", action: () => { setSection("Technical"); } };
     return null;
@@ -2059,170 +2079,111 @@ export default function BlogSEO() {
             </>
           )}
 
-          {/* ════════ BACKLINKS ════════ */}
+          {/* ════════ INTERNAL LINKS ════════ */}
           {section === "Backlinks" && (
             <>
-              {/* pre-fill banner */}
-              {(backlinkNiche || linkGapDomain) && (
+              {/* explainer */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"14px 18px", marginBottom:16, fontSize:13, color:C.sub, lineHeight:1.8 }}>
+                <strong style={{ color:C.text }}>What are internal links?</strong> These are links from one page on <em>your</em> store to another — e.g. linking from a blog post to a related product or another article. Google uses them to understand your site structure. More internal links to a page = Google treats it as more important. This tool reads your current post and tells you exactly which pages on your store to link to and what anchor text to use.
+              </div>
+
+              {/* post URL pre-fill banner */}
+              {internalLinksUrl && (
                 <div style={{ background:"#0c1a0c", border:"1px solid #14532d", borderRadius:10, padding:"10px 16px", marginBottom:16, fontSize:13, color:"#86efac" }}>
-                  Pre-filled from your store — just hit the button to run each tool. Edit any field if you want to customise.
-                  {backlinkNiche ? <span> &nbsp;Niche: <strong>{backlinkNiche}</strong></span> : null}
-                  {linkGapDomain ? <span> &nbsp;· Domain: <strong>{linkGapDomain}</strong></span> : null}
+                  Checking: <strong>{internalLinksUrl}</strong> — pre-filled from your last scanned post.
+                </div>
+              )}
+              {!internalLinksUrl && !url && (
+                <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:10, padding:"10px 16px", marginBottom:16, fontSize:13, color:"#fbbf24" }}>
+                  ⚠ Go to <strong>Analyse a Post</strong> first to scan your post — or paste the post URL in the box below.
                 </div>
               )}
 
-              {/* what are backlinks explainer */}
-              <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", marginBottom:16, fontSize:13, color:C.sub, lineHeight:1.7 }}>
-                <strong style={{ color:C.text }}>What are backlinks?</strong> Backlinks are links from other websites pointing to your store. Google uses them as votes of trust — more quality backlinks = higher rankings. These tools find you link opportunities, analyse gaps vs competitors, and write outreach emails automatically.
-              </div>
-
-              <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
-                {[["opportunities","🔍 Find Opportunities"],["linkgap","📊 Link Gap"],["outreach","✉️ Write Outreach Email"],["anchor","🔗 Anchor Text"]].map(([k,l]) => (
-                  <button key={k} style={{ ...S.btn(), padding:"8px 18px", background:backlinkSub===k?C.indigo:C.muted, color:backlinkSub===k?"#fff":"#d4d4d8", fontWeight:backlinkSub===k?700:400 }} onClick={() => setBacklinkSub(k)}>{l}</button>
-                ))}
-              </div>
-
-              {/* ── Opportunities ── */}
-              {backlinkSub === "opportunities" && (
-                <div style={S.card}>
-                  <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Backlink Opportunity Finder</div>
-                  <div style={{ fontSize:12, color:C.dim, marginBottom:14, lineHeight:1.7 }}>
-                    AI scans your niche and finds websites, blogs and directories that are likely to link to a store like yours. Your niche has been pre-filled from your store name.
-                  </div>
-                  <div style={S.row}>
-                    <input style={S.input} placeholder="Your niche (e.g. ecommerce, fitness gear)" value={backlinkNiche} onChange={e => setBacklinkNiche(e.target.value)} onKeyDown={e => e.key === "Enter" && runBacklinkOpps()} />
-                    <button style={{ ...S.btn("primary"), minWidth:170 }} onClick={runBacklinkOpps} disabled={backlinkOppsLoading || !backlinkNiche.trim()}>
-                      {backlinkOppsLoading ? <><span style={S.spinner} /> Finding...</> : "Find Link Opportunities"}
-                    </button>
-                  </div>
-                  {backlinkOppsResult && (
-                    <div style={{ marginTop:16 }}>
-                      <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(typeof backlinkOppsResult === "string" ? backlinkOppsResult : JSON.stringify(backlinkOppsResult, null, 2))}>Copy Results</button>
-                      </div>
-                      <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.8 }}>
-                        {typeof backlinkOppsResult === "string" ? backlinkOppsResult : JSON.stringify(backlinkOppsResult, null, 2)}
-                      </div>
-                    </div>
-                  )}
+              {/* suggester card */}
+              <div style={S.card}>
+                <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Internal Link Suggester</div>
+                <div style={{ fontSize:12, color:C.dim, marginBottom:14, lineHeight:1.7 }}>
+                  AI reads your post, scores its internal linking, and tells you exactly which pages to add links to — with suggested anchor text and where in the content to place each link.
                 </div>
-              )}
-
-              {/* ── Link Gap ── */}
-              {backlinkSub === "linkgap" && (
-                <div style={S.card}>
-                  <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Link Gap Analysis</div>
-                  <div style={{ fontSize:12, color:C.dim, marginBottom:14, lineHeight:1.7 }}>
-                    Find websites that link to your competitors but <em>not</em> to you. Those sites are warm leads — they already link to stores like yours. Your domain is pre-filled.
-                  </div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
-                    <div>
-                      <div style={{ fontSize:11, color:C.dim, marginBottom:4 }}>YOUR DOMAIN</div>
-                      <input style={S.input} placeholder="yourstore.myshopify.com" value={linkGapDomain} onChange={e => setLinkGapDomain(e.target.value)} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize:11, color:C.dim, marginBottom:4 }}>COMPETITOR 1 — a top competitor&apos;s domain</div>
-                      <input style={S.input} placeholder="competitorstore.com" value={linkGapComp1} onChange={e => setLinkGapComp1(e.target.value)} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize:11, color:C.dim, marginBottom:4 }}>COMPETITOR 2 (optional)</div>
-                      <input style={S.input} placeholder="anothercompetitor.com" value={linkGapComp2} onChange={e => setLinkGapComp2(e.target.value)} />
-                    </div>
-                    <div style={S.row}>
-                      <input style={S.input} placeholder="Niche (e.g. fitness, home decor)" value={linkGapNiche} onChange={e => setLinkGapNiche(e.target.value)} />
-                      <button style={{ ...S.btn("primary"), minWidth:160 }} onClick={runLinkGap} disabled={linkGapLoading || !linkGapDomain.trim() || !linkGapComp1.trim()}>
-                        {linkGapLoading ? <><span style={S.spinner} /> Analysing...</> : "Find Link Gaps"}
-                      </button>
-                    </div>
-                  </div>
-                  {!linkGapComp1.trim() && (
-                    <div style={{ fontSize:12, color:"#fbbf24", marginBottom:8 }}>⚠ Enter at least one competitor domain to run Link Gap.</div>
-                  )}
-                  {linkGapResult && (
-                    <div style={{ marginTop:14 }}>
-                      <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(typeof linkGapResult === "string" ? linkGapResult : JSON.stringify(linkGapResult, null, 2))}>Copy Results</button>
-                      </div>
-                      <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.8 }}>
-                        {typeof linkGapResult === "string" ? linkGapResult : JSON.stringify(linkGapResult, null, 2)}
-                      </div>
-                    </div>
-                  )}
+                <div style={S.row}>
+                  <input
+                    style={S.input}
+                    placeholder="Post URL (auto-filled from your last scan)"
+                    value={internalLinksUrl}
+                    onChange={e => setInternalLinksUrl(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && runInternalLinks()}
+                  />
+                  <button style={{ ...S.btn("primary"), minWidth:200 }} onClick={runInternalLinks} disabled={internalLinksLoading || (!internalLinksUrl.trim() && !url.trim())}>
+                    {internalLinksLoading ? <><span style={S.spinner} /> Analysing...</> : "Find Internal Link Opportunities"}
+                  </button>
                 </div>
-              )}
+                {internalLinksErr && <div style={{ ...S.err, marginTop:8 }}>{internalLinksErr}</div>}
 
-              {/* ── Outreach ── */}
-              {backlinkSub === "outreach" && (
-                <div style={S.card}>
-                  <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Outreach Email Generator</div>
-                  <div style={{ fontSize:12, color:C.dim, marginBottom:14, lineHeight:1.7 }}>
-                    AI writes a personalised pitch email to ask another site to link to your post. Just enter the site you want a link from, choose the type of outreach, and hit Generate. Your post title has been pre-filled.
-                  </div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:12 }}>
-                    <div>
-                      <div style={{ fontSize:11, color:C.dim, marginBottom:4 }}>SITE TO EMAIL — who do you want a link from?</div>
-                      <input style={S.input} placeholder="e.g. healthline.com, forbes.com, a fitness blog…" value={outreachTarget} onChange={e => setOutreachTarget(e.target.value)} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize:11, color:C.dim, marginBottom:4 }}>YOUR POST TITLE — pre-filled from your last scan</div>
-                      <input style={S.input} placeholder="Title of the post you want linked" value={outreachContentTitle} onChange={e => setOutreachContentTitle(e.target.value)} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize:11, color:C.dim, marginBottom:4 }}>EMAIL TYPE</div>
-                      <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:8 }}>
-                        {[["guest-post","Guest Post"],["resource-page","Resource Page"],["broken-link","Broken Link"],["scholarship","Scholarship"],["interview","Interview"]].map(([v,l]) => (
-                          <button key={v} style={{ ...S.btn(), padding:"6px 14px", fontSize:12, background:outreachType===v?C.indigo:C.muted, color:outreachType===v?"#fff":"#d4d4d8" }} onClick={() => setOutreachType(v)}>{l}</button>
-                        ))}
-                      </div>
-                      <button style={{ ...S.btn("primary"), minWidth:160 }} onClick={runOutreachGen} disabled={outreachLoading || !outreachTarget.trim() || !outreachContentTitle.trim()}>
-                        {outreachLoading ? <><span style={S.spinner} /> Writing email...</> : "Generate Outreach Email"}
-                      </button>
-                    </div>
-                  </div>
-                  {!outreachContentTitle.trim() && (
-                    <div style={{ fontSize:12, color:"#fbbf24", marginBottom:8 }}>⚠ Scan a post first so your content title is pre-filled — or type it manually above.</div>
-                  )}
-                  {outreachResult && (() => {
-                    const emailText = outreachResult.email || outreachResult.template || (typeof outreachResult === "string" ? outreachResult : JSON.stringify(outreachResult, null, 2));
-                    return (
-                      <div style={{ marginTop:14 }}>
-                        <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                          <button style={{ ...S.btn("primary"), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(emailText).then(() => showToast("Email copied to clipboard!"))}>Copy Email</button>
-                        </div>
-                        <div style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"16px 18px", fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.8 }}>
-                          {emailText}
+                {internalLinksResult && (() => {
+                  const r = internalLinksResult;
+                  const score = r.internalLinkScore ?? null;
+                  const assessment = r.assessment || "";
+                  const opportunities = r.suggestedLinkOpportunities || [];
+                  const recs = r.recommendations || [];
+                  const scoreColor = score >= 70 ? C.green : score >= 40 ? C.yellow : C.red;
+                  return (
+                    <div style={{ marginTop:18 }}>
+                      {/* score summary */}
+                      <div style={{ display:"flex", gap:16, alignItems:"center", marginBottom:18, flexWrap:"wrap" }}>
+                        {score !== null && (
+                          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:72, height:72, borderRadius:"50%", border:`3px solid ${scoreColor}`, color:scoreColor, fontWeight:800, fontSize:22 }}>{score}</div>
+                        )}
+                        <div>
+                          <div style={{ fontSize:14, fontWeight:700, color:C.text, textTransform:"capitalize", marginBottom:2 }}>{assessment} internal linking</div>
+                          <div style={{ fontSize:12, color:C.dim }}>{r.existingLinksDetected ?? r.currentInternalLinkCount ?? 0} internal links detected in this post · {r.orphanRisk ? `Orphan risk: ${r.orphanRisk}` : ""}</div>
+                          {r.orphanRiskExplanation && <div style={{ fontSize:12, color:"#fbbf24", marginTop:2 }}>{r.orphanRiskExplanation}</div>}
                         </div>
                       </div>
-                    );
-                  })()}
-                </div>
-              )}
 
-              {/* ── Anchor Text ── */}
-              {backlinkSub === "anchor" && (
-                <div style={S.card}>
-                  <div style={{ fontSize:15, fontWeight:700, marginBottom:4 }}>Anchor Text Analyser</div>
-                  <div style={{ fontSize:12, color:C.dim, marginBottom:14, lineHeight:1.7 }}>
-                    Checks which words other sites use when linking to your domain (anchor text). Over-optimised anchors can trigger Google penalties. Your domain is pre-filled from your store.
-                  </div>
-                  <div style={S.row}>
-                    <input style={S.input} placeholder="Your domain (pre-filled from store)" value={anchorTextDomain} onChange={e => setAnchorTextDomain(e.target.value)} onKeyDown={e => e.key === "Enter" && runAnchorTextAnalysis()} />
-                    <button style={{ ...S.btn("primary"), minWidth:160 }} onClick={runAnchorTextAnalysis} disabled={anchorTextLoading || !anchorTextDomain.trim()}>
-                      {anchorTextLoading ? <><span style={S.spinner} /> Analysing...</> : "Analyse Anchor Text"}
-                    </button>
-                  </div>
-                  {anchorTextResult && (
-                    <div style={{ marginTop:16 }}>
-                      <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                        <button style={{ ...S.btn(), fontSize:12 }} onClick={() => navigator.clipboard?.writeText(typeof anchorTextResult === "string" ? anchorTextResult : JSON.stringify(anchorTextResult, null, 2))}>Copy Results</button>
-                      </div>
-                      <div style={{ fontSize:13, color:C.text, whiteSpace:"pre-wrap", lineHeight:1.8 }}>
-                        {typeof anchorTextResult === "string" ? anchorTextResult : JSON.stringify(anchorTextResult, null, 2)}
-                      </div>
+                      {/* opportunities */}
+                      {opportunities.length > 0 && (
+                        <>
+                          <div style={{ fontSize:13, fontWeight:700, color:C.sub, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:10 }}>Link Opportunities ({opportunities.length})</div>
+                          {opportunities.map((opp, i) => (
+                            <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, padding:"12px 16px", marginBottom:8, display:"flex", gap:14, alignItems:"flex-start", flexWrap:"wrap" }}>
+                              <div style={{ flex:1, minWidth:200 }}>
+                                <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4, flexWrap:"wrap" }}>
+                                  <span style={{ fontSize:12, fontWeight:700, color: opp.importance === "high" ? C.red : opp.importance === "medium" ? C.yellow : C.sub, textTransform:"uppercase" }}>{opp.importance}</span>
+                                  <span style={{ fontSize:12, color:C.dim }}>→ {opp.targetPageType}</span>
+                                  {opp.locationInContent && <span style={{ fontSize:11, color:C.muted, background:C.surface, padding:"1px 8px", borderRadius:999 }}>{opp.locationInContent}</span>}
+                                </div>
+                                <div style={{ fontSize:13, fontWeight:600, color:C.indigoL, marginBottom:2 }}>
+                                  Anchor text: &ldquo;{opp.anchorTextSuggestion}&rdquo;
+                                </div>
+                                <div style={{ fontSize:12, color:C.sub }}>{opp.pageDescription}</div>
+                              </div>
+                              <button
+                                style={{ ...S.btn(), fontSize:11, padding:"4px 10px", flexShrink:0 }}
+                                onClick={() => navigator.clipboard?.writeText(opp.anchorTextSuggestion).then(() => showToast("Anchor text copied!"))}
+                              >Copy anchor</button>
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {/* recommendations */}
+                      {recs.length > 0 && (
+                        <div style={{ background:"#0c1a0c", border:"1px solid #14532d", borderRadius:8, padding:"12px 16px", marginTop:12 }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:"#86efac", marginBottom:8 }}>RECOMMENDATIONS</div>
+                          {recs.map((rec, i) => (
+                            <div key={i} style={{ fontSize:13, color:"#d1fae5", lineHeight:1.7, marginBottom:4 }}>✓ {rec}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
+                  );
+                })()}
+              </div>
+
+              {/* tip: for external backlinks */}
+              <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"10px 16px", fontSize:12, color:C.dim, lineHeight:1.7 }}>
+                <strong style={{ color:C.sub }}>Want to build external backlinks?</strong> Use the dedicated <strong style={{ color:C.text }}>Backlink Explorer</strong> tool in the left sidebar — it has link gap analysis, outreach email writer and anchor text tools.
+              </div>
             </>
           )}
 
