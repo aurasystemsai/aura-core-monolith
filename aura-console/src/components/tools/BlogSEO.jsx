@@ -485,7 +485,7 @@ export default function BlogSEO() {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null);
     setAiAnalysis(null); setRewriteResult(null); setRewriteErr(null);
-    setApplyState({}); setFixedFields(new Set());
+    setApplyState({}); setFixedFields(new Set()); setBannerFixState({});
     try {
       const art = selectedArtId ? articles.find(a => String(a.id) === selectedArtId) : null;
       const body = { url: url.trim(), keywords: kwInput.trim(), ...(art ? { articleId: art.id, blogId: art.blogId } : {}) };
@@ -921,6 +921,7 @@ export default function BlogSEO() {
     if (m.includes("h1")) return "h1";
     if ((m.includes("h2") || m.includes("subheading") || m.includes("heading")) && !m.includes("url")) return "headings";
     if (m.includes("url") || m.includes("slug") || m.includes("handle")) return "handle";
+    if (m.includes("schema") || m.includes("structured data") || m.includes("json-ld")) return "schema";
     if (m.includes("word") || m.includes("too short") || m.includes("thin") || m.includes("300") || m.includes("500") || m.includes("1000") || m.includes("character")) return "body_append";
     return null;
   };
@@ -943,6 +944,16 @@ export default function BlogSEO() {
         if (!rw.ok) throw new Error(rw.error || "Content generation failed");
         val = rw.html;
         if (!val) throw new Error("AI returned no content");
+      } else if (field === "schema") {
+        // Generate Article schema markup and apply as a script tag
+        const rw = await apiFetchJSON(`${API}/schema/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: scanResult.url, title: scanResult.title, h1: scanResult.h1, metaDescription: scanResult.metaDescription, keywords: kwInput, articleBody: scanResult.h1 || scanResult.title }),
+        });
+        if (!rw.ok) throw new Error(rw.error || "Schema generation failed");
+        val = rw.jsonLd;
+        if (!val) throw new Error("Schema generation returned no data");
       } else {
         const h2s = (scanResult.headings || []).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
         const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: h2s || scanResult.h1 || scanResult.title, handle: scanResult.handle || (scanResult.url||"").split("/").pop() || scanResult.title };
@@ -964,7 +975,7 @@ export default function BlogSEO() {
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
-      if (!silent) showToast(field === "body_append" ? "✓ AI content added to your post" : `✓ ${field} updated in Shopify`);
+      if (!silent) showToast(field === "body_append" ? "✓ AI content added to your post" : field === "schema" ? "✓ Article schema added to your post" : `✓ ${field} updated in Shopify`);
       return true;
     } catch(e) {
       setBannerFixState(p => ({ ...p, [issueKey]: "error" }));
@@ -1151,44 +1162,50 @@ export default function BlogSEO() {
 
   const getIssueAction = useCallback((msg) => {
     const m = (msg || "").toLowerCase();
-    /* ── Title fixes ── */
+    /* ── Title fixes — fix & apply directly ── */
     if (m.includes("title") && (m.includes("short") || m.includes("below") || m.includes("too few")))
-      return { label: "Rewrite Title", action: () => runRewrite("title") };
+      return { label: "Fix Title", action: () => runBannerFix("title", msg) };
     if (m.includes("title") && (m.includes("long") || m.includes("truncat") || m.includes("over 60")))
-      return { label: "Shorten Title", action: () => runRewrite("title") };
+      return { label: "Shorten Title", action: () => runBannerFix("title", msg) };
     if (m.includes("title") && (m.includes("keyword") || m.includes("missing from")))
-      return { label: "Rewrite Title", action: () => runRewrite("title") };
+      return { label: "Fix Title", action: () => runBannerFix("title", msg) };
     if (m.includes("title") && (m.includes("missing") || m.includes("no title")))
-      return { label: "Write Title", action: () => runRewrite("title") };
+      return { label: "Write Title", action: () => runBannerFix("title", msg) };
+    if (m.includes("title"))
+      return { label: "Fix Title", action: () => runBannerFix("title", msg) };
     /* ── Meta description fixes ── */
     if ((m.includes("meta description") || m.includes("meta desc")) && (m.includes("missing") || m.includes("empty") || m.includes("no meta")))
-      return { label: "Write Meta Description", action: () => runRewrite("metaDescription") };
+      return { label: "Write Meta", action: () => runBannerFix("metaDescription", msg) };
     if (m.includes("meta description") || m.includes("meta desc"))
-      return { label: "Rewrite Meta", action: () => runRewrite("metaDescription") };
+      return { label: "Fix Meta", action: () => runBannerFix("metaDescription", msg) };
     /* ── H1 fixes ── */
     if (m.includes("h1") && (m.includes("missing") || m.includes("no h1") || m.includes("0 h1")))
-      return { label: "Generate H1", action: () => runRewrite("h1") };
-    if (m.includes("h1") && (m.includes("multiple") || m.includes("more than one")))
-      return { label: "Fix H1", action: () => runRewrite("h1") };
-    if (m.includes("h1") && m.includes("align"))
-      return { label: "Align H1 & Title", action: () => runRewrite("h1") };
+      return { label: "Generate H1", action: () => runBannerFix("h1", msg) };
+    if (m.includes("h1"))
+      return { label: "Fix H1", action: () => runBannerFix("h1", msg) };
     /* ── H2 / headings ── */
     if ((m.includes("h2") || m.includes("subheading")) && (m.includes("missing") || m.includes("no ") || m.includes("lack")))
-      return { label: "Suggest H2s", action: () => runRewrite("headings") };
+      return { label: "Add H2s", action: () => runBannerFix("headings", msg) };
     if (m.includes("heading") && (m.includes("jump") || m.includes("skip") || m.includes("level")))
-      return { label: "Optimize Post", action: () => { setSection("Optimize"); } };
+      return { label: "Fix Headings", action: () => runBannerFix("headings", msg) };
     /* ── URL / slug ── */
     if (m.includes("url") || m.includes("slug") || m.includes("handle"))
-      return { label: "Fix URL Slug", action: () => runRewrite("handle") };
-    /* ── Word count / thin ── */
-    if (m.includes("word count") || (m.includes("words") && (m.includes("short") || m.includes("thin") || m.includes("below"))))
-      return { label: "Write with AI", action: () => { setSection("Write"); } };
-    /* ── Keywords ── */
+      return { label: "Fix URL Slug", action: () => runBannerFix("handle", msg) };
+    /* ── Schema / structured data ── */
+    if (m.includes("schema") || m.includes("structured data") || m.includes("json-ld"))
+      return { label: "Add Schema", action: () => runBannerFix("schema", msg) };
+    /* ── Word count / thin content ── */
+    if (m.includes("word count") || m.includes("word") || m.includes("too short") || m.includes("thin") || (m.includes("words") && (m.includes("short") || m.includes("below"))))
+      return { label: "Expand with AI", action: () => runBannerFix("body_append", msg) };
+    /* ── Non-auto-fixable: navigate to relevant section ── */
+    if (m.includes("date") || m.includes("freshness") || m.includes("publish") || m.includes("modified"))
+      return { label: "Add Schema", action: () => { setSection("Schema"); } };
+    if (m.includes("author"))
+      return { label: "Add Author", action: () => { setSection("Local"); } };
     if (m.includes("keyword") && (m.includes("density") || m.includes("stuffing") || m.includes("repeated")))
       return { label: "Find Keywords", action: () => { setSection("Keywords"); } };
     if (m.includes("keyword") && (m.includes("missing") || m.includes("not found") || m.includes("absent")))
       return { label: "Find Keywords", action: () => { setSection("Keywords"); } };
-    /* ── Content quality (beginner sections) ── */
     if (m.includes("sentence") || m.includes("passive voice") || m.includes("readability") || m.includes("flesch"))
       return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
     if (m.includes("paragraph") && (m.includes("long") || m.includes("exceed")))
@@ -1197,13 +1214,6 @@ export default function BlogSEO() {
       return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
     if (m.includes("faq") || (m.includes("question") && m.includes("answer")))
       return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
-    /* ── Advanced sections ── */
-    if (m.includes("schema") || m.includes("structured data") || m.includes("json-ld"))
-      return { label: "Add Schema", action: () => { setSection("Schema"); } };
-    if (m.includes("date") || m.includes("freshness") || m.includes("publish") || m.includes("modified"))
-      return { label: "Add Schema", action: () => { setSection("Schema"); } };
-    if (m.includes("author"))
-      return { label: "Add Author", action: () => { setSection("Local"); } };
     if (m.includes("internal link"))
       return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
     if (m.includes("backlink") || m.includes("link build"))
@@ -1211,7 +1221,7 @@ export default function BlogSEO() {
     if (m.includes("canonical") || m.includes("robots") || m.includes("noindex") || m.includes("https") || m.includes("image") || m.includes("alt") || m.includes("og:") || m.includes("open graph") || m.includes("technical") || m.includes("core web") || m.includes("speed"))
       return { label: "Technical SEO", action: () => { setSection("Technical"); } };
     return null;
-  }, [runRewrite, setSection]);
+  }, [runBannerFix, setSection]);
   /* ═══════════════════════════
      RENDER
   ═══════════════════════════ */
