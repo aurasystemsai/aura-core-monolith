@@ -1,9 +1,9 @@
-import React from "react";
+﻿import React from "react";
 import "./AnalyticsPanel.css";
 
 // Simplified analytics panel - hidden until analytics system is fully implemented
 function AnalyticsPanel() {
-  return null;
+ return null;
 }
 
 export default AnalyticsPanel;

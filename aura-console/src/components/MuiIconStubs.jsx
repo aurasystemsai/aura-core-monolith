@@ -1,23 +1,23 @@
 ﻿// Stub icon components to replace @mui/icons-material
-// Each renders a small neutral symbol — no external dependency needed
+// Each renders a small neutral symbol no external dependency needed
 import React from 'react';
 const I = ({ children, style }) => <span style={{ fontSize: 18, lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '1em', height: '1em', ...style }}>{children}</span>;
 export const AddIcon = () => <I>+</I>;
 export const EditIcon = () => <I></I>;
 export const DeleteIcon = () => <I></I>;
 export const ViewIcon = () => <I></I>;
-export const DownloadIcon = () => <I>↓</I>;
-export const UploadIcon = () => <I>↑</I>;
-export const RefreshIcon = () => <I>↻</I>;
+export const DownloadIcon = () => <I></I>;
+export const UploadIcon = () => <I></I>;
+export const RefreshIcon = () => <I></I>;
 export const SearchIcon = () => <I></I>;
-export const FilterIcon = () => <I>≡</I>;
+export const FilterIcon = () => <I></I>;
 export const SettingsIcon = () => <I></I>;
-export const TrendingUpIcon = () => <I>↗</I>;
-export const TrendingDownIcon = () => <I>↘</I>;
+export const TrendingUpIcon = () => <I></I>;
+export const TrendingDownIcon = () => <I></I>;
 export const PeopleIcon = () => <I></I>;
 export const RewardIcon = () => <I></I>;
 export const StarIcon = () => <I></I>;
-export const ShareIcon = () => <I>↗</I>;
+export const ShareIcon = () => <I></I>;
 export const AnalyticsIcon = () => <I></I>;
 export const SecurityIcon = () => <I></I>;
 export const SpeedIcon = () => <I></I>;
@@ -33,11 +33,11 @@ export const KeyIcon = () => <I></I>;
 export const ErrorIcon = () => <I></I>;
 export const SuccessIcon = () => <I></I>;
 export const WarningIcon = () => <I></I>;
-export const InfoIcon = () => <I>ℹ</I>;
+export const InfoIcon = () => <I></I>;
 export const ExpandMoreIcon = () => <I></I>;
 export const CloseIcon = () => <I></I>;
-export const MoreIcon = () => <I>⋮</I>;
-export const AutorenewIcon = () => <I>↻</I>;
+export const MoreIcon = () => <I></I>;
+export const AutorenewIcon = () => <I></I>;
 export const PublicIcon = () => <I></I>;
 export const EmailIcon = () => <I></I>;
 export const SmsIcon = () => <I></I>;

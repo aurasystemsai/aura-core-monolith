@@ -1,5 +1,5 @@
-import React from "react";
+﻿import React from "react";
 
 export default function ToolPlaceholder({ name }) {
-  return null; // No placeholder UI. Only live tools are shown.
+ return null; // No placeholder UI. Only live tools are shown.
 }

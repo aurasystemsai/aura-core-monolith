@@ -1,163 +1,159 @@
 ﻿import React, { useState, useRef } from "react";
 
 export default function BacklinkExplorer() {
-  const [domain, setDomain] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [history, setHistory] = useState([]);
-  // Dark mode enforced, no toggle
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [imported, setImported] = useState(null);
-  const [exported, setExported] = useState(null);
-  const [analytics, setAnalytics] = useState([]);
-  const [feedback, setFeedback] = useState("");
-  const fileInputRef = useRef();
+ const [domain, setDomain] = useState("");
+ const [result, setResult] = useState(null);
+ const [loading, setLoading] = useState(false);
+ const [error, setError] = useState("");
+ const [history, setHistory] = useState([]);
+ // Dark mode enforced, no toggle
+ const [showOnboarding, setShowOnboarding] = useState(true);
+ const [imported, setImported] = useState(null);
+ const [exported, setExported] = useState(null);
+ const [analytics, setAnalytics] = useState([]);
+ const [feedback, setFeedback] = useState("");
+ const fileInputRef = useRef();
 
-  const handleAnalyze = async () => {
-    setLoading(true);
-    setError("");
-    setResult(null);
-    try {
-      const res = await fetch("/api/backlink-explorer/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain })
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
-      setResult(data.result);
-      setHistory(prev => [{ domain, result: data.result }, ...prev].slice(0, 10));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const handleAnalyze = async () => {
+ setLoading(true);
+ setError("");
+ setResult(null);
+ try {
+ const res = await fetch("/api/backlink-explorer/analyze", {
+ method: "POST",
+ headers: { "Content-Type": "application/json"},
+ body: JSON.stringify({ domain })
+ });
+ const data = await res.json();
+ if (!data.ok) throw new Error(data.error || "Unknown error");
+ setResult(data.result);
+ setHistory(prev => [{ domain, result: data.result }, ...prev].slice(0, 10));
+ } catch (err) {
+ setError(err.message);
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  const onboardingContent = (
-    <div style={{ padding: 24, background: "#09090b", color: "#f4f4f5", borderRadius: 12, marginBottom: 18 }}>
-      <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Backlink Explorer</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
-        <li>Analyze backlinks, referring domains, anchor text, and toxic links</li>
-        <li>Export, import, and review analysis history</li>
-        <li>Accessible, secure, and fully compliant</li>
-      </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
-              </div>
-            );
+ const onboardingContent = (
+ <div style={{ padding: 24, background: "#09090b", color: "#f4f4f5", borderRadius: 12, marginBottom: 18 }}>
+ <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Backlink Explorer</h3>
+ <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
+ <li>Analyze backlinks, referring domains, anchor text, and toxic links</li>
+ <li>Export, import, and review analysis history</li>
+ <li>Accessible, secure, and fully compliant</li>
+ </ul>
+ <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Get Started</button>
+ </div>
+ );
 
-  // Import/export
-  const handleImport = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = evt => {
-      setHistory(JSON.parse(evt.target.result));
-      setImported(file.name);
-    };
-    reader.readAsText(file);
-  };
-  const handleExport = () => {
-    const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    setExported(url);
-    setTimeout(() =>URL.revokeObjectURL(url), 10000);
-  };
+ // Import/export
+ const handleImport = e => {
+ const file = e.target.files[0];
+ if (!file) return;
+ const reader = new FileReader();
+ reader.onload = evt => {
+ setHistory(JSON.parse(evt.target.result));
+ setImported(file.name);
+ };
+ reader.readAsText(file);
+ };
+ const handleExport = () => {
+ const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json'});
+ const url = URL.createObjectURL(blob);
+ setExported(url);
+ setTimeout(() =>URL.revokeObjectURL(url), 10000);
+ };
 
-  // Feedback
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    try {
-      await fetch("/api/backlink-explorer/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback })
-      });
-      setFeedback("");
-    } catch (err) {
-      setError("Failed to send feedback");
-    }
-  };
+ // Feedback
+ const handleFeedback = async () => {
+ if (!feedback) return;
+ try {
+ await fetch("/api/backlink-explorer/feedback", {
+ method: "POST",
+ headers: { "Content-Type": "application/json"},
+ body: JSON.stringify({ feedback })
+ });
+ setFeedback("");
+ } catch (err) {
+ setError("Failed to send feedback");
+ }
+ };
 
-  return (
-    <div style={{
-      
-      margin: "40px auto",
-      background: "#09090b",
-      borderRadius: 18,
-      boxShadow: "0 2px 24px #0002",
-      padding: 36,
-      color: "#a3e635",
-      fontFamily: 'Inter, sans-serif',
-      transition: "background 0.3s, color 0.3s"
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Backlink Explorer</h2>
+ return (
+ <div style={{
+ 
+ margin: "40px auto",
+ background: "#09090b",
+ borderRadius: 18,
+ boxShadow: "0 2px 24px #0002",
+ padding: 36,
+ color: "#a3e635",
+ fontFamily: 'Inter, sans-serif',
+ transition: "background 0.3s, color 0.3s"}}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+ <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Backlink Explorer</h2>
 
-      </div>
-      <div style={{ marginBottom: 10, color: "#a3e635", fontWeight: 600 }}>
-        <span role="img" aria-label="link"></span>Analyze backlinks and referring domains.
-      </div>
-      <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
-      {showOnboarding && onboardingContent}
-      <input
-        value={domain}
-        onChange={e => setDomain(e.target.value)}
-        type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#09090b", color: "#a3e635" }}
-        placeholder="Enter domain to analyze backlinks..."
-        aria-label="Domain input"
-      />
-      <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      {result && (
-        <div style={{ background: "#27272a", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #27272a" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Analysis Result</span>
-            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Copy</button>
-          </div>
-          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e4e4e7", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
-        </div>
-      )}
-      {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#52525b", borderRadius: 12, padding: 18 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
-                  <ul style={{ paddingLeft: 18 }}>
-                    {history.map((h, i) => (
-                    <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-                        <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{h.domain}</span>
-                        <span style={{ color: "#71717a" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>
-                      </div>
-                      {h.result && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{JSON.stringify(h.result).slice(0, 200)}{JSON.stringify(h.result).length > 200 ? "…" : ""}</div>}
-                    </div>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {/* Import/Export */}
-              <div style={{ marginBottom: 24 }}>
-                <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
-                <button onClick={() => fileInputRef.current.click()} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }}>Import History</button>
-                <button onClick={handleExport} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export History</button>
-                {imported && <span style={{ marginLeft: 12, color: '#4f46e5' }}>Imported: {imported}</span>}
-                {exported && <a href={exported} download="backlink-history.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
-              </div>
-              <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-                <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
-                  <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Analyses</div>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{history.length}</div>
-                </div>
-                <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
-                  <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
-                </div>
-              </div>
+ </div>
+ <div style={{ marginBottom: 10, color: "#a3e635", fontWeight: 600 }}>
+ <span role="img"aria-label="link"></span>Analyze backlinks and referring domains.
+ </div>
+ <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide": "Show"} Onboarding</button>
+ {showOnboarding && onboardingContent}
+ <input
+ value={domain}
+ onChange={e => setDomain(e.target.value)}
+ type="text"style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#09090b", color: "#a3e635"}}
+ placeholder="Enter domain to analyze backlinks..."aria-label="Domain input"/>
+ <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing...": "Analyze"}</button>
+ {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
+ {result && (
+ <div style={{ background: "#27272a", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #27272a"}}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+ <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Analysis Result</span>
+ <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer"}}>Copy</button>
+ </div>
+ <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e4e4e7", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
+ </div>
+ )}
+ {history.length > 0 && (
+ <div style={{ marginTop: 24, background: "#52525b", borderRadius: 12, padding: 18 }}>
+ <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
+ <ul style={{ paddingLeft: 18 }}>
+ {history.map((h, i) => (
+ <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+ <span style={{ fontWeight: 700, color: "#e4e4e7"}}>{h.domain}</span>
+ <span style={{ color: "#71717a"}}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>
+ </div>
+ {h.result && <div style={{ fontSize: 13, color: "#a1a1aa"}}>{JSON.stringify(h.result).slice(0, 200)}{JSON.stringify(h.result).length > 200 ? "": ""}</div>}
+ </div>
+ ))}
+ </ul>
+ </div>
+ )}
+ {/* Import/Export */}
+ <div style={{ marginBottom: 24 }}>
+ <input type="file"accept="application/json"ref={fileInputRef} style={{ display: 'none'}} onChange={handleImport} />
+ <button onClick={() => fileInputRef.current.click()} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }}>Import History</button>
+ <button onClick={handleExport} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer'}}>Export History</button>
+ {imported && <span style={{ marginLeft: 12, color: '#4f46e5'}}>Imported: {imported}</span>}
+ {exported && <a href={exported} download="backlink-history.json"style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline'}}>Download Export</a>}
+ </div>
+ <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap"}}>
+ <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a"}}>
+ <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Analyses</div>
+ <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{history.length}</div>
+ </div>
+ <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a"}}>
+ <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
+ <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
+ </div>
+ </div>
 {/* Accessibility & Compliance */}
-              <div style={{ marginTop: 32, fontSize: 13, color: '#a3e635', textAlign: 'center' }}>
-                <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
-              </div>
-            </div>
-          );
+ <div style={{ marginTop: 32, fontSize: 13, color: '#a3e635', textAlign: 'center'}}>
+ <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai"style={{ color: '#0ea5e9', textDecoration: 'underline'}}>Contact Support</a></span>
+ </div>
+ </div>
+ );
 }
