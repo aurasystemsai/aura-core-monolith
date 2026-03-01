@@ -110,6 +110,12 @@ app.use(session({
 const billingRouter = require('./routes/billing');
 app.use('/api/billing', billingRouter);
 
+// --- Public privacy policy (no auth — must be publicly accessible for Shopify) ---
+app.use('/privacy', require('./routes/privacy'));
+
+// --- GDPR mandatory webhooks (no Shopify session auth — called by Shopify infrastructure) ---
+app.use('/api/webhooks', require('./routes/gdpr-webhooks'));
+
 // --- Public healthcheck (no auth) ---
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });

@@ -8,9 +8,22 @@ embedded = true
 [webhooks]
 api_version = "2025-10"
 
+  # GDPR mandatory webhooks — required for Shopify App Store approval
+  [[webhooks.subscriptions]]
+  topics = ["customers/data_request"]
+  uri = "/api/webhooks/customers/data-request"
+
+  [[webhooks.subscriptions]]
+  topics = ["customers/redact"]
+  uri = "/api/webhooks/customers/redact"
+
+  [[webhooks.subscriptions]]
+  topics = ["shop/redact"]
+  uri = "/api/webhooks/shop/redact"
+
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products,read_content,write_content,write_theme_code,read_themes,write_themes,unauthenticated_read_metaobjects,unauthenticated_read_content"
+# Blog SEO Engine only needs blog read/write + product read for keyword suggestions
+scopes = "read_products,read_content,write_content,read_metaobjects,write_metaobjects"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
