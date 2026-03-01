@@ -925,13 +925,13 @@ export default function BlogSEO() {
   };
 
   /* ── AI rewrite a field then immediately apply to Shopify (no navigation) ── */
-  const runBannerFix = useCallback(async (field, issueIdx) => {
-    if (!scanResult) { showToast("Scan a post first"); return; }
-    if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the dropdown first so we know which Shopify article to update."); return; }
-    setBannerFixState(p => ({ ...p, [issueIdx]: "loading" }));
-    // Map field → current value so the backend has something to rewrite
+  /* issueKey = issue.msg string (stable across filtered arrays) */
+  const runBannerFix = useCallback(async (field, issueKey, { silent = false } = {}) => {
+    if (!scanResult) { if (!silent) showToast("Scan a post first"); return false; }
+    if (!scannedArtId || !scannedBlogId) { if (!silent) showToast("Select a post from the store dropdown first"); return false; }
+    setBannerFixState(p => ({ ...p, [issueKey]: "loading" }));
     const h2s = (scanResult.headings || []).filter(h => h.tag === "h2").map(h => h.text).join(" | ");
-    const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: h2s || scanResult.h1 || scanResult.title, handle: scanResult.handle || scanResult.url };
+    const currentValueMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, headings: h2s || scanResult.h1 || scanResult.title, handle: scanResult.handle || (scanResult.url||"").split("/").pop() || scanResult.title };
     const currentValue = currentValueMap[field] || scanResult.title || "";
     try {
       const rw = await apiFetchJSON(`${API}/ai/rewrite`, {
@@ -940,7 +940,6 @@ export default function BlogSEO() {
         body: JSON.stringify({ field, currentValue, url: scanResult.url, keywords: kwInput }),
       });
       if (!rw.ok) throw new Error(rw.error || "Rewrite failed");
-      // Backend returns { structured: { variants: [{text}] } } — pick best variant
       const val = rw.structured?.variants?.[0]?.text || rw.value || rw.suggestion;
       if (!val) throw new Error("AI returned no suggestion");
       const ap = await apiFetchJSON(`${API}/apply-field`, {
@@ -949,31 +948,43 @@ export default function BlogSEO() {
         body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field, value: val, shop: shopDomain }),
       });
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
-      setBannerFixState(p => ({ ...p, [issueIdx]: "ok" }));
+      setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
-      showToast(`✓ ${field} updated in Shopify`);
+      if (!silent) showToast(`✓ ${field} updated in Shopify`);
+      return true;
     } catch(e) {
-      setBannerFixState(p => ({ ...p, [issueIdx]: "error" }));
-      showToast(`Fix failed: ${e.message}`);
+      setBannerFixState(p => ({ ...p, [issueKey]: "error" }));
+      if (!silent) showToast(`Fix failed: ${e.message}`);
+      return false;
     }
   }, [scanResult, scannedArtId, scannedBlogId, kwInput, shopDomain, showToast]);
 
   /* ── Bulk fix all auto-fixable issues in scanResult ── */
   const runBulkFix = useCallback(async () => {
+    if (!scanResult) { showToast("Scan a post first"); return; }
+    if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown so we know which article to update"); return; }
     const issues = scanResult?.scored?.issues ?? [];
     const fixable = issues
-      .map((iss, i) => ({ ...iss, idx: i, field: fixableField(iss.msg) }))
+      .map(iss => ({ ...iss, key: iss.msg, field: fixableField(iss.msg) }))
       .filter(x => x.field);
-    if (!fixable.length) { showToast("No auto-fixable issues found"); return; }
+    if (!fixable.length) { showToast("None of the listed issues can be auto-fixed — they need manual content changes"); return; }
     setBulkFixing(true);
     setBulkFixProgress({ done: 0, total: fixable.length });
+    let successes = 0;
     for (const item of fixable) {
-      await runBannerFix(item.field, item.idx);
+      const ok = await runBannerFix(item.field, item.key, { silent: true });
+      if (ok) successes++;
       setBulkFixProgress(p => ({ ...p, done: (p?.done ?? 0) + 1 }));
     }
     setBulkFixing(false);
-    showToast(`All ${fixable.length} fix${fixable.length !== 1 ? "es" : ""} applied to Shopify!`);
-  }, [scanResult, runBannerFix, showToast]);
+    if (successes === fixable.length) {
+      showToast(`✓ All ${successes} fix${successes !== 1 ? "es" : ""} applied to Shopify!`);
+    } else if (successes > 0) {
+      showToast(`${successes} of ${fixable.length} fixes applied — ${fixable.length - successes} failed (check console)`);
+    } else {
+      showToast(`All ${fixable.length} fixes failed — check that the post is selected and try again`);
+    }
+  }, [scanResult, scannedArtId, scannedBlogId, runBannerFix, showToast]);
 
   /* ── Smart Fix — run ALL tools on the scanned post in parallel ── */
   const runSmartFix = useCallback(async () => {
@@ -1082,22 +1093,31 @@ export default function BlogSEO() {
     } else {
       val = card.result?.value || card.result?.suggestion || card.result?.optimizedMeta;
     }
-    if (!val) { showToast("AI returned no suggestion for this fix"); return; }
+    if (!val) { showToast("AI returned no suggestion for this fix"); return false; }
     setSmartFixApplying(p => ({ ...p, [card.id]: true }));
     try {
       const r = await apiFetchJSON(`${API}/apply-field`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field: card.applyField, value: val, shop: shopDomain }) });
-      if (r.ok) { setSmartFixApplied(p => new Set([...p, card.id])); setFixedFields(p => new Set([...p, card.applyField])); showToast(`✓ ${card.label} applied to Shopify`); }
-      else showToast(`Shopify error: ${r.error}`);
-    } catch(e) { showToast(`Error: ${e.message}`); }
-    setSmartFixApplying(p => ({ ...p, [card.id]: false }));
+      if (r.ok) { setSmartFixApplied(p => new Set([...p, card.id])); setFixedFields(p => new Set([...p, card.applyField])); showToast(`✓ ${card.label} applied to Shopify`); setSmartFixApplying(p => ({ ...p, [card.id]: false })); return true; }
+      else { showToast(`Shopify error: ${r.error}`); setSmartFixApplying(p => ({ ...p, [card.id]: false })); return false; }
+    } catch(e) { showToast(`Error: ${e.message}`); setSmartFixApplying(p => ({ ...p, [card.id]: false })); return false; }
   }, [scannedArtId, scannedBlogId, shopDomain, showToast]);
 
   /* ── Smart Fix — apply ALL done cards ── */
   const applyAllSmartCards = useCallback(async () => {
+    if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown first"); return; }
     const toApply = smartFixCards.filter(c => c.status === "done" && c.applyField && !smartFixApplied.has(c.id));
-    for (const card of toApply) await applySmartCard(card);
-    showToast("All fixes applied to Shopify!");
-  }, [smartFixCards, smartFixApplied, applySmartCard, showToast]);
+    if (!toApply.length) { showToast("Nothing left to apply"); return; }
+    let successes = 0;
+    for (const card of toApply) {
+      const ok = await applySmartCard(card);
+      if (ok) successes++;
+    }
+    if (successes === toApply.length) {
+      showToast(`✓ All ${successes} fix${successes !== 1 ? "es" : ""} applied to Shopify!`);
+    } else {
+      showToast(`${successes} of ${toApply.length} fixes applied — check individual cards for errors`);
+    }
+  }, [smartFixCards, smartFixApplied, scannedArtId, scannedBlogId, applySmartCard, showToast]);
 
   const getIssueAction = useCallback((msg) => {
     const m = (msg || "").toLowerCase();
@@ -1525,17 +1545,21 @@ export default function BlogSEO() {
                       <div style={{ fontSize:10, fontWeight:700, color:"#6366f1", textTransform:"uppercase", letterSpacing:"0.8px" }}>
                         {relevant.length ? "Issues relevant to this section" : "Top issues to fix"}
                       </div>
-                      {scannedArtId && (
-                        <button
-                          style={{ ...S.btn("primary"), fontSize:10, padding:"3px 12px", flexShrink:0, opacity: bulkFixing ? 0.6 : 1 }}
-                          onClick={runBulkFix}
-                          disabled={bulkFixing}
-                        >
-                          {bulkFixing
-                            ? `Fixing ${(bulkFixProgress?.done ?? 0) + 1} of ${bulkFixProgress?.total ?? "?"}…`
-                            : "🔧 Auto-Fix All"}
-                        </button>
-                      )}
+                      {scannedArtId && (() => {
+                        const fixableCount = shown.filter(iss => fixableField(iss.msg)).length;
+                        return fixableCount > 0 ? (
+                          <button
+                            style={{ ...S.btn("primary"), fontSize:10, padding:"3px 12px", flexShrink:0, opacity: bulkFixing ? 0.6 : 1 }}
+                            onClick={runBulkFix}
+                            disabled={bulkFixing}
+                            title={`Auto-fixes ${fixableCount} of ${shown.length} issues (title, meta, H1, headings, URL slug). Other issues need manual content changes.`}
+                          >
+                            {bulkFixing
+                              ? `Fixing ${(bulkFixProgress?.done ?? 0) + 1} of ${bulkFixProgress?.total ?? "?"}…`
+                              : `🔧 Auto-Fix ${fixableCount} of ${shown.length}`}
+                          </button>
+                        ) : null;
+                      })()}
                     </div>
                     {/* bulk progress bar */}
                     {bulkFixing && bulkFixProgress && (
@@ -1548,7 +1572,7 @@ export default function BlogSEO() {
                         const sev      = issue.severity || issue.sev || "low";
                         const sevColor = sev === "high" ? "#fca5a5" : sev === "medium" ? "#fbbf24" : "#93c5fd";
                         const fField   = fixableField(issue.msg);
-                        const fixSt    = bannerFixState[i];
+                        const fixSt    = bannerFixState[issue.msg];
                         const alreadyFixed = fixSt === "ok" || fixedFields.has(fField || "");
                         return (
                           <div key={i} style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
@@ -1561,7 +1585,7 @@ export default function BlogSEO() {
                             {fField && scannedArtId && !alreadyFixed && (
                               <button
                                 style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background:"#059669", borderColor:"#059669", opacity: fixSt === "loading" ? 0.6 : 1 }}
-                                onClick={() => runBannerFix(fField, i)}
+                                onClick={() => runBannerFix(fField, issue.msg)}
                                 disabled={fixSt === "loading" || bulkFixing}
                               >
                                 {fixSt === "loading" ? "Fixing…" : "Fix & Apply"}
