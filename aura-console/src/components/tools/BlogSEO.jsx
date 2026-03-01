@@ -10882,7 +10882,6 @@ export default function BlogSEO() {
  <div style={S.wizardBox}>
  {wizardStep === 0 && (
  <>
- <div style={{ fontSize: 32, marginBottom: 16 }}>&#128640;</div>
  <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Welcome to Blog SEO Engine</div>
  <div style={{ fontSize: 14, color: "#a1a1aa", lineHeight: 1.7, marginBottom: 28 }}>
  Your all-in-one AI-powered SEO platform for Shopify stores. Scan pages, generate content, track rankings, analyse competitors and grow organic traffic all from one place.
@@ -10895,15 +10894,14 @@ export default function BlogSEO() {
  )}
  {wizardStep === 1 && (
  <>
- <div style={{ fontSize: 32, marginBottom: 16 }}>&#9889;</div>
  <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>You have full access</div>
  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 24 }}>All 19 SEO tools are available from the sidebar from quick scans to technical audits, schema, backlinks and AI writing.</div>
  <div style={{ ...S.card, borderColor: "#4f46e5", marginBottom: 28, textAlign: "left"}}>
  <div style={{ fontSize: 13, color: "#a5b4fc", lineHeight: 1.7 }}>
- &#x1F50D; <strong>Analyze</strong> scan any post for SEO score &amp; issues<br/>
- &#x270D;&#xFE0F; <strong>Write &amp; Optimize</strong> AI rewrites, meta, H1<br/>
- &#x1F9E0; <strong>AI Growth</strong> competitor gaps, topic clusters<br/>
- &#x1F517; <strong>Schema &amp; Technical</strong> structured data, crawl audit
+ <strong>Analyze</strong> scan any post for SEO score &amp; issues<br/>
+ <strong>Write &amp; Optimize</strong> AI rewrites, meta, H1<br/>
+ <strong>AI Growth</strong> competitor gaps, topic clusters<br/>
+ <strong>Schema &amp; Technical</strong> structured data, crawl audit
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => setWizardStep(2)}>Next &#8594;</button>
@@ -10911,7 +10909,6 @@ export default function BlogSEO() {
  )}
  {wizardStep === 2 && (
  <>
- <div style={{ fontSize: 32, marginBottom: 16 }}>&#127919;</div>
  <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Your first mission</div>
  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 20 }}>Start with a guided walkthrough we'll take you step by step.</div>
  <div style={{ marginBottom: 24 }}>
@@ -10924,7 +10921,7 @@ export default function BlogSEO() {
  ))}
  </div>
  <button style={{ ...S.btn("primary"), width: "100%", padding: "12px 0", fontSize: 14 }} onClick={() => { setSeenWelcome(true); try { localStorage.setItem("blogseo_seen_welcome", "1"); } catch(e) { showToast(e.message || "An error occurred"); } if (activeMission !== null) { setSection(MISSIONS[activeMission].steps[0].section || null); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[0].toolId] || TABS[0]); } }}>
- {activeMission !== null ? "Start mission &#9654;": "Explore tools"}
+ {activeMission !== null ? "Start mission": "Explore tools"}
  </button>
  </>
  )}
@@ -10939,8 +10936,8 @@ export default function BlogSEO() {
  <div style={{ position: "fixed", inset: 0, zIndex: 39 }} onClick={() => setHelpOpen(false)}>
  <div style={S.drawer} onClick={e => e.stopPropagation()}>
  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
- <span style={{ fontSize: 16, fontWeight: 700 }}>&#10067; Help &amp; Docs</span>
- <button style={{ ...S.btn(), padding: "5px 12px", fontSize: 12 }} onClick={() => setHelpOpen(false)}>&#10005; Close</button>
+ <span style={{ fontSize: 16, fontWeight: 700 }}>Help &amp; Docs</span>
+ <button style={{ ...S.btn(), padding: "5px 12px", fontSize: 12 }} onClick={() => setHelpOpen(false)}>Close</button>
  </div>
  {/* Topic list / topic detail */}
  {!helpTopic ? (
@@ -10984,9 +10981,9 @@ export default function BlogSEO() {
  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
  {missionStep > 0 && <button style={{ ...S.btn(), padding: "6px 14px", fontSize: 12 }} onClick={() => { setMissionStep(s => s - 1); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[missionStep - 1].toolId] || TABS[0]); }}>&#8592; Back</button>}
  {missionStep < MISSIONS[activeMission].steps.length - 1
- ? <button style={{ ...S.btn("primary"), padding: "6px 14px", fontSize: 12 }} onClick={() => { setMissionStep(s => s + 1); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[missionStep + 1].toolId] || TABS[0]); }}>Next &#8594;</button>
- : <button style={{ ...S.btn("success"), padding: "6px 14px", fontSize: 12 }} onClick={() => { setActiveMission(null); setMissionStep(0); }}>&#10003; Complete</button>}
- <button style={{ ...S.btn("danger"), padding: "6px 10px", fontSize: 12 }} onClick={() => { setActiveMission(null); setMissionStep(0); }}>&#10005;</button>
+ ? <button style={{ ...S.btn("primary"), padding: "6px 14px", fontSize: 12 }} onClick={() => { setMissionStep(s => s + 1); setTab(TOOL_TAB_MAP[MISSIONS[activeMission].steps[missionStep + 1].toolId] || TABS[0]); }}>Next</button>
+ : <button style={{ ...S.btn("success"), padding: "6px 14px", fontSize: 12 }} onClick={() => { setActiveMission(null); setMissionStep(0); }}>Complete</button>}
+ <button style={{ ...S.btn("danger"), padding: "6px 10px", fontSize: 12 }} onClick={() => { setActiveMission(null); setMissionStep(0); }}>Cancel</button>
  </div>
  </div>
  )}

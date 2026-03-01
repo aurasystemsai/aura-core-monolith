@@ -2,18 +2,8 @@
 import { apiFetch } from "../api";
 import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "../hooks/usePlan";
 
-/* Group icons (Unicode-safe) */
-const GROUP_ICONS = {
- lifecycle: "\u2709", // envelope
- seo: "\uD83D\uDD0D", // magnifying glass
- personalization: "\uD83C\uDFAF", // target
- analytics: "\uD83D\uDCCA", // chart
- support: "\uD83C\uDFA7", // headphones
- social: "\uD83D\uDCF1", // phone
- revenue: "\uD83D\uDCB0", // money bag
- ads: "\uD83D\uDCE2", // megaphone
- workflows:"\u2699", // gear
-};
+/* Group icons (none — text-only labels) */
+const GROUP_ICONS = {};
 
 const SIDEBAR_PREF_KEY = "aura-sidebar-prefs";
 
@@ -310,7 +300,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  {/* Search */}
  <div style={S.searchWrap}>
  <div style={{ position: "relative"}}>
- <span style={S.searchIcon}>{"\uD83D\uDD0D"}</span>
+
  <input
  type="text"placeholder="Search tools\u2026"value={search}
  onChange={e => setSearch(e.target.value)}
@@ -334,7 +324,6 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  style={S.navItem(activeSection === "dashboard")}
  onClick={() => setActiveSection("dashboard")}
  title="Dashboard">
- <span style={S.navItemIcon}>{"\uD83C\uDFE0"}</span>
  <span style={S.navItemLabel}>Dashboard</span>
  </button>
 
@@ -343,7 +332,6 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  style={S.navItem(activeSection === "all-tools")}
  onClick={() => setActiveSection("all-tools")}
  title="All Tools">
- <span style={S.navItemIcon}>{"\u2B50"}</span>
  <span style={S.navItemLabel}>All Tools</span>
  {!collapsed && totalTools > 0 && (
  <span style={S.toolCount}>{totalTools}</span>
@@ -362,7 +350,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  {filteredGroups.map(group => {
  const expanded = expandedGroups[group.id] || false;
  const groupActive = isGroupActive(group.id);
- const icon = GROUP_ICONS[group.id] || "\u2699";
+ const icon = GROUP_ICONS[group.id] || "";
  const toolCount = group.modules?.length || 0;
 
  return (
@@ -408,7 +396,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  >
  {tool.status && <span style={S.toolDot(tool.status)} />}
  <span style={{ overflow: "hidden", textOverflow: "ellipsis"}}>{tool.name}</span>
- {locked && <span style={S.badge(PLAN_COLOUR.professional)}>{"\uD83D\uDD12"}</span>}
+ {locked && <span style={S.badge(PLAN_COLOUR.professional)}>PRO</span>}
  </button>
  );
  })}
@@ -433,7 +421,6 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  style={S.navItem(activeSection === "settings")}
  onClick={() => setActiveSection("settings")}
  title="Settings">
- <span style={S.navItemIcon}>{"\u2699\uFE0F"}</span>
  <span style={S.navItemLabel}>Settings</span>
  </button>
 
