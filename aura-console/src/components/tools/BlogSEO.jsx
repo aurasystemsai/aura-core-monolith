@@ -1006,7 +1006,7 @@ export default function BlogSEO() {
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
         setFixSummaries(p => ({ ...p, [issueKey]: { what: "OG tags (title + description)", detail: `Title: ${ogTitle.slice(0,60)} | Desc: ${ogDesc.slice(0, 80)}…` } }));
-        if (!silent) { showToast("✓ OG title & description updated — rescanning post..."); setTimeout(() => runScan(), 1500); }
+        if (!silent) { showToast("✓ OG title & description updated — changes apply on next page load"); }
         return true;
       } else if (CONTENT_FIX_TYPES[field]) {
         const typeMap = CONTENT_FIX_TYPES;
