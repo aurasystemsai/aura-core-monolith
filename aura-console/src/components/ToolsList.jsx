@@ -69,7 +69,7 @@ export default function ToolsList() {
  <div className="tools-list-shell">
  <h2 className="tools-list-title">All Tools</h2>
  <div className="tools-list-grid">
- {toolsMeta.map((tool) => (
+ {toolsMeta.filter(t => !t.hidden).map((tool) => (
  <div
  className="tool-card"key={tool.id}
  tabIndex={0}
