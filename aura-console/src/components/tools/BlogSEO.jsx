@@ -3378,7 +3378,6 @@ export default function BlogSEO() {
                         </div>
                       );
                     })}
-                    })}
                   </div>
                 )}
 
