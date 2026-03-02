@@ -9,8 +9,7 @@ import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
 import ShopifyReconnectButton from "./components/ShopifyReconnectButton.jsx";
-import AppSidebar from "./components/AppSidebar.jsx";
-
+import AppSidebar from "./components/AppSidebar.jsx";import ErrorBoundary from './components/ErrorBoundary.jsx';
 const PricingPage = lazy(() => import("./components/PricingPage"));
 const ProjectSwitcher = lazy(() => import("./ProjectSwitcher"));
 const SystemHealthPanel = lazy(() => import("./components/SystemHealthPanel"));
@@ -178,51 +177,6 @@ const toolToMainSuiteGroup = {
  "webhook-api-triggers": "platform",
  "loyalty-referral-programs": "platform",
 };
-
-// Global error boundary for graceful error handling
-class ErrorBoundary extends React.Component {
- constructor(props) {
- super(props);
- this.state = { hasError: false, error: null };
- }
- static getDerivedStateFromError(error) {
- return { hasError: true, error };
- }
- componentDidCatch(error, errorInfo) {
- if (typeof window !== 'undefined'&& window.console) {
- console.error('ErrorBoundary caught:', error, errorInfo);
- }
- if (this.props.onError) {
- this.props.onError(error);
- }
- // Removed broken /api/analytics call. Add error logging here if needed.
- }
- render() {
- if (this.state.hasError) {
- return (
- <div style={{
- color: '#ff4d4f',
- background: '#09090b',
- padding: 48,
- borderRadius: 18,
- margin: '64px auto',
- maxWidth: 540,
- textAlign: 'center',
- fontWeight: 700,
- fontSize: 20,
- boxShadow: '0 8px 32px #0006',
- }}>
- <div>Something went wrong.</div>
- <div style={{ fontSize: 15, marginTop: 18, color: '#fff8'}}>{this.state.error?.toString()}</div>
- <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#27272a', padding: 16, borderRadius: 8, overflowX: 'auto'}}>
- {this.state.error?.stack || ''}
- </pre>
- </div>
- );
- }
- return this.props.children;
- }
-}
 
 function App() {
  // Fetch project/shop context from backend API on mount
@@ -538,7 +492,7 @@ function App() {
 
  {/* -- SEO & Content -- */}
  {activeSection === "product-seo"&& <ProductSeoEngine />}
- {activeSection === "blog-seo"&& <BlogSEO />}
+ {activeSection === "blog-seo"&& <ErrorBoundary key="blog-seo"><BlogSEO /></ErrorBoundary>}
  {activeSection === "blog-draft-engine"&& <BlogDraftEngine />}
  {activeSection === "weekly-blog-content-engine"&& <WeeklyBlogContentEngine />}
  {activeSection === "on-page-seo-engine"&& <OnPageSEOEngine initialUrl={toolInitUrl} onUrlConsumed={() => setToolInitUrl(null)} />}

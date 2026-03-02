@@ -866,8 +866,9 @@ router.post('/schema/generate', (req, res) => {
    HISTORY CRUD  (SQLite — survives restarts, scoped per shop)
    ========================================================================= */
 router.post('/items', (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   try {
-    const shop = req.headers['x-shopify-shop-domain'] || req.session?.shop || '';
     const { type, url, title, score, grade, issueCount, ts, ...rest } = req.body || {};
     const extra = Object.keys(rest).length ? JSON.stringify(rest) : null;
     const timestamp = ts || new Date().toISOString();
@@ -891,8 +892,9 @@ router.get('/items', (req, res) => {
 });
 
 router.delete('/items/:id', (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   try {
-    const shop = req.headers['x-shopify-shop-domain'] || req.session?.shop || '';
     const id = parseInt(req.params.id, 10);
     coreDb.query(`DELETE FROM blog_seo_history WHERE id = ? AND shop = ?`, [id, shop]);
     res.json({ ok: true });

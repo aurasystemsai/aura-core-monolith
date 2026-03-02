@@ -1396,7 +1396,13 @@ export default function BlogSEO() {
                       <div style={{ background: "#0f172a", border: "1px solid #3730a3", borderRadius: 14, padding: "28px 24px" }}>
                         <div style={{ fontSize: 20, fontWeight: 700, color: "#e0e7ff", marginBottom: 6 }}>Which post do you want to check?</div>
                         <div style={{ fontSize: 13, color: "#818cf8", marginBottom: 20 }}>{"We'll analyse it and show you exactly what to fix."}</div>
-                        {articles.length > 0 ? (
+                        {shopLoading ? (
+                          <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Loading your posts from Shopify...</div>
+                            <div style={{ height: 42, borderRadius: 8, background: "#27272a", animation: "pulse 1.4s ease-in-out infinite" }} />
+                            <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+                          </div>
+                        ) : articles.length > 0 ? (
                           <div style={{ marginBottom: 16 }}>
                             <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Pick from your store:</div>
                             <select style={{ ...S.input, width: "100%" }} value={selectedArtId} onChange={e => handleArticleSelect(e.target.value)}>
