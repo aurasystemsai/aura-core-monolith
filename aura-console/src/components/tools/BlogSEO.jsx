@@ -492,11 +492,14 @@ export default function BlogSEO() {
   }, [scannedArtId, scannedBlogId, showToast]);
 
   /* ── Analyzer ── */
-  const runScan = useCallback(async () => {
+  const runScan = useCallback(async (keepFixState = false) => {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null);
     setAiAnalysis(null); setRewriteResult(null); setRewriteErr(null);
-    setApplyState({}); setFixedFields(new Set()); setBannerFixState({}); setFixSummaries({});
+    setApplyState({});
+    // Only reset fix state on a fresh scan (not on auto-rescans triggered after applying a fix,
+    // so previously fixed issues don't revert to unfixed while still on the same post)
+    if (!keepFixState) { setFixedFields(new Set()); setBannerFixState({}); setFixSummaries({}); }
     try {
       const art = selectedArtId ? articles.find(a => String(a.id) === selectedArtId) : null;
       const body = { url: url.trim(), keywords: kwInput.trim(), ...(art ? { articleId: art.id, blogId: art.blogId } : {}) };
@@ -975,7 +978,7 @@ export default function BlogSEO() {
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
         setFixSummaries(p => ({ ...p, [issueKey]: { what: "Published date", detail: `Refreshed to ${new Date().toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })}` } }));
-        if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(), 1500); }
+        if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(true), 1500); }
         return true;
       } else if (field === "og_fix") {
         // OG fix: generate og:title and og:description then apply both via Shopify metafields
@@ -1086,7 +1089,7 @@ export default function BlogSEO() {
           : field === "internal_fix" ? "✓ Related links section added — rescanning post..."
           : `✓ ${field} updated — rescanning post...`;
         showToast(toastMsg);
-        setTimeout(() => runScan(), 1500);
+        setTimeout(() => runScan(true), 1500);
       }
       return true;
     } catch(e) {
@@ -1132,7 +1135,7 @@ export default function BlogSEO() {
     } else {
       showToast(`All ${fixable.length} fixes failed — check that the post is selected and try again`);
     }
-    if (successes > 0) setTimeout(() => runScan(), 1500);
+    if (successes > 0) setTimeout(() => runScan(true), 1500);
   }, [scanResult, scannedArtId, scannedBlogId, articles, runBannerFix, showToast, runScan]);
 
   /* ── Smart Fix — run ALL tools on the scanned post in parallel ── */
@@ -3458,3 +3461,4 @@ export default function BlogSEO() {
     </>
   );
 }
+
