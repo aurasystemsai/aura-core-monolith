@@ -1009,7 +1009,9 @@ export default function BlogSEO() {
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
         setFixSummaries(p => ({ ...p, [issueKey]: { what: "OG tags (title + description)", detail: `Title: ${ogTitle.slice(0,60)} | Desc: ${ogDesc.slice(0, 80)}…` } }));
-        if (!silent) { showToast("✓ OG title & description updated — changes apply on next page load"); }
+        // Remove the OG issue from scanResult so it can't reappear on rescan (Shopify CDN delay)
+        setScanResult(prev => prev ? { ...prev, scored: { ...prev.scored, issues: (prev.scored?.issues || []).filter(i => !i.msg?.toLowerCase().includes("open graph") && !i.msg?.toLowerCase().includes("og:")) } } : prev);
+        if (!silent) { showToast("✓ OG title & description saved to Shopify"); }
         return true;
       } else if (CONTENT_FIX_TYPES[field]) {
         const typeMap = CONTENT_FIX_TYPES;

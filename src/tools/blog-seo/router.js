@@ -110,8 +110,9 @@ router.post('/analyze', async (req, res) => {
 
     let html;
 
-    // If articleId+blogId provided, fetch directly from Shopify Admin API
-    // (bypasses storefront password on dev stores)
+    // Always fetch from Shopify Admin API when articleId+blogId are provided.
+    // This is the source of truth — never read the live published page, which
+    // is subject to CDN caching and won't reflect freshly-applied metafields.
     if (articleId && blogId) {
       try {
         const shopTokens = require('../../core/shopTokens');
@@ -122,25 +123,48 @@ router.post('/analyze', async (req, res) => {
         const token = shop && (shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null));
         if (shop && token) {
           const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
-          const artRes = await fetch(
-            `https://${shop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}.json?fields=id,title,body_html,summary_html,tags,author,published_at,handle,image`,
-            { headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' } }
-          );
+          const apiBase = `https://${shop}/admin/api/${ver}`;
+          const hdrs = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+          // Fetch article data and metafields in parallel
+          const [artRes, mfRes] = await Promise.all([
+            fetch(`${apiBase}/blogs/${blogId}/articles/${articleId}.json?fields=id,title,body_html,summary_html,tags,author,published_at,updated_at,handle,image`, { headers: hdrs }),
+            fetch(`${apiBase}/blogs/${blogId}/articles/${articleId}/metafields.json`, { headers: hdrs }),
+          ]);
+
           if (artRes.ok) {
             const artJson = await artRes.json();
             const a = artJson.article || {};
-            const summary = (a.summary_html || '').replace(/<[^>]+>/g, '').trim();
-            const blogHandle = url.match(/\/blogs\/([^/]+)\//)?.[1] || 'news';
+
+            // Read SEO metafields (title_tag = og:title, description_tag = og:description)
+            let seoTitle = '';
+            let seoDescription = '';
+            let schemaTag = '';
+            if (mfRes.ok) {
+              const mfJson = await mfRes.json();
+              const mfs = mfJson.metafields || [];
+              seoTitle       = mfs.find(m => m.namespace === 'global' && m.key === 'title_tag')?.value || '';
+              seoDescription = mfs.find(m => m.namespace === 'global' && m.key === 'description_tag')?.value || '';
+              schemaTag      = mfs.find(m => m.key === 'schema' || m.key === 'json_ld')?.value || '';
+            }
+
+            // Fallback: use article title / summary if no SEO metafields set yet
+            const effectiveTitle = seoTitle || a.title || '';
+            const effectiveDesc  = seoDescription || (a.summary_html || '').replace(/<[^>]+>/g, '').trim();
+
             html = `<!DOCTYPE html><html lang="en"><head>`
-              + `<title>${(a.title||'').replace(/</g,'&lt;')}</title>`
-              + (summary ? `<meta name="description" content="${summary.replace(/"/g, '&quot;').slice(0,320)}">` : '')
+              + `<title>${effectiveTitle.replace(/</g,'&lt;')}</title>`
+              + (effectiveDesc  ? `<meta name="description" content="${effectiveDesc.replace(/"/g,'&quot;').slice(0,320)}">` : '')
               + (a.published_at ? `<meta property="article:published_time" content="${a.published_at}">` : '')
-              + (a.author ? `<meta name="author" content="${a.author.replace(/"/g,'&quot;')}">` : '')
-              + `<meta property="og:title" content="${(a.title||'').replace(/"/g,'&quot;')}">`
-              + (summary ? `<meta property="og:description" content="${summary.replace(/"/g,'&quot;').slice(0,320)}">` : '')
-              + (a.image?.src ? `<meta property="og:image" content="${a.image.src}">` : '')
+              + (a.updated_at   ? `<meta property="article:modified_time" content="${a.updated_at}">` : '')
+              + (a.author       ? `<meta name="author" content="${a.author.replace(/"/g,'&quot;')}">` : '')
+              + `<meta property="og:title" content="${effectiveTitle.replace(/"/g,'&quot;')}">`
+              + (effectiveDesc  ? `<meta property="og:description" content="${effectiveDesc.replace(/"/g,'&quot;').slice(0,320)}">` : '')
+              + (a.image?.src   ? `<meta property="og:image" content="${a.image.src}">` : '')
+              + `<meta property="og:type" content="article">`
               + `<meta name="viewport" content="width=device-width, initial-scale=1">`
               + `<link rel="canonical" href="${url}">`
+              + (schemaTag ? `<script type="application/ld+json">${schemaTag}</script>` : '')
               + `</head><body>`
               + `<article>`
               + `<h1>${(a.title||'').replace(/</g,'&lt;')}</h1>`
@@ -150,10 +174,12 @@ router.post('/analyze', async (req, res) => {
               + `</body></html>`;
           }
         }
-      } catch (_e) { /* fall through to URL fetch */ }
+      } catch (_e) { console.warn('[blog-seo/analyze] Shopify API fetch failed:', _e.message); }
     }
 
     if (!html) {
+      // No articleId/blogId supplied — fall back to fetching the live URL.
+      // This path is only used when the user pastes a URL without selecting from the store.
       try {
         const fetched = await fetchForAnalysis(url, req);
         html = fetched.html;
