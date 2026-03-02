@@ -162,6 +162,18 @@ export default function BlogSEO() {
   const [briefErr,       setBriefErr]       = useState("");
   const [writeSub,       setWriteSub]       = useState("outline");
 
+  /* ── Generate Article modal ── */
+  const [showGenModal,   setShowGenModal]   = useState(false);
+  const [genStep,        setGenStep]        = useState(1); // 1=keyword 2=pick-title 3=result
+  const [genKeyword,     setGenKeyword]     = useState("");
+  const [genTitles,      setGenTitles]      = useState([]);
+  const [genPickedTitle, setGenPickedTitle] = useState("");
+  const [genLoading,     setGenLoading]     = useState(false);
+  const [genResult,      setGenResult]      = useState(null);
+  const [genErr,         setGenErr]         = useState("");
+  const [genPublishing,  setGenPublishing]  = useState(false);
+  const [genPublishOk,   setGenPublishOk]   = useState(null);
+
   /* ── Optimize / Content+ state ── */
   const [optUrl,         setOptUrl]         = useState("");
   const [optKw,          setOptKw]          = useState("");
@@ -595,6 +607,44 @@ export default function BlogSEO() {
     } catch(e) { setDraftErr(e.message); }
     setDraftLoading(false);
   }, [draftKw]);
+
+  /* ─── Generate Article modal handlers ─── */
+  const genFetchTitles = useCallback(async () => {
+    if (!genKeyword.trim()) return;
+    setGenLoading(true); setGenErr(""); setGenTitles([]); setGenPickedTitle("");
+    try {
+      const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: genKeyword.trim() }) });
+      const titles = (r.titles || r.ideas || []).map(t => typeof t === "string" ? t : (t.title || t.text || ""));
+      if (!titles.length) { setGenErr("No titles returned — try a different keyword."); setGenLoading(false); return; }
+      setGenTitles(titles.slice(0, 5));
+      setGenPickedTitle(titles[0]);
+      setGenStep(2);
+    } catch(e) { setGenErr(e.message || "Failed to generate titles."); }
+    setGenLoading(false);
+  }, [genKeyword]);
+
+  const genWriteArticle = useCallback(async () => {
+    if (!genPickedTitle.trim()) return;
+    setGenLoading(true); setGenErr("");
+    try {
+      const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: genPickedTitle.trim() }) });
+      if (r.ok) { setGenResult(r); setGenStep(3); }
+      else setGenErr(r.error || "Article generation failed.");
+    } catch(e) { setGenErr(e.message || "Failed to generate article."); }
+    setGenLoading(false);
+  }, [genPickedTitle]);
+
+  const genSaveToShopify = useCallback(async () => {
+    if (!genResult) return;
+    setGenPublishing(true); setGenErr("");
+    try {
+      const bodyHtml = (genResult.content || genResult.draft || "").replace(/\n/g, "<br>");
+      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: genPickedTitle, bodyHtml, asDraft: true }) });
+      if (r.ok) setGenPublishOk({ articleUrl: r.articleUrl });
+      else setGenErr(r.error || "Failed to save to Shopify.");
+    } catch(e) { setGenErr(e.message || "Failed to save to Shopify."); }
+    setGenPublishing(false);
+  }, [genResult, genPickedTitle]);
 
   const runBrief = useCallback(async () => {
     if (!briefTopic.trim()) return;
@@ -1461,7 +1511,7 @@ export default function BlogSEO() {
                 </div>
                 <div style={{ display:"flex", gap:10 }}>
                   <button style={{ ...S.btn(), fontSize:13, padding:"8px 16px" }} onClick={() => setSection("Analyze")}>Analyze a Post</button>
-                  <button style={{ ...S.btn("primary"), fontSize:13, padding:"8px 18px" }} onClick={() => setSection("Write")}>✦ Generate Article</button>
+                  <button style={{ ...S.btn("primary"), fontSize:13, padding:"8px 18px" }} onClick={() => { setShowGenModal(true); setGenStep(1); setGenKeyword(""); setGenTitles([]); setGenPickedTitle(""); setGenResult(null); setGenErr(""); setGenPublishOk(null); }}>✦ Generate Article</button>
                 </div>
               </div>
 
@@ -3457,6 +3507,98 @@ export default function BlogSEO() {
               Dismiss
             </button>
           </div>
+        </div>
+      </div>
+    )}
+
+    {/* ════════════════════════════
+        GENERATE ARTICLE MODAL
+    ════════════════════════════ */}
+    {showGenModal && (
+      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
+        onClick={e => { if(e.target === e.currentTarget) setShowGenModal(false); }}>
+        <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 32px", width:"100%", maxWidth:520, position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.5)" }}>
+          {/* Close */}
+          <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", color:"#71717a", cursor:"pointer", fontSize:20, lineHeight:1 }}>✕</button>
+
+          {/* Step 1 — Enter keyword */}
+          {genStep === 1 && (
+            <>
+              <div style={{ fontSize:18, fontWeight:800, color:"#fafafa", marginBottom:6 }}>Create New Article</div>
+              <div style={{ fontSize:13, color:"#71717a", marginBottom:24 }}>Enter a keyword or topic and we'll generate title ideas for you.</div>
+              <label style={{ fontSize:12, fontWeight:600, color:"#a1a1aa", display:"block", marginBottom:6 }}>Keyword or Topic</label>
+              <input
+                autoFocus
+                style={{ ...S.input, marginBottom:20, width:"100%" }}
+                placeholder="e.g. best running shoes for beginners"
+                value={genKeyword}
+                onChange={e => setGenKeyword(e.target.value)}
+                onKeyDown={e => { if(e.key==="Enter" && genKeyword.trim() && !genLoading) genFetchTitles(); }}
+              />
+              {genErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genErr}</div>}
+              <button
+                style={{ ...S.btn("primary"), width:"100%", padding:"11px 0", fontSize:14, fontWeight:700, opacity: !genKeyword.trim() || genLoading ? 0.5 : 1 }}
+                disabled={!genKeyword.trim() || genLoading}
+                onClick={genFetchTitles}
+              >{genLoading ? <><span style={S.spinner}/> Generating titles...</> : "Generate Titles →"}</button>
+            </>
+          )}
+
+          {/* Step 2 — Pick a title */}
+          {genStep === 2 && (
+            <>
+              <div style={{ fontSize:18, fontWeight:800, color:"#fafafa", marginBottom:6 }}>Pick a Title</div>
+              <div style={{ fontSize:13, color:"#71717a", marginBottom:20 }}>Choose the best title for <strong style={{ color:"#a1a1aa" }}>{genKeyword}</strong></div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
+                {genTitles.map((t,i) => (
+                  <div key={i}
+                    onClick={() => setGenPickedTitle(t)}
+                    style={{ padding:"12px 14px", borderRadius:10, border:`2px solid ${genPickedTitle===t ? "#6366f1" : "#3f3f46"}`, background: genPickedTitle===t ? "#1e1b4b" : "#09090b", cursor:"pointer", fontSize:13, color: genPickedTitle===t ? "#c7d2fe" : "#d4d4d8", fontWeight: genPickedTitle===t ? 600 : 400, transition:"all .15s" }}
+                  >{t}</div>
+                ))}
+              </div>
+              {genErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genErr}</div>}
+              <div style={{ display:"flex", gap:10 }}>
+                <button style={{ ...S.btn(), flex:"0 0 auto", padding:"10px 18px" }} onClick={() => { setGenStep(1); setGenErr(""); }}>← Back</button>
+                <button
+                  style={{ ...S.btn("primary"), flex:1, padding:"10px 0", fontSize:14, fontWeight:700, opacity: !genPickedTitle || genLoading ? 0.5 : 1 }}
+                  disabled={!genPickedTitle || genLoading}
+                  onClick={genWriteArticle}
+                >{genLoading ? <><span style={S.spinner}/> Writing article...</> : "Write Article →"}</button>
+              </div>
+            </>
+          )}
+
+          {/* Step 3 — Result */}
+          {genStep === 3 && genResult && (
+            <>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                <div style={{ fontSize:18, fontWeight:800, color:"#fafafa" }}>Article Ready ✓</div>
+                {genResult.wordCount && <span style={{ fontSize:11, background:"#14532d", color:"#86efac", borderRadius:6, padding:"2px 8px", fontWeight:600 }}>{genResult.wordCount} words</span>}
+              </div>
+              <div style={{ fontSize:13, color:"#71717a", marginBottom:14, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{genPickedTitle}</div>
+              <div style={{ background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, padding:"14px 16px", fontSize:13, color:"#d4d4d8", whiteSpace:"pre-wrap", lineHeight:1.75, maxHeight:280, overflowY:"auto", marginBottom:16 }}>
+                {(genResult.content || genResult.draft || "").slice(0, 1200)}{(genResult.content || genResult.draft || "").length > 1200 ? "\n\n..." : ""}
+              </div>
+              {genPublishOk && (
+                <div style={{ fontSize:12, color:"#86efac", background:"#052e16", border:"1px solid #16a34a", borderRadius:8, padding:"8px 12px", marginBottom:12 }}>
+                  ✓ Saved as draft in Shopify! <a href={genPublishOk.articleUrl} target="_blank" rel="noreferrer" style={{ color:"#4ade80", fontWeight:600 }}>Open in Shopify →</a>
+                </div>
+              )}
+              {genErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genErr}</div>}
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                <button style={{ ...S.btn(), padding:"9px 18px", fontSize:13 }} onClick={() => navigator.clipboard?.writeText(genResult.content || genResult.draft || "")}>Copy Article</button>
+                {shopDomain && !genPublishOk && (
+                  <button
+                    style={{ ...S.btn("primary"), padding:"9px 18px", fontSize:13, opacity: genPublishing ? 0.6 : 1 }}
+                    disabled={genPublishing}
+                    onClick={genSaveToShopify}
+                  >{genPublishing ? <><span style={S.spinner}/> Saving...</> : "Save Draft to Shopify"}</button>
+                )}
+                <button style={{ ...S.btn(), padding:"9px 18px", fontSize:13, marginLeft:"auto" }} onClick={() => { setGenStep(1); setGenKeyword(""); setGenTitles([]); setGenPickedTitle(""); setGenResult(null); setGenErr(""); setGenPublishOk(null); }}>Start Over</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     )}
