@@ -1445,7 +1445,6 @@ export default function BlogSEO() {
                   </div>
                 </div>
                 <div style={{ display:"flex", gap:10 }}>
-                  <button style={S.btn()} onClick={() => setSection("Analyze")}>Analyze a Post</button>
                   <button style={S.btn("primary")} onClick={() => setSection("Write")}>✦ Write with AI</button>
                 </div>
               </div>
