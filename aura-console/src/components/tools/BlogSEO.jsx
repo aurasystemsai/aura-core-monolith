@@ -2084,7 +2084,7 @@ export default function BlogSEO() {
               {writeSub === "draft" && (
                 <div style={S.card}>
                   <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Full Blog Post Draft (3 credits)</div>
-                  <div style={{ fontSize: 12, color: C.dim, marginBottom: 12 }}>AI generates a complete 1,200+ word blog post ready to publish.</div>
+                  <div style={{ fontSize: 12, color: C.dim, marginBottom: 12 }}>AI generates a complete 1,500+ word blog post ready to publish.</div>
                   <div style={S.row}>
                     <input style={S.input} placeholder="Blog topic or keyword" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runDraft()} />
                     <button style={S.btn("primary")} onClick={runDraft} disabled={draftLoading || !draftKw.trim()}>

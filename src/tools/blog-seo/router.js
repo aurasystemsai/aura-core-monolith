@@ -7348,12 +7348,29 @@ router.post('/ai/full-blog-writer', async (req, res) => {
   const { title, keyword, outline = [], tone = 'professional', wordCount = 1800, niche } = req.body;
   if (!title || !keyword) return res.status(400).json({ ok: false, error: 'title and keyword required' });
   try {
-    const openai = getOpenAI();
     const model = req.body.model || 'gpt-4o-mini';
-    const prompt = `Write a complete, publish-ready blog post:\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nWord count: ~${wordCount}\n${outline.length ? 'Follow this outline:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : ''}\n\nInclude: engaging intro with keyword naturally placed, H2/H3 headings, body paragraphs, internal linking opportunities [marked as {{IL:keyword}}], a FAQ section, conclusion with CTA. Return JSON: {"title": "string", "metaDescription": "string", "slug": "string", "fullArticle": "string", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqQuestions": ["string"]}`;
-    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const minWords = Math.max(wordCount, 1500);
+    const prompt = `Write a complete, publish-ready blog post. IMPORTANT: The article body in fullArticle MUST be at least 1500 words — do not truncate or stop early, write every section in full.\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: ${minWords} words\n${outline.length ? 'Follow this outline:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : ''}\n\nInclude: engaging intro with keyword naturally placed, H2/H3 headings, substantial body paragraphs for each section, internal linking opportunities [marked as {{IL:keyword}}], a FAQ section (minimum 4 questions), conclusion with CTA. Return JSON: {"title": "string", "metaDescription": "string", "slug": "string", "fullArticle": "string", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqQuestions": ["string"]}`;
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: 4096 });
     const parsed = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, ...parsed });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/ai/full-draft', async (req, res) => {
+  const { keyword, niche, tone = 'conversational' } = req.body;
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+  try {
+    const model = req.body.model || 'gpt-4o-mini';
+    const prompt = `Write a complete, publish-ready blog post about: "${keyword}". IMPORTANT: The fullArticle field MUST be at least 1500 words — write every section in full, do not truncate or stop early.\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: 1500 words\n\nStructure: compelling title, engaging intro paragraph with keyword placed naturally in the first 100 words, 5-7 H2 sections each with 2-3 paragraphs, a FAQ section with at least 4 questions and full answers, conclusion with CTA. Include the keyword and related terms naturally throughout.\nReturn JSON: {"title": "string", "metaDescription": "string", "slug": "string", "content": "string", "draft": "string", "wordCount": number, "faqQuestions": ["string"]}`;
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: 4096 });
+    const parsed = JSON.parse(r.choices[0].message.content);
+    // normalise: ensure both content and draft fields are set
+    if (parsed.content && !parsed.draft) parsed.draft = parsed.content;
+    if (parsed.draft && !parsed.content) parsed.content = parsed.draft;
+    if (parsed.fullArticle && !parsed.content) { parsed.content = parsed.fullArticle; parsed.draft = parsed.fullArticle; }
+    if (req.deductCredits) req.deductCredits({ model, action: 'blog-draft' });
     res.json({ ok: true, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
