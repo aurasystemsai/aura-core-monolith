@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+﻿import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import { useCreditError } from "../../globalCreditError";
 import BackButton from "./BackButton";
@@ -1439,20 +1439,21 @@ export default function BlogSEO() {
               {/* Page header */}
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
                 <div>
-                  <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Posts</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Articles</div>
                   <div style={{ fontSize:13, color:C.sub, marginTop:3 }}>
-                    {shopLoading ? "Connecting to store..." : shopDomain ? `${articles.length} post${articles.length!==1?"s":""} · ${shopDomain}` : "No store connected"}
+                    {shopLoading ? "Connecting to store..." : shopDomain ? `${articles.length} article${articles.length!==1?"s":""} · ${shopDomain}` : "No store connected"}
                   </div>
                 </div>
                 <div style={{ display:"flex", gap:10 }}>
-                  <button style={S.btn("primary")} onClick={() => setSection("Write")}>✦ Write with AI</button>
+                  <button style={{ ...S.btn(), fontSize:13, padding:"8px 16px" }} onClick={() => setSection("Analyze")}>Analyze a Post</button>
+                  <button style={{ ...S.btn("primary"), fontSize:13, padding:"8px 18px" }} onClick={() => setSection("Write")}>✦ Generate Article</button>
                 </div>
               </div>
 
               {/* No store notice */}
               {!shopDomain && !shopLoading && (
                 <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:10, padding:"12px 16px", marginBottom:20, fontSize:13, color:"#d97706" }}>
-                  No store connected — connect Shopify to see your posts here, or use Analyze to paste any URL.
+                  No store connected — connect Shopify to see your posts here, or use <strong>Analyze a Post</strong> to paste any URL.
                 </div>
               )}
 
@@ -1466,34 +1467,68 @@ export default function BlogSEO() {
               {/* Article table */}
               {!shopLoading && articles.length > 0 && (
                 <>
-                  <input style={{ ...S.input, maxWidth:320, marginBottom:14 }} placeholder="Search posts..." value={postSearch} onChange={e => setPostSearch(e.target.value)} />
+                  <input
+                    style={{ ...S.input, maxWidth:340, marginBottom:16, paddingLeft:14 }}
+                    placeholder="Search articles…"
+                    value={postSearch}
+                    onChange={e => setPostSearch(e.target.value)}
+                  />
                   <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden", marginBottom:32 }}>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 90px 120px", padding:"10px 16px", borderBottom:`1px solid ${C.border}`, background:"#111113" }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px" }}>Post Title</div>
-                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", textAlign:"center" }}>SEO Score</div>
-                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", textAlign:"right" }}>Actions</div>
+                    {/* Table header */}
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 100px 90px 110px 130px", padding:"10px 16px", borderBottom:`1px solid ${C.border}`, background:"#111113" }}>
+                      {["Title","Status","Words","Last Scanned","Actions"].map((h,i) => (
+                        <div key={h} style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", textAlign: i > 0 ? "center" : "left" }}>{h}</div>
+                      ))}
                     </div>
                     {(() => {
                       const filtered = articles.filter(a => !postSearch || a.title?.toLowerCase().includes(postSearch.toLowerCase()));
-                      if (!filtered.length) return <div style={{ padding:"24px 16px", textAlign:"center", color:C.dim, fontSize:13 }}>No posts match your search.</div>;
+                      if (!filtered.length) return (
+                        <div style={{ padding:"32px 16px", textAlign:"center", color:C.dim, fontSize:13 }}>No articles match your search.</div>
+                      );
                       return filtered.map((art, i) => {
-                        const hist = history.find(h => h.url && art.url && h.url === art.url);
-                        const score = hist?.score ?? (hist?.scored?.overall ?? null);
-                        const sc = score !== null ? (score >= 75 ? C.green : score >= 50 ? C.yellow : C.red) : C.muted;
+                        const hist   = history.find(h => h.url && art.url && h.url === art.url);
+                        const score  = hist?.score ?? (hist?.scored?.overall ?? null);
+                        const sc     = score !== null ? (score >= 75 ? C.green : score >= 50 ? C.yellow : C.red) : C.muted;
+                        const wc     = hist?.wordCount ?? art.wordCount ?? null;
+                        const scanned = hist?.createdAt ? new Date(hist.createdAt).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : null;
+                        const published = art.published_at || art.publishedAt;
+                        const status = art.status || (published ? "published" : "draft");
+                        const statusColor = status === "published" ? "#22c55e" : "#a1a1aa";
+                        const statusBg    = status === "published" ? "#052e16" : "#1c1c1e";
                         return (
-                          <div key={art.id} style={{ display:"grid", gridTemplateColumns:"1fr 90px 120px", padding:"12px 16px", borderBottom:i<filtered.length-1?`1px solid ${C.border}`:"none", alignItems:"center", transition:"background .1s" }}
+                          <div
+                            key={art.id}
+                            style={{ display:"grid", gridTemplateColumns:"1fr 100px 90px 110px 130px", padding:"12px 16px", borderBottom: i < filtered.length-1 ? `1px solid ${C.border}` : "none", alignItems:"center", transition:"background .1s", cursor:"default" }}
                             onMouseEnter={e=>e.currentTarget.style.background="#111113"}
-                            onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                            <div>
-                              <div style={{ fontSize:14, fontWeight:600, color:C.text, marginBottom:2 }}>{art.title}</div>
-                              {art.url && <div style={{ fontSize:11, color:C.dim }}>{art.url.replace(/^https?:\/\//,"")}</div>}
+                            onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                          >
+                            {/* Title */}
+                            <div style={{ minWidth:0 }}>
+                              <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{art.title}</div>
+                              {art.url && <div style={{ fontSize:11, color:C.dim, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{art.url.replace(/^https?:\/\//,"")}</div>}
                             </div>
+                            {/* Status */}
                             <div style={{ textAlign:"center" }}>
-                              {score !== null ? <span style={{ fontSize:15, fontWeight:700, color:sc }}>{score}</span> : <span style={{ fontSize:12, color:C.dim }}>—</span>}
+                              <span style={{ fontSize:11, fontWeight:600, color:statusColor, background:statusBg, borderRadius:6, padding:"2px 8px", textTransform:"capitalize" }}>{status}</span>
                             </div>
-                            <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
-                              <button style={{ ...S.btn(), padding:"4px 10px", fontSize:12 }} onClick={() => { setUrl(art.url||""); setSelectedArtId(String(art.id)); setSection("Analyze"); }}>Analyze</button>
-                              <button style={{ ...S.btn(), padding:"4px 10px", fontSize:12 }} onClick={() => { setOptUrl(art.url||""); setSection("Optimize"); }}>Improve</button>
+                            {/* Word count */}
+                            <div style={{ textAlign:"center", fontSize:13, color: wc ? C.sub : C.dim }}>{wc ? wc.toLocaleString() : "—"}</div>
+                            {/* Last scanned */}
+                            <div style={{ textAlign:"center" }}>
+                              {score !== null
+                                ? <span style={{ fontSize:13, fontWeight:700, color:sc }}>{score} <span style={{ fontSize:10, fontWeight:400, color:C.dim }}>{scanned || ""}</span></span>
+                                : <span style={{ fontSize:12, color:C.dim }}>Not scanned</span>}
+                            </div>
+                            {/* Actions */}
+                            <div style={{ display:"flex", gap:6, justifyContent:"center" }}>
+                              <button
+                                style={{ ...S.btn(), padding:"4px 10px", fontSize:11 }}
+                                onClick={() => { setUrl(art.url||""); setSelectedArtId(String(art.id)); setSection("Analyze"); }}
+                              >Analyze</button>
+                              <button
+                                style={{ ...S.btn("primary"), padding:"4px 10px", fontSize:11 }}
+                                onClick={() => { setUrl(art.url||""); setSelectedArtId(String(art.id)); setSection("SmartFix"); }}
+                              >Fix</button>
                             </div>
                           </div>
                         );
@@ -1507,230 +1542,16 @@ export default function BlogSEO() {
               {!shopLoading && articles.length === 0 && shopDomain && (
                 <div style={S.empty}>
                   <div style={{ fontSize:32, marginBottom:12 }}>📝</div>
-                  <div style={{ fontSize:16, fontWeight:600, color:C.sub, marginBottom:8 }}>No blog posts found</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:C.sub, marginBottom:8 }}>No articles found</div>
                   <div style={{ fontSize:13, color:C.dim, marginBottom:20 }}>Your store is connected but no blog posts were found. Write your first post with AI.</div>
-                  <button style={S.btn("primary")} onClick={() => setSection("Write")}>✦ Write with AI</button>
+                  <button style={S.btn("primary")} onClick={() => setSection("Write")}>✦ Generate Article</button>
                 </div>
               )}
 
-              {/* ── Quick actions (legacy simple-flow) ── */}
-              <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:24, marginBottom:8 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:14 }}>Quick Actions</div>
-                  <>
-                    {simpleFlow === null && (
-                    <>
-                      <div style={{ textAlign: "center", marginBottom: 28 }}>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>What would you like to do?</div>
-                        <div style={{ fontSize: 14, color: "#71717a" }}>Pick a goal — we'll take care of the rest.</div>
-                      </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 28 }}>
-                        <div onClick={() => { setSimpleFlow("fix"); setScanResult(null); }}
-                          style={{ background: "#0f172a", border: "2px solid #3730a3", borderRadius: 14, padding: "28px 22px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "border-color 0.15s" }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = "#6366f1"}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = "#3730a3"}>
-                          <span style={{ fontSize: 40, lineHeight: 1 }}></span>
-                          <div style={{ fontSize: 17, fontWeight: 700, color: "#e0e7ff" }}>Fix an existing post</div>
-                          <div style={{ fontSize: 13, color: "#818cf8", lineHeight: 1.6 }}>{"We'll scan your post, find what's hurting your ranking, and fix it in one click."}</div>
-                          <div style={{ marginTop: 8, background: "#312e81", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#c7d2fe" }}>Check my post</div>
-                        </div>
-                        <div onClick={() => {
-                            setSimpleFlow("write"); setDraftKw(""); setDraftResult(null);
-                            setSimpleTopics(null); setSimpleTopicsLoading(true);
-                            (async () => {
-                              try {
-                                const niche = shopDomain ? shopDomain.replace(".myshopify.com","").replace(/-/g,"") : (products[0]?.title || "e-commerce");
-                                const resp = await apiFetch(`${API}/ai/topic-miner`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche, targetAudience: "online shoppers" }) });
-                                const d = await resp.json();
-                                if (d.ok && d.blogIdeas) setSimpleTopics(d.blogIdeas.slice(0, 3)); else setSimpleTopics([]);
-                              } catch { setSimpleTopics([]); }
-                              setSimpleTopicsLoading(false);
-                            })();
-                          }}
-                          style={{ background: "#0c1a0c", border: "2px solid #14532d", borderRadius: 14, padding: "28px 22px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "border-color 0.15s" }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = "#22c55e"}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = "#14532d"}>
-                          <span style={{ fontSize: 40, lineHeight: 1 }}></span>
-                          <div style={{ fontSize: 17, fontWeight: 700, color: "#dcfce7" }}>Write a new blog post</div>
-                          <div style={{ fontSize: 13, color: "#86efac", lineHeight: 1.6 }}>{"Tell us a topic and AI will create a full structured post you can copy straight into Shopify."}</div>
-                          <div style={{ marginTop: 8, background: "#14532d", borderRadius: 8, padding: "7px 20px", fontSize: 13, fontWeight: 600, color: "#bbf7d0" }}>Create a post</div>
-                        </div>
-                      </div>
-                      <div style={{ borderTop: "1px solid #27272a", marginTop: 8, paddingTop: 28 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: 12 }}>Or go straight to a tool:</div>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#3f3f46", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8, marginTop: 4 }}>Core Tools</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-                          {SECTIONS.filter(s => s.level === "beginner").map(s => (
-                            <div key={s.id} onClick={() => setSection(s.id)}
-                              style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 12, padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s" }}
-                              onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
-                              onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
-                              <div style={{ width: 4, height: 38, borderRadius: 3, background: s.color, flexShrink: 0 }} />
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 2 }}>{s.title}</div>
-                                <div style={{ fontSize: 12, color: "#71717a" }}>{s.desc}</div>
-                              </div>
-                              <div style={{ background: `${s.color}22`, borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#3f3f46", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Advanced Tools</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
-                          {SECTIONS.filter(s => s.level === "advanced").map(s => (
-                            <div key={s.id} onClick={() => setSection(s.id)}
-                              style={{ background: "#18181b", border: `2px solid ${s.color}22`, borderRadius: 12, padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.15s" }}
-                              onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; }}
-                              onMouseLeave={e => { e.currentTarget.style.borderColor = `${s.color}22`; }}>
-                              <div style={{ width: 4, height: 38, borderRadius: 3, background: s.color, flexShrink: 0 }} />
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 2 }}>{s.title}</div>
-                                <div style={{ fontSize: 12, color: "#71717a" }}>{s.desc}</div>
-                              </div>
-                              <div style={{ background: `${s.color}22`, borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: s.color, flexShrink: 0 }}>Open &rarr;</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {simpleFlow === "fix" && !scanResult && (
-                    <>
-                      <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setSimpleFlow(null)}>Back</button>
-                      <div style={{ background: "#0f172a", border: "1px solid #3730a3", borderRadius: 14, padding: "28px 24px" }}>
-                        <div style={{ fontSize: 20, fontWeight: 700, color: "#e0e7ff", marginBottom: 6 }}>Which post do you want to check?</div>
-                        <div style={{ fontSize: 13, color: "#818cf8", marginBottom: 20 }}>{"We'll analyse it and show you exactly what to fix."}</div>
-                        {shopLoading ? (
-                          <div style={{ marginBottom: 16 }}>
-                            <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Loading your posts from Shopify...</div>
-                            <div style={{ height: 42, borderRadius: 8, background: "#27272a", animation: "pulse 1.4s ease-in-out infinite" }} />
-                            <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
-                          </div>
-                        ) : articles.length > 0 ? (
-                          <div style={{ marginBottom: 16 }}>
-                            <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Pick from your store:</div>
-                            <select style={{ ...S.input, width: "100%" }} value={selectedArtId} onChange={e => handleArticleSelect(e.target.value)}>
-                              <option value="">Choose a blog post</option>
-                              {articles.map(a => <option key={a.id} value={String(a.id)}>{a.title}</option>)}
-                            </select>
-                          </div>
-                        ) : (
-                          <div style={{ marginBottom: 16 }}>
-                            <div style={{ fontSize: 13, color: "#a5b4fc", marginBottom: 8 }}>Paste your blog post URL:</div>
-                            <input style={{ ...S.input, width: "100%" }} placeholder="https://yourstore.com/blogs/news/your-post" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runScan()} />
-                          </div>
-                        )}
-                        <button style={{ ...S.btn("primary"), width: "100%", fontSize: 15, padding: "12px 20px", justifyContent: "center" }} onClick={runScan} disabled={!url.trim() || scanning}>
-                          {scanning ? <><span style={S.spinner} /> Checking your post...</> : "Check My Post"}
-                        </button>
-                        <div style={{ fontSize: 11, color: "#71717a", textAlign: "center", marginTop: 6 }}>Uses 1 credit</div>
-                        {scanErr && <div style={{ marginTop: 10, fontSize: 12, color: "#f87171" }}>{scanErr}</div>}
-                      </div>
-                    </>
-                  )}
-
-                  {simpleFlow === "fix" && scanResult && (() => {
-                    const score = scanResult.scored?.overall ?? 0;
-                    const grade = scanResult.scored?.grade ?? "?";
-                    const sc = score >= 75 ? "#22c55e" : score >= 50 ? "#eab308" : "#ef4444";
-                    const scMsg = score >= 75 ? "Looking good! A few tweaks will make it even better." : score >= 50 ? "Room for improvement — fix the issues below." : "Needs some work but the fixes below will help a lot.";
-                    const topIssues = (scanResult.scored?.issues || []).filter(i => i.sev === "high" || i.sev === "medium").sort((a, b) => a.sev === "high" ? -1 : 1);
-                    return (
-                      <>
-                        <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => setScanResult(null)}>Check a different post</button>
-                        <div style={{ background: "#18181b", border: `2px solid ${sc}`, borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", gap: 20 }}>
-                          <div style={{ width: 72, height: 72, borderRadius: "50%", border: `4px solid ${sc}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <span style={{ fontSize: 26, fontWeight: 800, color: sc }}>{score}</span>
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: "#fafafa" }}>Your post scored {score}/100 <span style={{ fontSize: 15, color: sc, fontWeight: 600 }}>({grade})</span></div>
-                            <div style={{ fontSize: 13, color: "#a1a1aa", marginTop: 4 }}>{scMsg}</div>
-                          </div>
-                        </div>
-                        {/* ═ One-click all tools CTA ═ */}
-                        <div style={{ background:"#130d1f", border:"2px solid #7c3aed", borderRadius:12, padding:"18px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
-                          <span style={{ fontSize:28, lineHeight:1 }}>⚡</span>
-                          <div style={{ flex:1, minWidth:180 }}>
-                            <div style={{ fontSize:14, fontWeight:700, color:"#e9d5ff", marginBottom:3 }}>Fix everything automatically</div>
-                            <div style={{ fontSize:12, color:"#a78bfa" }}>AI rewrites your title, meta, headings, schema and finds internal link gaps — all on one screen.</div>
-                          </div>
-                          <button
-                            style={{ ...S.btn("primary"), fontSize:13, padding:"10px 22px", background:"#7c3aed", borderColor:"#7c3aed", flexShrink:0 }}
-                            onClick={() => setSection("SmartFix")}>
-                            Run All Tools &rarr;
-                          </button>
-                        </div>
-                        {topIssues.length === 0 && <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 12, padding: "18px 20px", fontSize: 14, color: "#86efac", textAlign: "center" }}>No major issues found — your post is in great shape!</div>}
-                        {topIssues.length > 0 && (
-                          <>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>{"Here's what to fix:"}</div>
-                            {topIssues.map((issue, i) => { const act = getIssueAction(issue.msg); return (
-                              <div key={i} style={{ background: "#18181b", border: `1px solid ${issue.sev === "high" ? "#7f1d1d" : "#78350f"}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10 }}>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: issue.sev === "high" ? "#f87171" : "#fbbf24", marginBottom: 4 }}>{issue.sev === "high" ? "High priority" : "Worth fixing"}</div>
-                                <div style={{ fontSize: 13, color: "#d4d4d8", marginBottom: act ? 10 : 0 }}>{issue.msg}</div>
-                                {act && (
-                                  <button style={{ ...S.btn("primary"), fontSize: 13, padding: "8px 18px", display: "inline-flex", alignItems: "center", gap: 6 }} onClick={act.action}>
-                                    {act.label}
-                                    {act.credits && <span style={{ fontSize: 11, opacity: 0.75, fontWeight: 500 }}>· {act.credits} credit</span>}
-                                  </button>
-                                )}
-                              </div>
-                            ); })}
-                          </>
-                        )}
-                        {rewriting && <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc", marginTop: 10 }}><span style={S.spinner} /> AI is generating a fix...</div>}
-                        {rewriteResult && !rewriting && (
-                          <div style={{ background: "#0f172a", border: "1px solid #3730a3", borderRadius: 12, padding: "16px 18px", marginTop: 12 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: "#a5b4fc", marginBottom: 8 }}>AI Suggestion:</div>
-                            <div style={{ fontSize: 13, color: "#e0e7ff", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{typeof rewriteResult === "string" ? rewriteResult : JSON.stringify(rewriteResult, null, 2)}</div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-
-                  {simpleFlow === "write" && (
-                    <>
-                      <button style={{ ...S.btn(), marginBottom: 20, fontSize: 13 }} onClick={() => { if (draftResult) setDraftResult(null); else setSimpleFlow(null); }}>Back</button>
-                      {simpleTopicsLoading && <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "16px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10, color: "#a5b4fc", fontSize: 13 }}><span style={S.spinner} /> Reading your store and finding the best blog ideas for you...</div>}
-                      {simpleTopics && simpleTopics.length > 0 && !simpleTopicsLoading && (
-                        <div style={{ marginBottom: 20 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>AI picked these ideas for your store — click one to use it:</div>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
-                            {simpleTopics.map((t, i) => (
-                              <div key={i} onClick={() => setDraftKw(t.targetKeyword || t.title)}
-                                style={{ background: draftKw === (t.targetKeyword || t.title) ? "#1e1b4b" : "#18181b", border: `1px solid ${draftKw === (t.targetKeyword || t.title) ? "#6366f1" : "#27272a"}`, borderRadius: 10, padding: "12px 14px", cursor: "pointer", transition: "border-color 0.15s" }}>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: "#e0e7ff", marginBottom: 4 }}>{t.title}</div>
-                                <div style={{ fontSize: 11, color: "#818cf8" }}>Keyword: {t.targetKeyword}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 14, padding: "24px", marginBottom: draftResult ? 16 : 0 }}>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "#dcfce7", marginBottom: 4 }}>{draftKw ? `Writing about: ${draftKw}` : "Or type your own topic"}</div>
-                        <div style={{ fontSize: 13, color: "#86efac", marginBottom: 14 }}>AI will generate a full structured blog post ready to paste into Shopify.</div>
-                        <input style={{ ...S.input, width: "100%", marginBottom: 12 }} placeholder="e.g. best snowboards for beginners" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && !draftLoading && draftKw.trim() && runDraft()} />
-                        <button style={{ ...S.btn("primary"), width: "100%", fontSize: 15, padding: "12px 20px", justifyContent: "center" }} onClick={runDraft} disabled={draftLoading || !draftKw.trim()}>
-                          {draftLoading ? <><span style={S.spinner} /> Writing your post...</> : "Create My Blog Post (2 credits)"}
-                        </button>
-                      </div>
-                      {draftResult && !draftLoading && (
-                        <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "24px" }}>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>Your post is ready!</div>
-                          <div style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>Copy it into your Shopify blog editor.</div>
-                          {draftResult.title && <div style={{ fontSize: 14, fontWeight: 700, color: "#e0e7ff", marginBottom: 8 }}>{draftResult.title}</div>}
-                          {draftResult.fullArticle && <div style={{ maxHeight: 300, overflowY: "auto", background: "#09090b", borderRadius: 8, padding: 12, fontSize: 13, color: "#d4d4d8", lineHeight: 1.6, whiteSpace: "pre-wrap", marginBottom: 12 }}>{draftResult.fullArticle}</div>}
-                          <button style={{ ...S.btn("primary") }} onClick={() => { navigator.clipboard.writeText(draftResult.fullArticle || draftResult.title || ""); showToast("Copied to clipboard!"); }}>Copy to clipboard</button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </>
-              </div>{/* end Quick Actions */}
-
-
             </div>
+
           )}
+
           {/* ════════════════════════════
               SECTION HEADER (shown when any section is active)
           ════════════════════════════ */}
@@ -1752,6 +1573,7 @@ export default function BlogSEO() {
               )}
             </div>
           )}
+
 
           {/* ════════════════════════════
               POST CONTEXT BANNER
