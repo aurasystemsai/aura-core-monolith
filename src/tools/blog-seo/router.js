@@ -3880,6 +3880,19 @@ router.post('/ai/title-ideas', async (req, res) => {
   } catch (e) { res.json({ ok: false, error: e.message }); }
 });
 
+/* 28b. AI Keyword Expander — seed keyword → 5 long-tail variations */
+router.post('/ai/expand-keywords', async (req, res) => {
+  try {
+    const { seed, count = 5, model = 'gpt-4o-mini' } = req.body || {};
+    if (!seed) return res.status(400).json({ ok: false, error: 'seed keyword required' });
+    const prompt = `Generate ${count} specific, high-traffic, long-tail keyword variations based on the seed keyword: "${seed}". Return only SEO-friendly 2–4 word keyword phrases (no titles, no punctuation). Return JSON: {"keywords": ["phrase1","phrase2","phrase3","phrase4","phrase5"]}`;
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(r.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keywords: (data.keywords || []).slice(0, count) });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 /* 29. AI CTA Generator */
 router.post('/ai/cta-generator', async (req, res) => {
   try {

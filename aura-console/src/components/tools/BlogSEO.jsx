@@ -162,17 +162,33 @@ export default function BlogSEO() {
   const [briefErr,       setBriefErr]       = useState("");
   const [writeSub,       setWriteSub]       = useState("outline");
 
-  /* ── Generate Article modal ── */
-  const [showGenModal,   setShowGenModal]   = useState(false);
-  const [genStep,        setGenStep]        = useState(1); // 1=keyword 2=pick-title 3=result
-  const [genKeyword,     setGenKeyword]     = useState("");
-  const [genTitles,      setGenTitles]      = useState([]);
-  const [genPickedTitle, setGenPickedTitle] = useState("");
-  const [genLoading,     setGenLoading]     = useState(false);
-  const [genResult,      setGenResult]      = useState(null);
-  const [genErr,         setGenErr]         = useState("");
-  const [genPublishing,  setGenPublishing]  = useState(false);
-  const [genPublishOk,   setGenPublishOk]   = useState(null);
+  /* ── Generate Article flow ── */
+  const [showGenModal,     setShowGenModal]     = useState(false);
+  const [genKwMode,        setGenKwMode]        = useState("ai");   // "manual" | "ai"
+  const [genKeywords,      setGenKeywords]      = useState([]);      // tag array
+  const [genKwInput,       setGenKwInput]       = useState("");      // text field
+  const [genKwLoading,     setGenKwLoading]     = useState(false);   // AI keyword expansion
+  const [genTitleLoading,  setGenTitleLoading]  = useState(false);   // title generation
+  const [genModalErr,      setGenModalErr]      = useState("");
+
+  /* ── WriteFlow page (Title & Outline) ── */
+  const [wfKeywords,       setWfKeywords]       = useState([]);
+  const [wfTitles,         setWfTitles]         = useState([]);
+  const [wfPickedTitle,    setWfPickedTitle]     = useState("");
+  const [wfOutlines,       setWfOutlines]       = useState([]);
+  const [wfOutlineLoading, setWfOutlineLoading] = useState(false);
+  const [wfOutlineSize,    setWfOutlineSize]    = useState("medium"); // small|medium|long
+  const [wfConclusion,     setWfConclusion]     = useState(true);
+  const [wfFaqs,           setWfFaqs]           = useState(true);
+  const [wfTitleLoading,   setWfTitleLoading]   = useState(false);
+  const [wfGenerating,     setWfGenerating]     = useState(false);
+  const [wfErr,            setWfErr]            = useState("");
+
+  /* ── WriteResult page ── */
+  const [wfResult,         setWfResult]         = useState(null);
+  const [wfPublishing,     setWfPublishing]     = useState(false);
+  const [wfPublishOk,      setWfPublishOk]      = useState(null);
+  const [wfPublishErr,     setWfPublishErr]     = useState("");
 
   /* ── Optimize / Content+ state ── */
   const [optUrl,         setOptUrl]         = useState("");
@@ -609,42 +625,89 @@ export default function BlogSEO() {
   }, [draftKw]);
 
   /* ─── Generate Article modal handlers ─── */
-  const genFetchTitles = useCallback(async () => {
-    if (!genKeyword.trim()) return;
-    setGenLoading(true); setGenErr(""); setGenTitles([]); setGenPickedTitle("");
-    try {
-      const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: genKeyword.trim() }) });
-      const titles = (r.titles || r.ideas || []).map(t => typeof t === "string" ? t : (t.title || t.text || ""));
-      if (!titles.length) { setGenErr("No titles returned — try a different keyword."); setGenLoading(false); return; }
-      setGenTitles(titles.slice(0, 5));
-      setGenPickedTitle(titles[0]);
-      setGenStep(2);
-    } catch(e) { setGenErr(e.message || "Failed to generate titles."); }
-    setGenLoading(false);
-  }, [genKeyword]);
+  const openGenModal = useCallback(() => {
+    setShowGenModal(true); setGenKwMode("ai"); setGenKeywords([]); setGenKwInput(""); setGenKwLoading(false); setGenTitleLoading(false); setGenModalErr("");
+  }, []);
 
-  const genWriteArticle = useCallback(async () => {
-    if (!genPickedTitle.trim()) return;
-    setGenLoading(true); setGenErr("");
+  const genExpandKeywords = useCallback(async () => {
+    if (!genKwInput.trim()) return;
+    setGenKwLoading(true); setGenModalErr("");
     try {
-      const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: genPickedTitle.trim() }) });
-      if (r.ok) { setGenResult(r); setGenStep(3); }
-      else setGenErr(r.error || "Article generation failed.");
-    } catch(e) { setGenErr(e.message || "Failed to generate article."); }
-    setGenLoading(false);
-  }, [genPickedTitle]);
+      const r = await apiFetchJSON(`${API}/ai/expand-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seed: genKwInput.trim(), count: 5 }) });
+      if (r.ok) setGenKeywords(r.keywords || []);
+      else setGenModalErr(r.error || "Failed to expand keywords");
+    } catch(e) { setGenModalErr(e.message); }
+    setGenKwLoading(false);
+  }, [genKwInput]);
 
-  const genSaveToShopify = useCallback(async () => {
-    if (!genResult) return;
-    setGenPublishing(true); setGenErr("");
+  const genGenerateTitles = useCallback(async () => {
+    const kws = genKeywords.length ? genKeywords : genKwInput.trim() ? [genKwInput.trim()] : [];
+    if (!kws.length) return;
+    setGenTitleLoading(true); setGenModalErr("");
     try {
-      const bodyHtml = (genResult.content || genResult.draft || "").replace(/\n/g, "<br>");
-      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: genPickedTitle, bodyHtml, asDraft: true }) });
-      if (r.ok) setGenPublishOk({ articleUrl: r.articleUrl });
-      else setGenErr(r.error || "Failed to save to Shopify.");
-    } catch(e) { setGenErr(e.message || "Failed to save to Shopify."); }
-    setGenPublishing(false);
-  }, [genResult, genPickedTitle]);
+      const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: kws.join(", "), count: 5 }) });
+      const titles = (r.titles || r.ideas || []).slice(0, 5).map(t => typeof t === "string" ? t : (t.title || "")).filter(Boolean);
+      if (!titles.length) { setGenModalErr("No titles returned — try different keywords."); setGenTitleLoading(false); return; }
+      setWfTitles(titles); setWfPickedTitle(titles[0]); setWfKeywords(kws);
+      setWfResult(null); setWfPublishOk(null); setWfPublishErr(""); setWfErr("");
+      setShowGenModal(false);
+      setSection("WriteFlow");
+      // load outline in background
+      setWfOutlines([]); setWfOutlineLoading(true);
+      try {
+        const or = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titles[0] }) });
+        if (or.ok) { const secs = wfOutlineSize === "small" ? 5 : wfOutlineSize === "medium" ? 8 : 11; setWfOutlines((or.sections || []).slice(0, secs).map(s => s.heading || s)); }
+      } catch(_) {}
+      setWfOutlineLoading(false);
+    } catch(e) { setGenModalErr(e.message || "Failed to generate titles"); }
+    setGenTitleLoading(false);
+  }, [genKeywords, genKwInput, wfOutlineSize]);
+
+  /* ── WriteFlow handlers ── */
+  const wfRegenerateTitles = useCallback(async () => {
+    if (!wfKeywords.length) return;
+    setWfTitleLoading(true);
+    try {
+      const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: wfKeywords.join(", "), count: 5 }) });
+      const titles = (r.titles || r.ideas || []).slice(0, 5).map(t => typeof t === "string" ? t : (t.title || "")).filter(Boolean);
+      if (titles.length) { setWfTitles(titles); setWfPickedTitle(titles[0]); }
+    } catch(_) {}
+    setWfTitleLoading(false);
+  }, [wfKeywords]);
+
+  const wfRegenerateOutline = useCallback(async () => {
+    if (!wfPickedTitle) return;
+    setWfOutlineLoading(true);
+    try {
+      const or = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: wfPickedTitle }) });
+      if (or.ok) { const secs = wfOutlineSize === "small" ? 5 : wfOutlineSize === "medium" ? 8 : 11; setWfOutlines((or.sections || []).slice(0, secs).map(s => s.heading || s)); }
+    } catch(_) {}
+    setWfOutlineLoading(false);
+  }, [wfPickedTitle, wfOutlineSize]);
+
+  const wfGenerateArticle = useCallback(async () => {
+    if (!wfPickedTitle) return;
+    setWfGenerating(true); setWfErr("");
+    try {
+      const outlineList = [...wfOutlines, ...(wfConclusion ? ["Conclusion"] : []), ...(wfFaqs ? ["FAQs — frequently asked questions"] : [])];
+      const r = await apiFetchJSON(`${API}/ai/full-blog-writer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, outline: outlineList }) });
+      if (r.ok) { setWfResult(r); setSection("WriteResult"); }
+      else setWfErr(r.error || "Article generation failed.");
+    } catch(e) { setWfErr(e.message || "Failed to generate article."); }
+    setWfGenerating(false);
+  }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs]);
+
+  const wfSaveToShopify = useCallback(async () => {
+    if (!wfResult) return;
+    setWfPublishing(true); setWfPublishErr("");
+    try {
+      const bodyHtml = (wfResult.fullArticle || wfResult.content || wfResult.draft || "").replace(/\n/g, "<br>");
+      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfResult.metaDescription, tags: wfKeywords.join(","), asDraft: true }) });
+      if (r.ok) setWfPublishOk({ articleUrl: r.articleUrl });
+      else setWfPublishErr(r.error || "Failed to save to Shopify.");
+    } catch(e) { setWfPublishErr(e.message); }
+    setWfPublishing(false);
+  }, [wfResult, wfPickedTitle, wfKeywords]);
 
   const runBrief = useCallback(async () => {
     if (!briefTopic.trim()) return;
@@ -1511,7 +1574,7 @@ export default function BlogSEO() {
                 </div>
                 <div style={{ display:"flex", gap:10 }}>
                   <button style={{ ...S.btn(), fontSize:13, padding:"8px 16px" }} onClick={() => setSection("Analyze")}>Analyze a Post</button>
-                  <button style={{ ...S.btn("primary"), fontSize:13, padding:"8px 18px" }} onClick={() => { setShowGenModal(true); setGenStep(1); setGenKeyword(""); setGenTitles([]); setGenPickedTitle(""); setGenResult(null); setGenErr(""); setGenPublishOk(null); }}>✦ Generate Article</button>
+                  <button style={{ ...S.btn("primary"), fontSize:13, padding:"8px 18px" }} onClick={openGenModal}>✦ Generate Article</button>
                 </div>
               </div>
 
@@ -2191,6 +2254,222 @@ export default function BlogSEO() {
               )}
             </>
           )}
+
+          {/* ════════════════════════════
+              WRITEFLOW — Title & Outline
+          ════════════════════════════ */}
+          {section === "WriteFlow" && (
+            <div style={{ margin:"0 -28px", minHeight:"100vh" }}>
+              {/* Top bar */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:10 }}>
+                <button onClick={() => setSection("Posts")} style={{ background:"none", border:"none", color:C.sub, cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
+                  <span style={{ fontSize:16 }}>‹</span> Back
+                </button>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.indigo }}>
+                    <span style={{ width:20, height:20, borderRadius:"50%", background:C.indigo, color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>1</span>
+                    Title &amp; Outline
+                  </span>
+                  <span style={{ color:C.border, fontSize:16 }}>›</span>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:500, color:C.dim }}>
+                    <span style={{ width:20, height:20, borderRadius:"50%", background:C.muted, color:C.sub, display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>2</span>
+                    Article &amp; SEO
+                  </span>
+                </div>
+                <button disabled style={{ ...S.btn("primary"), opacity:0.4, fontSize:12, padding:"6px 14px" }}>↑ Export</button>
+              </div>
+
+              {/* Two-column body */}
+              <div style={{ display:"grid", gridTemplateColumns:"220px 1fr", gap:0, minHeight:"calc(100vh - 53px)" }}>
+                {/* Left panel */}
+                <div style={{ background:"#111113", borderRight:`1px solid ${C.border}`, padding:"20px 16px", display:"flex", flexDirection:"column", gap:0 }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", marginBottom:14 }}>Content Options</div>
+
+                  {/* Outline length */}
+                  <div style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:C.sub, marginBottom:8 }}>Number of sections</div>
+                    {[
+                      ["small",  "Small (4–6)",  "700–1,500 words"],
+                      ["medium", "Medium (6–9)", "1,500–3,000 words"],
+                      ["long",   "Long (9–12)",  "3,000–5,000 words"],
+                    ].map(([val, label, hint]) => (
+                      <div key={val} onClick={() => setWfOutlineSize(val)} style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"8px 0", cursor:"pointer", borderBottom:`1px solid ${C.border}` }}>
+                        <div style={{ width:14, height:14, borderRadius:"50%", border:`2px solid ${wfOutlineSize===val ? C.indigo : C.border}`, background: wfOutlineSize===val ? C.indigo : "transparent", flexShrink:0, marginTop:2 }}/>
+                        <div>
+                          <div style={{ fontSize:12, color: wfOutlineSize===val ? C.text : C.sub, fontWeight: wfOutlineSize===val ? 600 : 400 }}>{label}</div>
+                          <div style={{ fontSize:11, color:C.dim }}>{hint}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Toggles */}
+                  <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", marginBottom:12 }}>Sections</div>
+                  {[
+                    ["Conclusion", wfConclusion, setWfConclusion, "Add a conclusion section"],
+                    ["FAQs",       wfFaqs,       setWfFaqs,       "Add frequently asked questions"],
+                  ].map(([label, val, setter, hint]) => (
+                    <div key={label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom:`1px solid ${C.border}` }}>
+                      <div>
+                        <div style={{ fontSize:12, fontWeight:500, color:C.sub }}>{label}</div>
+                        <div style={{ fontSize:11, color:C.dim }}>{hint}</div>
+                      </div>
+                      <div onClick={() => setter(!val)} style={{ width:36, height:20, borderRadius:10, background: val ? C.indigo : C.muted, cursor:"pointer", position:"relative", transition:"background .2s" }}>
+                        <div style={{ position:"absolute", top:2, left: val ? 18 : 2, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s" }}/>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div style={{ flex:1 }}/>
+                  {wfErr && <div style={{ fontSize:11, color:"#f87171", marginBottom:8, lineHeight:1.4 }}>{wfErr}</div>}
+                  <button
+                    style={{ ...S.btn("primary"), width:"100%", padding:"12px 0", fontSize:13, fontWeight:700, marginTop:20, opacity: !wfPickedTitle || wfGenerating ? 0.5 : 1 }}
+                    disabled={!wfPickedTitle || wfGenerating}
+                    onClick={wfGenerateArticle}
+                  >{wfGenerating ? <><span style={S.spinner}/> Writing article...</> : "✦ Generate Article"}</button>
+                </div>
+
+                {/* Right content */}
+                <div style={{ padding:"24px 28px", overflowY:"auto" }}>
+                  {/* Title section */}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                    <div style={{ fontSize:18, fontWeight:800, color:C.text }}>Title</div>
+                    <button onClick={wfRegenerateTitles} disabled={wfTitleLoading} style={{ ...S.btn(), padding:"5px 12px", fontSize:12, display:"flex", alignItems:"center", gap:6 }}>
+                      {wfTitleLoading ? <span style={S.spinner}/> : "↺"} Regenerate
+                    </button>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:32 }}>
+                    {wfTitles.map((t,i) => (
+                      <div key={i} onClick={() => { setWfPickedTitle(t); setWfOutlines([]); setWfOutlineLoading(true); apiFetchJSON(`${API}/ai/blog-outline`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ keyword: t }) }).then(or => { if(or.ok) { const secs = wfOutlineSize==="small"?5:wfOutlineSize==="medium"?8:11; setWfOutlines((or.sections||[]).slice(0,secs).map(s=>s.heading||s)); } setWfOutlineLoading(false); }).catch(()=>setWfOutlineLoading(false)); }}
+                        style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", borderRadius:10, border:`1.5px solid ${wfPickedTitle===t ? C.indigo : C.border}`, background: wfPickedTitle===t ? "#1e1b4b" : C.bg, cursor:"pointer", transition:"all .15s" }}>
+                        <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${wfPickedTitle===t ? C.indigo : C.border}`, background: wfPickedTitle===t ? C.indigo : "transparent", flexShrink:0 }}/>
+                        <span style={{ fontSize:14, color: wfPickedTitle===t ? "#c7d2fe" : C.sub, fontWeight: wfPickedTitle===t ? 600 : 400, lineHeight:1.4 }}>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Outline section */}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, flexWrap:"wrap", gap:10 }}>
+                    <div style={{ fontSize:18, fontWeight:800, color:C.text }}>Article Outline</div>
+                    <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:12, color:C.sub }}>
+                        <span>Length:</span>
+                        <select value={wfOutlineSize} onChange={e => setWfOutlineSize(e.target.value)} style={{ ...S.input, padding:"4px 8px", fontSize:12, width:"auto" }}>
+                          <option value="small">Small (4–6) · 700–1,500 words</option>
+                          <option value="medium">Medium (6–9) · 1,500–3,000 words</option>
+                          <option value="long">Long (9–12) · 3,000–5,000 words</option>
+                        </select>
+                      </div>
+                      <button onClick={wfRegenerateOutline} disabled={wfOutlineLoading || !wfPickedTitle} style={{ ...S.btn(), padding:"5px 12px", fontSize:12, display:"flex", alignItems:"center", gap:6 }}>
+                        {wfOutlineLoading ? <span style={S.spinner}/> : "↺"} Regenerate
+                      </button>
+                      <button onClick={() => setWfOutlines(prev => [...prev, "New section"])} style={{ ...S.btn(), padding:"5px 12px", fontSize:12 }}>+ Add section</button>
+                    </div>
+                  </div>
+
+                  {wfOutlineLoading && (
+                    <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                      {[1,2,3,4,5].map(i => (
+                        <div key={i} style={{ height:44, borderRadius:8, background:C.muted, animation:"pulse 1.5s ease-in-out infinite", opacity: 1 - (i * 0.12) }}/>
+                      ))}
+                    </div>
+                  )}
+                  {!wfOutlineLoading && wfOutlines.length > 0 && (
+                    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                      {wfOutlines.map((sec, i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:8, border:`1px solid ${C.border}`, background:C.bg, group:"true" }}>
+                          <span style={{ fontSize:11, color:C.dim, userSelect:"none" }}>⠿</span>
+                          <span style={{ fontSize:13, color:C.dim, fontWeight:600, minWidth:20 }}>{i+1}.</span>
+                          <input
+                            value={sec}
+                            onChange={e => setWfOutlines(prev => prev.map((s,j) => j===i ? e.target.value : s))}
+                            style={{ flex:1, background:"transparent", border:"none", outline:"none", fontSize:14, color:C.text, padding:0 }}
+                          />
+                          <button onClick={() => setWfOutlines(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", color:C.dim, cursor:"pointer", fontSize:14, padding:"0 4px", opacity:0.5 }}>✕</button>
+                        </div>
+                      ))}
+                      {wfConclusion && <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:8, border:`1px solid ${C.border}`, background:"#111113" }}><span style={{ fontSize:11, color:C.dim }}>⠿</span><span style={{ fontSize:13, color:C.dim, fontWeight:600, minWidth:20 }}>{wfOutlines.length+1}.</span><span style={{ fontSize:14, color:C.dim }}>Conclusion</span><span style={{ marginLeft:"auto", fontSize:11, color:C.dim, background:C.muted, padding:"1px 8px", borderRadius:4 }}>auto</span></div>}
+                      {wfFaqs && <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:8, border:`1px solid ${C.border}`, background:"#111113" }}><span style={{ fontSize:11, color:C.dim }}>⠿</span><span style={{ fontSize:13, color:C.dim, fontWeight:600, minWidth:20 }}>{wfOutlines.length+(wfConclusion?2:1)}.</span><span style={{ fontSize:14, color:C.dim }}>FAQs</span><span style={{ marginLeft:"auto", fontSize:11, color:C.dim, background:C.muted, padding:"1px 8px", borderRadius:4 }}>auto</span></div>}
+                    </div>
+                  )}
+                  {!wfOutlineLoading && wfOutlines.length === 0 && wfPickedTitle && (
+                    <div style={{ textAlign:"center", padding:"32px 0", color:C.dim, fontSize:13 }}>
+                      <div style={{ marginBottom:8 }}>No outline yet</div>
+                      <button onClick={wfRegenerateOutline} style={{ ...S.btn("primary"), padding:"8px 20px" }}>Generate Outline</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════
+              WRITERESULT — Article & SEO
+          ════════════════════════════ */}
+          {section === "WriteResult" && wfResult && (
+            <div style={{ margin:"0 -28px", minHeight:"100vh" }}>
+              {/* Top bar */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:10 }}>
+                <button onClick={() => setSection("WriteFlow")} style={{ background:"none", border:"none", color:C.sub, cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
+                  <span style={{ fontSize:16 }}>‹</span> Back
+                </button>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:C.dim }}>
+                    <span style={{ width:20, height:20, borderRadius:"50%", background:C.muted, color:C.sub, display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>1</span>
+                    Title &amp; Outline
+                  </span>
+                  <span style={{ color:C.border, fontSize:16 }}>›</span>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.indigo }}>
+                    <span style={{ width:20, height:20, borderRadius:"50%", background:C.indigo, color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>2</span>
+                    Article &amp; SEO
+                  </span>
+                </div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={() => navigator.clipboard?.writeText(wfResult.fullArticle || wfResult.content || wfResult.draft || "")} style={{ ...S.btn(), padding:"6px 14px", fontSize:12 }}>Copy</button>
+                </div>
+              </div>
+
+              <div style={{ padding:"32px 28px", maxWidth:860, margin:"0 auto" }}>
+                {/* Article title + meta */}
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:6, flexWrap:"wrap" }}>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.text }}>{wfPickedTitle}</div>
+                  {wfResult.wordCount && <span style={{ fontSize:11, background:"#14532d", color:"#86efac", borderRadius:6, padding:"3px 10px", fontWeight:700 }}>{wfResult.wordCount} words</span>}
+                </div>
+                {wfResult.metaDescription && (
+                  <div style={{ fontSize:13, color:C.dim, marginBottom:20, lineHeight:1.5, padding:"10px 14px", background:C.muted, borderRadius:8, border:`1px solid ${C.border}` }}>
+                    <span style={{ fontWeight:600, color:C.sub }}>Meta: </span>{wfResult.metaDescription}
+                  </div>
+                )}
+
+                {/* Article body */}
+                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"24px 28px", fontSize:14, color:C.sub, lineHeight:1.9, whiteSpace:"pre-wrap", marginBottom:24 }}>
+                  {wfResult.fullArticle || wfResult.content || wfResult.draft || ""}
+                </div>
+
+                {/* Shopify save */}
+                {wfPublishOk ? (
+                  <div style={{ fontSize:13, color:"#86efac", background:"#052e16", border:"1px solid #16a34a", borderRadius:10, padding:"12px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:10 }}>
+                    <span>✓ Draft saved to Shopify!</span>
+                    <a href={wfPublishOk.articleUrl} target="_blank" rel="noreferrer" style={{ color:"#4ade80", fontWeight:600, marginLeft:4 }}>Open in Shopify →</a>
+                  </div>
+                ) : (
+                  <>
+                    {wfPublishErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:10 }}>{wfPublishErr}</div>}
+                    <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                      {shopDomain && (
+                        <button style={{ ...S.btn("primary"), padding:"10px 24px", fontSize:13, fontWeight:700, opacity: wfPublishing ? 0.6 : 1 }} disabled={wfPublishing} onClick={wfSaveToShopify}>
+                          {wfPublishing ? <><span style={S.spinner}/> Saving...</> : "Save Draft to Shopify"}
+                        </button>
+                      )}
+                      <button style={{ ...S.btn(), padding:"10px 20px", fontSize:13 }} onClick={() => navigator.clipboard?.writeText(wfResult.fullArticle || wfResult.content || wfResult.draft || "")}>Copy Article</button>
+                      <button style={{ ...S.btn(), padding:"10px 20px", fontSize:13 }} onClick={() => { setSection("WriteFlow"); setWfResult(null); setWfPublishOk(null); setWfPublishErr(""); }}>← Edit Outline</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ════════════════════════════
               OPTIMIZE SECTION
           ════════════════════════════ */}
@@ -3515,94 +3794,83 @@ export default function BlogSEO() {
         GENERATE ARTICLE MODAL
     ════════════════════════════ */}
     {showGenModal && (
-      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
+      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
         onClick={e => { if(e.target === e.currentTarget) setShowGenModal(false); }}>
-        <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 32px", width:"100%", maxWidth:520, position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.5)" }}>
-          {/* Close */}
-          <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", color:"#71717a", cursor:"pointer", fontSize:20, lineHeight:1 }}>✕</button>
+        <div style={{ background:"#fff", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:500, position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.5)", color:"#111" }}>
+          <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:14, right:16, background:"none", border:"none", color:"#888", cursor:"pointer", fontSize:20, lineHeight:1 }}>✕</button>
 
-          {/* Step 1 — Enter keyword */}
-          {genStep === 1 && (
-            <>
-              <div style={{ fontSize:18, fontWeight:800, color:"#fafafa", marginBottom:6 }}>Create New Article</div>
-              <div style={{ fontSize:13, color:"#71717a", marginBottom:24 }}>Enter a keyword or topic and we'll generate title ideas for you.</div>
-              <label style={{ fontSize:12, fontWeight:600, color:"#a1a1aa", display:"block", marginBottom:6 }}>Keyword or Topic</label>
-              <input
-                autoFocus
-                style={{ ...S.input, marginBottom:20, width:"100%" }}
-                placeholder="e.g. best running shoes for beginners"
-                value={genKeyword}
-                onChange={e => setGenKeyword(e.target.value)}
-                onKeyDown={e => { if(e.key==="Enter" && genKeyword.trim() && !genLoading) genFetchTitles(); }}
-              />
-              {genErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genErr}</div>}
-              <button
-                style={{ ...S.btn("primary"), width:"100%", padding:"11px 0", fontSize:14, fontWeight:700, opacity: !genKeyword.trim() || genLoading ? 0.5 : 1 }}
-                disabled={!genKeyword.trim() || genLoading}
-                onClick={genFetchTitles}
-              >{genLoading ? <><span style={S.spinner}/> Generating titles...</> : "Generate Titles →"}</button>
-            </>
-          )}
+          <div style={{ fontSize:17, fontWeight:700, color:"#111", marginBottom:4 }}>Generate Article Title from Keywords</div>
+          <div style={{ fontSize:13, color:"#888", marginBottom:20 }}>Add keyword(s) and provide a brief topic idea for AI to begin with.</div>
 
-          {/* Step 2 — Pick a title */}
-          {genStep === 2 && (
-            <>
-              <div style={{ fontSize:18, fontWeight:800, color:"#fafafa", marginBottom:6 }}>Pick a Title</div>
-              <div style={{ fontSize:13, color:"#71717a", marginBottom:20 }}>Choose the best title for <strong style={{ color:"#a1a1aa" }}>{genKeyword}</strong></div>
-              <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
-                {genTitles.map((t,i) => (
-                  <div key={i}
-                    onClick={() => setGenPickedTitle(t)}
-                    style={{ padding:"12px 14px", borderRadius:10, border:`2px solid ${genPickedTitle===t ? "#6366f1" : "#3f3f46"}`, background: genPickedTitle===t ? "#1e1b4b" : "#09090b", cursor:"pointer", fontSize:13, color: genPickedTitle===t ? "#c7d2fe" : "#d4d4d8", fontWeight: genPickedTitle===t ? 600 : 400, transition:"all .15s" }}
-                  >{t}</div>
+          {/* Mode radio */}
+          <div style={{ fontSize:13, fontWeight:500, color:"#333", marginBottom:10 }}>
+            Create articles using the following keywords
+          </div>
+          <div style={{ display:"flex", gap:20, marginBottom:14 }}>
+            {[["manual","Manual Input"],["ai","AI Generate"]].map(([val,lbl]) => (
+              <label key={val} style={{ display:"flex", alignItems:"center", gap:6, cursor:"pointer", fontSize:13, color:"#333" }}>
+                <input type="radio" checked={genKwMode===val} onChange={() => setGenKwMode(val)} style={{ accentColor:"#6366f1" }}/> {lbl}
+              </label>
+            ))}
+          </div>
+
+          {/* Keyword input area */}
+          {genKwMode === "ai" ? (
+            <div style={{ border:"1.5px solid #e2e8f0", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#fafafa" }}>
+              {/* existing keyword tags */}
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
+                {genKeywords.map((kw,i) => (
+                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#f1f5f9", border:"1px solid #e2e8f0", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#333" }}>
+                    {kw}
+                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#888", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+                  </span>
                 ))}
               </div>
-              {genErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genErr}</div>}
-              <div style={{ display:"flex", gap:10 }}>
-                <button style={{ ...S.btn(), flex:"0 0 auto", padding:"10px 18px" }} onClick={() => { setGenStep(1); setGenErr(""); }}>← Back</button>
+              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                <input
+                  autoFocus
+                  style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:"#111", padding:"2px 0" }}
+                  placeholder={genKeywords.length ? "Add more keywords..." : "e.g. snowboards"}
+                  value={genKwInput}
+                  onChange={e => setGenKwInput(e.target.value)}
+                  onKeyDown={e => { if(e.key==="Enter" && genKwInput.trim()) { setGenKeywords(prev=>[...prev, genKwInput.trim()]); setGenKwInput(""); } }}
+                />
                 <button
-                  style={{ ...S.btn("primary"), flex:1, padding:"10px 0", fontSize:14, fontWeight:700, opacity: !genPickedTitle || genLoading ? 0.5 : 1 }}
-                  disabled={!genPickedTitle || genLoading}
-                  onClick={genWriteArticle}
-                >{genLoading ? <><span style={S.spinner}/> Writing article...</> : "Write Article →"}</button>
+                  onClick={genExpandKeywords}
+                  disabled={!genKwInput.trim() || genKwLoading}
+                  title="AI Generate keyword variations"
+                  style={{ background:"#6366f1", border:"none", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor: !genKwInput.trim() || genKwLoading ? "default" : "pointer", opacity: !genKwInput.trim() || genKwLoading ? 0.5 : 1 }}
+                >{genKwLoading ? <span style={S.spinner}/> : <span style={{ color:"#fff", fontSize:14 }}>✦</span>}</button>
               </div>
-            </>
+            </div>
+          ) : (
+            <div style={{ border:"1.5px solid #e2e8f0", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#fafafa" }}>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
+                {genKeywords.map((kw,i) => (
+                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#f1f5f9", border:"1px solid #e2e8f0", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#333" }}>
+                    {kw}
+                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#888", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+                  </span>
+                ))}
+              </div>
+              <input
+                autoFocus
+                style={{ width:"100%", border:"none", outline:"none", fontSize:13, background:"transparent", color:"#111", padding:"2px 0" }}
+                placeholder="Press Enter ↵ to input another one"
+                value={genKwInput}
+                onChange={e => setGenKwInput(e.target.value)}
+                onKeyDown={e => { if(e.key==="Enter" && genKwInput.trim()) { setGenKeywords(prev=>[...prev, genKwInput.trim()]); setGenKwInput(""); } }}
+              />
+            </div>
           )}
 
-          {/* Step 3 — Result */}
-          {genStep === 3 && genResult && (
-            <>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
-                <div style={{ fontSize:18, fontWeight:800, color:"#fafafa" }}>Article Ready ✓</div>
-                {genResult.wordCount && <span style={{ fontSize:11, background:"#14532d", color:"#86efac", borderRadius:6, padding:"2px 8px", fontWeight:600 }}>{genResult.wordCount} words</span>}
-              </div>
-              <div style={{ fontSize:13, color:"#71717a", marginBottom:14, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{genPickedTitle}</div>
-              <div style={{ background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, padding:"14px 16px", fontSize:13, color:"#d4d4d8", whiteSpace:"pre-wrap", lineHeight:1.75, maxHeight:280, overflowY:"auto", marginBottom:16 }}>
-                {(genResult.content || genResult.draft || "").slice(0, 1200)}{(genResult.content || genResult.draft || "").length > 1200 ? "\n\n..." : ""}
-              </div>
-              {genPublishOk && (
-                <div style={{ fontSize:12, color:"#86efac", background:"#052e16", border:"1px solid #16a34a", borderRadius:8, padding:"8px 12px", marginBottom:12 }}>
-                  ✓ Saved as draft in Shopify! <a href={genPublishOk.articleUrl} target="_blank" rel="noreferrer" style={{ color:"#4ade80", fontWeight:600 }}>Open in Shopify →</a>
-                </div>
-              )}
-              {genErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genErr}</div>}
-              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-                <button style={{ ...S.btn(), padding:"9px 18px", fontSize:13 }} onClick={() => navigator.clipboard?.writeText(genResult.content || genResult.draft || "")}>Copy Article</button>
-                {shopDomain && !genPublishOk && (
-                  <button
-                    style={{ ...S.btn("primary"), padding:"9px 18px", fontSize:13, opacity: genPublishing ? 0.6 : 1 }}
-                    disabled={genPublishing}
-                    onClick={genSaveToShopify}
-                  >{genPublishing ? <><span style={S.spinner}/> Saving...</> : "Save Draft to Shopify"}</button>
-                )}
-                <button style={{ ...S.btn(), padding:"9px 18px", fontSize:13, marginLeft:"auto" }} onClick={() => { setGenStep(1); setGenKeyword(""); setGenTitles([]); setGenPickedTitle(""); setGenResult(null); setGenErr(""); setGenPublishOk(null); }}>Start Over</button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    )}
-    </>
+          {genModalErr && <div style={{ fontSize:12, color:"#ef4444", marginBottom:12 }}>{genModalErr}</div>}
+
+          <button
+            style={{ width:"100%", padding:"12px 0", borderRadius:10, background: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "#c7d2fe" : "#6366f1", color:"#fff", fontWeight:700, fontSize:14, border:"none", cursor: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
+            disabled={(!genKeywords.length && !genKwInput.trim()) || genTitleLoading}
+            onClick={genGenerateTitles}
+          >{genTitleLoading ? <><span style={S.spinner}/> Generating titles...</> : <><span style={{ fontSize:14 }}>✦</span> Generate Title</>}</button>
   );
 }
 
