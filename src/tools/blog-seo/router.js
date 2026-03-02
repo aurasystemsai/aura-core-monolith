@@ -30,6 +30,7 @@ router.post('/ai/expand-content',    aiLimiter);
 router.post('/ai/content-brief',     aiLimiter);
 router.post('/ai/keyword-research',  aiLimiter);
 router.post('/ai/generate',          aiLimiter);
+router.post('/ai/content-fix',       aiLimiter);
 router.post('/bulk-analyze',         bulkLimiter);
 router.post('/links/check',          bulkLimiter);
 router.post('/competitor-gap',       bulkLimiter);

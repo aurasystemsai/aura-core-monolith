@@ -939,7 +939,21 @@ export default function BlogSEO() {
   /* issueKey = issue.msg string (stable across filtered arrays) */
   const runBannerFix = useCallback(async (field, issueKey, { silent = false } = {}) => {
     if (!scanResult) { if (!silent) showToast("Scan a post first"); return false; }
-    if (!scannedArtId || !scannedBlogId) { if (!silent) showToast("Select a post from the store dropdown first"); return false; }
+    // Auto-lookup article if not already matched
+    let artId = scannedArtId;
+    let blogId = scannedBlogId;
+    if ((!artId || !blogId) && scanResult.url && articles.length) {
+      const url2 = scanResult.url.toLowerCase();
+      const m = articles.find(a =>
+        (a.url && a.url.toLowerCase() === url2) ||
+        (a.handle && url2.includes(a.handle.toLowerCase()))
+      );
+      if (m) { artId = m.id; blogId = m.blogId; setScannedArtId(m.id); setScannedBlogId(m.blogId); }
+    }
+    if (!artId || !blogId) {
+      if (!silent) showToast("To apply fixes, go to \"Analyze a Post\", select this post from the dropdown, then re-scan.");
+      return false;
+    }
     setBannerFixState(p => ({ ...p, [issueKey]: "loading" }));
     try {
       let val = "";
@@ -947,16 +961,35 @@ export default function BlogSEO() {
       const CONTENT_FIX_TYPES = { readability_fix: "readability", citations_fix: "citations", eeat_fix: "eeat", og_fix: "og_fix", author_fix: "author_byline", kw_fix: "keyword_boost", faq_fix: "faq", internal_fix: "internal_links" };
       if (field === "date_fix") {
         // Special case: just update the published_at timestamp, no body change
-        if (!scannedArtId || !scannedBlogId) throw new Error("Select a post from the store dropdown first");
         const dr = await apiFetchJSON(`${API}/apply-date-refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, shop: shopDomain }),
+          body: JSON.stringify({ articleId: artId, blogId, shop: shopDomain }),
         });
         if (!dr.ok) throw new Error(dr.error || "Date refresh failed");
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
         if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(), 1500); }
+        return true;
+      } else if (field === "og_fix") {
+        // OG fix: generate compelling meta description and apply it (Shopify uses this as og:description)
+        const rw = await apiFetchJSON(`${API}/ai/content-fix`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "og_fix", title: scanResult.title, h1: scanResult.h1, keywords: kwInput || scanResult.title, url: scanResult.url }),
+        });
+        if (!rw.ok) throw new Error(rw.error || "OG fix failed");
+        let ogData; try { ogData = JSON.parse(rw.html); } catch { ogData = null; }
+        const ogDesc = ogData?.og_description || ogData?.description || rw.html;
+        const ap = await apiFetchJSON(`${API}/apply-field`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleId: artId, blogId, field: "metaDescription", value: ogDesc, shop: shopDomain }),
+        });
+        if (!ap.ok) throw new Error(ap.error || "Apply OG description failed");
+        setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
+        setFixedFields(p => new Set([...p, field]));
+        if (!silent) { showToast("✓ OG/meta description updated — rescanning post..."); setTimeout(() => runScan(), 1500); }
         return true;
       } else if (CONTENT_FIX_TYPES[field]) {
         const typeMap = CONTENT_FIX_TYPES;
@@ -1005,7 +1038,7 @@ export default function BlogSEO() {
       const ap = await apiFetchJSON(`${API}/apply-field`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field: applyField, value: val, shop: shopDomain }),
+        body: JSON.stringify({ articleId: artId, blogId, field: applyField, value: val, shop: shopDomain }),
       });
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
@@ -1028,15 +1061,26 @@ export default function BlogSEO() {
       return true;
     } catch(e) {
       setBannerFixState(p => ({ ...p, [issueKey]: "error" }));
-      if (!silent) showToast(`Fix failed: ${e.message}`);
+      if (!silent) showToast(`❌ Fix failed: ${e.message}`);
       return false;
     }
-  }, [scanResult, scannedArtId, scannedBlogId, kwInput, shopDomain, showToast, runScan]);
+  }, [scanResult, scannedArtId, scannedBlogId, articles, kwInput, shopDomain, showToast, runScan]);
 
   /* ── Bulk fix all auto-fixable issues in scanResult ── */
   const runBulkFix = useCallback(async () => {
     if (!scanResult) { showToast("Scan a post first"); return; }
-    if (!scannedArtId || !scannedBlogId) { showToast("Select a post from the store dropdown so we know which article to update"); return; }
+    // Auto-lookup article if not already matched (same logic as runBannerFix)
+    if ((!scannedArtId || !scannedBlogId) && scanResult.url && articles.length) {
+      const url2 = scanResult.url.toLowerCase();
+      const m = articles.find(a =>
+        (a.url && a.url.toLowerCase() === url2) ||
+        (a.handle && url2.includes(a.handle.toLowerCase()))
+      );
+      if (m) { setScannedArtId(m.id); setScannedBlogId(m.blogId); }
+      else { showToast("To bulk-fix, go to Analyze, select your post from the dropdown, then re-scan."); return; }
+    } else if (!scannedArtId || !scannedBlogId) {
+      showToast("Select a post from the store dropdown so we know which article to update"); return;
+    }
     const issues = scanResult?.scored?.issues ?? [];
     const fixable = issues
       .map(iss => ({ ...iss, key: iss.msg, field: fixableField(iss.msg) }))
@@ -1059,7 +1103,7 @@ export default function BlogSEO() {
       showToast(`All ${fixable.length} fixes failed — check that the post is selected and try again`);
     }
     if (successes > 0) setTimeout(() => runScan(), 1500);
-  }, [scanResult, scannedArtId, scannedBlogId, runBannerFix, showToast, runScan]);
+  }, [scanResult, scannedArtId, scannedBlogId, articles, runBannerFix, showToast, runScan]);
 
   /* ── Smart Fix — run ALL tools on the scanned post in parallel ── */
   const runSmartFix = useCallback(async () => {
@@ -1736,6 +1780,13 @@ export default function BlogSEO() {
                 {/* relevant issues */}
                 {shown.length > 0 && (
                   <div style={{ borderTop:`1px solid #1e1b4b`, paddingTop:10 }}>
+                    {/* no article linked warning */}
+                    {!scannedArtId && (
+                      <div style={{ display:"flex", gap:8, alignItems:"center", background:"#1c1007", border:"1px solid #78350f", borderRadius:8, padding:"8px 12px", marginBottom:10, flexWrap:"wrap" }}>
+                        <span style={{ fontSize:11, color:"#fbbf24", flex:1 }}>To apply AI fixes, select this post from the dropdown in <strong>Analyze a Post</strong> then re-scan.</span>
+                        <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => setSection("Analyze")}>Go to Analyze →</button>
+                      </div>
+                    )}
                     {/* section header + Fix All button */}
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:7, flexWrap:"wrap", gap:6 }}>
                       <div style={{ fontSize:10, fontWeight:700, color:"#6366f1", textTransform:"uppercase", letterSpacing:"0.8px" }}>
@@ -1791,8 +1842,8 @@ export default function BlogSEO() {
                                 ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
                                 : <span style={{ width:6, height:6, borderRadius:"50%", background:sevColor, flexShrink:0, marginTop:1 }} />}
                               <span style={{ fontSize:12, color: alreadyFixed ? C.dim : C.sub, flex:1, textDecoration: alreadyFixed ? "line-through" : "none" }}>{issue.msg}</span>
-                              {/* AI Fix & Apply button */}
-                              {fField && scannedArtId && !alreadyFixed && (
+                              {/* AI Fix & Apply button — always shown, runBannerFix handles article lookup */}
+                              {fField && !alreadyFixed && (
                                 <button
                                   style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background:"#059669", borderColor:"#059669", opacity: fixSt === "loading" ? 0.6 : 1 }}
                                   onClick={() => runBannerFix(fField, issue.msg)}
