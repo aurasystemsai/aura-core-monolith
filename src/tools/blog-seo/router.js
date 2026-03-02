@@ -818,14 +818,22 @@ Keywords: ${keywords || title || h1}
 Return only a single HTML <p> tag. Nothing else.`;
 
     } else if (type === 'og_fix') {
-      applyAs = 'append';
-      userPrompt = `Generate SEO-optimised Open Graph meta tag values for this blog post. Return a JSON object only, no HTML:
-{"og_title": "...", "og_description": "...", "og_type": "article"}
-
+      // Dedicated JSON call — avoids conflict with the HTML system prompt above
+      const ogPrompt = `Generate SEO-optimised Open Graph meta tag values for this blog post.
 Post title: "${title || h1}"
 Keywords: ${keywords || title || h1}
-
-og_title should be ≤ 60 chars. og_description should be 100-150 chars, compelling for social sharing. Return only the JSON.`;
+Rules: og_title ≤ 60 chars, og_description 100-150 chars, compelling for social sharing.
+Return JSON: {"og_title": "...", "og_description": "...", "og_type": "article"}`;
+      const ogModel = req.body.model || 'gpt-4o-mini';
+      const ogR = await getOpenAI().chat.completions.create({
+        model: ogModel,
+        messages: [{ role: 'user', content: ogPrompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.6,
+      });
+      const ogParsed = JSON.parse(ogR.choices[0].message.content);
+      if (req.deductCredits) req.deductCredits({ model: ogModel, action: 'seo-analysis' });
+      return res.json({ ok: true, ogTitle: ogParsed.og_title || '', ogDescription: ogParsed.og_description || '', applyAs: 'og' });
 
     } else if (type === 'author_byline') {
       applyAs = 'append';
@@ -8355,6 +8363,15 @@ router.post('/apply-field', async (req, res) => {
       });
       if (!r.ok) throw new Error(`Shopify metafield update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
       return res.json({ ok: true, message: 'Meta description updated on post' });
+    }
+    if (field === 'seoTitle') {
+      // Update SEO title (og:title) via metafields
+      const r = await fetch(`${articleBase}/metafields.json`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ metafield: { namespace: 'global', key: 'title_tag', value, type: 'single_line_text_field' } }),
+      });
+      if (!r.ok) throw new Error(`Shopify SEO title update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'SEO title (og:title) updated on post' });
     }
     if (field === 'headings') {
       const newH2s = value.split(/\s*\|\s*/).map(h => h.trim()).filter(Boolean);

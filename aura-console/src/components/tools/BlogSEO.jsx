@@ -978,25 +978,35 @@ export default function BlogSEO() {
         if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(), 1500); }
         return true;
       } else if (field === "og_fix") {
-        // OG fix: generate compelling meta description and apply it (Shopify uses this as og:description)
+        // OG fix: generate og:title and og:description then apply both via Shopify metafields
         const rw = await apiFetchJSON(`${API}/ai/content-fix`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "og_fix", title: scanResult.title, h1: scanResult.h1, keywords: kwInput || scanResult.title, url: scanResult.url }),
         });
         if (!rw.ok) throw new Error(rw.error || "OG fix failed");
-        let ogData; try { ogData = JSON.parse(rw.html); } catch { ogData = null; }
-        const ogDesc = ogData?.og_description || ogData?.description || rw.html;
-        const ap = await apiFetchJSON(`${API}/apply-field`, {
+        const ogTitle = rw.ogTitle || "";
+        const ogDesc  = rw.ogDescription || "";
+        if (!ogDesc) throw new Error("AI returned no OG description");
+        // Apply og:description (description_tag metafield)
+        const apDesc = await apiFetchJSON(`${API}/apply-field`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ articleId: artId, blogId, field: "metaDescription", value: ogDesc, shop: shopDomain }),
         });
-        if (!ap.ok) throw new Error(ap.error || "Apply OG description failed");
+        if (!apDesc.ok) throw new Error(apDesc.error || "Apply OG description failed");
+        // Apply og:title (title_tag metafield) if we got one
+        if (ogTitle) {
+          await apiFetchJSON(`${API}/apply-field`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ articleId: artId, blogId, field: "seoTitle", value: ogTitle, shop: shopDomain }),
+          });
+        }
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
-        setFixSummaries(p => ({ ...p, [issueKey]: { what: "OG / meta description", detail: ogDesc.slice(0, 120) } }));
-        if (!silent) { showToast("✓ OG/meta description updated — rescanning post..."); setTimeout(() => runScan(), 1500); }
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: "OG tags (title + description)", detail: `Title: ${ogTitle.slice(0,60)} | Desc: ${ogDesc.slice(0, 80)}…` } }));
+        if (!silent) { showToast("✓ OG title & description updated — rescanning post..."); setTimeout(() => runScan(), 1500); }
         return true;
       } else if (CONTENT_FIX_TYPES[field]) {
         const typeMap = CONTENT_FIX_TYPES;
