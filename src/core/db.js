@@ -63,6 +63,15 @@ if (DB_TYPE === 'postgres') {
       return `INSERT INTO ${table} (${cols}) VALUES (${vals}) ON CONFLICT (${conflict}) DO UPDATE SET ${assignments}`;
     });
 
+    // SQLite date functions -> Postgres equivalents
+    sql = sql.replace(/datetime\(\s*'now'\s*\)/gi, 'NOW()');
+    sql = sql.replace(/date\(\s*'now'\s*\)/gi, 'CURRENT_DATE');
+    sql = sql.replace(/strftime\(\s*'%s'\s*,\s*'now'\s*\)/gi, "EXTRACT(EPOCH FROM NOW())::BIGINT");
+
+    // TEXT column type for timestamps -> TIMESTAMPTZ when DEFAULT NOW() is present
+    sql = sql.replace(/TEXT\s+NOT\s+NULL\s+DEFAULT\s+NOW\(\)/gi, 'TIMESTAMPTZ NOT NULL DEFAULT NOW()');
+    sql = sql.replace(/TEXT\s+DEFAULT\s+NOW\(\)/gi, 'TIMESTAMPTZ DEFAULT NOW()');
+
     return sql;
   }
 

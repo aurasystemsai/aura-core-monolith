@@ -75,9 +75,9 @@ function getOpenAI() {
   return _openai;
 }
 
-/* ── Persistent scan history (SQLite) ───────────────────────────────────── */
+/* ── Persistent scan history ───────────────────────────────────────────── */
 const coreDb = require('../../core/db');
-try {
+Promise.resolve(
   coreDb.exec(`CREATE TABLE IF NOT EXISTS blog_seo_history (
     id    INTEGER PRIMARY KEY AUTOINCREMENT,
     shop  TEXT    NOT NULL DEFAULT '',
@@ -89,8 +89,8 @@ try {
     issue_count INTEGER,
     data  TEXT,
     ts    TEXT    NOT NULL DEFAULT (datetime('now'))
-  )`);
-} catch (e) { console.warn('[blog-seo] History table init:', e.message); }
+  )`)
+).catch(e => console.warn('[blog-seo] History table init:', e.message));
 
 /* =========================================================================
    HEALTH
@@ -865,14 +865,14 @@ router.post('/schema/generate', (req, res) => {
 /* =========================================================================
    HISTORY CRUD  (SQLite — survives restarts, scoped per shop)
    ========================================================================= */
-router.post('/items', (req, res) => {
+router.post('/items', async (req, res) => {
   const shop = getShop(req);
   if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   try {
     const { type, url, title, score, grade, issueCount, ts, ...rest } = req.body || {};
     const extra = Object.keys(rest).length ? JSON.stringify(rest) : null;
     const timestamp = ts || new Date().toISOString();
-    coreDb.query(
+    await coreDb.query(
       `INSERT INTO blog_seo_history (shop, type, url, title, score, grade, issue_count, data, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [shop, type || null, url || null, title || null, score ?? null, grade || null, issueCount ?? null, extra, timestamp]
     );
@@ -880,10 +880,10 @@ router.post('/items', (req, res) => {
   } catch (e) { res.json({ ok: true }); } // non-fatal
 });
 
-router.get('/items', (req, res) => {
+router.get('/items', async (req, res) => {
   try {
     const shop = req.headers['x-shopify-shop-domain'] || req.session?.shop || '';
-    const items = coreDb.queryAll(
+    const items = await coreDb.queryAll(
       `SELECT * FROM blog_seo_history WHERE shop = ? ORDER BY id DESC LIMIT 100`,
       [shop]
     );
@@ -891,12 +891,12 @@ router.get('/items', (req, res) => {
   } catch (e) { res.json({ ok: true, items: [] }); }
 });
 
-router.delete('/items/:id', (req, res) => {
+router.delete('/items/:id', async (req, res) => {
   const shop = getShop(req);
   if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop domain' });
   try {
     const id = parseInt(req.params.id, 10);
-    coreDb.query(`DELETE FROM blog_seo_history WHERE id = ? AND shop = ?`, [id, shop]);
+    await coreDb.query(`DELETE FROM blog_seo_history WHERE id = ? AND shop = ?`, [id, shop]);
     res.json({ ok: true });
   } catch (e) { res.json({ ok: true }); }
 });
