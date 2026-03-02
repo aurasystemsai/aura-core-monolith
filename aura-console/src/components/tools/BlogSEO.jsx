@@ -347,6 +347,7 @@ export default function BlogSEO() {
   const [bulkFixing,       setBulkFixing]       = useState(false);
   const [bulkFixProgress,  setBulkFixProgress]  = useState(null); // {done, total}
   const [inlineTipIssue,   setInlineTipIssue]   = useState(null); // issue.msg showing inline help tip
+  const [spinTick,         setSpinTick]         = useState(0);   // drives spinner without CSS classes
 
   /* ── Smart-Fix (one-click all tools) state ── */
   const [smartFixCards,    setSmartFixCards]    = useState([]); // [{id, icon, label, status, result, applyField}]
@@ -1353,13 +1354,24 @@ export default function BlogSEO() {
   /* ═══════════════════════════
      RENDER
   ═══════════════════════════ */
+  // Spinner — pure React state, no CSS class dependency
+  const anyFixLoading = Object.values(bannerFixState).some(v => v === "loading") || bulkFixing;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (!anyFixLoading) return;
+    const id = setInterval(() => setSpinTick(t => (t + 1) % 10), 90);
+    return () => clearInterval(id);
+  }, [anyFixLoading]);
+  const SPIN_FRAMES = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
+  const spinChar = SPIN_FRAMES[spinTick];
+
   const visibleSections = SECTIONS;
   const activeSec = section ? SECTIONS.find(s => s.id === section) : null;
 
   return (
     <>
     <div style={S.page}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes aura-fixing{0%,100%{opacity:1}50%{opacity:0.4}} .aura-fix-spinner{display:inline-block;animation:spin 0.7s linear infinite;margin-right:5px;font-style:normal}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
       {/* ── Toast notification ── */}
       {toast && (
@@ -1806,6 +1818,22 @@ export default function BlogSEO() {
                         <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => setSection("Analyze")}>Go to Analyze →</button>
                       </div>
                     )}
+                    {/* Active fix status bar */}
+                    {anyFixLoading && (() => {
+                      const activeKey = Object.keys(bannerFixState).find(k => bannerFixState[k] === "loading");
+                      const _fixLabel = { title:"title", metaDescription:"meta description", h1:"H1 heading", headings:"sub-headings", handle:"URL slug", schema:"schema markup", readability_fix:"article (full readability rewrite)", citations_fix:"citations", eeat_fix:"E-E-A-T signals", og_fix:"OG tags", author_fix:"author bio", kw_fix:"keywords", faq_fix:"FAQ section", internal_fix:"internal links", date_fix:"publish date", body_append:"content", body_replace:"article body" };
+                      const activeField = activeKey ? fixableField(activeKey) : null;
+                      const subject = activeField && _fixLabel[activeField] ? _fixLabel[activeField] : "content";
+                      return (
+                        <div style={{ display:"flex", gap:10, alignItems:"center", background:"#1e1b4b", border:"1px solid #4f46e5", borderRadius:8, padding:"10px 14px", marginBottom:10 }}>
+                          <span style={{ fontSize:18, lineHeight:1, color:"#a5b4fc", flexShrink:0, fontFamily:"monospace" }}>{spinChar}</span>
+                          <div style={{ flex:1 }}>
+                            <div style={{ fontSize:12, fontWeight:700, color:"#e0e7ff" }}>AI is fixing your {subject}…</div>
+                            <div style={{ fontSize:11, color:"#818cf8", marginTop:2 }}>Writing improved content and saving directly to Shopify. This may take 5–15 seconds.</div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     {/* section header + Fix All button */}
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:7, flexWrap:"wrap", gap:6 }}>
                       <div style={{ fontSize:10, fontWeight:700, color:"#6366f1", textTransform:"uppercase", letterSpacing:"0.8px" }}>
@@ -1856,7 +1884,7 @@ export default function BlogSEO() {
                         const tipOpen  = inlineTipIssue === issue.msg;
                         return (
                           <div key={i} style={{ display:"flex", flexDirection:"column", gap:4 }}>
-                            <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                            <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap", background: fixSt === "loading" ? "#1e1b4b" : "transparent", borderRadius:8, padding: fixSt === "loading" ? "6px 8px" : "2px 0", transition:"background 0.2s" }}>
                               {alreadyFixed
                                 ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
                                 : <span style={{ width:6, height:6, borderRadius:"50%", background:sevColor, flexShrink:0, marginTop:1 }} />}
@@ -1864,12 +1892,12 @@ export default function BlogSEO() {
                               {/* AI Fix & Apply button — always shown, runBannerFix handles article lookup */}
                               {fField && !alreadyFixed && (
                                 <button
-                                  style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background: fixSt === "loading" ? "#065f46" : "#059669", borderColor: fixSt === "loading" ? "#065f46" : "#059669", minWidth:90, display:"flex", alignItems:"center", justifyContent:"center", gap:4 }}
+                                  style={{ ...S.btn("primary"), fontSize:11, padding:"5px 14px", flexShrink:0, background: fixSt === "loading" ? "#1d4ed8" : "#059669", borderColor: fixSt === "loading" ? "#1d4ed8" : "#059669", minWidth:100, fontWeight:700, letterSpacing:0.2 }}
                                   onClick={() => runBannerFix(fField, issue.msg)}
                                   disabled={fixSt === "loading" || bulkFixing}
                                 >
                                   {fixSt === "loading"
-                                    ? <><em className="aura-fix-spinner">&#8635;</em><span style={{ animation:"aura-fixing 1.2s ease-in-out infinite" }}>Fixing…</span></>
+                                    ? `${spinChar} Working…`
                                     : (act?.label || "✦ AI Fix")}
                                 </button>
                               )}
