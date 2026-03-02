@@ -739,6 +739,81 @@ Write approximately ${needed} more words of useful content to add to this post. 
 });
 
 /* =========================================================================
+   AI: CONTENT FIX — readability, citations, E-E-A-T signals
+   ========================================================================= */
+router.post('/ai/content-fix', async (req, res) => {
+  try {
+    const { type, title, h1, keywords, url } = req.body || {};
+    if (!type) return res.status(400).json({ ok: false, error: 'type required (readability | citations | eeat | og_fix)' });
+
+    const systemPrompt = `You are an expert SEO content writer for Shopify e-commerce blogs. Write high-quality HTML using only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>. No <html>/<body>/<head> tags. No markdown. No code blocks.`;
+
+    let userPrompt = '';
+    let applyAs = 'append';
+
+    if (type === 'readability') {
+      applyAs = 'prepend';
+      userPrompt = `Rewrite this blog post opening as a clear, highly readable introduction (Flesch Reading Ease 60+). Use short sentences (< 20 words), active voice, and plain language. Break ideas into separate paragraphs of 2-3 sentences.
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+Write a rewritten 2-3 paragraph intro in clean HTML (<p> tags only). Keep the meaning but make it welcoming and easy to skim. Return only the HTML — nothing else.`;
+
+    } else if (type === 'citations') {
+      applyAs = 'append';
+      userPrompt = `Add an "Expert Sources & Further Reading" section for this blog post. Include 3-5 real, authoritative references relevant to the topic. Prefer .gov, .edu, Wikipedia, NHS, CDC, Google, Moz, Ahrefs, Semrush, Shopify, or well-known industry publications. Cite each as a bullet with the source name and a brief relevance note.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+URL: ${url || 'N/A'}
+
+Return HTML in this format:
+<h2>Expert Sources &amp; Further Reading</h2>
+<ul>
+<li><strong>Source Name</strong> — Brief note on relevance. <a href="https://example.com" target="_blank" rel="noopener noreferrer">Read more</a></li>
+</ul>
+<p><em>Citing authoritative sources strengthens E-E-A-T and improves eligibility for AI search citations (Google AI Mode, 2026).</em></p>
+
+Return only the HTML — nothing else.`;
+
+    } else if (type === 'eeat') {
+      applyAs = 'prepend';
+      userPrompt = `Write a brief first-person expertise statement for the opening of this blog post. It should signal hands-on experience using natural language: "In my experience...", "I've personally tested...", "After working with X clients on this...". Keep it to 2-3 natural sentences — do NOT make it sound like a disclaimer.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+Return only a single HTML <p> tag. Nothing else.`;
+
+    } else if (type === 'og_fix') {
+      applyAs = 'append';
+      userPrompt = `Generate SEO-optimised Open Graph meta tag values for this blog post. Return a JSON object only, no HTML:
+{"og_title": "...", "og_description": "...", "og_type": "article"}
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+og_title should be ≤ 60 chars. og_description should be 100-150 chars, compelling for social sharing. Return only the JSON.`;
+
+    } else {
+      return res.status(400).json({ ok: false, error: `Unknown type: ${type}` });
+    }
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.7,
+    });
+    const output = completion.choices[0]?.message?.content?.trim() || '';
+    if (!output) return res.status(500).json({ ok: false, error: 'AI returned no content' });
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'email-gen' });
+    res.json({ ok: true, html: output, applyAs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
    AI: CHAT — blog SEO assistant
    ========================================================================= */
 router.post('/ai/generate', async (req, res) => {
@@ -8227,6 +8302,19 @@ router.post('/apply-field', async (req, res) => {
       });
       if (!putRes.ok) throw new Error(`Shopify body append failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
       return res.json({ ok: true, message: 'Content added to your post' });
+    }
+    if (field === 'body_prepend') {
+      // Prepend HTML content to the top of the article body (for readability intros, E-E-A-T signals etc.)
+      const getRes = await fetch(`${articleBase}.json`, { headers: { 'X-Shopify-Access-Token': token } });
+      if (!getRes.ok) throw new Error(`Could not fetch article (${getRes.status})`);
+      const { article: existingArticle } = await getRes.json();
+      const body = value + '\n\n' + (existingArticle.body_html || '').trim();
+      const putRes = await fetch(`${articleBase}.json`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ article: { id: articleId, body_html: body } }),
+      });
+      if (!putRes.ok) throw new Error(`Shopify body prepend failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'Content added to the top of your post' });
     }
     return res.status(400).json({ ok: false, error: `Unsupported field: ${field}` });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }

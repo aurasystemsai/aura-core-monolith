@@ -942,7 +942,19 @@ export default function BlogSEO() {
     setBannerFixState(p => ({ ...p, [issueKey]: "loading" }));
     try {
       let val = "";
-      if (field === "body_append") {
+      let applyField = field;
+      if (field === "readability_fix" || field === "citations_fix" || field === "eeat_fix" || field === "og_fix") {
+        const typeMap = { readability_fix: "readability", citations_fix: "citations", eeat_fix: "eeat", og_fix: "og_fix" };
+        const rw = await apiFetchJSON(`${API}/ai/content-fix`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: typeMap[field], title: scanResult.title, h1: scanResult.h1, keywords: kwInput || scanResult.title, url: scanResult.url }),
+        });
+        if (!rw.ok) throw new Error(rw.error || "AI content fix failed");
+        val = rw.html;
+        if (!val) throw new Error("AI returned no content");
+        applyField = rw.applyAs === "prepend" ? "body_prepend" : "body_append";
+      } else if (field === "body_append") {
         // AI writes new content sections and appends them to the post
         const rw = await apiFetchJSON(`${API}/ai/expand-content`, {
           method: "POST",
@@ -978,13 +990,20 @@ export default function BlogSEO() {
       const ap = await apiFetchJSON(`${API}/apply-field`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field, value: val, shop: shopDomain }),
+        body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, field: applyField, value: val, shop: shopDomain }),
       });
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
       if (!silent) {
-        showToast(field === "body_append" ? "✓ AI content added — rescanning post..." : field === "schema" ? "✓ Schema added — rescanning post..." : `✓ ${field} updated — rescanning post...`);
+        const toastMsg = field === "body_append" ? "✓ AI content added — rescanning post..."
+          : field === "schema" ? "✓ Schema added — rescanning post..."
+          : field === "readability_fix" ? "✓ Readable intro added — rescanning post..."
+          : field === "citations_fix" ? "✓ Expert citations added — rescanning post..."
+          : field === "eeat_fix" ? "✓ E-E-A-T signals added — rescanning post..."
+          : field === "og_fix" ? "✓ OG tags generated — rescanning post..."
+          : `✓ ${field} updated — rescanning post...`;
+        showToast(toastMsg);
         setTimeout(() => runScan(), 1500);
       }
       return true;
@@ -1220,10 +1239,16 @@ export default function BlogSEO() {
       return { label: "Find Keywords", action: () => { setSection("Keywords"); } };
     if (m.includes("keyword") && (m.includes("missing") || m.includes("not found") || m.includes("absent")))
       return { label: "Find Keywords", action: () => { setSection("Keywords"); } };
-    if (m.includes("sentence") || m.includes("passive voice") || m.includes("readability") || m.includes("flesch"))
-      return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
+    if (m.includes("sentence") || m.includes("passive voice") || m.includes("readability") || m.includes("flesch") || m.includes("simplif"))
+      return ai("✦ AI Fix Readability", "readability_fix");
     if (m.includes("paragraph") && (m.includes("long") || m.includes("exceed")))
-      return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
+      return ai("✦ AI Fix Readability", "readability_fix");
+    if (m.includes("citation") || m.includes("authoritative") || (m.includes("outbound") && m.includes("cit")))
+      return ai("✦ AI Add Citations", "citations_fix");
+    if (m.includes("first-person") || m.includes("first person") || m.includes("expertise signal") || m.includes("lived experience") || m.includes("e-e-a-t") || m.includes("eeat"))
+      return ai("✦ AI Add E-E-A-T", "eeat_fix");
+    if (m.includes("open graph") || m.includes("og:") || m.includes("social sharing") || m.includes("social tag"))
+      return ai("✦ AI Fix OG Tags", "og_fix");
     if (m.includes("transition"))
       return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
     if (m.includes("faq") || (m.includes("question") && m.includes("answer")))
@@ -1232,7 +1257,7 @@ export default function BlogSEO() {
       return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
     if (m.includes("backlink") || m.includes("link build"))
       return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
-    if (m.includes("canonical") || m.includes("robots") || m.includes("noindex") || m.includes("https") || m.includes("image") || m.includes("alt") || m.includes("og:") || m.includes("open graph") || m.includes("technical") || m.includes("core web") || m.includes("speed"))
+    if (m.includes("canonical") || m.includes("robots") || m.includes("noindex") || m.includes("https") || m.includes("image") || m.includes("alt") || m.includes("technical") || m.includes("core web") || m.includes("speed"))
       return { label: "Technical SEO", action: () => { setSection("Technical"); } };
     return null;
   }, [runBannerFix, setSection]);
