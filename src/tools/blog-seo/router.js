@@ -753,12 +753,43 @@ router.post('/ai/content-fix', async (req, res) => {
     let applyAs = 'append';
 
     if (type === 'readability') {
-      applyAs = 'prepend';
-      userPrompt = `Rewrite this blog post opening as a clear, highly readable introduction (Flesch Reading Ease 60+). Use short sentences (< 20 words), active voice, and plain language. Break ideas into separate paragraphs of 2-3 sentences.
+      applyAs = 'replace';
+      // Fetch the real article body so we can actually rewrite it
+      const { articleId: aId, blogId: bId, shop: shopD } = req.body || {};
+      let bodyHtml = '';
+      if (aId && bId && shopD) {
+        try {
+          const shopTokens = require('../../core/shopTokens');
+          const token = await shopTokens.getToken(shopD);
+          if (token) {
+            const gr = await fetch(`https://${shopD}/admin/api/2023-10/blogs/${bId}/articles/${aId}.json`, {
+              headers: { 'X-Shopify-Access-Token': token },
+            });
+            if (gr.ok) { const gj = await gr.json(); bodyHtml = gj.article?.body_html || ''; }
+          }
+        } catch (_) { /* fall through to title-only prompt */ }
+      }
+      // Strip HTML tags for a clean text excerpt to send to AI (cap at ~8000 chars to stay in token budget)
+      const bodyText = bodyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 8000);
+      if (bodyText) {
+        userPrompt = `You are rewriting an existing Shopify blog post to dramatically improve its readability score (target Flesch Reading Ease 60+). Keep ALL the same information, headings structure, and key points — but rewrite every sentence to be shorter (under 20 words), use active voice, and break long paragraphs into 2-3 sentence chunks.
+
 Post title: "${title || h1}"
 Keywords: ${keywords || title || h1}
 
-Write a rewritten 2-3 paragraph intro in clean HTML (<p> tags only). Keep the meaning but make it welcoming and easy to skim. Return only the HTML — nothing else.`;
+Current content to rewrite:
+${bodyText}
+
+Rewrite the FULL content above in clean HTML using only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>. Return only the HTML — nothing else.`;
+      } else {
+        // No body available — write a strong readable article from scratch
+        userPrompt = `Write a complete, highly readable blog post (Flesch Reading Ease 65+) about the topic below. Use short sentences (under 20 words), active voice, plain language. Structure with H2 subheadings every ~200 words. Include an intro, 4-6 body sections, and a conclusion.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+Return full clean HTML using only: <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>. Return only the HTML — nothing else.`;
+      }
 
     } else if (type === 'citations') {
       applyAs = 'append';
@@ -8373,6 +8404,15 @@ router.post('/apply-field', async (req, res) => {
       });
       if (!putRes.ok) throw new Error(`Shopify body prepend failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
       return res.json({ ok: true, message: 'Content added to the top of your post' });
+    }
+    if (field === 'body_replace') {
+      // Replace the full article body_html with the rewritten version
+      const putRes = await fetch(`${articleBase}.json`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ article: { id: articleId, body_html: value } }),
+      });
+      if (!putRes.ok) throw new Error(`Shopify body replace failed (${putRes.status}): ${(await putRes.text()).slice(0, 200)}`);
+      return res.json({ ok: true, message: 'Article content fully rewritten' });
     }
     return res.status(400).json({ ok: false, error: `Unsupported field: ${field}` });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }

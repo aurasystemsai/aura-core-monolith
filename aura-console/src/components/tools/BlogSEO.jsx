@@ -996,12 +996,12 @@ export default function BlogSEO() {
         const rw = await apiFetchJSON(`${API}/ai/content-fix`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: typeMap[field], title: scanResult.title, h1: scanResult.h1, keywords: kwInput || scanResult.title, url: scanResult.url }),
+          body: JSON.stringify({ type: typeMap[field], title: scanResult.title, h1: scanResult.h1, keywords: kwInput || scanResult.title, url: scanResult.url, articleId: artId, blogId, shop: shopDomain }),
         });
         if (!rw.ok) throw new Error(rw.error || "AI content fix failed");
         val = rw.html;
         if (!val) throw new Error("AI returned no content");
-        applyField = rw.applyAs === "prepend" ? "body_prepend" : "body_append";
+        applyField = rw.applyAs === "replace" ? "body_replace" : rw.applyAs === "prepend" ? "body_prepend" : "body_append";
       } else if (field === "body_append") {
         // AI writes new content sections and appends them to the post
         const rw = await apiFetchJSON(`${API}/ai/expand-content`, {
@@ -1046,7 +1046,7 @@ export default function BlogSEO() {
       if (!silent) {
         const toastMsg = field === "body_append" ? "✓ AI content added — rescanning post..."
           : field === "schema" ? "✓ Schema added — rescanning post..."
-          : field === "readability_fix" ? "✓ Readable intro added — rescanning post..."
+          : field === "readability_fix" ? "✓ Article rewritten for readability — rescanning post..."
           : field === "citations_fix" ? "✓ Expert citations added — rescanning post..."
           : field === "eeat_fix" ? "✓ E-E-A-T signals added — rescanning post..."
           : field === "og_fix" ? "✓ OG tags generated — rescanning post..."
@@ -1294,7 +1294,7 @@ export default function BlogSEO() {
     if (m.includes("word count") || m.includes("word") || m.includes("too short") || m.includes("thin") || (m.includes("words") && (m.includes("short") || m.includes("below"))))
       return ai("Expand with AI", "body_append");
     /* ── All remaining issues get AI or inline tip ── */
-    if (m.includes("author"))
+    if (m.includes("author") && !m.includes("authoritative") && !m.includes("authority"))
       return ai("✦ AI Add Author", "author_fix");
     if (m.includes("date") || m.includes("freshness") || m.includes("stale") || m.includes("outdated") || m.includes("publish") || m.includes("modified"))
       return ai("✦ Refresh Date", "date_fix");
