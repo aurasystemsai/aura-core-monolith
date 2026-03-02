@@ -345,6 +345,7 @@ export default function BlogSEO() {
   const [bannerFixState,   setBannerFixState]   = useState({}); // {issueIdx: "loading"|"ok"|"error"}
   const [bulkFixing,       setBulkFixing]       = useState(false);
   const [bulkFixProgress,  setBulkFixProgress]  = useState(null); // {done, total}
+  const [inlineTipIssue,   setInlineTipIssue]   = useState(null); // issue.msg showing inline help tip
 
   /* ── Smart-Fix (one-click all tools) state ── */
   const [smartFixCards,    setSmartFixCards]    = useState([]); // [{id, icon, label, status, result, applyField}]
@@ -943,8 +944,22 @@ export default function BlogSEO() {
     try {
       let val = "";
       let applyField = field;
-      if (field === "readability_fix" || field === "citations_fix" || field === "eeat_fix" || field === "og_fix") {
-        const typeMap = { readability_fix: "readability", citations_fix: "citations", eeat_fix: "eeat", og_fix: "og_fix" };
+      const CONTENT_FIX_TYPES = { readability_fix: "readability", citations_fix: "citations", eeat_fix: "eeat", og_fix: "og_fix", author_fix: "author_byline", kw_fix: "keyword_boost", faq_fix: "faq", internal_fix: "internal_links" };
+      if (field === "date_fix") {
+        // Special case: just update the published_at timestamp, no body change
+        if (!scannedArtId || !scannedBlogId) throw new Error("Select a post from the store dropdown first");
+        const dr = await apiFetchJSON(`${API}/apply-date-refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleId: scannedArtId, blogId: scannedBlogId, shop: shopDomain }),
+        });
+        if (!dr.ok) throw new Error(dr.error || "Date refresh failed");
+        setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
+        setFixedFields(p => new Set([...p, field]));
+        if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(), 1500); }
+        return true;
+      } else if (CONTENT_FIX_TYPES[field]) {
+        const typeMap = CONTENT_FIX_TYPES;
         const rw = await apiFetchJSON(`${API}/ai/content-fix`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1002,6 +1017,10 @@ export default function BlogSEO() {
           : field === "citations_fix" ? "✓ Expert citations added — rescanning post..."
           : field === "eeat_fix" ? "✓ E-E-A-T signals added — rescanning post..."
           : field === "og_fix" ? "✓ OG tags generated — rescanning post..."
+          : field === "author_fix" ? "✓ Author bio added — rescanning post..."
+          : field === "kw_fix" ? "✓ Keyword content added — rescanning post..."
+          : field === "faq_fix" ? "✓ FAQ section added — rescanning post..."
+          : field === "internal_fix" ? "✓ Related links section added — rescanning post..."
           : `✓ ${field} updated — rescanning post...`;
         showToast(toastMsg);
         setTimeout(() => runScan(), 1500);
@@ -1230,18 +1249,20 @@ export default function BlogSEO() {
     /* ── Word count / thin content ── */
     if (m.includes("word count") || m.includes("word") || m.includes("too short") || m.includes("thin") || (m.includes("words") && (m.includes("short") || m.includes("below"))))
       return ai("Expand with AI", "body_append");
-    /* ── Non-auto-fixable: navigate to relevant section ── */
-    if (m.includes("date") || m.includes("freshness") || m.includes("publish") || m.includes("modified"))
-      return { label: "Add Schema", action: () => { setSection("Schema"); } };
+    /* ── All remaining issues get AI or inline tip ── */
     if (m.includes("author"))
-      return { label: "Add Author", action: () => { setSection("Local"); } };
+      return ai("✦ AI Add Author", "author_fix");
+    if (m.includes("date") || m.includes("freshness") || m.includes("stale") || m.includes("outdated") || m.includes("publish") || m.includes("modified"))
+      return ai("✦ Refresh Date", "date_fix");
     if (m.includes("keyword") && (m.includes("density") || m.includes("stuffing") || m.includes("repeated")))
-      return { label: "Find Keywords", action: () => { setSection("Keywords"); } };
+      return ai("✦ AI Fix Keywords", "kw_fix");
     if (m.includes("keyword") && (m.includes("missing") || m.includes("not found") || m.includes("absent")))
-      return { label: "Find Keywords", action: () => { setSection("Keywords"); } };
+      return ai("✦ AI Fix Keywords", "kw_fix");
     if (m.includes("sentence") || m.includes("passive voice") || m.includes("readability") || m.includes("flesch") || m.includes("simplif"))
       return ai("✦ AI Fix Readability", "readability_fix");
     if (m.includes("paragraph") && (m.includes("long") || m.includes("exceed")))
+      return ai("✦ AI Fix Readability", "readability_fix");
+    if (m.includes("transition"))
       return ai("✦ AI Fix Readability", "readability_fix");
     if (m.includes("citation") || m.includes("authoritative") || (m.includes("outbound") && m.includes("cit")))
       return ai("✦ AI Add Citations", "citations_fix");
@@ -1249,18 +1270,23 @@ export default function BlogSEO() {
       return ai("✦ AI Add E-E-A-T", "eeat_fix");
     if (m.includes("open graph") || m.includes("og:") || m.includes("social sharing") || m.includes("social tag"))
       return ai("✦ AI Fix OG Tags", "og_fix");
-    if (m.includes("transition"))
-      return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
     if (m.includes("faq") || (m.includes("question") && m.includes("answer")))
-      return { label: "Optimize Content", action: () => { setSection("Optimize"); } };
-    if (m.includes("internal link"))
-      return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
+      return ai("✦ AI Add FAQ", "faq_fix");
+    if (m.includes("internal link") || (m.includes("link") && m.includes("orphan")))
+      return ai("✦ AI Add Links", "internal_fix");
     if (m.includes("backlink") || m.includes("link build"))
-      return { label: "Internal Links", action: () => { setSection("Backlinks"); } };
-    if (m.includes("canonical") || m.includes("robots") || m.includes("noindex") || m.includes("https") || m.includes("image") || m.includes("alt") || m.includes("technical") || m.includes("core web") || m.includes("speed"))
-      return { label: "Technical SEO", action: () => { setSection("Technical"); } };
+      return { label: "→ Backlinks", action: () => { setSection("Backlinks"); } };
+    /* Truly technical — not fixable via content API, show inline tip */
+    if (m.includes("canonical") || m.includes("robots") || m.includes("noindex"))
+      return { label: "? How to fix", tip: "In your Shopify theme editor, check your blog-article.liquid template. Shopify adds canonical tags automatically — if this persists, a conflicting app may be overriding it.", action: () => setInlineTipIssue(msg) };
+    if (m.includes("https"))
+      return { label: "? How to fix", tip: "Shopify handles HTTPS automatically. This issue usually means your content (images or links) is using http:// URLs — edit the post and update any http:// links to https://.", action: () => setInlineTipIssue(msg) };
+    if (m.includes("core web") || m.includes("speed") || m.includes("lcp") || m.includes("cls") || m.includes("inp"))
+      return { label: "? How to fix", tip: "Core Web Vitals are affected by your theme and installed apps, not just content. Remove unused apps, compress images, and consider a speed-optimized theme.", action: () => setInlineTipIssue(msg) };
+    if (m.includes("image") || m.includes("alt"))
+      return { label: "→ Image SEO", action: () => { setSection("Technical"); } };
     return null;
-  }, [runBannerFix, setSection]);
+  }, [runBannerFix, setSection, setInlineTipIssue]);
   /* ═══════════════════════════
      RENDER
   ═══════════════════════════ */
@@ -1754,27 +1780,48 @@ export default function BlogSEO() {
                         const sev      = issue.severity || issue.sev || "low";
                         const sevColor = sev === "high" ? "#fca5a5" : sev === "medium" ? "#fbbf24" : "#93c5fd";
                         const fField   = fixableField(issue.msg);
+                        const act      = getIssueAction(issue.msg);
                         const fixSt    = bannerFixState[issue.msg];
                         const alreadyFixed = fixSt === "ok" || fixedFields.has(fField || "");
+                        const tipOpen  = inlineTipIssue === issue.msg;
                         return (
-                          <div key={i} style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-                            {/* severity dot or fixed tick */}
-                            {alreadyFixed
-                              ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
-                              : <span style={{ width:6, height:6, borderRadius:"50%", background:sevColor, flexShrink:0, marginTop:1 }} />}
-                            <span style={{ fontSize:12, color: alreadyFixed ? C.dim : C.sub, flex:1, textDecoration: alreadyFixed ? "line-through" : "none" }}>{issue.msg}</span>
-                            {/* Fix & Apply inline button — stays on this section */}
-                            {fField && scannedArtId && !alreadyFixed && (
-                              <button
-                                style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background:"#059669", borderColor:"#059669", opacity: fixSt === "loading" ? 0.6 : 1 }}
-                                onClick={() => runBannerFix(fField, issue.msg)}
-                                disabled={fixSt === "loading" || bulkFixing}
-                              >
-                                {fixSt === "loading" ? "Fixing…" : "Fix & Apply"}
-                              </button>
-                            )}
-                            {fixSt === "error" && (
-                              <span style={{ fontSize:10, color:"#fca5a5" }}>✗ failed</span>
+                          <div key={i} style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                            <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                              {alreadyFixed
+                                ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
+                                : <span style={{ width:6, height:6, borderRadius:"50%", background:sevColor, flexShrink:0, marginTop:1 }} />}
+                              <span style={{ fontSize:12, color: alreadyFixed ? C.dim : C.sub, flex:1, textDecoration: alreadyFixed ? "line-through" : "none" }}>{issue.msg}</span>
+                              {/* AI Fix & Apply button */}
+                              {fField && scannedArtId && !alreadyFixed && (
+                                <button
+                                  style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background:"#059669", borderColor:"#059669", opacity: fixSt === "loading" ? 0.6 : 1 }}
+                                  onClick={() => runBannerFix(fField, issue.msg)}
+                                  disabled={fixSt === "loading" || bulkFixing}
+                                >
+                                  {fixSt === "loading" ? "Fixing…" : (act?.label || "✦ AI Fix")}
+                                </button>
+                              )}
+                              {/* Navigation / tip button (non-AI issues) */}
+                              {!fField && act && !alreadyFixed && (
+                                <button
+                                  style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0,
+                                    ...(act.tip ? { background:"#1c1007", borderColor:"#92400e", color:"#fbbf24" } : {}) }}
+                                  onClick={act.action}
+                                >
+                                  {act.label}
+                                </button>
+                              )}
+                              {fixSt === "error" && (
+                                <span style={{ fontSize:10, color:"#fca5a5" }}>✗ failed</span>
+                              )}
+                            </div>
+                            {/* Inline how-to tip */}
+                            {tipOpen && act?.tip && (
+                              <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:8, padding:"10px 14px", fontSize:12, color:"#fbbf24", lineHeight:1.6, display:"flex", gap:10, alignItems:"flex-start", marginLeft:14 }}>
+                                <span style={{ flexShrink:0 }}>💡</span>
+                                <span style={{ flex:1 }}>{act.tip}</span>
+                                <button style={{ ...S.btn(), fontSize:10, padding:"2px 8px", flexShrink:0 }} onClick={() => setInlineTipIssue(null)}>✕</button>
+                              </div>
                             )}
                           </div>
                         );

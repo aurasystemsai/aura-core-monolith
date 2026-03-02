@@ -795,6 +795,63 @@ Keywords: ${keywords || title || h1}
 
 og_title should be ≤ 60 chars. og_description should be 100-150 chars, compelling for social sharing. Return only the JSON.`;
 
+    } else if (type === 'author_byline') {
+      applyAs = 'append';
+      userPrompt = `Write a short professional author bio section for this blog post. It should feel genuine — written by someone with hands-on experience in the topic. Use first-person plural ("At [store name], we...") if no author name is available. Keep it to 2 sentences max. Include a reference to the team's expertise.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+Return this exact HTML format:
+<div class="author-byline" style="border-top:1px solid #e5e7eb;margin-top:2em;padding-top:1em">
+  <p style="font-size:0.9em;color:#6b7280"><strong>About the Author</strong> — [2 sentence bio with expertise signal]</p>
+</div>
+
+Return only the HTML — nothing else.`;
+
+    } else if (type === 'keyword_boost') {
+      applyAs = 'append';
+      userPrompt = `Write a natural, keyword-optimised paragraph section to add to this blog post. Use the target keyword and related LSI terms naturally — not stuffed. Aim for 100-150 words. This helps fix thin keyword coverage.
+
+Post title: "${title || h1}"
+Target keywords: ${keywords || title || h1}
+
+Return clean HTML using only <h2>, <p>, <strong> tags. Return only the HTML — nothing else.`;
+
+    } else if (type === 'faq') {
+      applyAs = 'append';
+      userPrompt = `Write an FAQ section with 4-5 questions and answers for this blog post. Questions should match what people actually search. Answers should be direct (1-3 sentences each). This helps with People Also Ask visibility and featured snippets.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+Return HTML in this format:
+<h2>Frequently Asked Questions</h2>
+<dl>
+  <dt><strong>Question here?</strong></dt>
+  <dd>Direct answer here.</dd>
+</dl>
+
+Return only the HTML — nothing else.`;
+
+    } else if (type === 'internal_links') {
+      applyAs = 'append';
+      userPrompt = `Write a "Related Reading" section for this blog post to improve internal linking. Create 3-4 plausible related article titles and approximate blog slugs based on the topic. This signals topical authority to search engines.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+Site URL: ${url ? new URL(url).origin : 'https://your-store.com'}
+
+Return HTML in this format:
+<div class="related-reading">
+  <h3>Related Reading</h3>
+  <ul>
+    <li><a href="/blogs/news/[slug]">[Article Title]</a></li>
+  </ul>
+</div>
+
+Return only the HTML — nothing else.`;
+
     } else {
       return res.status(400).json({ ok: false, error: `Unknown type: ${type}` });
     }
@@ -8317,6 +8374,27 @@ router.post('/apply-field', async (req, res) => {
       return res.json({ ok: true, message: 'Content added to the top of your post' });
     }
     return res.status(400).json({ ok: false, error: `Unsupported field: ${field}` });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+/* ── Refresh article published_at to today ───────────────────────────── */
+router.post('/apply-date-refresh', async (req, res) => {
+  try {
+    const { articleId, blogId, shop } = req.body;
+    if (!articleId || !blogId) return res.status(400).json({ ok: false, error: 'articleId and blogId required' });
+    const shopTokens = require('../../core/shopTokens');
+    const resolvedShop = shop || req.headers['x-shopify-shop-domain'];
+    const token = await shopTokens.getToken(resolvedShop);
+    if (!token) return res.status(403).json({ ok: false, error: 'No Shopify token for this shop' });
+    const ver = '2023-10';
+    const headers = { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token };
+    const now = new Date().toISOString();
+    const r = await fetch(`https://${resolvedShop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}.json`, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ article: { id: articleId, published_at: now, updated_at: now } }),
+    });
+    if (!r.ok) throw new Error(`Shopify date refresh failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
+    return res.json({ ok: true, message: `Published date refreshed to ${now.slice(0, 10)}` });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
