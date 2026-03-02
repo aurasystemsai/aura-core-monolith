@@ -2046,7 +2046,8 @@ export default function ImageAltMediaSEO() {
  };
 
  const fetchJson = async (url, options = {}) => {
- const headers = { ...(options.headers || {}), "X-Role": role };
+ const shopHeader = (shopDomain.trim() || getShopFromQuery() || '').toLowerCase();
+ const headers = { ...(options.headers || {}), "X-Role": role, ...(shopHeader ? { 'x-shopify-shop-domain': shopHeader } : {}) };
  const res = await fetch(url, { ...options, headers });
  const data = await res.json().catch(() => ({}));
  if (!res.ok || !data.ok) {

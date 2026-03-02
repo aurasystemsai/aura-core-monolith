@@ -85,8 +85,9 @@ const SECTIONS = [
 export default function BlogSEO() {
 
   /* ── Navigation state ── */
-  const [section,    setSection]    = useState(null);   // null = home
+  const [section,    setSection]    = useState("Posts"); // "Posts" = default home
   const [expertMode, setExpertMode] = useState(false);  // false = beginner
+  const [postSearch, setPostSearch] = useState("");      // article table search
 
   /* ── Simple-mode flow ── */
   const [simpleFlow,        setSimpleFlow]        = useState(null); // null | 'fix' | 'write'
@@ -404,7 +405,7 @@ export default function BlogSEO() {
 
   /* ── Auto-populate advanced section inputs from store data ── */
   useEffect(() => {
-    if (!section) return;
+    if (!section || section === "Posts") return;
     const storeNiche = shopDomain
       ? shopDomain.replace(".myshopify.com", "").replace(/-/g, " ")
       : (products[0]?.productType || products[0]?.vendor || "ecommerce");
@@ -1270,51 +1271,128 @@ export default function BlogSEO() {
       {/* ── Body layout ── */}
       <div style={S.layout}>
 
-        {/* ── Sidebar — shown when a section is active ── */}
-        {section && <nav style={S.sidebar}>
-          <div style={{ padding: "8px 14px 10px", borderBottom: `1px solid ${C.surface}`, marginBottom: 6 }}>
-            <button style={{ fontSize: 13, fontWeight: 700, color: section ? C.indigoL : C.text, background: "none", border: "none", cursor: "pointer", padding: 0 }}
-              onClick={() => setSection(null)}>
-              Blog SEO Engine
-            </button>
+        {/* ── Sidebar — always visible with grouped nav ── */}
+        <nav style={S.sidebar}>
+          <div style={{ padding: "12px 14px 14px", borderBottom: `1px solid ${C.surface}`, marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Blog SEO Engine</div>
+            {shopDomain && <div style={{ fontSize: 11, color: C.dim, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{shopDomain}</div>}
           </div>
-          <div style={S.sHead}>Tools</div>
-          {visibleSections.map(s => (
-            <div key={s.id} style={S.sItem(section === s.id)}
-              onClick={() => setSection(s.id)}>
-              {s.title}
-            </div>
+          <div style={{ padding: "6px 8px 2px" }}>
+            <div style={S.sItem(section === "Posts")} onClick={() => setSection("Posts")}>📄 Posts</div>
+          </div>
+          <div style={S.sHead}>Content</div>
+          {[["Write","Write with AI"],["SmartFix","Auto-Optimize"]].map(([sid, lbl]) => (
+            <div key={sid} style={S.sItem(section === sid)} onClick={() => setSection(sid)}>{lbl}</div>
           ))}
-        </nav>}
+          <div style={S.sHead}>Analyze</div>
+          {[["Analyze","Analyze a Post"],["BulkScan","Bulk Scan"],["History","History"]].map(([sid, lbl]) => (
+            <div key={sid} style={S.sItem(section === sid)} onClick={() => setSection(sid)}>{lbl}</div>
+          ))}
+          <div style={S.sHead}>Optimize</div>
+          {[["Optimize","Improve a Post"],["Keywords","Find Keywords"],["Chat","Ask AI"]].map(([sid, lbl]) => (
+            <div key={sid} style={S.sItem(section === sid)} onClick={() => setSection(sid)}>{lbl}</div>
+          ))}
+          <div style={S.sHead}>Technical</div>
+          {[["Technical","Technical SEO"],["Schema","Schema & Links"],["SERP","SERP & CTR"],["Backlinks","Internal Links"]].map(([sid, lbl]) => (
+            <div key={sid} style={S.sItem(section === sid)} onClick={() => setSection(sid)}>{lbl}</div>
+          ))}
+          <div style={S.sHead}>Growth</div>
+          {[["Rank","Rank Tracker"],["AIGrowth","AI Growth"],["Trends","Trend Scout"],["AB","A/B Refresh"],["Local","Local & E-E-A-T"],["Voice","Voice & AI"],["Crawl","Site Crawl"],["GEO","GEO & LLM"]].map(([sid, lbl]) => (
+            <div key={sid} style={S.sItem(section === sid)} onClick={() => setSection(sid)}>{lbl}</div>
+          ))}
+        </nav>
 
         {/* ── Main content ── */}
         <div style={S.main}>
 
           {/* ════════════════════════════
-          {/* ════════════════════════════
-              HOME DASHBOARD
+              POSTS — default home view
           ════════════════════════════ */}
-          {!section && (
-            <div style={{ maxWidth: 720, margin: "0 auto", paddingTop: 32 }}>
+          {section === "Posts" && (
+            <div>
+              {/* Page header */}
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
+                <div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>Posts</div>
+                  <div style={{ fontSize:13, color:C.sub, marginTop:3 }}>
+                    {shopLoading ? "Connecting to store..." : shopDomain ? `${articles.length} post${articles.length!==1?"s":""} · ${shopDomain}` : "No store connected"}
+                  </div>
+                </div>
+                <div style={{ display:"flex", gap:10 }}>
+                  <button style={S.btn()} onClick={() => setSection("Analyze")}>Analyze a Post</button>
+                  <button style={S.btn("primary")} onClick={() => setSection("Write")}>✦ Write with AI</button>
+                </div>
+              </div>
 
-              {/* Store status banner */}
-              {shopLoading ? (
-                <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 10, color: C.sub, fontSize: 13 }}>
-                  <span style={S.spinner} /> Connecting to your store...
-                </div>
-              ) : shopDomain ? (
-                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "10px 16px", marginBottom: 20, fontSize: 13, color: "#86efac", display: "flex", alignItems: "center", gap: 8 }}>
-                  Connected to <strong style={{ margin: "0 4px" }}>{shopDomain}</strong> &middot; {articles.length} post{articles.length !== 1 ? "s" : ""} ready
-                </div>
-              ) : (
-                <div style={{ background: "#1c1007", border: "1px solid #92400e", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#d97706" }}>
-                  No store connected — you can still paste a URL below
+              {/* No store notice */}
+              {!shopDomain && !shopLoading && (
+                <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:10, padding:"12px 16px", marginBottom:20, fontSize:13, color:"#d97706" }}>
+                  No store connected — connect Shopify to see your posts here, or use Analyze to paste any URL.
                 </div>
               )}
 
-              {/* ── Home ── */}
-              <>
-                  {simpleFlow === null && (
+              {/* Loading */}
+              {shopLoading && (
+                <div style={{ ...S.card, display:"flex", alignItems:"center", gap:10, color:C.sub, fontSize:13 }}>
+                  <span style={S.spinner} /> Loading store data...
+                </div>
+              )}
+
+              {/* Article table */}
+              {!shopLoading && articles.length > 0 && (
+                <>
+                  <input style={{ ...S.input, maxWidth:320, marginBottom:14 }} placeholder="Search posts..." value={postSearch} onChange={e => setPostSearch(e.target.value)} />
+                  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden", marginBottom:32 }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 90px 120px", padding:"10px 16px", borderBottom:`1px solid ${C.border}`, background:"#111113" }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px" }}>Post Title</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", textAlign:"center" }}>SEO Score</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.8px", textAlign:"right" }}>Actions</div>
+                    </div>
+                    {(() => {
+                      const filtered = articles.filter(a => !postSearch || a.title?.toLowerCase().includes(postSearch.toLowerCase()));
+                      if (!filtered.length) return <div style={{ padding:"24px 16px", textAlign:"center", color:C.dim, fontSize:13 }}>No posts match your search.</div>;
+                      return filtered.map((art, i) => {
+                        const hist = history.find(h => h.url && art.url && h.url === art.url);
+                        const score = hist?.score ?? (hist?.scored?.overall ?? null);
+                        const sc = score !== null ? (score >= 75 ? C.green : score >= 50 ? C.yellow : C.red) : C.muted;
+                        return (
+                          <div key={art.id} style={{ display:"grid", gridTemplateColumns:"1fr 90px 120px", padding:"12px 16px", borderBottom:i<filtered.length-1?`1px solid ${C.border}`:"none", alignItems:"center", transition:"background .1s" }}
+                            onMouseEnter={e=>e.currentTarget.style.background="#111113"}
+                            onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                            <div>
+                              <div style={{ fontSize:14, fontWeight:600, color:C.text, marginBottom:2 }}>{art.title}</div>
+                              {art.url && <div style={{ fontSize:11, color:C.dim }}>{art.url.replace(/^https?:\/\//,"")}</div>}
+                            </div>
+                            <div style={{ textAlign:"center" }}>
+                              {score !== null ? <span style={{ fontSize:15, fontWeight:700, color:sc }}>{score}</span> : <span style={{ fontSize:12, color:C.dim }}>—</span>}
+                            </div>
+                            <div style={{ display:"flex", gap:6, justifyContent:"flex-end" }}>
+                              <button style={{ ...S.btn(), padding:"4px 10px", fontSize:12 }} onClick={() => { setUrl(art.url||""); setSelectedArtId(String(art.id)); setSection("Analyze"); }}>Analyze</button>
+                              <button style={{ ...S.btn(), padding:"4px 10px", fontSize:12 }} onClick={() => { setOptUrl(art.url||""); setSection("Optimize"); }}>Improve</button>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </>
+              )}
+
+              {/* Empty state */}
+              {!shopLoading && articles.length === 0 && shopDomain && (
+                <div style={S.empty}>
+                  <div style={{ fontSize:32, marginBottom:12 }}>📝</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:C.sub, marginBottom:8 }}>No blog posts found</div>
+                  <div style={{ fontSize:13, color:C.dim, marginBottom:20 }}>Your store is connected but no blog posts were found. Write your first post with AI.</div>
+                  <button style={S.btn("primary")} onClick={() => setSection("Write")}>✦ Write with AI</button>
+                </div>
+              )}
+
+              {/* ── Quick actions (legacy simple-flow) ── */}
+              <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:24, marginBottom:8 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"1px", marginBottom:14 }}>Quick Actions</div>
+                  <>
+                    {simpleFlow === null && (
                     <>
                       <div style={{ textAlign: "center", marginBottom: 28 }}>
                         <div style={{ fontSize: 24, fontWeight: 800, color: "#fafafa", marginBottom: 8 }}>What would you like to do?</div>
@@ -1523,6 +1601,7 @@ export default function BlogSEO() {
                     </>
                   )}
                 </>
+              </div>{/* end Quick Actions */}
 
 
             </div>
@@ -1532,7 +1611,7 @@ export default function BlogSEO() {
           ════════════════════════════ */}
           {activeSec && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: `1px solid ${C.border}`, marginBottom: 16, flexWrap: "wrap" }}>
-              <button style={{ ...S.btn(), padding: "6px 14px", fontSize: 13 }} onClick={() => setSection(null)}>All Tools</button>
+              <button style={{ ...S.btn(), padding: "6px 14px", fontSize: 13 }} onClick={() => setSection("Posts")}>← Posts</button>
               <span style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{activeSec.title}</span>
               <div style={{ flex: 1 }} />
               {/* Article picker */}

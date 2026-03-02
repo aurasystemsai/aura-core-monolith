@@ -2,6 +2,7 @@
 const toolsMeta = [
   // ── Live tools ──
   { id: "blog-seo", name: "Blog SEO Engine", description: "Optimize blog content with keyword clusters, internal linking, and SEO scoring.", category: "SEO", suite: "seo" },
+  { id: "image-alt-media-seo", name: "Image & Media SEO", description: "AI-powered alt text, image optimization, and media SEO.", category: "SEO", suite: "seo" },
   // ── Coming soon (hidden until built & tested) ──
   { id: "product-seo", name: "Product SEO Engine", description: "Optimize product pages for search with AI-powered metadata and content.", category: "SEO", suite: "seo", hidden: true },
   { id: "blog-draft-engine", name: "Blog Draft Engine", description: "Create and publish SEO-optimized blog content with AI assistance.", category: "Content", suite: "seo" },

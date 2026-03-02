@@ -160,6 +160,12 @@ const saveState = async ({ approvals = [], actionLog = [] } = {}) => {
 
 const isValidShopDomain = shop => typeof shop === 'string' && /^[a-z0-9][a-z0-9.-]*\.myshopify\.com$/i.test(shop);
 
+// Consistent shop extractor — returns null if no shop header present (never falls back to env var)
+const getShop = req => {
+  const s = (req.headers?.['x-shopify-shop-domain'] || req.query?.shop || req.session?.shop || '').toLowerCase().trim();
+  return s || null;
+};
+
 const verifyShopifyHmac = (query = {}) => {
   if (!SHOPIFY_SECRET) return true; // allow when no secret configured (local/dev)
   if (!query.hmac) return false;

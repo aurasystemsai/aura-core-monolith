@@ -4,10 +4,10 @@ const isTest = process.env.NODE_ENV === 'test' || process.env.IMAGE_ALT_MEDIA_SE
 const connectionString = process.env.DATABASE_URL || process.env.AURA_PG_URL;
 
 if (!connectionString && !isTest) {
-  throw new Error('DATABASE_URL or AURA_PG_URL must be set for Image Alt Media SEO');
+  console.warn('[image-alt-media-seo] No DATABASE_URL or AURA_PG_URL set — using in-memory storage. Data will not persist across restarts.');
 }
 
-// In-memory fallback for test runs or when explicitly requested.
+// In-memory fallback when no DB is configured or in test mode.
 if (isTest || !connectionString) {
   let images = [];
   let runs = [];
