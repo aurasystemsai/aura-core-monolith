@@ -343,6 +343,7 @@ export default function BlogSEO() {
 
   /* ── Banner inline-fix state ── */
   const [bannerFixState,   setBannerFixState]   = useState({}); // {issueIdx: "loading"|"ok"|"error"}
+  const [fixSummaries,     setFixSummaries]     = useState({}); // {issueKey: {what, before?, after?, detail?}}
   const [bulkFixing,       setBulkFixing]       = useState(false);
   const [bulkFixProgress,  setBulkFixProgress]  = useState(null); // {done, total}
   const [inlineTipIssue,   setInlineTipIssue]   = useState(null); // issue.msg showing inline help tip
@@ -494,7 +495,7 @@ export default function BlogSEO() {
     if (!url.trim()) return;
     setScanning(true); setScanErr(""); setScanResult(null);
     setAiAnalysis(null); setRewriteResult(null); setRewriteErr(null);
-    setApplyState({}); setFixedFields(new Set()); setBannerFixState({});
+    setApplyState({}); setFixedFields(new Set()); setBannerFixState({}); setFixSummaries({});
     try {
       const art = selectedArtId ? articles.find(a => String(a.id) === selectedArtId) : null;
       const body = { url: url.trim(), keywords: kwInput.trim(), ...(art ? { articleId: art.id, blogId: art.blogId } : {}) };
@@ -955,6 +956,9 @@ export default function BlogSEO() {
       return false;
     }
     setBannerFixState(p => ({ ...p, [issueKey]: "loading" }));
+    // Capture before-value for the summary card
+    const _beforeMap = { title: scanResult.title, metaDescription: scanResult.metaDescription, h1: scanResult.h1, handle: scanResult.handle };
+    const beforeVal = _beforeMap[field] || "";
     try {
       let val = "";
       let applyField = field;
@@ -969,6 +973,7 @@ export default function BlogSEO() {
         if (!dr.ok) throw new Error(dr.error || "Date refresh failed");
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: "Published date", detail: `Refreshed to ${new Date().toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })}` } }));
         if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(), 1500); }
         return true;
       } else if (field === "og_fix") {
@@ -989,6 +994,7 @@ export default function BlogSEO() {
         if (!ap.ok) throw new Error(ap.error || "Apply OG description failed");
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: "OG / meta description", detail: ogDesc.slice(0, 120) } }));
         if (!silent) { showToast("✓ OG/meta description updated — rescanning post..."); setTimeout(() => runScan(), 1500); }
         return true;
       } else if (CONTENT_FIX_TYPES[field]) {
@@ -1043,6 +1049,19 @@ export default function BlogSEO() {
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
+      // Build summary card data
+      const _trunc = (s, n) => s && s.length > n ? s.slice(0, n) + "…" : (s || "");
+      const _fieldLabels = { title:"Page title", metaDescription:"Meta description", h1:"H1 heading", headings:"H2 sub-headings", handle:"URL slug", schema:"Schema markup", body_append:"Content" };
+      const _contentDetail = { readability_fix:"Full article rewritten for readability (Flesch 60+)", citations_fix:"Expert citations section appended (3-5 sources)", eeat_fix:"First-person expertise statement added to post", author_fix:"Professional author bio section appended", kw_fix:"Keyword-optimised paragraph appended", faq_fix:"FAQ section added (4-5 Q&As for People Also Ask)", internal_fix:"Related reading / internal links section appended" };
+      if (_contentDetail[field]) {
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: _fieldLabels[field] || field, detail: _contentDetail[field] } }));
+      } else if (field === "schema") {
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: "Schema markup", detail: "Article JSON-LD structured data injected into post" } }));
+      } else if (field === "body_append" || field === "body_prepend" || field === "body_replace") {
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: "Article body", detail: "AI-generated content applied to post" } }));
+      } else if (beforeVal || val) {
+        setFixSummaries(p => ({ ...p, [issueKey]: { what: _fieldLabels[applyField] || _fieldLabels[field] || field, before: _trunc(beforeVal, 72), after: _trunc(val, 72) } }));
+      }
       if (!silent) {
         const toastMsg = field === "body_append" ? "✓ AI content added — rescanning post..."
           : field === "schema" ? "✓ Schema added — rescanning post..."
@@ -1340,7 +1359,7 @@ export default function BlogSEO() {
   return (
     <>
     <div style={S.page}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes aura-fixing{0%,100%{opacity:1}50%{opacity:0.4}} .aura-fix-spinner{display:inline-block;animation:spin 0.7s linear infinite;margin-right:5px;font-style:normal}`}</style>
 
       {/* ── Toast notification ── */}
       {toast && (
@@ -1845,11 +1864,13 @@ export default function BlogSEO() {
                               {/* AI Fix & Apply button — always shown, runBannerFix handles article lookup */}
                               {fField && !alreadyFixed && (
                                 <button
-                                  style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background:"#059669", borderColor:"#059669", opacity: fixSt === "loading" ? 0.6 : 1 }}
+                                  style={{ ...S.btn("primary"), fontSize:10, padding:"3px 10px", flexShrink:0, background: fixSt === "loading" ? "#065f46" : "#059669", borderColor: fixSt === "loading" ? "#065f46" : "#059669", minWidth:90, display:"flex", alignItems:"center", justifyContent:"center", gap:4 }}
                                   onClick={() => runBannerFix(fField, issue.msg)}
                                   disabled={fixSt === "loading" || bulkFixing}
                                 >
-                                  {fixSt === "loading" ? "Fixing…" : (act?.label || "✦ AI Fix")}
+                                  {fixSt === "loading"
+                                    ? <><em className="aura-fix-spinner">&#8635;</em><span style={{ animation:"aura-fixing 1.2s ease-in-out infinite" }}>Fixing…</span></>
+                                    : (act?.label || "✦ AI Fix")}
                                 </button>
                               )}
                               {/* Navigation / tip button (non-AI issues) */}
@@ -1866,6 +1887,23 @@ export default function BlogSEO() {
                                 <span style={{ fontSize:10, color:"#fca5a5" }}>✗ failed</span>
                               )}
                             </div>
+                            {/* Fix summary card — shown after successful fix */}
+                            {fixSt === "ok" && fixSummaries[issue.msg] && (() => {
+                              const s = fixSummaries[issue.msg];
+                              return (
+                                <div style={{ background:"#052e16", border:"1px solid #166534", borderRadius:6, padding:"7px 12px", fontSize:11, color:"#bbf7d0", lineHeight:1.6, marginLeft:14, marginTop:2 }}>
+                                  <span style={{ color:"#4ade80", fontWeight:700 }}>✓ {s.what} updated</span>
+                                  {s.before != null && s.after != null ? (
+                                    <div style={{ marginTop:3, display:"flex", flexDirection:"column", gap:2 }}>
+                                      <span style={{ color:"#6b7280" }}><span style={{ color:"#9ca3af" }}>Before:</span> “{s.before || "(empty)"}”</span>
+                                      <span><span style={{ color:"#9ca3af" }}>After:  </span> “{s.after}”</span>
+                                    </div>
+                                  ) : s.detail ? (
+                                    <span style={{ color:"#86efac", marginLeft:6 }}>— {s.detail}</span>
+                                  ) : null}
+                                </div>
+                              );
+                            })()}
                             {/* Inline how-to tip */}
                             {tipOpen && act?.tip && (
                               <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:8, padding:"10px 14px", fontSize:12, color:"#fbbf24", lineHeight:1.6, display:"flex", gap:10, alignItems:"flex-start", marginLeft:14 }}>
