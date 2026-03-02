@@ -7397,9 +7397,14 @@ router.post('/ai/full-blog-writer', async (req, res) => {
   try {
     const model = req.body.model || 'gpt-4o-mini';
     const minWords = Math.max(wordCount, 1500);
-    const prompt = `Write a complete, publish-ready blog post. IMPORTANT: The article body in fullArticle MUST be at least 1500 words — do not truncate or stop early, write every section in full.\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: ${minWords} words\n${outline.length ? 'Follow this outline:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : ''}\n\nInclude: engaging intro with keyword naturally placed, H2/H3 headings, substantial body paragraphs for each section, internal linking opportunities [marked as {{IL:keyword}}], a FAQ section (minimum 4 questions), conclusion with CTA. Return JSON: {"title": "string", "metaDescription": "string", "slug": "string", "fullArticle": "string", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqQuestions": ["string"]}`;
+    const outlineSections = outline.length ? 'Follow this outline exactly:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : '';
+    const prompt = `Write a complete, publish-ready blog post. CRITICAL RULES:\n1. fullArticle MUST be at least ${minWords} words — write every section in full, never truncate.\n2. fullArticle MUST use clean HTML: <h2> for section headings, <h3> for sub-headings, <p> for paragraphs, <ul><li> for bullet lists, <ol><li> for numbered lists, <strong> for bold, <em> for italic, <hr> between major sections. NO markdown, NO backticks.\n3. faqItems must be a JSON array of objects: [{"q":"question","a":"answer"}] with at least 4 items.\n\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: ${minWords} words\n${outlineSections}\n\nReturn JSON: {"title": "string", "metaDescription": "string (under 160 chars)", "slug": "string", "fullArticle": "string (HTML)", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqItems": [{"q":"string","a":"string"}], "faqQuestions": ["string"], "articleSchemaType": "Article"}`;
     const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: 4096 });
     const parsed = JSON.parse(r.choices[0].message.content);
+    // ensure faqItems exists
+    if (!parsed.faqItems && parsed.faqQuestions) {
+      parsed.faqItems = parsed.faqQuestions.map(q => ({ q, a: '' }));
+    }
     if (req.deductCredits) req.deductCredits({ model });
     res.json({ ok: true, ...parsed });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
