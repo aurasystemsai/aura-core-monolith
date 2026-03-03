@@ -2,6 +2,7 @@
 import { apiFetch, apiFetchJSON } from "./api";
 import "./App.css";
 import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
+import { useCredits } from "./hooks/useCredits";
 
 import toolsMeta from "./toolMeta";
 import AiChatbot from "./components/AiChatbot.jsx";
@@ -213,6 +214,7 @@ function App() {
  const [sectionHistory, setSectionHistory] = useState([]);
  const sectionHistoryRef = React.useRef([]);
  const { plan, planLoading } = usePlan();
+ const { balance, unlimited, loading: creditsLoading } = useCredits();
  const [toolInitUrl, setToolInitUrl] = useState(null);
  const planLoadedRef = React.useRef(false);
  const isPushingFromPopstate = React.useRef(false);
@@ -445,6 +447,26 @@ function App() {
  <div className="nav-shop-info">
  <span className="shop-name">{String(project.name).replace(/\.myshopify\.com$/i, '')}</span>
  </div>
+ )}
+ {/* Persistent credit balance pill — always visible, click → credits page */}
+ {!creditsLoading && (
+ <button
+ onClick={() => setActiveSection('credits')}
+ title="View credits & usage"
+ style={{
+ display: 'flex', alignItems: 'center', gap: 5,
+ background: unlimited ? '#052e16' : (balance !== null && balance <= 10) ? '#2d1515' : '#18181b',
+ border: `1px solid ${unlimited ? '#166534' : (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}`,
+ borderRadius: 20, padding: '4px 12px', cursor: 'pointer',
+ fontSize: 12, fontWeight: 700, color: unlimited ? '#4ade80' : (balance !== null && balance <= 10) ? '#f87171' : '#a1a1aa',
+ transition: 'all 0.2s', whiteSpace: 'nowrap',
+ }}
+ onMouseEnter={e => e.currentTarget.style.borderColor = '#6366f1'}
+ onMouseLeave={e => e.currentTarget.style.borderColor = unlimited ? '#166534' : (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}
+ >
+ <span style={{ fontSize: 13 }}>⚡</span>
+ {unlimited ? 'Unlimited' : balance === null ? '…' : `${balance.toLocaleString()} credits`}
+ </button>
  )}
  </div>
  </header>

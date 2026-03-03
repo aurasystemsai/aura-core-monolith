@@ -1,6 +1,7 @@
 ﻿import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import { useCreditError } from "../../globalCreditError";
+import { useCredits, ACTION_COSTS } from "../../hooks/useCredits";
 import BackButton from "./BackButton";
 
 const API = "/api/blog-seo";
@@ -83,6 +84,7 @@ const SECTIONS = [
    COMPONENT
 ═══════════════════════════════════════════════════════════════════════════ */
 export default function BlogSEO() {
+  const { balance: creditsBalance, unlimited: creditsUnlimited } = useCredits();
 
   /* ── Navigation state ── */
   const [section,    setSection]    = useState("Posts"); // "Posts" = default home
@@ -2659,11 +2661,17 @@ export default function BlogSEO() {
 
                   <div style={{ flex:1 }}/>
                   {wfErr && <div style={{ fontSize:11, color:"#f87171", marginBottom:8, lineHeight:1.4 }}>{wfErr}</div>}
+                  {/* Balance hint */}
+                  {!creditsUnlimited && creditsBalance !== null && (
+                    <div style={{ fontSize:11, color: creditsBalance < 3 ? "#f87171" : "#71717a", marginBottom:4, textAlign:"center" }}>
+                      {creditsBalance < 3 ? `⚠️ Only ${creditsBalance} credit${creditsBalance!==1?'s':''} left` : `⚡ ${creditsBalance.toLocaleString()} credits remaining`}
+                    </div>
+                  )}
                   <button
                     style={{ ...S.btn("primary"), width:"100%", padding:"12px 0", fontSize:13, fontWeight:700, marginTop:20, opacity: !wfPickedTitle ? 0.5 : 1 }}
                     disabled={!wfPickedTitle}
                     onClick={wfGenerateArticle}
-                  >✦ Generate Article</button>
+                  >✦ Generate Article &middot; {ACTION_COSTS['blog-draft']} credits</button>
                 </div>
 
                 {/* Right content */}
@@ -2945,21 +2953,21 @@ export default function BlogSEO() {
                               } else if (fixing === 'err') {
                                 fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#f87171" }}>Fix failed — try again</span>;
                               } else if (issue.fix === 'readability_fix' || /readability|simplify|grade level/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('readability', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ AI Fix Readability</button>;
+                                fixBtn = <button onClick={() => wfContentFix('readability', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ AI Fix Readability &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (issue.fix === 'faq_fix' || /faq|frequently asked/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('faq', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add FAQs</button>;
+                                fixBtn = <button onClick={() => wfContentFix('faq', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add FAQs &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/only.*words|words.*thin|expand|too short/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('expand', i, { targetWords: 500 })} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Expand Article</button>;
+                                fixBtn = <button onClick={() => wfContentFix('expand', i, { targetWords: 500 })} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Expand Article &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/no h1|missing h1/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('add_h1', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add H1</button>;
+                                fixBtn = <button onClick={() => wfContentFix('add_h1', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add H1 &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/h2 heading|only.*h2/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('add_h2s', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Sections</button>;
+                                fixBtn = <button onClick={() => wfContentFix('add_h2s', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Sections &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/keyword.*density.*low|density.*0\./i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('keyword_boost', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Boost Keywords</button>;
+                                fixBtn = <button onClick={() => wfContentFix('keyword_boost', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Boost Keywords &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/no.*citation|authoritative|outbound/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('citations', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Citations</button>;
+                                fixBtn = <button onClick={() => wfContentFix('citations', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Citations &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/first.person|expertise signal|e-e-a-t/i.test(msg)) {
-                                fixBtn = <button onClick={() => wfContentFix('eeat', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Expertise Signal</button>;
+                                fixBtn = <button onClick={() => wfContentFix('eeat', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Expertise Signal &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/no meta description|meta description/i.test(msg)) {
                                 fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#facc15" }}>↑ Edit in Meta Description field above</span>;
                               } else if (/keyword.*not in title|title.*keyword/i.test(msg)) {
@@ -2993,7 +3001,7 @@ export default function BlogSEO() {
                           onClick={() => wfRunSeoScore(wfResult, wfKeywords, wfPickedTitle, wfMetaDesc)}
                           disabled={wfSeoLoading}
                           style={{ width:"100%", marginTop:10, padding:"6px 0", borderRadius:7, background:"#27272a", color:"#a1a1aa", fontWeight:600, fontSize:11, border:"1px solid #3f3f46", cursor: wfSeoLoading ? "default" : "pointer" }}
-                        >{wfSeoLoading ? "Rescanning..." : "↺ Rescan SEO"}</button>
+                        >{wfSeoLoading ? "Rescanning..." : `↺ Rescan SEO · ${ACTION_COSTS['seo-analysis']} cr`}</button>
                       </>
                     )}
 
