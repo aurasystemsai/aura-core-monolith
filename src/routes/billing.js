@@ -141,23 +141,56 @@ router.get('/invoices/:invoiceId/pdf', async (req, res) => {
  * GET /api/billing/confirm
  */
 router.get('/confirm', (req, res) => {
-  const { charge_id, shop: queryShop } = req.query;
+  const { charge_id, shop: queryShop, plan, credits } = req.query;
   const shop = queryShop || req.session?.shop || req.headers['x-shopify-shop-domain'];
 
+  if (shop) {
+    // Activate plan credits in the ledger when a subscription is confirmed
+    if (plan) {
+      try { creditLedger.updatePlan(shop, plan); } catch(e) { console.error('[Billing] updatePlan failed:', e.message); }
+    }
+    // Activate top-up credits in the ledger when a one-time pack is confirmed
+    if (credits) {
+      const creditsNum = parseInt(credits, 10);
+      if (!isNaN(creditsNum) && creditsNum > 0) {
+        try { creditLedger.addTopupCredits(shop, creditsNum, { source: 'shopify_confirm', charge_id }); } catch(e) { console.error('[Billing] addTopupCredits failed:', e.message); }
+      }
+    }
+  }
+
   if (charge_id && shop) {
-    // Shopify recurring subscriptions auto-activate on merchant approval
     // Redirect back into the embedded app in Shopify Admin
     const storeHandle = shop.replace('.myshopify.com', '');
     const clientId = process.env.SHOPIFY_API_KEY || '98db68ecd4abcd07721d14949514de8a';
-    return res.redirect(`https://admin.shopify.com/store/${storeHandle}/apps/${clientId}?billing=success`);
+    const planParam = plan ? `&plan=${encodeURIComponent(plan)}` : '';
+    return res.redirect(`https://admin.shopify.com/store/${storeHandle}/apps/${clientId}?billing=success${planParam}`);
   }
 
-  // Fallback – no shop context
   if (charge_id) {
     return res.redirect('https://admin.shopify.com');
   }
 
   res.redirect('/');
+});
+
+/**
+ * Manually sync / activate a plan for the current shop.
+ * Called by the frontend after ?billing=success redirect, or by admin to fix broken accounts.
+ * POST /api/billing/sync-plan
+ */
+router.post('/sync-plan', async (req, res) => {
+  try {
+    const shop = resolveShop(req);
+    if (!shop) return res.status(400).json({ ok: false, error: 'Shop required' });
+    const { planId } = req.body;
+    if (!planId) return res.status(400).json({ ok: false, error: 'planId required' });
+    creditLedger.updatePlan(shop, planId);
+    const status = creditLedger.getCreditStatus(shop);
+    res.json({ ok: true, ...status });
+  } catch (error) {
+    console.error('sync-plan error:', error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
 });
 
 /**

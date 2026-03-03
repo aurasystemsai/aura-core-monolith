@@ -335,6 +335,13 @@ function App() {
  const alreadyHandled = sessionStorage.getItem('billingSuccessHandled');
  if (params.get('billing') === 'success'&& !alreadyHandled) {
  sessionStorage.setItem('billingSuccessHandled', '1');
+ const planId = params.get('plan');
+ // Sync the plan into the credit ledger so credits are immediately available
+ if (planId) {
+ import('./api.js').then(({ apiFetch }) => {
+ apiFetch('/api/billing/sync-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId }) }).catch(() => {});
+ }).catch(() => {});
+ }
  setToast({ message: 'Plan upgraded successfully! Your new features are now active.', type: 'success'});
  setActiveSectionRaw('settings');
  }

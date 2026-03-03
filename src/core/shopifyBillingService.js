@@ -86,7 +86,7 @@ class ShopifyBillingService {
     `;
 
     const backendBase = process.env.APP_URL || process.env.HOST_URL || 'https://aura-core-monolith.onrender.com';
-    const returnUrl = `${backendBase}/api/billing/confirm?shop=${encodeURIComponent(shop)}`;
+    const returnUrl = `${backendBase}/api/billing/confirm?shop=${encodeURIComponent(shop)}&plan=${encodeURIComponent(planId)}`;
 
     const variables = {
       name: plan.name,

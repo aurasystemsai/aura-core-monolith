@@ -87,7 +87,7 @@ const PLAN_RANK = { free: 0, growth: 1, pro: 2, enterprise: 3 };
 export const PLAN_LABEL = { free: "Starter", growth: "Growth", pro: "Pro", enterprise: "Enterprise" };
 export const PLAN_PRICE = { free: "$0", growth: "$49/mo", pro: "$149/mo", enterprise: "$349/mo" };
 export const PLAN_COLOUR = { free: "#71717a", growth: "#38bdf8", pro: "#4f46e5", enterprise: "#a78bfa" };
-export const PLAN_CREDITS = { free: 10, growth: 5000, pro: 25000, enterprise: -1 }; // -1 = unlimited
+export const PLAN_CREDITS = { free: 10, growth: 5000, pro: 25000, professional: 25000, enterprise: -1 }; // -1 = unlimited
 
 export function canUseTool(userPlan, toolId) {
   const required = TOOL_PLAN[toolId];

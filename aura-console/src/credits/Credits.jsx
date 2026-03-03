@@ -114,6 +114,24 @@ const Credits = ({ plan = 'free' }) => {
       const res = await apiFetchJSON('/api/billing/credits');
       const data = res;
       if (data.ok) {
+        // Auto-sync if the ledger plan doesn't match the actual Shopify plan
+        // This fixes accounts where billing completed but the ledger was never updated
+        if (plan && plan !== 'free' && data.plan && data.plan !== plan) {
+          try {
+            const synced = await apiFetchJSON('/api/billing/sync-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: plan }) });
+            if (synced.ok) {
+              setBalance(synced.balance);
+              setUsed(synced.used || 0);
+              setUnlimited(synced.unlimited || false);
+              setPlanCredits(synced.plan_credits || 0);
+              setTopupCredits(synced.topup_credits || 0);
+              setLifetimeUsed(synced.lifetime_used || 0);
+              setPeriodStart(synced.period_start || null);
+              setLoading(false);
+              return;
+            }
+          } catch (_) { /* fall through to use original data */ }
+        }
         setBalance(data.balance);
         setUsed(data.used || 0);
         setUnlimited(data.unlimited || false);

@@ -119,10 +119,11 @@ function getEffectiveCost(actionType = 'generic-ai', model = null) {
 
 // Plan monthly credit allocations
 const PLAN_CREDITS = {
-  free:       10,      // Starter — 10 lifetime, not monthly
-  growth:     5000,
-  pro:        25000,
-  enterprise: -1,      // unlimited
+  free:         10,      // Starter — 10 lifetime, not monthly
+  growth:       5000,
+  pro:          25000,
+  professional: 25000,   // alias used by planAccessControl
+  enterprise:   -1,      // unlimited
 };
 
 // ---------- Ledger persistence ----------
