@@ -746,9 +746,9 @@ export default function BlogSEO() {
     if (!wfPickedTitle) return;
     setWfGenerating(true); setWfErr(""); setWfProgress(0); setWfProgressLabel("Writing Article");
     setSection("WriteGenerating");
-    // Animated progress 0→95% over 35s
+    // Longer articles take more time: small ~30s, medium ~60s, long ~100s
     const startMs = Date.now();
-    const TOTAL_MS = 35000;
+    const TOTAL_MS = wfOutlineSize === "small" ? 30000 : wfOutlineSize === "long" ? 100000 : 60000;
     const LABELS = ["Researching topic...", "Writing introduction...", "Writing Article", "Building sections...", "Adding FAQs...", "Polishing content..."];
     let labelIdx = 0;
     wfProgressRef.current = setInterval(() => {
@@ -760,13 +760,15 @@ export default function BlogSEO() {
     }, 300);
     try {
       const outlineList = [...wfOutlines, ...(wfConclusion ? ["Conclusion"] : []), ...(wfFaqs ? ["FAQs — frequently asked questions"] : [])];
-      const r = await apiFetchJSON(`${API}/ai/full-blog-writer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, outline: outlineList }) });
+      // Targets sit in the upper half of each advertised range so the article comfortably hits the label
+      const targetWordCount = wfOutlineSize === "small" ? 1200 : wfOutlineSize === "long" ? 4000 : 2500;
+      const r = await apiFetchJSON(`${API}/ai/full-blog-writer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, outline: outlineList, wordCount: targetWordCount }) });
       clearInterval(wfProgressRef.current); setWfProgress(100);
       if (r.ok) { setWfResult(r); setWfMetaDesc(r.metaDescription || ""); setTimeout(() => setSection("WriteResult"), 400); }
       else { setWfErr(r.error || "Article generation failed."); setSection("WriteFlow"); }
     } catch(e) { clearInterval(wfProgressRef.current); setWfErr(e.message || "Failed to generate article."); setSection("WriteFlow"); }
     setWfGenerating(false);
-  }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs]);
+  }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs, wfOutlineSize]);
 
   const wfSaveToShopify = useCallback(async (asDraft = true) => {
     if (!wfResult) return;

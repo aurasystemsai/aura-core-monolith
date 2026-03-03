@@ -7478,15 +7478,20 @@ router.post('/ai/score-draft', (req, res) => {
 });
 
 router.post('/ai/full-blog-writer', async (req, res) => {
-  const { title, keyword, outline = [], tone = 'professional', wordCount = 1800, niche } = req.body;
+  const { title, keyword, outline = [], tone = 'professional', wordCount = 2000, niche } = req.body;
   if (!title || !keyword) return res.status(400).json({ ok: false, error: 'title and keyword required' });
   try {
     const model = req.body.model || 'gpt-4o-mini';
-    const minWords = Math.max(wordCount, 1500);
+    const minWords = Math.max(wordCount, 800); // respect the requested size, floor at 800
+    // Each H2 section must be substantial — calculate how many sections are in the outline
+    const sectionCount = Math.max(outline.length, 6);
+    const wordsPerSection = Math.ceil(minWords / sectionCount);
+    // Tokens needed: ~1.4 tokens/word for HTML + JSON overhead (title, meta, slug, faq) + 500 buffer
+    const maxTokens = Math.min(16000, Math.ceil(minWords * 1.8) + 800);
     const currentYear = new Date().getFullYear();
     const outlineSections = outline.length ? 'Follow this outline exactly:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : '';
-    const prompt = `The current year is ${currentYear}. Write a complete, publish-ready blog post. CRITICAL RULES:\n1. fullArticle MUST be at least ${minWords} words — write every section in full, never truncate.\n2. fullArticle MUST use clean HTML: <h2> for section headings, <h3> for sub-headings, <p> for paragraphs, <ul><li> for bullet lists, <ol><li> for numbered lists, <strong> for bold, <em> for italic, <hr> between major sections. NO markdown, NO backticks.\n3. faqItems must be a JSON array of objects: [{"q":"question","a":"answer"}] with at least 4 items.\n4. Never reference any year before ${currentYear}. All "year" references must be ${currentYear}.\n\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: ${minWords} words\n${outlineSections}\n\nReturn JSON: {"title": "string", "metaDescription": "string (under 160 chars)", "slug": "string", "fullArticle": "string (HTML)", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqItems": [{"q":"string","a":"string"}], "faqQuestions": ["string"], "articleSchemaType": "Article"}`;
-    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: 4096 });
+    const prompt = `The current year is ${currentYear}. Write a complete, publish-ready blog post. CRITICAL RULES:\n1. fullArticle MUST be at least ${minWords} words — write EVERY section in FULL, do NOT truncate or summarise. If you run out of space, write MORE content, never less.\n2. fullArticle MUST use clean HTML: <h2> for section headings, <h3> for sub-headings, <p> for paragraphs, <ul><li> for bullet lists, <ol><li> for numbered lists, <strong> for bold, <em> for italic, <hr> between major sections. NO markdown, NO backticks.\n3. faqItems must be a JSON array of objects: [{"q":"question","a":"answer"}] with at least 4 items.\n4. Never reference any year before ${currentYear}. All "year" references must be ${currentYear}.\n5. Each H2 section MUST be at least ${wordsPerSection} words with a minimum of 2 substantial paragraphs — do not use short bullet-only sections.\n6. Do NOT stop early. If you are close to finishing, keep writing until you reach the word count.\n\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nMINIMUM word count: ${minWords} words (this is a hard requirement — do not submit fewer)\n${outlineSections}\n\nReturn JSON: {"title": "string", "metaDescription": "string (under 160 chars)", "slug": "string", "fullArticle": "string (complete HTML, minimum ${minWords} words)", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqItems": [{"q":"string","a":"string"}], "faqQuestions": ["string"], "articleSchemaType": "Article"}`;
+    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: maxTokens });
     const parsed = JSON.parse(r.choices[0].message.content);
     // ensure faqItems exists
     if (!parsed.faqItems && parsed.faqQuestions) {
