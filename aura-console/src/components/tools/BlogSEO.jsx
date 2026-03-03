@@ -785,7 +785,7 @@ export default function BlogSEO() {
       const updated = { ...wfResult, fullArticle: newHtml };
       setWfResult(updated);
       wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc);
-      setWfIsFixing(prev => ({ ...prev, [issueIdx]: 'ok' }));
+      // wfIsFixing is cleared by the wfSeoScore useEffect when rescore completes
     } catch(e) {
       setWfIsFixing(prev => ({ ...prev, [issueIdx]: 'err' }));
     }
@@ -832,6 +832,11 @@ export default function BlogSEO() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wfResult]);
+
+  // Clear fix-loading states once rescore finishes (wfSeoScore updated = fresh issue list)
+  useEffect(() => {
+    if (wfSeoScore) setWfIsFixing({});
+  }, [wfSeoScore]);
 
   const runBrief = useCallback(async () => {
     if (!briefTopic.trim()) return;
@@ -2935,10 +2940,10 @@ export default function BlogSEO() {
                               // Map each issue to an AI fix action
                               const msg = issue.msg || "";
                               let fixBtn = null;
-                              if (fixing === 'ok') {
-                                fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#4ade80" }}>✓ Fixed — rescanning…</span>;
-                              } else if (fixing === 'loading') {
+                              if (fixing === 'loading') {
                                 fixBtn = <span style={{ marginTop:5, display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:"#818cf8" }}><span style={S.spinner}/>Fixing…</span>;
+                              } else if (fixing === 'err') {
+                                fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#f87171" }}>Fix failed — try again</span>;
                               } else if (issue.fix === 'readability_fix' || /readability|simplify|grade level/i.test(msg)) {
                                 fixBtn = <button onClick={() => wfContentFix('readability', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ AI Fix Readability</button>;
                               } else if (issue.fix === 'faq_fix' || /faq|frequently asked/i.test(msg)) {
