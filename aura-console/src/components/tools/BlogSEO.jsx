@@ -170,6 +170,9 @@ export default function BlogSEO() {
   const [genKwLoading,     setGenKwLoading]     = useState(false);   // AI keyword expansion
   const [genTitleLoading,  setGenTitleLoading]  = useState(false);   // title generation
   const [genModalErr,      setGenModalErr]      = useState("");
+  const [genCoverImage,    setGenCoverImage]    = useState("ai-1:1"); // cover image option
+  const [genLanguage,      setGenLanguage]      = useState("en-US");  // article language
+  const [genAiResearch,    setGenAiResearch]    = useState(false);    // AI web research toggle
 
   /* ── WriteFlow page (Title & Outline) ── */
   const [wfKeywords,       setWfKeywords]       = useState([]);
@@ -3929,21 +3932,19 @@ export default function BlogSEO() {
         GENERATE ARTICLE MODAL
     ════════════════════════════ */}
     {showGenModal && (
-      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
+      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
         onClick={e => { if(e.target === e.currentTarget) setShowGenModal(false); }}>
-        <div style={{ background:"#fff", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:500, position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.5)", color:"#111" }}>
-          <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:14, right:16, background:"none", border:"none", color:"#888", cursor:"pointer", fontSize:20, lineHeight:1 }}>✕</button>
+        <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:520, position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.7)", color:"#fafafa" }}>
+          <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:14, right:16, background:"#27272a", border:"1px solid #3f3f46", color:"#a1a1aa", cursor:"pointer", fontSize:16, lineHeight:1, borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
 
-          <div style={{ fontSize:17, fontWeight:700, color:"#111", marginBottom:4 }}>Generate Article Title from Keywords</div>
-          <div style={{ fontSize:13, color:"#888", marginBottom:20 }}>Add keyword(s) and provide a brief topic idea for AI to begin with.</div>
+          <div style={{ fontSize:17, fontWeight:700, color:"#fafafa", marginBottom:4 }}>Generate Article Title from Keywords</div>
+          <div style={{ fontSize:13, color:"#71717a", marginBottom:20 }}>Add keyword(s) and provide a brief topic idea for AI to begin with.</div>
 
           {/* Mode radio */}
-          <div style={{ fontSize:13, fontWeight:500, color:"#333", marginBottom:10 }}>
-            Create articles using the following keywords
-          </div>
+          <div style={{ fontSize:13, fontWeight:500, color:"#d4d4d8", marginBottom:10 }}>Create articles using the following keywords</div>
           <div style={{ display:"flex", gap:20, marginBottom:14 }}>
             {[["manual","Manual Input"],["ai","AI Generate"]].map(([val,lbl]) => (
-              <label key={val} style={{ display:"flex", alignItems:"center", gap:6, cursor:"pointer", fontSize:13, color:"#333" }}>
+              <label key={val} style={{ display:"flex", alignItems:"center", gap:6, cursor:"pointer", fontSize:13, color:"#d4d4d8" }}>
                 <input type="radio" checked={genKwMode===val} onChange={() => setGenKwMode(val)} style={{ accentColor:"#6366f1" }}/> {lbl}
               </label>
             ))}
@@ -3951,20 +3952,19 @@ export default function BlogSEO() {
 
           {/* Keyword input area */}
           {genKwMode === "ai" ? (
-            <div style={{ border:"1.5px solid #e2e8f0", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#fafafa" }}>
-              {/* existing keyword tags */}
+            <div style={{ border:"1.5px solid #3f3f46", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#09090b" }}>
               <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
                 {genKeywords.map((kw,i) => (
-                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#f1f5f9", border:"1px solid #e2e8f0", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#333" }}>
+                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#d4d4d8" }}>
                     {kw}
-                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#888", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:13, padding:0, lineHeight:1 }}>×</button>
                   </span>
                 ))}
               </div>
               <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                 <input
                   autoFocus
-                  style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:"#111", padding:"2px 0" }}
+                  style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:"#fafafa", padding:"2px 0" }}
                   placeholder={genKeywords.length ? "Add more keywords..." : "e.g. snowboards"}
                   value={genKwInput}
                   onChange={e => setGenKwInput(e.target.value)}
@@ -3979,18 +3979,18 @@ export default function BlogSEO() {
               </div>
             </div>
           ) : (
-            <div style={{ border:"1.5px solid #e2e8f0", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#fafafa" }}>
+            <div style={{ border:"1.5px solid #3f3f46", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#09090b" }}>
               <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
                 {genKeywords.map((kw,i) => (
-                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#f1f5f9", border:"1px solid #e2e8f0", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#333" }}>
+                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#d4d4d8" }}>
                     {kw}
-                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#888", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:13, padding:0, lineHeight:1 }}>×</button>
                   </span>
                 ))}
               </div>
               <input
                 autoFocus
-                style={{ width:"100%", border:"none", outline:"none", fontSize:13, background:"transparent", color:"#111", padding:"2px 0" }}
+                style={{ width:"100%", border:"none", outline:"none", fontSize:13, background:"transparent", color:"#fafafa", padding:"2px 0" }}
                 placeholder="Press Enter ↵ to input another one"
                 value={genKwInput}
                 onChange={e => setGenKwInput(e.target.value)}
@@ -3999,10 +3999,84 @@ export default function BlogSEO() {
             </div>
           )}
 
-          {genModalErr && <div style={{ fontSize:12, color:"#ef4444", marginBottom:12 }}>{genModalErr}</div>}
+          {/* Cover image */}
+          <div style={{ marginBottom:16 }}>
+            <div style={{ fontSize:13, fontWeight:500, color:"#d4d4d8", marginBottom:8 }}>Cover image</div>
+            <div style={{ position:"relative" }}>
+              <select
+                value={genCoverImage}
+                onChange={e => setGenCoverImage(e.target.value)}
+                style={{ width:"100%", padding:"10px 36px 10px 12px", borderRadius:8, border:"1px solid #3f3f46", background:"#09090b", color:"#d4d4d8", fontSize:13, appearance:"none", outline:"none", cursor:"pointer" }}
+              >
+                <option value="ai-1:1">Generate by AI – 1:1</option>
+                <option value="ai-16:9">Generate by AI – 16:9</option>
+                <option value="ai-4:3">Generate by AI – 4:3</option>
+                <option value="none">No cover image</option>
+              </select>
+              <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", color:"#71717a", pointerEvents:"none", fontSize:12 }}>▼</span>
+            </div>
+          </div>
+
+          {/* Language */}
+          <div style={{ marginBottom:16 }}>
+            <div style={{ fontSize:13, fontWeight:500, color:"#d4d4d8", marginBottom:8 }}>Choose article language</div>
+            <div style={{ display:"flex", gap:8 }}>
+              <div style={{ position:"relative", flex:1 }}>
+                <select
+                  value={genLanguage.split("-")[1] || "US"}
+                  onChange={e => setGenLanguage(`${genLanguage.split("-")[0]}-${e.target.value}`)}
+                  style={{ width:"100%", padding:"10px 32px 10px 12px", borderRadius:8, border:"1px solid #3f3f46", background:"#09090b", color:"#d4d4d8", fontSize:13, appearance:"none", outline:"none", cursor:"pointer" }}
+                >
+                  <option value="US">🇺🇸 United States</option>
+                  <option value="GB">🇬🇧 United Kingdom</option>
+                  <option value="AU">🇦🇺 Australia</option>
+                  <option value="CA">🇨🇦 Canada</option>
+                  <option value="DE">🇩🇪 Germany</option>
+                  <option value="FR">🇫🇷 France</option>
+                  <option value="ES">🇪🇸 Spain</option>
+                </select>
+                <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", color:"#71717a", pointerEvents:"none", fontSize:12 }}>▼</span>
+              </div>
+              <div style={{ position:"relative", flex:1 }}>
+                <select
+                  value={genLanguage.split("-")[0] || "en"}
+                  onChange={e => setGenLanguage(`${e.target.value}-${genLanguage.split("-")[1] || "US"}`)}
+                  style={{ width:"100%", padding:"10px 32px 10px 12px", borderRadius:8, border:"1px solid #3f3f46", background:"#09090b", color:"#d4d4d8", fontSize:13, appearance:"none", outline:"none", cursor:"pointer" }}
+                >
+                  <option value="en">English (US)</option>
+                  <option value="en-GB">English (UK)</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="es">Spanish</option>
+                  <option value="it">Italian</option>
+                  <option value="pt">Portuguese</option>
+                </select>
+                <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", color:"#71717a", pointerEvents:"none", fontSize:12 }}>▼</span>
+              </div>
+            </div>
+          </div>
+
+          {/* AI web research */}
+          <div style={{ background:"#09090b", border:"1px solid #3f3f46", borderRadius:10, padding:"12px 14px", marginBottom:16, display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+                <span style={{ fontSize:13 }}>🔍</span>
+                <span style={{ fontSize:13, fontWeight:600, color:"#a78bfa" }}>AI web research</span>
+              </div>
+              <div style={{ fontSize:12, color:"#71717a", lineHeight:1.5 }}>We'll search Google/Wikipedia and more for similar topics to generate up-to-date content.</div>
+            </div>
+            <div
+              onClick={() => setGenAiResearch(!genAiResearch)}
+              style={{ flexShrink:0, width:40, height:22, borderRadius:99, background: genAiResearch ? "#6366f1" : "#3f3f46", cursor:"pointer", position:"relative", transition:"background .2s", marginTop:2 }}
+            >
+              <div style={{ position:"absolute", top:3, left: genAiResearch ? 21 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s" }}/>
+            </div>
+          </div>
+
+          {genModalErr && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{genModalErr}</div>}
 
           <button
-            style={{ width:"100%", padding:"12px 0", borderRadius:10, background: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "#c7d2fe" : "#6366f1", color:"#fff", fontWeight:700, fontSize:14, border:"none", cursor: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
+            style={{ width:"100%", padding:"12px 0", borderRadius:10, background: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "#4338ca" : "#6366f1", color:"#fff", fontWeight:700, fontSize:14, border:"none", cursor: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? 0.6 : 1 }}
             disabled={(!genKeywords.length && !genKwInput.trim()) || genTitleLoading}
             onClick={genGenerateTitles}
           >{genTitleLoading ? <><span style={S.spinner}/> Generating titles...</> : <><span style={{ fontSize:14 }}>✦</span> Generate Title</>}</button>
