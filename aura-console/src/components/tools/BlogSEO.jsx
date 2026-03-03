@@ -778,7 +778,7 @@ export default function BlogSEO() {
       else setWfPublishErr(r.error || "Failed to publish to Shopify.");
     } catch(e) { setWfPublishErr(e.message); }
     setWfPublishing(false);
-  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc]);
+  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc, wfCoverImg]);
 
   const wfRunSeoScore = useCallback(async (result, kws, title, meta) => {
     setWfSeoLoading(true);
@@ -2826,6 +2826,23 @@ export default function BlogSEO() {
 
                 {/* Right sidebar */}
                 <div style={{ padding:"20px 16px", display:"flex", flexDirection:"column", gap:0, background:"#09090b", position:"sticky", top:53, maxHeight:"calc(100vh - 53px)", overflowY:"auto" }}>
+
+                  {/* ── Meta description ── */}
+                  <div style={{ borderBottom:"1px solid #3f3f46", paddingBottom:16, marginBottom:16 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#a1a1aa", textTransform:"uppercase", letterSpacing:".5px", marginBottom:6 }}>Meta Description</div>
+                    <textarea
+                      value={wfMetaDesc}
+                      onChange={e => setWfMetaDesc(e.target.value)}
+                      rows={3}
+                      maxLength={165}
+                      placeholder="Write a 150-160 character meta description…"
+                      style={{ width:"100%", background:"#18181b", border:`1px solid ${wfMetaDesc.length > 160 ? "#f87171" : wfMetaDesc.length > 130 ? "#facc15" : "#3f3f46"}`, borderRadius:8, color:"#fafafa", fontSize:12, padding:"8px 10px", resize:"vertical", fontFamily:"inherit", lineHeight:1.5, outline:"none", boxSizing:"border-box" }}
+                    />
+                    <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
+                      <span style={{ fontSize:11, color: wfMetaDesc.length > 160 ? "#f87171" : wfMetaDesc.length > 130 ? "#facc15" : "#52525b" }}>{wfMetaDesc.length}/160</span>
+                      {!wfMetaDesc && <span style={{ fontSize:11, color:"#f87171", fontWeight:600 }}>Required for SEO</span>}
+                    </div>
+                  </div>
 
                   {/* ── SEO Score panel ── */}
                   <div style={{ borderBottom:"1px solid #3f3f46", paddingBottom:16, marginBottom:16 }}>

@@ -8728,6 +8728,24 @@ router.post('/shopify/publish-article', async (req, res) => {
     }
     const artJson = await artRes.json();
     const article = artJson.article;
+
+    // Set SEO metafields (description_tag = meta description, title_tag = SEO title)
+    if (metaDescription && article?.id) {
+      const mfPromises = [
+        fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles/${article.id}/metafields.json`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ metafield: { namespace: 'global', key: 'description_tag', value: metaDescription, type: 'single_line_text_field' } }),
+        }),
+        fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles/${article.id}/metafields.json`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ metafield: { namespace: 'global', key: 'title_tag', value: title, type: 'single_line_text_field' } }),
+        }),
+      ];
+      await Promise.allSettled(mfPromises); // best-effort — don't fail publish if metafields fail
+    }
+
     const articleUrl = `https://admin.shopify.com/store/${shop.replace('.myshopify.com', '')}/blogs/${blog.id}/articles/${article.id}`;
     res.json({ ok: true, articleId: article.id, articleUrl, blogId: blog.id, blogHandle: blog.handle, handle: article.handle });
   } catch (err) {
