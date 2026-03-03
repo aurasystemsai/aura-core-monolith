@@ -202,6 +202,21 @@ export default function BlogSEO() {
   const [wfSeoOpen,        setWfSeoOpen]        = useState(true);  // sidebar panel open
   const wfProgressRef = useRef(null);
 
+  /* ── WriteFlow: Cover Image state ── */
+  const [wfCoverModalOpen,  setWfCoverModalOpen]  = useState(false);
+  const [wfCoverTab,        setWfCoverTab]        = useState('ai');    // 'unsplash' | 'ai' | 'upload'
+  const [wfCoverImg,        setWfCoverImg]        = useState(null);    // { url, alt, source }
+  const [wfCoverAiPrompt,   setWfCoverAiPrompt]   = useState('');
+  const [wfCoverAiRatio,    setWfCoverAiRatio]    = useState('1:1');
+  const [wfCoverAiLoading,  setWfCoverAiLoading]  = useState(false);
+  const [wfCoverAiPreview,  setWfCoverAiPreview]  = useState(null);
+  const [wfCoverAltDraft,   setWfCoverAltDraft]   = useState('');
+  const [wfUnsplashQuery,   setWfUnsplashQuery]   = useState('');
+  const [wfUnsplashResults, setWfUnsplashResults] = useState([]);
+  const [wfUnsplashLoading, setWfUnsplashLoading] = useState(false);
+  const [wfUnsplashSel,     setWfUnsplashSel]     = useState(null);
+  const [wfUploadPreview,   setWfUploadPreview]   = useState(null);
+
   /* ── Optimize / Content+ state ── */
   const [optUrl,         setOptUrl]         = useState("");
   const [optKw,          setOptKw]          = useState("");
@@ -728,7 +743,7 @@ export default function BlogSEO() {
     setWfPublishing(true); setWfPublishErr("");
     try {
       const bodyHtml = wfResult.fullArticle || wfResult.content || wfResult.draft || "";
-      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfMetaDesc || wfResult.metaDescription, tags: wfKeywords.join(","), asDraft }) });
+      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfMetaDesc || wfResult.metaDescription, tags: wfKeywords.join(","), asDraft, coverImageUrl: wfCoverImg?.source !== 'upload' ? wfCoverImg?.url : undefined, coverImageAlt: wfCoverImg?.alt || '' }) });
       if (r.ok) setWfPublishOk({ articleUrl: r.articleUrl, published: !asDraft });
       else setWfPublishErr(r.error || "Failed to publish to Shopify.");
     } catch(e) { setWfPublishErr(e.message); }
@@ -2682,13 +2697,43 @@ export default function BlogSEO() {
                     )}
                   </div>
 
-                  {/* Cover image placeholder */}
-                  <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, overflow:"hidden", marginBottom:12, aspectRatio:"4/3", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-                    <div style={{ textAlign:"center", padding:"16px 20px" }}>
-                      <div style={{ fontSize:13, fontWeight:700, lineHeight:1.4, textAlign:"center", color:"#fafafa" }}>{wfPickedTitle}</div>
+                  {/* Cover Image */}
+                  <div style={{ marginBottom:16 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                        <span style={{ width:7, height:7, borderRadius:"50%", background:"#6366f1", display:"inline-block" }}/>
+                        <span style={{ fontSize:13, fontWeight:600, color:"#fafafa" }}>Cover Image</span>
+                      </div>
+                      {wfCoverImg && (
+                        <div style={{ display:"flex", gap:6 }}>
+                          <button onClick={() => { setWfCoverAiPreview(null); setWfUnsplashSel(null); setWfUploadPreview(null); setWfCoverAltDraft(wfCoverImg.alt||""); setWfCoverModalOpen(true); }} style={{ fontSize:11, color:"#a1a1aa", background:"#27272a", border:"1px solid #3f3f46", borderRadius:5, padding:"2px 8px", cursor:"pointer" }}>Edit</button>
+                          <button onClick={() => setWfCoverImg(null)} style={{ fontSize:11, color:"#f87171", background:"#27272a", border:"1px solid #7f1d1d", borderRadius:5, padding:"2px 8px", cursor:"pointer" }}>Delete</button>
+                        </div>
+                      )}
                     </div>
+                    {wfCoverImg ? (
+                      <img src={wfCoverImg.url} alt={wfCoverImg.alt||wfPickedTitle} style={{ width:"100%", borderRadius:10, border:"1px solid #3f3f46", objectFit:"cover", aspectRatio:"16/9", display:"block" }} />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setWfCoverTab('ai');
+                          setWfCoverAiPrompt(`Create a professional cover image for a blog post titled "${wfPickedTitle}". Make it visually compelling and relevant to: ${(wfKeywords||[]).join(', ')||wfPickedTitle}. No text overlays. Clean modern aesthetic.`);
+                          setWfCoverAltDraft(`Cover image for "${wfPickedTitle}"`);
+                          setWfCoverAiPreview(null); setWfUnsplashSel(null); setWfUploadPreview(null);
+                          setWfUnsplashQuery((wfKeywords||[])[0]||wfPickedTitle);
+                          setWfCoverModalOpen(true);
+                        }}
+                        style={{ width:"100%", aspectRatio:"16/9", background:"#18181b", border:"2px dashed #3f3f46", borderRadius:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, cursor:"pointer", fontSize:12, color:"#71717a" }}
+                      >
+                        <span style={{ fontSize:28 }}>🖼</span>
+                        <span style={{ fontWeight:600 }}>Add Cover Image</span>
+                        <span style={{ fontSize:11, color:"#52525b" }}>AI Generate · Unsplash · Upload</span>
+                      </button>
+                    )}
+                    {wfCoverImg && (
+                      <div style={{ background:"#27272a", color:"#a1a1aa", borderRadius:6, padding:"6px 10px", marginTop:8, fontSize:11, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>ALT {wfCoverImg.alt||wfPickedTitle}</div>
+                    )}
                   </div>
-                  <div style={{ background:"#27272a", color:"#a1a1aa", borderRadius:6, padding:"6px 10px", marginBottom:16, fontSize:11, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>ALT {wfPickedTitle}</div>
 
                   {/* Meta Description */}
                   <div style={{ borderTop:"1px solid #3f3f46", paddingTop:14, marginBottom:14 }}>
@@ -2776,6 +2821,186 @@ export default function BlogSEO() {
 
                 </div>
               </div>
+
+            {/* ── Cover Image Modal ── */}
+            {wfCoverModalOpen && (
+              <div style={{ position:"fixed", inset:0, zIndex:2000, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+                <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, width:"100%", maxWidth:860, maxHeight:"92vh", overflow:"auto", display:"flex", flexDirection:"column" }}>
+
+                  {/* Modal header */}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"20px 24px", borderBottom:"1px solid #3f3f46", flexShrink:0 }}>
+                    <div>
+                      <div style={{ fontSize:18, fontWeight:700, color:"#fafafa" }}>Select an Image</div>
+                      <div style={{ fontSize:13, color:"#71717a", marginTop:3 }}>Choose from Unsplash photos, generate with AI, or upload your own image</div>
+                    </div>
+                    <button onClick={() => setWfCoverModalOpen(false)} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:22, lineHeight:1, padding:4 }}>✕</button>
+                  </div>
+
+                  {/* Tabs */}
+                  <div style={{ display:"flex", padding:"0 24px", borderBottom:"1px solid #3f3f46", flexShrink:0 }}>
+                    {[['unsplash','Unsplash'],['ai','AI Image'],['upload','Upload']].map(([val,label]) => (
+                      <button key={val} onClick={() => setWfCoverTab(val)} style={{ padding:"12px 18px", background:"none", border:"none", borderBottom: wfCoverTab===val ? "2px solid #6366f1" : "2px solid transparent", cursor:"pointer", fontWeight:600, fontSize:13, color: wfCoverTab===val ? "#fafafa" : "#71717a" }}>{label}</button>
+                    ))}
+                  </div>
+
+                  {/* Tab body */}
+                  <div style={{ display:"flex", gap:24, padding:24, flex:1 }}>
+
+                    {/* Left: image preview */}
+                    <div style={{ flexShrink:0, width:300, display:"flex", flexDirection:"column", gap:10 }}>
+                      <div style={{ background:"#09090b", border:"1px solid #3f3f46", borderRadius:10, overflow:"hidden", aspectRatio:"1/1", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {(() => {
+                          const preview = wfCoverTab==='ai' ? wfCoverAiPreview : wfCoverTab==='unsplash' ? wfUnsplashSel?.full : wfUploadPreview;
+                          return preview
+                            ? <img src={preview} alt="preview" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                            : <div style={{ textAlign:"center", color:"#52525b" }}><div style={{ fontSize:40 }}>🖼</div><div style={{ fontSize:12, marginTop:8 }}>No image selected{wfCoverTab==="unsplash" ? "\nChoose from the results" : ""}</div></div>;
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Right: controls */}
+                    <div style={{ flex:1, display:"flex", flexDirection:"column", gap:14 }}>
+
+                      {/* ── AI Image ── */}
+                      {wfCoverTab === 'ai' && (
+                        <>
+                          <div>
+                            <div style={{ fontSize:16, fontWeight:700, color:"#fafafa", marginBottom:3 }}>AI Generated Image</div>
+                            <div style={{ fontSize:12, color:"#71717a" }}>Create unique images with AI</div>
+                          </div>
+                          <textarea
+                            value={wfCoverAiPrompt}
+                            onChange={e => setWfCoverAiPrompt(e.target.value)}
+                            style={{ width:"100%", minHeight:110, fontSize:13, color:"#d4d4d8", background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, padding:"10px 12px", resize:"vertical", fontFamily:"inherit", outline:"none", boxSizing:"border-box", lineHeight:1.5 }}
+                            placeholder="Describe the image you want to generate..."
+                          />
+                          <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                            <select value={wfCoverAiRatio} onChange={e => setWfCoverAiRatio(e.target.value)} style={{ padding:"9px 12px", background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, color:"#fafafa", fontSize:13, cursor:"pointer", flexShrink:0 }}>
+                              <option value="1:1">1:1</option>
+                              <option value="16:9">16:9</option>
+                            </select>
+                            <button
+                              onClick={async () => {
+                                setWfCoverAiLoading(true);
+                                try {
+                                  const r = await apiFetchJSON(`${API}/ai/generate-cover-image`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title: wfPickedTitle, prompt: wfCoverAiPrompt, ratio: wfCoverAiRatio }) });
+                                  if (r.ok) { setWfCoverAiPreview(r.imageUrl); if (!wfCoverAltDraft) setWfCoverAltDraft(`Cover image for "${wfPickedTitle}"`);
+                                  }
+                                } catch(_) {}
+                                setWfCoverAiLoading(false);
+                              }}
+                              disabled={wfCoverAiLoading}
+                              style={{ flex:1, padding:"9px 18px", background: wfCoverAiLoading ? "#3f3f46" : "#6366f1", color:"#fff", border:"none", borderRadius:8, fontWeight:700, fontSize:13, cursor: wfCoverAiLoading ? "default" : "pointer" }}
+                            >{wfCoverAiLoading ? <><span style={S.spinner}/> Generating...</> : "✦ Regenerate"}</button>
+                          </div>
+                        </>
+                      )}
+
+                      {/* ── Unsplash ── */}
+                      {wfCoverTab === 'unsplash' && (
+                        <>
+                          <div>
+                            <div style={{ fontSize:16, fontWeight:700, color:"#fafafa", marginBottom:3 }}>Unsplash Photos</div>
+                            <div style={{ fontSize:12, color:"#71717a" }}>Free high-quality stock photos</div>
+                          </div>
+                          <div style={{ display:"flex", gap:8 }}>
+                            <input
+                              value={wfUnsplashQuery}
+                              onChange={e => setWfUnsplashQuery(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') e.target.nextSibling?.click(); }}
+                              style={{ flex:1, padding:"9px 12px", background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, color:"#fafafa", fontSize:13, outline:"none" }}
+                              placeholder="Search photos..."
+                            />
+                            <button
+                              onClick={async () => {
+                                if (!wfUnsplashQuery.trim()) return;
+                                setWfUnsplashLoading(true); setWfUnsplashResults([]);
+                                try {
+                                  const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfUnsplashQuery)}&per_page=12`);
+                                  if (r.ok) setWfUnsplashResults(r.photos || []);
+                                } catch(_) {}
+                                setWfUnsplashLoading(false);
+                              }}
+                              disabled={wfUnsplashLoading}
+                              style={{ padding:"9px 18px", background:"#6366f1", color:"#fff", border:"none", borderRadius:8, fontWeight:700, fontSize:13, cursor: wfUnsplashLoading ? "default" : "pointer" }}
+                            >{wfUnsplashLoading ? "Searching..." : "Search"}</button>
+                          </div>
+                          {wfUnsplashResults.length > 0 && (
+                            <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:6, maxHeight:230, overflowY:"auto" }}>
+                              {wfUnsplashResults.map(p => (
+                                <div key={p.id} onClick={() => { setWfUnsplashSel(p); if (!wfCoverAltDraft) setWfCoverAltDraft(p.alt||""); }} style={{ cursor:"pointer", borderRadius:7, overflow:"hidden", border: wfUnsplashSel?.id===p.id ? "2px solid #6366f1" : "2px solid transparent", aspectRatio:"1/1", flexShrink:0 }}>
+                                  <img src={p.thumb} alt={p.alt||""} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {wfUnsplashResults.length === 0 && !wfUnsplashLoading && (
+                            <div style={{ fontSize:12, color:"#52525b", textAlign:"center", padding:"20px 0" }}>Search for photos above</div>
+                          )}
+                        </>
+                      )}
+
+                      {/* ── Upload ── */}
+                      {wfCoverTab === 'upload' && (
+                        <>
+                          <div>
+                            <div style={{ fontSize:16, fontWeight:700, color:"#fafafa", marginBottom:3 }}>Upload Your Image</div>
+                            <div style={{ fontSize:12, color:"#71717a" }}>Upload your own image file — Maximum size: 10 MB</div>
+                          </div>
+                          <label style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:12, border:"2px dashed #3f3f46", borderRadius:10, padding:"32px 20px", cursor:"pointer", background:"#09090b" }}>
+                            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display:"none" }} onChange={e => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.size > 10 * 1024 * 1024) { alert("File must be under 10 MB"); return; }
+                              const reader = new FileReader();
+                              reader.onload = ev => { setWfUploadPreview(ev.target.result); if (!wfCoverAltDraft) setWfCoverAltDraft(file.name.replace(/\.[^.]+$/, '')); };
+                              reader.readAsDataURL(file);
+                            }} />
+                            <div style={{ fontSize:40 }}>📁</div>
+                            <div style={{ fontSize:14, fontWeight:700, color:"#fafafa" }}>↑ Choose File</div>
+                            <div style={{ fontSize:12, color:"#71717a" }}>Supported formats: JPG PNG WEBP GIF</div>
+                          </label>
+                          <div style={{ fontSize:11, color:"#52525b" }}>Note: Uploaded images are shown as preview. To use as Shopify cover, publish the article first then set the image in Shopify admin.</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Alt text + Save */}
+                  <div style={{ padding:"0 24px 24px", flexShrink:0 }}>
+                    <div style={{ borderTop:"1px solid #3f3f46", paddingTop:16, marginBottom:16 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:"#fafafa", marginBottom:8 }}>Image Alt Text</div>
+                      <div style={{ display:"flex", gap:8 }}>
+                        <input
+                          value={wfCoverAltDraft}
+                          onChange={e => setWfCoverAltDraft(e.target.value)}
+                          style={{ flex:1, padding:"9px 12px", background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, color:"#fafafa", fontSize:13, outline:"none" }}
+                          placeholder="Describe this image for better SEO and accessibility..."
+                        />
+                        <button
+                          onClick={() => setWfCoverAltDraft(`An engaging cover image for the article "${wfPickedTitle}" about ${(wfKeywords||[]).join(', ')||wfPickedTitle}.`)}
+                          style={{ padding:"9px 14px", background:"#27272a", border:"1px solid #3f3f46", borderRadius:8, color:"#a1a1aa", fontWeight:600, fontSize:13, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}
+                        >✦ Generate</button>
+                      </div>
+                      <div style={{ fontSize:11, color:"#52525b", marginTop:6 }}>A brief description improves SEO and accessibility for visually impaired users.</div>
+                    </div>
+                    <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
+                      <button onClick={() => setWfCoverModalOpen(false)} style={{ padding:"9px 22px", background:"#27272a", border:"1px solid #3f3f46", borderRadius:8, color:"#a1a1aa", fontWeight:600, fontSize:13, cursor:"pointer" }}>Cancel</button>
+                      <button
+                        onClick={() => {
+                          const preview = wfCoverTab==='ai' ? wfCoverAiPreview : wfCoverTab==='unsplash' ? wfUnsplashSel?.full : wfUploadPreview;
+                          if (!preview) return;
+                          setWfCoverImg({ url: preview, alt: wfCoverAltDraft || `Cover image for "${wfPickedTitle}"`, source: wfCoverTab });
+                          setWfCoverModalOpen(false);
+                        }}
+                        style={{ padding:"9px 28px", background:"#6366f1", color:"#fff", border:"none", borderRadius:8, fontWeight:700, fontSize:13, cursor:"pointer" }}
+                      >Save</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
             </div>
           )}
 

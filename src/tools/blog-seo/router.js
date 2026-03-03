@@ -8627,10 +8627,64 @@ router.post('/apply-date-refresh', async (req, res) => {
 });
 
 /* ── Publish article to Shopify as draft ───────────────────────────────── */
+/* =========================================================================
+   AI: GENERATE COVER IMAGE — DALL-E 3
+   ========================================================================= */
+router.post('/ai/generate-cover-image', async (req, res) => {
+  try {
+    const { title, prompt, ratio } = req.body || {};
+    if (!title && !prompt) return res.status(400).json({ ok: false, error: 'title or prompt required' });
+    const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024' };
+    const size = sizeMap[ratio] || '1024x1024';
+    const finalPrompt = prompt || `Create a professional, eye-catching cover image for a blog post titled "${title}". Make it visually compelling with high-quality photography or illustration style. No text overlays. Clean, modern aesthetic.`;
+    const img = await getOpenAI().images.generate({
+      model: 'dall-e-3',
+      prompt: finalPrompt,
+      n: 1,
+      size,
+      quality: 'standard',
+    });
+    const imageUrl = img.data[0]?.url;
+    if (!imageUrl) return res.status(500).json({ ok: false, error: 'No image generated' });
+    if (req.deductCredits) req.deductCredits({ model: 'dall-e-3', action: 'blog-draft' });
+    res.json({ ok: true, imageUrl, prompt: finalPrompt });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI: UNSPLASH SEARCH — free stock photos
+   ========================================================================= */
+router.get('/ai/unsplash-search', async (req, res) => {
+  try {
+    const { query, per_page = 12, page = 1 } = req.query || {};
+    if (!query) return res.status(400).json({ ok: false, error: 'query required' });
+    const key = process.env.UNSPLASH_ACCESS_KEY;
+    if (!key) return res.status(500).json({ ok: false, error: 'UNSPLASH_ACCESS_KEY not configured — add it to environment variables' });
+    const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${per_page}&page=${page}&orientation=landscape`, {
+      headers: { Authorization: `Client-ID ${key}` },
+    });
+    if (!r.ok) throw new Error(`Unsplash API error: ${r.status}`);
+    const j = await r.json();
+    const photos = (j.results || []).map(p => ({
+      id: p.id,
+      thumb: p.urls?.small,
+      full: p.urls?.regular,
+      author: p.user?.name,
+      authorUrl: p.user?.links?.html,
+      alt: p.alt_description || p.description || query,
+    }));
+    res.json({ ok: true, photos, total: j.total || 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.post('/shopify/publish-article', async (req, res) => {
   try {
     const shopTokens = require('../../core/shopTokens');
-    const { title, bodyHtml, metaDescription, tags, asDraft = true } = req.body;
+    const { title, bodyHtml, metaDescription, tags, asDraft = true, coverImageUrl, coverImageAlt } = req.body;
     if (!title || !bodyHtml) return res.status(400).json({ ok: false, error: 'title and bodyHtml required' });
 
     let shop = req.session?.shop
@@ -8659,6 +8713,7 @@ router.post('/shopify/publish-article', async (req, res) => {
         ...(metaDescription ? { summary_html: `<p>${metaDescription}</p>` } : {}),
         ...(tags ? { tags } : {}),
         published: !asDraft,
+        ...(coverImageUrl ? { image: { src: coverImageUrl, ...(coverImageAlt ? { alt: coverImageAlt } : {}) } } : {}),
       }
     };
 
