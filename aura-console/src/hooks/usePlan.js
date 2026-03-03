@@ -106,9 +106,16 @@ export default function usePlan() {
   useEffect(() => {
     async function load() {
       try {
+        // Primary: read from credit ledger (/credits returns authoritative plan field)
+        const credits = await apiFetchJSON("/api/billing/credits");
+        if (credits?.ok && credits.plan && credits.plan !== 'free') {
+          setPlan(credits.plan);
+          setPlanLoading(false);
+          return;
+        }
+        // Fallback: read from subscription endpoint
         const res = await apiFetchJSON("/api/billing/subscription");
-        const data = res;
-        setPlan(data.plan_id || "free");
+        setPlan(res.plan_id || "free");
       } catch (_) {
         setPlan("free");
       }

@@ -33,6 +33,18 @@ router.get('/subscription', async (req, res) => {
       return res.json({ plan_id: 'free', status: 'active' });
     }
     const subscription = await shopifyBillingService.getSubscription(shop);
+
+    // The credit ledger is the authoritative plan source (updated on billing confirm + sync-plan).
+    // If Shopify returns 'free' (e.g. test mode / GraphQL empty result) but the ledger
+    // already has a paid plan recorded, use the ledger plan.
+    try {
+      const ledgerStatus = creditLedger.getCreditStatus(shop);
+      if (ledgerStatus && ledgerStatus.plan && ledgerStatus.plan !== 'free') {
+        subscription.plan_id = ledgerStatus.plan;
+        subscription.name = subscription.name || ledgerStatus.plan;
+      }
+    } catch (_) {}
+
     res.json(subscription);
   } catch (error) {
     console.error('Get subscription error:', error);
@@ -91,6 +103,13 @@ router.post('/subscribe', async (req, res) => {
     }
 
     const result = await shopifyBillingService.createSubscription(shop, planId);
+
+    // If the plan activated immediately (free plan / no Shopify redirect needed),
+    // update the credit ledger right away so balance & plan display are correct.
+    if (!result.confirmationUrl) {
+      try { creditLedger.updatePlan(shop, planId); } catch(e) { console.error('[Billing] updatePlan on subscribe failed:', e.message); }
+    }
+
     res.json(result);
   } catch (error) {
     console.error('Subscribe error:', error);
@@ -116,6 +135,8 @@ router.post('/cancel', async (req, res) => {
     }
 
     const result = await shopifyBillingService.cancelSubscription(shop, subscriptionId);
+    // Downgrade ledger to free on cancellation
+    try { creditLedger.updatePlan(shop, 'free'); } catch(e) { console.error('[Billing] updatePlan on cancel failed:', e.message); }
     res.json(result);
   } catch (error) {
     console.error('Cancel subscription error:', error);

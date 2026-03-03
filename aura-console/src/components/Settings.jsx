@@ -99,11 +99,13 @@ const Settings = ({ setActiveSection }) => {
  });
  const data = await res.json();
  if (data.error) throw new Error(data.error);
- // Shopify returns a confirmationUrl redirect there
+ // Shopify returns a confirmationUrl — redirect there for merchant approval
  if (data.confirmationUrl) {
  window.top.location.href = data.confirmationUrl;
  } else if (data.plan_id) {
+ // Immediate plan change (e.g. downgrade to free) — reload so plan badge & credits refresh
  setSubscription(data);
+ setTimeout(() => window.location.reload(), 300);
  }
  } catch (err) {
  setBillingError(err.message || 'Failed to start upgrade. Please try again.');
