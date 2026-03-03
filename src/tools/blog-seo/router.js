@@ -782,8 +782,8 @@ router.post('/ai/content-fix', async (req, res) => {
       applyAs = 'replace';
       // Fetch the real article body so we can actually rewrite it
       const { articleId: aId, blogId: bId, shop: shopD } = req.body || {};
-      let bodyHtml = '';
-      if (aId && bId && shopD) {
+      let bodyHtml = req.body.bodyHtml || ''; // accept inline HTML directly (e.g. from WriteResult)
+      if (!bodyHtml && aId && bId && shopD) {
         try {
           const shopTokens = require('../../core/shopTokens');
           const token = await shopTokens.getToken(shopD);
@@ -7392,6 +7392,91 @@ router.post('/zero-click/knowledge-panel-push', async (req, res) => {
 /* =========================================================================
    AI CREATE EXPANSIONS
    ========================================================================= */
+
+/* Score a freshly-written article draft without fetching a live URL */
+router.post('/ai/score-draft', (req, res) => {
+  try {
+    const { html = '', keyword = '', title = '', metaDescription = '' } = req.body;
+    const $ = cheerio.load(html);
+    const text = $.text().replace(/\s+/g, ' ').trim();
+    const words = text.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+
+    // Readability
+    const flesch = computeFlesch(text);
+    const readabilityScore = Math.max(0, Math.min(100, Math.round(flesch.ease)));
+
+    // Structure
+    const h1Count   = $('h1').length;
+    const h2Count   = $('h2').length;
+    const h3Count   = $('h3').length;
+    const h1Text    = $('h1').first().text().trim();
+    const hasFaq    = /faq|frequently asked/i.test(text);
+    const imgCount  = $('img').length;
+    const linkCount = $('a').length;
+
+    // Keyword checks (case-insensitive)
+    const kw = (keyword || '').toLowerCase().trim();
+    const kwInTitle    = kw && title.toLowerCase().includes(kw);
+    const kwInMeta     = kw && metaDescription.toLowerCase().includes(kw);
+    const kwInH1       = kw && h1Text.toLowerCase().includes(kw);
+    const kwInH2       = kw && $('h2').toArray().some(el => $(el).text().toLowerCase().includes(kw));
+    const kwMatches    = kw ? (text.toLowerCase().match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length : 0;
+    const kwDensity    = wordCount > 0 ? Math.round((kwMatches / wordCount) * 1000) / 10 : 0;
+
+    // Paragraph analysis
+    const paragraphs = $('p').toArray().map(el => $(el).text().trim()).filter(t => t.length > 0);
+    const longParagraphs = paragraphs.filter(p => p.split(/\s+/).length > 120).length;
+    const avgParaWords   = paragraphs.length ? Math.round(paragraphs.reduce((s,p) => s + p.split(/\s+/).length, 0) / paragraphs.length) : 0;
+
+    // Issues
+    const issues = [];
+    const addIssue = (cat, sev, impact, msg, fix = null) => issues.push({ cat, sev, impact, msg, fix });
+
+    // Content
+    if (wordCount < 800)        addIssue('content', 'high',   20, `Only ${wordCount} words — aim for 800+ words`, null);
+    else if (wordCount < 1500)  addIssue('content', 'medium', 10, `${wordCount} words — expand to 1500+ for competitive ranking`, null);
+    if (longParagraphs > 0)     addIssue('content', 'medium', 10, `${longParagraphs} paragraph(s) over 120 words — break them up`, 'readability_fix');
+    if (!hasFaq)                addIssue('content', 'low',     8, 'No FAQ section detected — FAQs improve People Also Ask visibility', 'faq_fix');
+    if (imgCount === 0)         addIssue('content', 'low',     5, 'No images in article — add relevant images for engagement');
+
+    // SEO / Meta
+    if (!title)                 addIssue('meta', 'high',   25, 'No title set');
+    else if (title.length < 30) addIssue('meta', 'high',   15, `Title too short (${title.length} chars) — aim 50-60`, null);
+    else if (title.length > 65) addIssue('meta', 'medium', 10, `Title too long (${title.length} chars) — may be truncated in SERP`, null);
+    if (!metaDescription)       addIssue('meta', 'high',   20, 'No meta description — write one under 160 chars');
+    else if (metaDescription.length < 120) addIssue('meta', 'medium', 10, `Meta description short (${metaDescription.length} chars) — aim 150-160`);
+    else if (metaDescription.length > 165) addIssue('meta', 'medium',  8, `Meta description too long (${metaDescription.length} chars)`);
+    if (h1Count === 0)          addIssue('meta', 'high',   15, 'No H1 heading in article', null);
+    if (h1Count > 1)            addIssue('meta', 'medium', 10, `${h1Count} H1 tags — use exactly one`);
+    if (h2Count < 3)            addIssue('meta', 'medium', 10, `Only ${h2Count} H2 headings — aim for 4+ sections`);
+
+    // Keywords
+    if (kw) {
+      if (!kwInTitle)          addIssue('keywords', 'high',   15, `Keyword "${keyword}" not in title`);
+      if (!kwInMeta)           addIssue('keywords', 'medium', 10, `Keyword "${keyword}" not in meta description`);
+      if (!kwInH1)             addIssue('keywords', 'medium', 10, `Keyword "${keyword}" not in H1`);
+      if (!kwInH2)             addIssue('keywords', 'low',     5, `Keyword "${keyword}" not in any H2`);
+      if (kwDensity < 0.5)     addIssue('keywords', 'medium', 10, `Keyword density ${kwDensity}% is very low — aim for 1-2%`);
+      if (kwDensity > 3)       addIssue('keywords', 'medium',  8, `Keyword density ${kwDensity}% is too high — risk of keyword stuffing`);
+    }
+
+    // Readability
+    if (readabilityScore < 40)  addIssue('readability', 'high',   20, `Readability ${readabilityScore}/100 is poor — simplify sentences`, 'readability_fix');
+    else if (readabilityScore < 60) addIssue('readability', 'medium', 10, `Readability ${readabilityScore}/100 — could be more accessible`, 'readability_fix');
+    if (flesch.grade > 14)      addIssue('readability', 'medium',  8, `Reading grade level ${flesch.grade} — try to write at grade 8-10`);
+
+    // Compute category scores (start 100, deduct issues)
+    const cats = { content: 100, meta: 100, keywords: kw ? 100 : null, readability: 100 };
+    issues.forEach(i => { if (cats[i.cat] != null) cats[i.cat] = Math.max(0, cats[i.cat] - i.impact); });
+
+    const activeCats = Object.values(cats).filter(v => v !== null);
+    const overall = Math.round(activeCats.reduce((a,b) => a+b, 0) / activeCats.length);
+
+    res.json({ ok: true, overall, cats, issues, wordCount, readabilityScore, flesch, kwDensity, kwInTitle, kwInMeta, kwInH1, kwInH2, h1Count, h2Count, h3Count, hasFaq, imgCount });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
 router.post('/ai/full-blog-writer', async (req, res) => {
   const { title, keyword, outline = [], tone = 'professional', wordCount = 1800, niche } = req.body;
   if (!title || !keyword) return res.status(400).json({ ok: false, error: 'title and keyword required' });

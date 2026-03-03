@@ -197,6 +197,9 @@ export default function BlogSEO() {
   const [wfProgressLabel,  setWfProgressLabel]  = useState("Writing Article");
   const [wfSchemaOpen,     setWfSchemaOpen]     = useState(false);
   const [wfFaqSchemaOpen,  setWfFaqSchemaOpen]  = useState(false);
+  const [wfSeoScore,       setWfSeoScore]       = useState(null);  // {overall, cats, issues}
+  const [wfSeoLoading,     setWfSeoLoading]     = useState(false);
+  const [wfSeoOpen,        setWfSeoOpen]        = useState(true);  // sidebar panel open
   const wfProgressRef = useRef(null);
 
   /* ── Optimize / Content+ state ── */
@@ -731,6 +734,25 @@ export default function BlogSEO() {
     } catch(e) { setWfPublishErr(e.message); }
     setWfPublishing(false);
   }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc]);
+
+  const wfRunSeoScore = useCallback(async (result, kws, title, meta) => {
+    setWfSeoLoading(true);
+    try {
+      const html = result?.fullArticle || result?.content || result?.draft || "";
+      const r = await apiFetchJSON(`${API}/ai/score-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, keyword: (kws||[])[0] || "", title: title || "", metaDescription: meta || result?.metaDescription || "" }) });
+      if (r.ok) setWfSeoScore(r);
+    } catch(_) {}
+    setWfSeoLoading(false);
+  }, []);
+
+  // Auto-run SEO score when article result loads
+  useEffect(() => {
+    if (wfResult) {
+      setWfSeoScore(null);
+      wfRunSeoScore(wfResult, wfKeywords, wfPickedTitle, wfMetaDesc || wfResult.metaDescription || "");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wfResult]);
 
   const runBrief = useCallback(async () => {
     if (!briefTopic.trim()) return;
@@ -2541,6 +2563,124 @@ export default function BlogSEO() {
 
                 {/* Right sidebar */}
                 <div style={{ padding:"20px 16px", display:"flex", flexDirection:"column", gap:0, background:"#09090b", position:"sticky", top:53, maxHeight:"calc(100vh - 53px)", overflowY:"auto" }}>
+
+                  {/* ── SEO Score panel ── */}
+                  <div style={{ borderBottom:"1px solid #3f3f46", paddingBottom:16, marginBottom:16 }}>
+                    <div onClick={() => setWfSeoOpen(o => !o)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer", marginBottom: wfSeoOpen ? 12 : 0 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                        <span style={{ width:7, height:7, borderRadius:"50%", background:"#6366f1", display:"inline-block" }}/>
+                        <span style={{ fontSize:13, fontWeight:700, color:"#fafafa" }}>SEO Score</span>
+                        {wfSeoScore && <span style={{ fontSize:12, fontWeight:800, color: wfSeoScore.overall >= 80 ? "#4ade80" : wfSeoScore.overall >= 60 ? "#facc15" : "#f87171", marginLeft:4 }}>{wfSeoScore.overall}/100</span>}
+                        {wfSeoLoading && <span style={{ fontSize:11, color:"#71717a" }}>Analysing...</span>}
+                      </div>
+                      <span style={{ color:"#71717a", fontSize:12 }}>{wfSeoOpen ? "▲" : "▼"}</span>
+                    </div>
+
+                    {wfSeoOpen && wfSeoScore && (
+                      <>
+                        {/* Score gauge */}
+                        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+                          <div style={{ position:"relative", width:56, height:56, flexShrink:0 }}>
+                            <svg width="56" height="56" viewBox="0 0 56 56">
+                              <circle cx="28" cy="28" r="22" fill="none" stroke="#27272a" strokeWidth="6"/>
+                              <circle cx="28" cy="28" r="22" fill="none"
+                                stroke={wfSeoScore.overall >= 80 ? "#4ade80" : wfSeoScore.overall >= 60 ? "#facc15" : "#f87171"}
+                                strokeWidth="6" strokeLinecap="round"
+                                strokeDasharray={`${2 * Math.PI * 22}`}
+                                strokeDashoffset={`${2 * Math.PI * 22 * (1 - wfSeoScore.overall / 100)}`}
+                                transform="rotate(-90 28 28)"
+                              />
+                            </svg>
+                            <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:800, color:"#fafafa" }}>{wfSeoScore.overall}</div>
+                          </div>
+                          <div style={{ flex:1 }}>
+                            {Object.entries(wfSeoScore.cats||{}).filter(([,v])=>v!==null).map(([k,v]) => (
+                              <div key={k} style={{ marginBottom:5 }}>
+                                <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#a1a1aa", marginBottom:2 }}>
+                                  <span style={{ textTransform:"capitalize" }}>{k}</span>
+                                  <span style={{ color: v >= 80 ? "#4ade80" : v >= 60 ? "#facc15" : "#f87171", fontWeight:600 }}>{v}</span>
+                                </div>
+                                <div style={{ height:4, borderRadius:99, background:"#27272a", overflow:"hidden" }}>
+                                  <div style={{ height:"100%", borderRadius:99, background: v >= 80 ? "#4ade80" : v >= 60 ? "#facc15" : "#f87171", width:`${v}%`, transition:"width .5s ease" }}/>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Stats row */}
+                        <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap" }}>
+                          {[
+                            ["Words", wfSeoScore.wordCount],
+                            ["Readability", `${wfSeoScore.readabilityScore}/100`],
+                            ["KW Density", `${wfSeoScore.kwDensity}%`],
+                            ["H2s", wfSeoScore.h2Count],
+                          ].map(([l,v]) => (
+                            <div key={l} style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:7, padding:"5px 9px", textAlign:"center", flex:1, minWidth:50 }}>
+                              <div style={{ fontSize:13, fontWeight:700, color:"#fafafa" }}>{v}</div>
+                              <div style={{ fontSize:10, color:"#71717a" }}>{l}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Issues */}
+                        {(wfSeoScore.issues||[]).length > 0 && (
+                          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                            {(wfSeoScore.issues||[]).slice(0,6).map((issue, i) => (
+                              <div key={i} style={{ background:"#18181b", border:`1px solid ${issue.sev==='high'?'#7f1d1d':issue.sev==='medium'?'#78350f':'#3f3f46'}`, borderRadius:8, padding:"8px 10px" }}>
+                                <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
+                                  <span style={{ fontSize:13, marginTop:1, flexShrink:0 }}>{issue.sev==='high'?'🔴':issue.sev==='medium'?'🟡':'🔵'}</span>
+                                  <div style={{ flex:1 }}>
+                                    <div style={{ fontSize:11, color:"#d4d4d8", lineHeight:1.4 }}>{issue.msg}</div>
+                                    {issue.fix === 'readability_fix' && (
+                                      <button
+                                        onClick={async () => {
+                                          const html = wfResult.fullArticle || wfResult.content || "";
+                                          const r2 = await apiFetchJSON(`${API}/ai/content-fix`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ type:"readability", bodyHtml: html, title: wfPickedTitle, keywords: (wfKeywords||[]).join(","), keyword: (wfKeywords||[])[0]||"" }) });
+                                          if (r2.ok) { const updated = {...wfResult, fullArticle: r2.html || html}; setWfResult(updated); wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc); }
+                                        }}
+                                        style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}
+                                      >✦ AI Fix Readability</button>
+                                    )}
+                                    {issue.fix === 'faq_fix' && (
+                                      <button
+                                        onClick={async () => {
+                                          const html = wfResult.fullArticle || wfResult.content || "";
+                                          const r2 = await apiFetchJSON(`${API}/ai/content-fix`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ type:"faq", title: wfPickedTitle, keywords: (wfKeywords||[]).join(","), keyword: (wfKeywords||[])[0]||"" }) });
+                                          if (r2.ok) { const updated = {...wfResult, fullArticle: (html + "\n" + (r2.html || ""))}; setWfResult(updated); wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc); }
+                                        }}
+                                        style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}
+                                      >✦ Add FAQ Section</button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {(wfSeoScore.issues||[]).length > 6 && (
+                              <div style={{ fontSize:11, color:"#71717a", textAlign:"center" }}>+{wfSeoScore.issues.length - 6} more issues — fix the above first</div>
+                            )}
+                          </div>
+                        )}
+                        {(wfSeoScore.issues||[]).length === 0 && (
+                          <div style={{ fontSize:12, color:"#4ade80", textAlign:"center", padding:"8px 0" }}>✓ No issues found — great article!</div>
+                        )}
+
+                        {/* Rescan */}
+                        <button
+                          onClick={() => wfRunSeoScore(wfResult, wfKeywords, wfPickedTitle, wfMetaDesc)}
+                          disabled={wfSeoLoading}
+                          style={{ width:"100%", marginTop:10, padding:"6px 0", borderRadius:7, background:"#27272a", color:"#a1a1aa", fontWeight:600, fontSize:11, border:"1px solid #3f3f46", cursor: wfSeoLoading ? "default" : "pointer" }}
+                        >{wfSeoLoading ? "Rescanning..." : "↺ Rescan SEO"}</button>
+                      </>
+                    )}
+
+                    {wfSeoOpen && wfSeoLoading && !wfSeoScore && (
+                      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 0" }}>
+                        <span style={S.spinner}/>
+                        <span style={{ fontSize:12, color:"#71717a" }}>Analysing article SEO...</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Cover image placeholder */}
                   <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, overflow:"hidden", marginBottom:12, aspectRatio:"4/3", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
