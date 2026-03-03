@@ -746,10 +746,10 @@ export default function BlogSEO() {
     if (!wfPickedTitle) return;
     setWfGenerating(true); setWfErr(""); setWfProgress(0); setWfProgressLabel("Writing Article");
     setSection("WriteGenerating");
-    // Progress timer scaled to article size: small ~35s, medium ~70s, long ~120s
+    // Section-by-section: each section is a separate API call, so timing scales with section count
     const startMs = Date.now();
-    const TOTAL_MS = wfOutlineSize === "small" ? 35000 : wfOutlineSize === "long" ? 120000 : 70000;
-    const LABELS = ["Researching topic...", "Writing introduction...", "Writing Article", "Building sections...", "Adding FAQs...", "Polishing content..."];
+    const TOTAL_MS = wfOutlineSize === "small" ? 40000 : wfOutlineSize === "long" ? 90000 : 65000;
+    const LABELS = ["Researching topic...", "Writing introduction...", "Writing sections...", "Writing sections...", "Adding conclusion...", "Adding FAQs..."];
     let labelIdx = 0;
     wfProgressRef.current = setInterval(() => {
       const elapsed = Date.now() - startMs;
@@ -760,8 +760,8 @@ export default function BlogSEO() {
     }, 300);
     try {
       const outlineList = [...wfOutlines, ...(wfConclusion ? ["Conclusion"] : []), ...(wfFaqs ? ["FAQs — frequently asked questions"] : [])];
-      // Ask for the top of each range — LLMs undershoot by ~20-30% so this lands in the advertised range
-      const targetWordCount = wfOutlineSize === "small" ? 1500 : wfOutlineSize === "long" ? 5000 : 3000;
+      // Section-by-section generation is accurate, so target the midpoint of each range
+      const targetWordCount = wfOutlineSize === "small" ? 1200 : wfOutlineSize === "long" ? 4000 : 2300;
       const r = await apiFetchJSON(`${API}/ai/full-blog-writer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, outline: outlineList, wordCount: targetWordCount }) });
       clearInterval(wfProgressRef.current); setWfProgress(100);
       if (r.ok) { setWfResult(r); setWfMetaDesc(r.metaDescription || ""); setTimeout(() => setSection("WriteResult"), 400); }

@@ -7482,23 +7482,98 @@ router.post('/ai/full-blog-writer', async (req, res) => {
   if (!title || !keyword) return res.status(400).json({ ok: false, error: 'title and keyword required' });
   try {
     const model = req.body.model || 'gpt-4o-mini';
-    const minWords = Math.max(wordCount, 800); // respect the requested size, floor at 800
-    // Each H2 section must be substantial — calculate how many sections are in the outline
-    const sectionCount = Math.max(outline.length, 6);
-    const wordsPerSection = Math.ceil(minWords / sectionCount);
-    // Tokens needed: ~1.4 tokens/word for HTML + JSON overhead (title, meta, slug, faq) + 500 buffer
-    const maxTokens = Math.min(16000, Math.ceil(minWords * 1.8) + 800);
+    const ai = getOpenAI();
     const currentYear = new Date().getFullYear();
-    const outlineSections = outline.length ? 'Follow this outline exactly:\n' + outline.map((h,i) => `${i+1}. ${h}`).join('\n') : '';
-    const prompt = `The current year is ${currentYear}. Write a complete, publish-ready blog post. CRITICAL RULES:\n1. fullArticle MUST be at least ${minWords} words — write EVERY section in FULL, do NOT truncate or summarise. If you run out of space, write MORE content, never less.\n2. fullArticle MUST use clean HTML: <h2> for section headings, <h3> for sub-headings, <p> for paragraphs, <ul><li> for bullet lists, <ol><li> for numbered lists, <strong> for bold, <em> for italic, <hr> between major sections. NO markdown, NO backticks.\n3. faqItems must be a JSON array of objects: [{"q":"question","a":"answer"}] with at least 4 items.\n4. Never reference any year before ${currentYear}. All "year" references must be ${currentYear}.\n5. Each H2 section MUST be at least ${wordsPerSection} words with a minimum of 2 substantial paragraphs — do not use short bullet-only sections.\n6. Do NOT stop early. If you are close to finishing, keep writing until you reach the word count.\n\nTitle: "${title}"\nTarget keyword: "${keyword}"\nNiche: ${niche||'general'}\nTone: ${tone}\nMINIMUM word count: ${minWords} words (this is a hard requirement — do not submit fewer)\n${outlineSections}\n\nReturn JSON: {"title": "string", "metaDescription": "string (under 160 chars)", "slug": "string", "fullArticle": "string (complete HTML, minimum ${minWords} words)", "wordCount": number, "keywordDensity": number, "internalLinkSuggestions": ["string"], "faqItems": [{"q":"string","a":"string"}], "faqQuestions": ["string"], "articleSchemaType": "Article"}`;
-    const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: maxTokens });
-    const parsed = JSON.parse(r.choices[0].message.content);
-    // ensure faqItems exists
-    if (!parsed.faqItems && parsed.faqQuestions) {
-      parsed.faqItems = parsed.faqQuestions.map(q => ({ q, a: '' }));
+    const targetWords = Math.max(wordCount, 800);
+
+    // Build the section list from the outline, stripping any Conclusion/FAQ entries
+    // (we handle those separately so every content section gets its own full token budget)
+    const contentSections = outline.filter(h => !/^(conclusion|faq|frequently asked)/i.test(h));
+    const hasConclusion   = outline.some(h => /^conclusion/i.test(h));
+    const hasFaq          = outline.some(h => /^faq|frequently asked/i.test(h));
+
+    // Divide the word budget: intro gets ~10%, each content section gets equal share of 80%, conclusion 10%
+    const introWords   = Math.round(targetWords * 0.10);
+    const otherSections = contentSections.length || 5;
+    const sectionWords = Math.round((targetWords * 0.80) / otherSections);
+    const conclusionWords = Math.round(targetWords * 0.10);
+
+    const ctx = `Title: "${title}" | Keyword: "${keyword}" | Niche: ${niche||'general'} | Tone: ${tone} | Year: ${currentYear}`;
+    const htmlRules = `Use clean HTML only — <p>, <ul><li>, <ol><li>, <strong>, <em>, <h3> for sub-headings. No markdown, no backticks. Include the keyword "${keyword}" naturally. Year references must be ${currentYear}.`;
+
+    // ── 1. Generate metadata (title, meta description, slug) ──
+    const metaR = await ai.chat.completions.create({
+      model, max_tokens: 300, response_format: { type: 'json_object' },
+      messages: [{ role: 'user', content: `${ctx}\nReturn JSON: {"metaDescription":"string under 160 chars","slug":"string","internalLinkSuggestions":["string"]}` }],
+    });
+    const meta = JSON.parse(metaR.choices[0].message.content);
+
+    // ── 2. Generate intro ──
+    const introR = await ai.chat.completions.create({
+      model, max_tokens: Math.ceil(introWords * 2.5),
+      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction section for this blog post. Target exactly ${introWords} words. Open with a hook, establish the problem/topic, and place the keyword in the first sentence. Return only the HTML (no heading tag for the intro — start with <p>).` }],
+    });
+    let fullHtml = introR.choices[0].message.content.trim();
+
+    // ── 3. Generate each content section in parallel batches of 3 ──
+    const sectionHtmlParts = new Array(contentSections.length);
+    for (let i = 0; i < contentSections.length; i += 3) {
+      const batch = contentSections.slice(i, i + 3);
+      const batchResults = await Promise.all(batch.map((heading, bi) =>
+        ai.chat.completions.create({
+          model, max_tokens: Math.ceil(sectionWords * 2.5),
+          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${i+bi+1} of the blog post. Section heading: "${heading}". Target exactly ${sectionWords} words. Write at least 3 full paragraphs with detailed, useful content. Use <h3> sub-headings where appropriate. Return only the HTML starting with <h2>${heading}</h2>.` }],
+        })
+      ));
+      batchResults.forEach((r, bi) => { sectionHtmlParts[i + bi] = r.choices[0].message.content.trim(); });
     }
+    fullHtml += '\n' + sectionHtmlParts.join('\n');
+
+    // ── 4. Conclusion ──
+    if (hasConclusion) {
+      const conclR = await ai.chat.completions.create({
+        model, max_tokens: Math.ceil(conclusionWords * 2.5),
+        messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the conclusion for this blog post. Target ${conclusionWords} words. Summarise key takeaways and end with a clear call to action. Return only the HTML starting with <h2>Conclusion</h2>.` }],
+      });
+      fullHtml += '\n' + conclR.choices[0].message.content.trim();
+    }
+
+    // ── 5. FAQs ──
+    let faqItems = [];
+    if (hasFaq) {
+      const faqR = await ai.chat.completions.create({
+        model, max_tokens: 1200, response_format: { type: 'json_object' },
+        messages: [{ role: 'user', content: `${ctx}\nGenerate 5 FAQ pairs about "${keyword}". Each answer should be 2-3 sentences. Return JSON: {"faqs":[{"q":"string","a":"string"}]}` }],
+      });
+      const faqParsed = JSON.parse(faqR.choices[0].message.content);
+      faqItems = faqParsed.faqs || [];
+      if (faqItems.length) {
+        const faqHtml = '<h2>Frequently Asked Questions</h2>\n' + faqItems.map(f => `<h3>${f.q}</h3>\n<p>${f.a}</p>`).join('\n');
+        fullHtml += '\n' + faqHtml;
+      }
+    }
+
+    // ── 6. Count actual words in the final article ──
+    const plainText = fullHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const actualWordCount = plainText.split(/\s+/).filter(Boolean).length;
+    const kwMatches = (plainText.toLowerCase().match(new RegExp(keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    const kwDensity = actualWordCount > 0 ? Math.round((kwMatches / actualWordCount) * 1000) / 10 : 0;
+    const slug = meta.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
     if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...parsed });
+    res.json({
+      ok: true,
+      title,
+      metaDescription: meta.metaDescription || '',
+      slug,
+      fullArticle: fullHtml,
+      wordCount: actualWordCount,
+      keywordDensity: kwDensity,
+      internalLinkSuggestions: meta.internalLinkSuggestions || [],
+      faqItems,
+      faqQuestions: faqItems.map(f => f.q),
+      articleSchemaType: 'Article',
+    });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
