@@ -108,7 +108,7 @@ export default function usePlan() {
       try {
         // Primary: read from credit ledger (/credits returns authoritative plan field)
         const credits = await apiFetchJSON("/api/billing/credits");
-        if (credits?.ok && credits.plan && credits.plan !== 'free') {
+        if (credits?.ok && credits.plan) {
           setPlan(credits.plan);
           setPlanLoading(false);
           return;

@@ -331,26 +331,31 @@ function App() {
  const [toast, setToast] = useState({ message: '', type: 'info'});
 
  // Handle ?billing=success redirect back from Shopify approval page
- // Use sessionStorage so this only fires once even if the URL param persists in the Shopify Admin parent frame
  useEffect(() => {
  const params = new URLSearchParams(window.location.search);
- const alreadyHandled = sessionStorage.getItem('billingSuccessHandled');
- if (params.get('billing') === 'success'&& !alreadyHandled) {
- sessionStorage.setItem('billingSuccessHandled', '1');
+ if (params.get('billing') !== 'success') return;
+
  const planId = params.get('plan');
+
+ // Immediately strip the billing params from the URL so a page reload
+ // doesn't re-trigger this handler (e.g. after a downgrade reload)
+ const cleanUrl = window.location.pathname + (window.location.hash || '');
+ try { window.history.replaceState({}, '', cleanUrl); } catch(_) {}
+
+ // Only sync once per actual Shopify redirect (guard against double-fire in StrictMode)
+ const handledKey = `billingHandled_${planId || 'unknown'}`;
+ if (sessionStorage.getItem(handledKey)) return;
+ sessionStorage.setItem(handledKey, '1');
+ setTimeout(() => sessionStorage.removeItem(handledKey), 30000);
+
  // Sync the plan into the credit ledger so credits are immediately available
  if (planId) {
  import('./api.js').then(({ apiFetch }) => {
  apiFetch('/api/billing/sync-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId }) }).catch(() => {});
  }).catch(() => {});
  }
- setToast({ message: 'Plan upgraded successfully! Your new features are now active.', type: 'success'});
+ setToast({ message: 'Plan updated successfully! Your credits and features are now active.', type: 'success'});
  setActiveSectionRaw('settings');
- }
- // Clear the flag after 10s so a future genuine upgrade still shows the toast
- if (alreadyHandled) {
- setTimeout(() => sessionStorage.removeItem('billingSuccessHandled'), 10000);
- }
  }, []);
 
  // Mark onboarding as complete

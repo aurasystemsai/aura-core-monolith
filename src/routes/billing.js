@@ -35,13 +35,12 @@ router.get('/subscription', async (req, res) => {
     const subscription = await shopifyBillingService.getSubscription(shop);
 
     // The credit ledger is the authoritative plan source (updated on billing confirm + sync-plan).
-    // If Shopify returns 'free' (e.g. test mode / GraphQL empty result) but the ledger
-    // already has a paid plan recorded, use the ledger plan.
+    // Always prefer the ledger plan over what Shopify's GraphQL returns (Shopify may show an
+    // old active subscription even after a downgrade or a failed cancellation).
     try {
       const ledgerStatus = creditLedger.getCreditStatus(shop);
-      if (ledgerStatus && ledgerStatus.plan && ledgerStatus.plan !== 'free') {
+      if (ledgerStatus && ledgerStatus.plan) {
         subscription.plan_id = ledgerStatus.plan;
-        subscription.name = subscription.name || ledgerStatus.plan;
       }
     } catch (_) {}
 
