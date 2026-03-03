@@ -720,14 +720,14 @@ export default function BlogSEO() {
     setWfGenerating(false);
   }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs]);
 
-  const wfSaveToShopify = useCallback(async () => {
+  const wfSaveToShopify = useCallback(async (asDraft = true) => {
     if (!wfResult) return;
     setWfPublishing(true); setWfPublishErr("");
     try {
       const bodyHtml = wfResult.fullArticle || wfResult.content || wfResult.draft || "";
-      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfMetaDesc || wfResult.metaDescription, tags: wfKeywords.join(","), asDraft: true }) });
-      if (r.ok) setWfPublishOk({ articleUrl: r.articleUrl });
-      else setWfPublishErr(r.error || "Failed to save to Shopify.");
+      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfMetaDesc || wfResult.metaDescription, tags: wfKeywords.join(","), asDraft }) });
+      if (r.ok) setWfPublishOk({ articleUrl: r.articleUrl, published: !asDraft });
+      else setWfPublishErr(r.error || "Failed to publish to Shopify.");
     } catch(e) { setWfPublishErr(e.message); }
     setWfPublishing(false);
   }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc]);
@@ -2602,6 +2602,37 @@ export default function BlogSEO() {
                       )}
                     </div>
                   )}
+
+                  {/* Publish to Shopify */}
+                  <div style={{ borderTop:"1px solid #3f3f46", paddingTop:16, marginTop:16 }}>
+                    {wfPublishOk ? (
+                      <div style={{ background:"#052e16", border:"1px solid #16a34a", borderRadius:10, padding:"12px 14px" }}>
+                        <div style={{ fontSize:13, fontWeight:600, color:"#86efac", marginBottom:6 }}>
+                          {wfPublishOk.published ? "✓ Published to Shopify!" : "✓ Saved as draft in Shopify!"}
+                        </div>
+                        <a href={wfPublishOk.articleUrl} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#4ade80", fontWeight:600, textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4 }}>Open in Shopify →</a>
+                        <button onClick={() => setWfPublishOk(null)} style={{ display:"block", marginTop:8, fontSize:11, color:"#71717a", background:"none", border:"none", cursor:"pointer", padding:0 }}>Publish again</button>
+                      </div>
+                    ) : (
+                      <>
+                        {wfPublishErr && <div style={{ fontSize:12, color:"#f87171", background:"#450a0a", border:"1px solid #7f1d1d", borderRadius:8, padding:"8px 12px", marginBottom:10 }}>{wfPublishErr}</div>}
+                        <button
+                          onClick={() => wfSaveToShopify(false)}
+                          disabled={wfPublishing}
+                          style={{ width:"100%", padding:"11px 0", borderRadius:9, background: wfPublishing ? "#4f46e5" : "#6366f1", color:"#fff", fontWeight:700, fontSize:13, border:"none", cursor: wfPublishing ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7, marginBottom:8 }}
+                        >
+                          {wfPublishing ? <><span style={S.spinner}/> Publishing...</> : <>🛍 Publish to Shopify</>}
+                        </button>
+                        <button
+                          onClick={() => wfSaveToShopify(true)}
+                          disabled={wfPublishing}
+                          style={{ width:"100%", padding:"9px 0", borderRadius:9, background:"#27272a", color:"#d4d4d8", fontWeight:600, fontSize:12, border:"1px solid #3f3f46", cursor: wfPublishing ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}
+                        >
+                          Save as Draft
+                        </button>
+                      </>
+                    )}
+                  </div>
 
                 </div>
               </div>
