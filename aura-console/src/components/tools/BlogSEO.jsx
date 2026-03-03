@@ -2427,10 +2427,10 @@ export default function BlogSEO() {
               WRITEGENERATING — progress screen
           ════════════════════════════ */}
           {section === "WriteGenerating" && (
-            <div style={{ margin:"0 -28px", minHeight:"100vh", background:"#fff" }}>
+            <div style={{ margin:"0 -28px", minHeight:"100vh", background:"#09090b" }}>
               {/* Top bar */}
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:"1px solid #e5e7eb", background:"#fff", position:"sticky", top:0, zIndex:10 }}>
-                <button onClick={() => { clearInterval(wfProgressRef.current); setWfGenerating(false); setSection("WriteFlow"); }} style={{ background:"none", border:"none", color:"#374151", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:"1px solid #3f3f46", background:"#09090b", position:"sticky", top:0, zIndex:10 }}>
+                <button onClick={() => { clearInterval(wfProgressRef.current); setWfGenerating(false); setSection("WriteFlow"); }} style={{ background:"none", border:"none", color:"#a1a1aa", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
                   <span style={{ fontSize:16 }}>‹</span> Back
                 </button>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -2438,28 +2438,28 @@ export default function BlogSEO() {
                     <span style={{ width:20, height:20, borderRadius:"50%", background:"#22c55e", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>✓</span>
                     Title &amp; Outline
                   </span>
-                  <span style={{ color:"#d1d5db", fontSize:16 }}>››</span>
-                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:"#6366f1" }}>
+                  <span style={{ color:"#3f3f46", fontSize:16 }}>››</span>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:"#818cf8" }}>
                     <span style={{ width:20, height:20, borderRadius:"50%", background:"#6366f1", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>2</span>
                     Article &amp; SEO
                   </span>
                 </div>
-                <button disabled style={{ padding:"6px 16px", borderRadius:8, background:"#c7d2fe", color:"#fff", fontWeight:700, fontSize:13, border:"none", display:"flex", alignItems:"center", gap:6, opacity:0.5 }}>↑ Export</button>
+                <button disabled style={{ padding:"6px 16px", borderRadius:8, background:"#3f3f46", color:"#71717a", fontWeight:700, fontSize:13, border:"none", display:"flex", alignItems:"center", gap:6, opacity:0.5 }}>↑ Export</button>
               </div>
               {/* Centered progress */}
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"calc(100vh - 53px)", padding:40 }}>
-                <div style={{ fontSize:24, fontWeight:700, color:"#111", marginBottom:8 }}>Generating your article...</div>
-                <div style={{ fontSize:14, color:"#6b7280", marginBottom:32 }}>{wfProgressLabel}</div>
+                <div style={{ fontSize:24, fontWeight:700, color:"#fafafa", marginBottom:8 }}>Generating your article...</div>
+                <div style={{ fontSize:14, color:"#a1a1aa", marginBottom:32 }}>{wfProgressLabel}</div>
                 <div style={{ width:"100%", maxWidth:440 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#374151", marginBottom:8 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:"#d4d4d8", marginBottom:8 }}>
                     <span>{wfProgress}%</span>
                     <span>{wfProgress < 95 ? `${Math.max(1, Math.round((95 - wfProgress) * 35 / 95))}s remaining` : "Almost done..."}</span>
                   </div>
-                  <div style={{ height:8, borderRadius:99, background:"#e5e7eb", overflow:"hidden" }}>
-                    <div style={{ height:"100%", borderRadius:99, background:"#111", width:`${wfProgress}%`, transition:"width .3s ease" }}/>
+                  <div style={{ height:8, borderRadius:99, background:"#27272a", overflow:"hidden" }}>
+                    <div style={{ height:"100%", borderRadius:99, background:"#6366f1", width:`${wfProgress}%`, transition:"width .3s ease" }}/>
                   </div>
                 </div>
-                <div style={{ fontSize:13, color:"#9ca3af", marginTop:24, textAlign:"center", maxWidth:360, lineHeight:1.6 }}>You can safely leave this page. The article will continue generating in the background.</div>
+                <div style={{ fontSize:13, color:"#71717a", marginTop:24, textAlign:"center", maxWidth:360, lineHeight:1.6 }}>You can safely leave this page. The article will continue generating in the background.</div>
               </div>
             </div>
           )}
@@ -2468,10 +2468,10 @@ export default function BlogSEO() {
               WRITERESULT — Article & SEO
           ════════════════════════════ */}
           {section === "WriteResult" && wfResult && (
-            <div style={{ margin:"0 -28px", minHeight:"100vh", background:"#fff" }}>
+            <div style={{ margin:"0 -28px", minHeight:"100vh", background:"#09090b" }}>
               {/* Top bar */}
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:"1px solid #e5e7eb", background:"#fff", position:"sticky", top:0, zIndex:10 }}>
-                <button onClick={() => setSection("WriteFlow")} style={{ background:"none", border:"none", color:"#374151", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:"1px solid #3f3f46", background:"#09090b", position:"sticky", top:0, zIndex:10 }}>
+                <button onClick={() => setSection("WriteFlow")} style={{ background:"none", border:"none", color:"#a1a1aa", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}>
                   <span style={{ fontSize:16 }}>‹</span> Back
                 </button>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -2479,15 +2479,15 @@ export default function BlogSEO() {
                     <span style={{ width:20, height:20, borderRadius:"50%", background:"#22c55e", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>✓</span>
                     Title &amp; Outline
                   </span>
-                  <span style={{ color:"#d1d5db", fontSize:16 }}>››</span>
-                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:"#6366f1" }}>
+                  <span style={{ color:"#3f3f46", fontSize:16 }}>››</span>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:"#818cf8" }}>
                     <span style={{ width:20, height:20, borderRadius:"50%", background:"#6366f1", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>2</span>
                     Article &amp; SEO
                   </span>
                 </div>
                 {wfPublishOk
                   ? <a href={wfPublishOk.articleUrl} target="_blank" rel="noreferrer" style={{ padding:"7px 16px", borderRadius:8, background:"#6366f1", color:"#fff", fontWeight:700, fontSize:13, border:"none", display:"flex", alignItems:"center", gap:6, textDecoration:"none" }}>↑ Open in Shopify</a>
-                  : <button onClick={wfSaveToShopify} disabled={wfPublishing} style={{ padding:"7px 16px", borderRadius:8, background: wfPublishing ? "#c7d2fe" : "#6366f1", color:"#fff", fontWeight:700, fontSize:13, border:"none", cursor: wfPublishing ? "default" : "pointer", display:"flex", alignItems:"center", gap:6 }}>
+                  : <button onClick={wfSaveToShopify} disabled={wfPublishing} style={{ padding:"7px 16px", borderRadius:8, background: wfPublishing ? "#4f46e5" : "#6366f1", color:"#fff", fontWeight:700, fontSize:13, border:"none", cursor: wfPublishing ? "default" : "pointer", display:"flex", alignItems:"center", gap:6 }}>
                       {wfPublishing ? <><span style={S.spinner}/> Saving...</> : <>↑ Export</>}
                     </button>
                 }
@@ -2497,21 +2497,20 @@ export default function BlogSEO() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 278px", minHeight:"calc(100vh - 53px)", alignItems:"start" }}>
 
                 {/* Left: article + floating toolbar */}
-                <div style={{ position:"relative", borderRight:"1px solid #e5e7eb" }}>
+                <div style={{ position:"relative", borderRight:"1px solid #3f3f46" }}>
                   {/* Floating toolbar */}
                   <div style={{ position:"fixed", left:28, top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", gap:8, zIndex:20 }}>
-                    <button title="Copy article" onClick={() => navigator.clipboard?.writeText(wfResult.fullArticle || wfResult.content || "")} style={{ width:36, height:36, borderRadius:8, background:"#f9fafb", border:"1px solid #e5e7eb", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:"#374151" }}>⎘</button>
-                    <button title="Edit outline" onClick={() => { setSection("WriteFlow"); }} style={{ width:36, height:36, borderRadius:8, background:"#f9fafb", border:"1px solid #e5e7eb", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:"#374151" }}>☰</button>
+                    <button title="Copy article" onClick={() => navigator.clipboard?.writeText(wfResult.fullArticle || wfResult.content || "")} style={{ width:36, height:36, borderRadius:8, background:"#18181b", border:"1px solid #3f3f46", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:"#d4d4d8" }}>⎘</button>
+                    <button title="Edit outline" onClick={() => { setSection("WriteFlow"); }} style={{ width:36, height:36, borderRadius:8, background:"#18181b", border:"1px solid #3f3f46", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:"#d4d4d8" }}>☰</button>
                   </div>
 
                   {/* Article HTML */}
                   <div style={{ maxWidth:740, margin:"0 auto", padding:"40px 48px 80px" }}>
-                    {wfPublishErr && <div style={{ fontSize:12, color:"#ef4444", background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:8, padding:"8px 14px", marginBottom:20 }}>{wfPublishErr}</div>}
+                    {wfPublishErr && <div style={{ fontSize:12, color:"#f87171", background:"#450a0a", border:"1px solid #7f1d1d", borderRadius:8, padding:"8px 14px", marginBottom:20 }}>{wfPublishErr}</div>}
                     <div
-                      style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:16, lineHeight:1.9, color:"#111" }}
+                      style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:16, lineHeight:1.9, color:"#e4e4e7" }}
                       dangerouslySetInnerHTML={{ __html:
                         (wfResult.fullArticle || wfResult.content || wfResult.draft || "")
-                          // Fallback: basic markdown to HTML if AI returned markdown
                           .replace(/^### (.+)$/gm, "<h3>$1</h3>")
                           .replace(/^## (.+)$/gm, "<h2>$1</h2>")
                           .replace(/^# (.+)$/gm, "<h1>$1</h1>")
@@ -2526,77 +2525,77 @@ export default function BlogSEO() {
 
                   {/* Article CSS */}
                   <style>{`
-                    .wf-article-body h1 { font-size:28px; font-weight:700; color:#111; margin:32px 0 12px; }
-                    .wf-article-body h2 { font-size:22px; font-weight:700; color:#111; margin:36px 0 10px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; }
-                    .wf-article-body h3 { font-size:18px; font-weight:600; color:#1f2937; margin:24px 0 8px; }
+                    .wf-article-body h1 { font-size:28px; font-weight:700; color:#fafafa; margin:32px 0 12px; }
+                    .wf-article-body h2 { font-size:22px; font-weight:700; color:#fafafa; margin:36px 0 10px; padding-bottom:6px; border-bottom:1px solid #3f3f46; }
+                    .wf-article-body h3 { font-size:18px; font-weight:600; color:#d4d4d8; margin:24px 0 8px; }
                     .wf-article-body p  { margin:0 0 16px; }
                     .wf-article-body ul,.wf-article-body ol { padding-left:24px; margin:0 0 16px; }
                     .wf-article-body li { margin-bottom:6px; }
-                    .wf-article-body hr { border:none; border-top:1px solid #e5e7eb; margin:32px 0; }
-                    .wf-article-body strong { font-weight:700; }
+                    .wf-article-body hr { border:none; border-top:1px solid #3f3f46; margin:32px 0; }
+                    .wf-article-body strong { font-weight:700; color:#fafafa; }
                   `}</style>
                 </div>
 
                 {/* Right sidebar */}
-                <div style={{ padding:"20px 16px", display:"flex", flexDirection:"column", gap:0, background:"#fff", position:"sticky", top:53, maxHeight:"calc(100vh - 53px)", overflowY:"auto" }}>
+                <div style={{ padding:"20px 16px", display:"flex", flexDirection:"column", gap:0, background:"#09090b", position:"sticky", top:53, maxHeight:"calc(100vh - 53px)", overflowY:"auto" }}>
 
                   {/* Cover image placeholder */}
-                  <div style={{ background:"#1f2937", borderRadius:10, overflow:"hidden", marginBottom:12, aspectRatio:"4/3", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-                    <div style={{ textAlign:"center", padding:"16px 20px", color:"#fff" }}>
-                      <div style={{ fontSize:13, fontWeight:700, lineHeight:1.4, textAlign:"center" }}>{wfPickedTitle}</div>
+                  <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, overflow:"hidden", marginBottom:12, aspectRatio:"4/3", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+                    <div style={{ textAlign:"center", padding:"16px 20px" }}>
+                      <div style={{ fontSize:13, fontWeight:700, lineHeight:1.4, textAlign:"center", color:"#fafafa" }}>{wfPickedTitle}</div>
                     </div>
                   </div>
-                  <div style={{ fontSize:11, color:"#6b7280", background:"#1f2937", color:"#d1d5db", borderRadius:6, padding:"6px 10px", marginBottom:16, fontSize:11, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>ALT {wfPickedTitle}</div>
+                  <div style={{ background:"#27272a", color:"#a1a1aa", borderRadius:6, padding:"6px 10px", marginBottom:16, fontSize:11, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>ALT {wfPickedTitle}</div>
 
                   {/* Meta Description */}
-                  <div style={{ borderTop:"1px solid #e5e7eb", paddingTop:14, marginBottom:14 }}>
+                  <div style={{ borderTop:"1px solid #3f3f46", paddingTop:14, marginBottom:14 }}>
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                         <span style={{ width:7, height:7, borderRadius:"50%", background:"#6366f1", display:"inline-block" }}/>
-                        <span style={{ fontSize:13, fontWeight:600, color:"#111" }}>Meta Description</span>
+                        <span style={{ fontSize:13, fontWeight:600, color:"#fafafa" }}>Meta Description</span>
                       </div>
                       <div style={{ display:"flex", gap:6 }}>
-                        <button onClick={() => apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"metaDescription", title: wfPickedTitle, keywords: wfKeywords.join(",") }) }).then(r => { if(r.ok && r.rewritten) setWfMetaDesc(r.rewritten); })} style={{ background:"none", border:"none", cursor:"pointer", color:"#9ca3af", fontSize:14, padding:"2px 4px" }} title="Regenerate">↺</button>
-                        <button onClick={() => setWfMetaDesc("")} style={{ background:"none", border:"none", cursor:"pointer", color:"#9ca3af", fontSize:14, padding:"2px 4px" }} title="Clear">✕</button>
+                        <button onClick={() => apiFetchJSON(`${API}/ai/rewrite`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ field:"metaDescription", title: wfPickedTitle, keywords: wfKeywords.join(",") }) }).then(r => { if(r.ok && r.rewritten) setWfMetaDesc(r.rewritten); })} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:14, padding:"2px 4px" }} title="Regenerate">↺</button>
+                        <button onClick={() => setWfMetaDesc("")} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:14, padding:"2px 4px" }} title="Clear">✕</button>
                       </div>
                     </div>
                     <textarea
                       value={wfMetaDesc}
                       onChange={e => setWfMetaDesc(e.target.value)}
-                      style={{ width:"100%", minHeight:100, fontSize:13, lineHeight:1.6, color:"#374151", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:8, padding:"10px 12px", resize:"vertical", fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}
+                      style={{ width:"100%", minHeight:100, fontSize:13, lineHeight:1.6, color:"#d4d4d8", background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, padding:"10px 12px", resize:"vertical", fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}
                       placeholder="Enter meta description..."
                     />
-                    <div style={{ fontSize:11, color: (wfMetaDesc||wfResult.metaDescription||'').length > 160 ? "#ef4444" : "#9ca3af", marginTop:4 }}>{(wfMetaDesc||wfResult.metaDescription||'').length}/160 chars</div>
+                    <div style={{ fontSize:11, color: (wfMetaDesc||wfResult.metaDescription||'').length > 160 ? "#f87171" : "#71717a", marginTop:4 }}>{(wfMetaDesc||wfResult.metaDescription||'').length}/160 chars</div>
                   </div>
 
                   {/* Article Schema */}
-                  <div style={{ borderTop:"1px solid #e5e7eb", paddingTop:14, marginBottom:14 }}>
+                  <div style={{ borderTop:"1px solid #3f3f46", paddingTop:14, marginBottom:14 }}>
                     <div onClick={() => setWfSchemaOpen(!wfSchemaOpen)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                         <span style={{ width:7, height:7, borderRadius:"50%", background:"#6366f1", display:"inline-block" }}/>
-                        <span style={{ fontSize:13, fontWeight:600, color:"#111" }}>Article Schema</span>
-                        <span style={{ fontSize:11, color:"#9ca3af", marginLeft:4 }}>?</span>
+                        <span style={{ fontSize:13, fontWeight:600, color:"#fafafa" }}>Article Schema</span>
+                        <span style={{ fontSize:11, color:"#71717a", marginLeft:4 }}>?</span>
                       </div>
-                      <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:"#9ca3af" }}>⚙️</button>
+                      <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:"#71717a" }}>⚙️</button>
                     </div>
                     {wfSchemaOpen && (
-                      <div style={{ marginTop:10, background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:8, padding:"10px 12px", fontSize:11, color:"#374151", fontFamily:"monospace", whiteSpace:"pre-wrap", overflow:"auto", maxHeight:200 }}>{JSON.stringify({ "@context":"https://schema.org", "@type":"Article", headline: wfPickedTitle, description: wfMetaDesc||wfResult.metaDescription, keywords: wfKeywords.join(", "), articleBody: (wfResult.fullArticle||wfResult.content||"").replace(/<[^>]+>/g,"").slice(0,200)+"..." }, null, 2)}</div>
+                      <div style={{ marginTop:10, background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, padding:"10px 12px", fontSize:11, color:"#a1a1aa", fontFamily:"monospace", whiteSpace:"pre-wrap", overflow:"auto", maxHeight:200 }}>{JSON.stringify({ "@context":"https://schema.org", "@type":"Article", headline: wfPickedTitle, description: wfMetaDesc||wfResult.metaDescription, keywords: wfKeywords.join(", "), articleBody: (wfResult.fullArticle||wfResult.content||"").replace(/<[^>]+>/g,"").slice(0,200)+"..." }, null, 2)}</div>
                     )}
                   </div>
 
                   {/* FAQ Schema */}
                   {(wfResult.faqItems||[]).length > 0 && (
-                    <div style={{ borderTop:"1px solid #e5e7eb", paddingTop:14 }}>
+                    <div style={{ borderTop:"1px solid #3f3f46", paddingTop:14 }}>
                       <div onClick={() => setWfFaqSchemaOpen(!wfFaqSchemaOpen)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                           <span style={{ width:7, height:7, borderRadius:"50%", background:"#6366f1", display:"inline-block" }}/>
-                          <span style={{ fontSize:13, fontWeight:600, color:"#111" }}>FAQ Schema</span>
-                          <span style={{ fontSize:11, color:"#9ca3af", marginLeft:4 }}>?</span>
+                          <span style={{ fontSize:13, fontWeight:600, color:"#fafafa" }}>FAQ Schema</span>
+                          <span style={{ fontSize:11, color:"#71717a", marginLeft:4 }}>?</span>
                         </div>
-                        <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:"#9ca3af" }}>⚙️</button>
+                        <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:"#71717a" }}>⚙️</button>
                       </div>
                       {wfFaqSchemaOpen && (
-                        <div style={{ marginTop:10, background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:8, padding:"10px 12px", fontSize:11, color:"#374151", fontFamily:"monospace", whiteSpace:"pre-wrap", overflow:"auto", maxHeight:200 }}>{JSON.stringify({ "@context":"https://schema.org", "@type":"FAQPage", mainEntity:(wfResult.faqItems||[]).map(f=>({"@type":"Question",name:f.q,acceptedAnswer:{"@type":"Answer",text:f.a}})) }, null, 2)}</div>
+                        <div style={{ marginTop:10, background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, padding:"10px 12px", fontSize:11, color:"#a1a1aa", fontFamily:"monospace", whiteSpace:"pre-wrap", overflow:"auto", maxHeight:200 }}>{JSON.stringify({ "@context":"https://schema.org", "@type":"FAQPage", mainEntity:(wfResult.faqItems||[]).map(f=>({"@type":"Question",name:f.q,acceptedAnswer:{"@type":"Answer",text:f.a}})) }, null, 2)}</div>
                       )}
                     </div>
                   )}
