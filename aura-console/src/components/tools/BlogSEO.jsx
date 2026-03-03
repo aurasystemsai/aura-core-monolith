@@ -4007,6 +4007,10 @@ export default function BlogSEO() {
             disabled={(!genKeywords.length && !genKwInput.trim()) || genTitleLoading}
             onClick={genGenerateTitles}
           >{genTitleLoading ? <><span style={S.spinner}/> Generating titles...</> : <><span style={{ fontSize:14 }}>✦</span> Generate Title</>}</button>
+        </div>
+      </div>
+    )}
+  </>
   );
 }
 
