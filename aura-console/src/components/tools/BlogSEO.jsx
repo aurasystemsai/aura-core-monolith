@@ -783,7 +783,17 @@ export default function BlogSEO() {
   const wfRunSeoScore = useCallback(async (result, kws, title, meta) => {
     setWfSeoLoading(true);
     try {
-      const html = result?.fullArticle || result?.content || result?.draft || "";
+      const raw = result?.fullArticle || result?.content || result?.draft || "";
+      // Convert markdown to HTML so the backend can parse headings/structure correctly
+      const html = raw
+        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+        .replace(/^## (.+)$/gm,  "<h2>$1</h2>")
+        .replace(/^# (.+)$/gm,   "<h1>$1</h1>")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g,    "<em>$1</em>")
+        .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
+        .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+        .replace(/\n\n/g, "</p><p>");
       const r = await apiFetchJSON(`${API}/ai/score-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, keyword: (kws||[])[0] || "", title: title || "", metaDescription: meta || result?.metaDescription || "" }) });
       if (r.ok) setWfSeoScore(r);
     } catch(_) {}
@@ -1798,7 +1808,7 @@ export default function BlogSEO() {
               Shown on every section (except Analyze) when a post has been scanned.
               Lets the user see at a glance which post they are working on and what issues were found.
           ════════════════════════════ */}
-          {section && section !== "Analyze" && scanResult && (() => {
+          {section && !["Analyze","WriteResult","WriteGenerating","WriteFlow"].includes(section) && scanResult && (() => {
             const score   = scanResult.scored?.overall ?? null;
             const grade   = scanResult.scored?.grade   ?? "";
             const issues  = scanResult.scored?.issues  ?? [];
