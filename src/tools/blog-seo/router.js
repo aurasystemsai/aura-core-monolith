@@ -900,6 +900,24 @@ Return HTML in this format:
 
 Return only the HTML — nothing else.`;
 
+    } else if (type === 'expand') {
+      applyAs = 'append';
+      const { targetWords = 400 } = req.body;
+      userPrompt = `The blog post below is too short. Add approximately ${targetWords} more words of high-quality content to expand it. Add 2-3 new H2 sections with detailed paragraphs. Do NOT repeat existing content — add genuinely new, useful information related to the topic.
+
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+
+Return only the new HTML to append (starting with an <h2> heading) — nothing else.`;
+
+    } else if (type === 'add_h1') {
+      applyAs = 'prepend';
+      userPrompt = `Write just an H1 heading tag for this blog post: "${title || h1}". Make it compelling and include the keyword naturally. Return ONLY a single <h1> tag — nothing else.`;
+
+    } else if (type === 'add_h2s') {
+      applyAs = 'append';
+      userPrompt = `Add 2 new H2 sections to expand this blog post on the topic: "${title || h1}". Keywords: ${keywords}. Each section should be 150-200 words. Return only the new HTML starting with <h2> tags — nothing else.`;
+
     } else if (type === 'internal_links') {
       applyAs = 'append';
       userPrompt = `Write a "Related Reading" section for this blog post to improve internal linking. Create 3-4 plausible related article titles and approximate blog slugs based on the topic. This signals topical authority to search engines.

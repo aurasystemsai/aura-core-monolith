@@ -198,6 +198,7 @@ export default function BlogSEO() {
   const [wfPublishing,     setWfPublishing]     = useState(false);
   const [wfPublishOk,      setWfPublishOk]      = useState(null);
   const [wfPublishErr,     setWfPublishErr]     = useState("");
+  const [wfIsFixing,       setWfIsFixing]       = useState({}); // {issueIdx: 'loading'|'ok'|'err'}
   const [wfMetaDesc,       setWfMetaDesc]       = useState("");
   const [wfProgress,       setWfProgress]       = useState(0);
   const [wfProgressLabel,  setWfProgressLabel]  = useState("Writing Article");
@@ -769,6 +770,27 @@ export default function BlogSEO() {
     } catch(e) { clearInterval(wfProgressRef.current); setWfErr(e.message || "Failed to generate article."); setSection("WriteFlow"); }
     setWfGenerating(false);
   }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs, wfOutlineSize]);
+
+  // Apply a content-fix to the draft article and rescore
+  const wfContentFix = useCallback(async (type, issueIdx, extraBody = {}) => {
+    setWfIsFixing(prev => ({ ...prev, [issueIdx]: 'loading' }));
+    try {
+      const html = wfResult?.fullArticle || wfResult?.content || "";
+      const r = await apiFetchJSON(`${API}/ai/content-fix`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type, bodyHtml: html, title: wfPickedTitle, h1: wfPickedTitle, keywords: (wfKeywords||[]).join(","), keyword: (wfKeywords||[])[0]||wfPickedTitle, ...extraBody }) });
+      if (!r.ok) throw new Error(r.error || "Fix failed");
+      let newHtml = html;
+      if (r.applyAs === 'replace') newHtml = r.html || html;
+      else if (r.applyAs === 'prepend') newHtml = (r.html || "") + "\n" + html;
+      else if (r.applyAs === 'append') newHtml = html + "\n" + (r.html || "");
+      const updated = { ...wfResult, fullArticle: newHtml };
+      setWfResult(updated);
+      wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc);
+      setWfIsFixing(prev => ({ ...prev, [issueIdx]: 'ok' }));
+    } catch(e) {
+      setWfIsFixing(prev => ({ ...prev, [issueIdx]: 'err' }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc]);
 
   const wfSaveToShopify = useCallback(async (asDraft = true) => {
     if (!wfResult) return;
@@ -2908,38 +2930,52 @@ export default function BlogSEO() {
                         {/* Issues */}
                         {(wfSeoScore.issues||[]).length > 0 && (
                           <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                            {(wfSeoScore.issues||[]).slice(0,6).map((issue, i) => (
-                              <div key={i} style={{ background:"#18181b", border:`1px solid ${issue.sev==='high'?'#7f1d1d':issue.sev==='medium'?'#78350f':'#3f3f46'}`, borderRadius:8, padding:"8px 10px" }}>
-                                <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
-                                  <span style={{ fontSize:13, marginTop:1, flexShrink:0 }}>{issue.sev==='high'?'🔴':issue.sev==='medium'?'🟡':'🔵'}</span>
-                                  <div style={{ flex:1 }}>
-                                    <div style={{ fontSize:11, color:"#d4d4d8", lineHeight:1.4 }}>{issue.msg}</div>
-                                    {issue.fix === 'readability_fix' && (
-                                      <button
-                                        onClick={async () => {
-                                          const html = wfResult.fullArticle || wfResult.content || "";
-                                          const r2 = await apiFetchJSON(`${API}/ai/content-fix`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ type:"readability", bodyHtml: html, title: wfPickedTitle, keywords: (wfKeywords||[]).join(","), keyword: (wfKeywords||[])[0]||"" }) });
-                                          if (r2.ok) { const updated = {...wfResult, fullArticle: r2.html || html}; setWfResult(updated); wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc); }
-                                        }}
-                                        style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}
-                                      >✦ AI Fix Readability</button>
-                                    )}
-                                    {issue.fix === 'faq_fix' && (
-                                      <button
-                                        onClick={async () => {
-                                          const html = wfResult.fullArticle || wfResult.content || "";
-                                          const r2 = await apiFetchJSON(`${API}/ai/content-fix`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ type:"faq", title: wfPickedTitle, keywords: (wfKeywords||[]).join(","), keyword: (wfKeywords||[])[0]||"" }) });
-                                          if (r2.ok) { const updated = {...wfResult, fullArticle: (html + "\n" + (r2.html || ""))}; setWfResult(updated); wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc); }
-                                        }}
-                                        style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}
-                                      >✦ Add FAQ Section</button>
-                                    )}
+                            {(wfSeoScore.issues||[]).slice(0,8).map((issue, i) => {
+                              const fixing = wfIsFixing[i];
+                              // Map each issue to an AI fix action
+                              const msg = issue.msg || "";
+                              let fixBtn = null;
+                              if (fixing === 'ok') {
+                                fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#4ade80" }}>✓ Fixed — rescanning…</span>;
+                              } else if (fixing === 'loading') {
+                                fixBtn = <span style={{ marginTop:5, display:"inline-flex", alignItems:"center", gap:4, fontSize:10, color:"#818cf8" }}><span style={S.spinner}/>Fixing…</span>;
+                              } else if (issue.fix === 'readability_fix' || /readability|simplify|grade level/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('readability', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ AI Fix Readability</button>;
+                              } else if (issue.fix === 'faq_fix' || /faq|frequently asked/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('faq', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add FAQs</button>;
+                              } else if (/only.*words|words.*thin|expand|too short/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('expand', i, { targetWords: 500 })} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Expand Article</button>;
+                              } else if (/no h1|missing h1/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('add_h1', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add H1</button>;
+                              } else if (/h2 heading|only.*h2/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('add_h2s', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Sections</button>;
+                              } else if (/keyword.*density.*low|density.*0\./i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('keyword_boost', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Boost Keywords</button>;
+                              } else if (/no.*citation|authoritative|outbound/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('citations', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Citations</button>;
+                              } else if (/first.person|expertise signal|e-e-a-t/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('eeat', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Expertise Signal</button>;
+                              } else if (/no meta description|meta description/i.test(msg)) {
+                                fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#facc15" }}>↑ Edit in Meta Description field above</span>;
+                              } else if (/keyword.*not in title|title.*keyword/i.test(msg)) {
+                                fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#facc15" }}>↑ Edit the title in the outline step</span>;
+                              } else if (/no images/i.test(msg)) {
+                                fixBtn = <button onClick={() => setWfCoverModalOpen(true)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Cover Image</button>;
+                              }
+                              return (
+                                <div key={i} style={{ background:"#18181b", border:`1px solid ${issue.sev==='high'?'#7f1d1d':issue.sev==='medium'?'#78350f':'#3f3f46'}`, borderRadius:8, padding:"8px 10px" }}>
+                                  <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
+                                    <span style={{ fontSize:13, marginTop:1, flexShrink:0 }}>{issue.sev==='high'?'🔴':issue.sev==='medium'?'🟡':'🔵'}</span>
+                                    <div style={{ flex:1 }}>
+                                      <div style={{ fontSize:11, color:"#d4d4d8", lineHeight:1.4 }}>{msg}</div>
+                                      {fixBtn}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                            {(wfSeoScore.issues||[]).length > 6 && (
-                              <div style={{ fontSize:11, color:"#71717a", textAlign:"center" }}>+{wfSeoScore.issues.length - 6} more issues — fix the above first</div>
+                              );
+                            })}
+                            {(wfSeoScore.issues||[]).length > 8 && (
+                              <div style={{ fontSize:11, color:"#71717a", textAlign:"center" }}>+{wfSeoScore.issues.length - 8} more — fix the above first</div>
                             )}
                           </div>
                         )}
