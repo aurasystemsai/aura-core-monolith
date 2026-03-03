@@ -132,6 +132,12 @@ export default function BlogSEO() {
   const [fixedFields,  setFixedFields]  = useState(new Set());
   const [autoScanPend, setAutoScanPend] = useState(false);
 
+  /* ── Analyze multi-screen flow ── */
+  const [analyzeScreen,       setAnalyzeScreen]       = useState('input'); // 'input'|'scanning'|'results'
+  const [analyzeProgress,     setAnalyzeProgress]     = useState(0);
+  const [analyzeProgressLabel,setAnalyzeProgressLabel]= useState('Crawling URL...');
+  const analyzeProgressRef = useRef(null);
+
   /* ── Keywords state ── */
   const [seedKw,      setSeedKw]      = useState("");
   const [kwNiche,     setKwNiche]     = useState("");
@@ -552,22 +558,46 @@ export default function BlogSEO() {
     setScanning(true); setScanErr(""); setScanResult(null);
     setAiAnalysis(null); setRewriteResult(null); setRewriteErr(null);
     setApplyState({});
-    // Only reset fix state on a fresh scan (not on auto-rescans triggered after applying a fix,
-    // so previously fixed issues don't revert to unfixed while still on the same post)
+    setAnalyzeScreen('scanning');
+    setAnalyzeProgress(0);
+    // Fake progress stages
+    const stages = [
+      [15, 'Crawling URL...'],
+      [35, 'Parsing content...'],
+      [55, 'Scoring SEO...'],
+      [72, 'Checking issues...'],
+      [88, 'Building report...'],
+    ];
+    let stageIdx = 0;
+    analyzeProgressRef.current = setInterval(() => {
+      if (stageIdx < stages.length) {
+        const [pct, lbl] = stages[stageIdx++];
+        setAnalyzeProgress(pct);
+        setAnalyzeProgressLabel(lbl);
+      }
+    }, 600);
     if (!keepFixState) { setFixedFields(new Set()); setBannerFixState({}); setFixSummaries({}); }
     try {
       const art = selectedArtId ? articles.find(a => String(a.id) === selectedArtId) : null;
       const body = { url: url.trim(), keywords: kwInput.trim(), ...(art ? { articleId: art.id, blogId: art.blogId } : {}) };
       const r = await apiFetchJSON(`${API}/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      if (analyzeProgressRef.current) { clearInterval(analyzeProgressRef.current); analyzeProgressRef.current = null; }
       if (!r.ok) throw new Error(r.error || "Scan failed");
+      setAnalyzeProgress(100);
+      setAnalyzeProgressLabel('Done!');
       setScanResult(r);
       if (art) { setScannedArtId(art.id); setScannedBlogId(art.blogId); }
       else {
         const match = articles.find(a => a.url === r.url || (r.url && a.handle && r.url.includes(a.handle)));
         if (match) { setScannedArtId(match.id); setScannedBlogId(match.blogId); }
       }
+      setTimeout(() => setAnalyzeScreen('results'), 400);
       try { await apiFetch(`${API}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "scan", url: r.url, title: r.title, score: r.scored?.overall, grade: r.scored?.grade, issueCount: r.scored?.issueCount }) }); } catch {}
-    } catch(e) { setScanErr(e.message || "Scan failed"); }
+    } catch(e) {
+      if (analyzeProgressRef.current) { clearInterval(analyzeProgressRef.current); analyzeProgressRef.current = null; }
+      setScanErr(e.message || "Scan failed");
+      setAnalyzeScreen('input');
+    }
     setScanning(false);
   }, [url, kwInput, selectedArtId, articles]);
 
@@ -1972,161 +2002,369 @@ export default function BlogSEO() {
           ════════════════════════════ */}
           {section === "Analyze" && (
             <>
-              {/* Input card */}
-              <div style={S.card}>
-                <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Analyze a Blog Post</div>
-                <div style={{ ...S.row, marginBottom: 10 }}>
-                  <input
-                    style={S.input}
-                    placeholder="https://yourstore.com/blogs/news/your-post-title"
-                    value={url}
-                    onChange={e => setUrl(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && runScan()}
-                  />
-                </div>
-                <div style={S.row}>
-                  <input
-                    style={{ ...S.input, maxWidth: 380 }}
-                    placeholder="Target keywords (comma-separated)"
-                    value={kwInput}
-                    onChange={e => setKwInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && runScan()}
-                  />
-                  <button style={S.btn("primary")} onClick={runScan} disabled={scanning || !url.trim()}>
-                    {scanning ? <><span style={S.spinner} /> Scanning...</> : "Analyze"}
-                  </button>
-                </div>
-              </div>
-
-              {scanErr && <div style={S.err}>{scanErr}</div>}
-              {scanning && <div style={S.empty}><span style={S.spinner} /><div style={{ marginTop: 12 }}>Crawling and analyzing your post...</div></div>}
-
-              {/* ── Results ── */}
-              {scanResult && !scanning && (
-                <>
-                  {/* Score overview */}
-                  <div style={S.card}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
-                      <div style={S.ring(scanResult.scored?.overall ?? 0)}>
-                        {scanResult.scored?.overall ?? 0}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 180 }}>
-                        <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{scanResult.title || "(no title)"}</div>
-                        <div style={{ fontSize: 12, color: C.dim, wordBreak: "break-all" }}>{scanResult.url}</div>
-                      </div>
-                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                        {[
-                          ["Words", scanResult.wordCount],
-                          ["Issues", scanResult.scored?.issueCount],
-                          ["Grade", scanResult.scored?.grade],
-                        ].map(([l, v]) => (
-                          <div key={l} style={{ textAlign: "center" }}>
-                            <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>{v ?? "?"}</div>
-                            <div style={{ fontSize: 11, color: C.dim, textTransform: "uppercase" }}>{l}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+              {/* ═══ SCREEN 1: INPUT ═══ */}
+              {analyzeScreen === 'input' && (
+                <div style={{ maxWidth:600, margin:"60px auto 0", padding:"0 16px" }}>
+                  {/* Header */}
+                  <div style={{ textAlign:"center", marginBottom:40 }}>
+                    <div style={{ width:52, height:52, borderRadius:14, background:"linear-gradient(135deg,#6366f1,#4f46e5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 16px" }}>🔍</div>
+                    <div style={{ fontSize:28, fontWeight:800, color:"#fafafa", letterSpacing:"-0.5px", marginBottom:8 }}>Analyze a Post</div>
+                    <div style={{ fontSize:14, color:"#71717a", lineHeight:1.6 }}>Get a full SEO audit for any blog post — score, issues, and AI-powered fixes.</div>
                   </div>
 
-                  {/* Category scores */}
-                  {scanResult.scored?.categories && (
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
-                      {Object.entries(scanResult.scored.categories).map(([cat, v]) => (
-                        <div key={cat} style={{ flex: "1 1 130px", background: C.bg, border: `1px solid ${C.border}`, borderTop: `3px solid ${v.score >= 75 ? C.green : v.score >= 50 ? C.yellow : C.red}`, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
-                          <div style={{ fontSize: 24, fontWeight: 800, color: v.score >= 75 ? C.green : v.score >= 50 ? C.yellow : C.red }}>{v.score}</div>
-                          <div style={{ fontSize: 11, color: C.sub, textTransform: "uppercase", marginTop: 2 }}>{cat}</div>
-                        </div>
-                      ))}
+                  {/* Article picker (from Shopify) */}
+                  {articles.length > 0 && (
+                    <div style={{ marginBottom:16 }}>
+                      <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#a1a1aa", marginBottom:6, textTransform:"uppercase", letterSpacing:".5px" }}>Pick from your store</label>
+                      <select
+                        value={selectedArtId || ""}
+                        onChange={e => { handleArticleSelect(e.target.value); }}
+                        style={{ width:"100%", padding:"11px 14px", background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, color: selectedArtId ? "#fafafa" : "#71717a", fontSize:14, outline:"none", cursor:"pointer" }}
+                      >
+                        <option value="">— Select a blog post —</option>
+                        {articles.map(a => <option key={a.id} value={String(a.id)}>{a.title || a.handle}</option>)}
+                      </select>
+                      {selectedArtId && <div style={{ marginTop:6, display:"flex", gap:6, alignItems:"center" }}><span style={{ fontSize:11, color:"#52525b" }}>or</span><button onClick={() => { setSelectedArtId(""); setUrl(""); }} style={{ fontSize:11, color:"#818cf8", background:"none", border:"none", cursor:"pointer", padding:0 }}>clear selection</button></div>}
                     </div>
                   )}
 
-                  {/* Issue list */}
-                  {(scanResult.scored?.issues || []).length > 0 && (
-                    <div style={S.card}>
-                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Issues Found ({scanResult.scored.issueCount})</div>
-                      {(scanResult.scored.issues || []).map((issue, i) => {
-                        const act = getIssueAction(issue.msg);
-                        const isDone = fixedFields.has(issue.field);
-                        if (isDone) return null;
+                  {/* URL input */}
+                  <div style={{ marginBottom:12 }}>
+                    <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#a1a1aa", marginBottom:6, textTransform:"uppercase", letterSpacing:".5px" }}>Post URL</label>
+                    <input
+                      style={{ width:"100%", padding:"13px 16px", background:"#18181b", border:"2px solid #3f3f46", borderRadius:10, color:"#fafafa", fontSize:14, outline:"none", boxSizing:"border-box", fontFamily:"inherit", transition:"border-color .2s" }}
+                      placeholder="https://yourstore.com/blogs/news/your-post"
+                      value={url}
+                      onChange={e => setUrl(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && runScan()}
+                      onFocus={e => e.target.style.borderColor="#6366f1"}
+                      onBlur={e => e.target.style.borderColor="#3f3f46"}
+                    />
+                  </div>
+
+                  {/* Keywords input */}
+                  <div style={{ marginBottom:24 }}>
+                    <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#a1a1aa", marginBottom:6, textTransform:"uppercase", letterSpacing:".5px" }}>Target Keywords <span style={{ fontWeight:400, textTransform:"none", color:"#52525b" }}>(optional)</span></label>
+                    <input
+                      style={{ width:"100%", padding:"13px 16px", background:"#18181b", border:"2px solid #3f3f46", borderRadius:10, color:"#fafafa", fontSize:14, outline:"none", boxSizing:"border-box", fontFamily:"inherit", transition:"border-color .2s" }}
+                      placeholder="best snowboard, beginner guide, how to choose..."
+                      value={kwInput}
+                      onChange={e => setKwInput(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && runScan()}
+                      onFocus={e => e.target.style.borderColor="#6366f1"}
+                      onBlur={e => e.target.style.borderColor="#3f3f46"}
+                    />
+                  </div>
+
+                  {scanErr && <div style={{ fontSize:13, color:"#f87171", background:"#450a0a", border:"1px solid #7f1d1d", borderRadius:8, padding:"10px 14px", marginBottom:16 }}>{scanErr}</div>}
+
+                  <button
+                    onClick={runScan}
+                    disabled={!url.trim()}
+                    style={{ width:"100%", padding:"14px 0", borderRadius:12, background: url.trim() ? "#6366f1" : "#27272a", color: url.trim() ? "#fff" : "#52525b", fontWeight:700, fontSize:15, border:"none", cursor: url.trim() ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}
+                  >
+                    🔍 Analyze Post
+                  </button>
+
+                  {/* What you'll get */}
+                  <div style={{ marginTop:32, display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                    {[["📊","Overall SEO Score","0–100 with grade"],["⚡","Issue Detection","Prioritised fixes"],["🤖","AI Deep Dive","GPT analysis"],["✍️","AI Rewrites","Title, meta, H1"]].map(([ic,t,d]) => (
+                      <div key={t} style={{ background:"#18181b", border:"1px solid #27272a", borderRadius:10, padding:"12px 14px", display:"flex", gap:10, alignItems:"flex-start" }}>
+                        <span style={{ fontSize:18, flexShrink:0 }}>{ic}</span>
+                        <div><div style={{ fontSize:12, fontWeight:700, color:"#d4d4d8" }}>{t}</div><div style={{ fontSize:11, color:"#71717a", marginTop:2 }}>{d}</div></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ═══ SCREEN 2: SCANNING ═══ */}
+              {analyzeScreen === 'scanning' && (
+                <div style={{ margin:"0 -28px", minHeight:"100vh", background:"#09090b", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"40px 28px" }}>
+                  <div style={{ width:"100%", maxWidth:480, textAlign:"center" }}>
+                    {/* Animated ring */}
+                    <div style={{ position:"relative", width:100, height:100, margin:"0 auto 32px" }}>
+                      <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform:"rotate(-90deg)" }}>
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#27272a" strokeWidth="8"/>
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#6366f1" strokeWidth="8"
+                          strokeDasharray={`${(analyzeProgress / 100) * 264} 264`}
+                          strokeLinecap="round" style={{ transition:"stroke-dasharray 0.5s ease" }}/>
+                      </svg>
+                      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:800, color:"#fafafa" }}>{analyzeProgress}%</div>
+                    </div>
+
+                    <div style={{ fontSize:22, fontWeight:700, color:"#fafafa", marginBottom:10 }}>Analysing your post</div>
+                    <div style={{ fontSize:14, color:"#6366f1", fontWeight:600, marginBottom:32 }}>{analyzeProgressLabel}</div>
+
+                    {/* Progress bar */}
+                    <div style={{ width:"100%", height:4, background:"#27272a", borderRadius:99, overflow:"hidden", marginBottom:32 }}>
+                      <div style={{ height:"100%", background:"linear-gradient(90deg,#6366f1,#818cf8)", borderRadius:99, width:`${analyzeProgress}%`, transition:"width 0.5s ease" }}/>
+                    </div>
+
+                    {/* Stage checklist */}
+                    <div style={{ display:"flex", flexDirection:"column", gap:8, textAlign:"left" }}>
+                      {[
+                        [15, 'Crawling URL'],
+                        [35, 'Parsing content'],
+                        [55, 'Scoring SEO'],
+                        [72, 'Checking issues'],
+                        [88, 'Building report'],
+                      ].map(([threshold, label]) => {
+                        const done = analyzeProgress > threshold;
+                        const active = analyzeProgress > threshold - 20 && !done;
                         return (
-                          <div key={i} style={{ padding: "12px 14px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "flex-start", gap: 12 }}>
-                            <span style={S.pill(issue.sev)}>{issue.sev}</span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 13, color: C.text, marginBottom: act ? 4 : 0 }}>{issue.msg}</div>
-                            </div>
-                            {act && (
-                              <button style={{ ...S.btn("primary"), fontSize: 12, padding: "5px 14px", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5 }}
-                                onClick={act.action}>
-                                {act.label}
-                                {act.credits && <span style={{ fontSize: 10, opacity: 0.75 }}>· {act.credits} cr</span>}
-                              </button>
-                            )}
+                          <div key={label} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 14px", background: done ? "#052e16" : active ? "#1e1b4b" : "#18181b", border:`1px solid ${done ? "#16a34a" : active ? "#4338ca" : "#27272a"}`, borderRadius:8 }}>
+                            <span style={{ fontSize:14, flexShrink:0 }}>{done ? "✅" : active ? "⏳" : "○"}</span>
+                            <span style={{ fontSize:13, color: done ? "#86efac" : active ? "#a5b4fc" : "#71717a", fontWeight: active ? 600 : 400 }}>{label}</span>
+                            {active && <span style={S.spinner}/>}
                           </div>
                         );
                       })}
                     </div>
-                  )}
 
-                  {/* AI Rewrite buttons */}
-                  <div style={{ ...S.card, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, marginRight: 4 }}>AI Rewrite:</div>
-                    {[["Title", "title"], ["Meta Description", "metaDescription"], ["H1", "h1"]].map(([label, field]) => (
-                      <button key={field} style={S.btn()} onClick={() => runRewrite(field)} disabled={rewriting}>
-                        {rewriting && rewriteField === field ? <><span style={S.spinner} /> Rewriting...</> : label}
-                      </button>
-                    ))}
-                    <button style={S.btn()} onClick={runAiAnalysis} disabled={aiAnalyzing}>
-                      {aiAnalyzing ? <><span style={S.spinner} /> Analyzing...</> : "AI Deep Analysis (1 credit)"}
+                    <div style={{ marginTop:24, fontSize:12, color:"#52525b" }}>Tip: Fix the top issues first — they have the most impact on rankings.</div>
+                  </div>
+                </div>
+              )}
+
+              {/* ═══ SCREEN 3: RESULTS ═══ */}
+              {analyzeScreen === 'results' && scanResult && (
+                <div style={{ margin:"0 -28px", minHeight:"100vh", background:"#09090b" }}>
+
+                  {/* Top bar */}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 28px", borderBottom:"1px solid #3f3f46", background:"#09090b", position:"sticky", top:0, zIndex:10 }}>
+                    <button
+                      onClick={() => { setAnalyzeScreen('input'); setScanResult(null); setScanErr(""); setAiAnalysis(null); }}
+                      style={{ background:"none", border:"none", color:"#a1a1aa", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", gap:6, padding:0 }}
+                    >
+                      <span style={{ fontSize:16 }}>‹</span> Back
+                    </button>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <span style={{ fontSize:13, fontWeight:600, color:"#22c55e", display:"flex", alignItems:"center", gap:5 }}>
+                        <span style={{ width:20, height:20, borderRadius:"50%", background:"#22c55e", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11 }}>✓</span>
+                        URL Scanned
+                      </span>
+                      <span style={{ color:"#3f3f46", fontSize:16 }}>›</span>
+                      <span style={{ fontSize:13, fontWeight:600, color:"#818cf8", display:"flex", alignItems:"center", gap:5 }}>
+                        <span style={{ width:20, height:20, borderRadius:"50%", background:"#6366f1", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700 }}>2</span>
+                        SEO Report
+                      </span>
+                    </div>
+                    <button
+                      onClick={runAiAnalysis}
+                      disabled={aiAnalyzing}
+                      style={{ padding:"7px 16px", borderRadius:8, background: aiAnalyzing ? "#3f3f46" : "#27272a", color:"#818cf8", fontWeight:700, fontSize:13, border:"1px solid #4338ca", cursor: aiAnalyzing ? "default" : "pointer", display:"flex", alignItems:"center", gap:6 }}
+                    >
+                      {aiAnalyzing ? <><span style={S.spinner}/> Analysing...</> : <>💬 AI Deep Dive</>}
                     </button>
                   </div>
 
-                  {rewriteErr && <div style={S.err}>{rewriteErr}</div>}
+                  {/* Two-column body */}
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", minHeight:"calc(100vh - 53px)", alignItems:"start" }}>
 
-                  {/* Rewrite results */}
-                  {rewriteResult && (
-                    <div style={{ ...S.card, borderColor: C.indigo }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>AI Rewrite Results</div>
-                      {(rewriteResult.variants || [rewriteResult]).map((v, i) => (
-                        <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
-                          <div style={{ fontSize: 13, color: C.text, marginBottom: 8 }}>{typeof v === "string" ? v : v.text || v.value || JSON.stringify(v)}</div>
-                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                            <button style={S.btn("success")} onClick={() => applyRewrite(typeof v === "string" ? v : v.text || v.value, rewriteField, i)}
-                              disabled={applyState[i] === "loading"}>
-                              {applyState[i] === "loading" ? "Applying..." : applyState[i] === "ok" ? "Applied!" : "Apply to Shopify"}
-                            </button>
-                            {typeof applyState[i] === "string" && applyState[i].startsWith("error:") && (
-                              <span style={{ fontSize: 11, color: C.red }}>{applyState[i].slice(6)}</span>
-                            )}
+                    {/* ── LEFT: Article preview ── */}
+                    <div style={{ borderRight:"1px solid #3f3f46", padding:"28px 32px" }}>
+
+                      {/* Title + URL */}
+                      {scanResult.ogImage && <img src={scanResult.ogImage} alt={scanResult.title} style={{ width:"100%", maxHeight:260, objectFit:"cover", borderRadius:12, marginBottom:20, display:"block", border:"1px solid #3f3f46" }} />}
+                      <h1 style={{ fontSize:28, fontWeight:800, color:"#fafafa", lineHeight:1.3, marginBottom:10 }}>{scanResult.title || "(no title)"}</h1>
+                      <a href={scanResult.url} target="_blank" rel="noreferrer" style={{ fontSize:12, color:"#71717a", wordBreak:"break-all", textDecoration:"none", display:"block", marginBottom:20 }}>{scanResult.url}</a>
+
+                      {/* Meta description */}
+                      {scanResult.metaDescription && (
+                        <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, padding:"12px 14px", marginBottom:20 }}>
+                          <div style={{ fontSize:11, fontWeight:700, color:"#71717a", textTransform:"uppercase", letterSpacing:".5px", marginBottom:5 }}>Meta Description</div>
+                          <div style={{ fontSize:14, color:"#a1a1aa", lineHeight:1.6 }}>{scanResult.metaDescription}</div>
+                          <div style={{ fontSize:11, color: scanResult.metaDescription.length > 160 ? "#f87171" : "#52525b", marginTop:5 }}>{scanResult.metaDescription.length}/160</div>
+                        </div>
+                      )}
+
+                      {/* Article heading structure */}
+                      {(scanResult.headings || []).length > 0 && (
+                        <div style={{ marginBottom:24 }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:"#71717a", textTransform:"uppercase", letterSpacing:".5px", marginBottom:10 }}>Article Structure</div>
+                          <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                            {(scanResult.headings || []).slice(0,20).map((h, i) => (
+                              <div key={i} style={{ display:"flex", alignItems:"baseline", gap:8, paddingLeft: h.level === 2 ? 0 : h.level === 3 ? 18 : 32 }}>
+                                <span style={{ fontSize:10, fontWeight:700, color:"#4f46e5", background:"#1e1b4b", borderRadius:4, padding:"1px 5px", flexShrink:0 }}>H{h.level}</span>
+                                <span style={{ fontSize:14, color:"#d4d4d8", lineHeight:1.4 }}>{h.text}</span>
+                              </div>
+                            ))}
+                            {(scanResult.headings || []).length > 20 && <div style={{ fontSize:12, color:"#52525b", paddingLeft:0 }}>+{scanResult.headings.length - 20} more headings</div>}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      )}
 
-                  {/* AI Analysis results */}
-                  {aiAnalysisErr && <div style={S.err}>{aiAnalysisErr}</div>}
-                  {aiAnalysis && (
-                    <div style={S.card}>
-                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>AI Deep Analysis</div>
-                      {aiAnalysis.assessment && <div style={{ fontSize: 13, color: "#d4d4d8", marginBottom: 12, lineHeight: 1.65 }}>{aiAnalysis.assessment}</div>}
-                      {aiAnalysis.recommendations?.length > 0 && (
-                        <div>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: "uppercase", marginBottom: 8 }}>Recommendations</div>
-                          {aiAnalysis.recommendations.map((r, i) => (
-                            <div key={i} style={{ padding: "10px 12px", background: C.bg, borderRadius: 8, marginBottom: 6, fontSize: 13, color: "#d4d4d8", borderLeft: `3px solid ${r.priority === "critical" ? C.red : r.priority === "recommended" ? C.yellow : C.muted}` }}>
-                              <strong style={{ color: C.text }}>{r.title}: </strong>{r.description}
-                            </div>
+                      {/* Content stats chips */}
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:24 }}>
+                        {[
+                          ["💬", `${scanResult.wordCount || 0} words`],
+                          ["⏱", `${scanResult.readingTimeMinutes || 0} min read`],
+                          ["🖼", `${scanResult.imageCount || 0} images`],
+                          ["🔗", `${scanResult.internalLinks || 0} internal · ${scanResult.externalLinks || 0} external links`],
+                          ["📐", `Flesch ${scanResult.flesch?.ease || scanResult.readabilityScore || "—"}`],
+                          ...(scanResult.authorMeta ? [["✍️", scanResult.authorMeta]] : []),
+                        ].map(([ic, val]) => (
+                          <div key={val} style={{ background:"#18181b", border:"1px solid #27272a", borderRadius:20, padding:"5px 12px", fontSize:12, color:"#a1a1aa", display:"flex", alignItems:"center", gap:5 }}>
+                            <span>{ic}</span><span>{val}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* AI Rewrite bar */}
+                      <div style={{ borderTop:"1px solid #3f3f46", paddingTop:20, marginBottom:20 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:"#fafafa", marginBottom:12 }}>AI Rewrite</div>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                          {[["Title","title"],["Meta Description","metaDescription"],["H1","h1"]].map(([label, field]) => (
+                            <button key={field} onClick={() => runRewrite(field)} disabled={rewriting} style={{ padding:"8px 16px", background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, color:"#d4d4d8", fontWeight:600, fontSize:13, cursor: rewriting ? "default" : "pointer" }}>
+                              {rewriting && rewriteField === field ? <><span style={S.spinner}/> Rewriting...</> : `✦ ${label}`}
+                            </button>
                           ))}
+                        </div>
+                        {rewriteErr && <div style={{ fontSize:12, color:"#f87171", marginTop:8 }}>{rewriteErr}</div>}
+                        {rewriteResult && (
+                          <div style={{ marginTop:12 }}>
+                            {(rewriteResult.variants || [rewriteResult]).map((v, i) => (
+                              <div key={i} style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, padding:"12px 14px", marginBottom:8 }}>
+                                <div style={{ fontSize:14, color:"#fafafa", marginBottom:8 }}>{typeof v === "string" ? v : v.text || v.value || JSON.stringify(v)}</div>
+                                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                                  <button style={{ ...S.btn("success"), fontSize:12, padding:"5px 14px" }} onClick={() => applyRewrite(typeof v === "string" ? v : v.text || v.value, rewriteField, i)} disabled={applyState[i] === "loading"}>
+                                    {applyState[i] === "loading" ? "Applying..." : applyState[i] === "ok" ? "✓ Applied!" : "Apply to Shopify"}
+                                  </button>
+                                  {typeof applyState[i] === "string" && applyState[i].startsWith("error:") && <span style={{ fontSize:11, color:"#f87171" }}>{applyState[i].slice(6)}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* AI Deep Dive results */}
+                      {aiAnalysisErr && <div style={{ fontSize:13, color:"#f87171", background:"#450a0a", border:"1px solid #7f1d1d", borderRadius:8, padding:"10px 14px", marginBottom:12 }}>{aiAnalysisErr}</div>}
+                      {aiAnalysis && (
+                        <div style={{ borderTop:"1px solid #3f3f46", paddingTop:20 }}>
+                          <div style={{ fontSize:15, fontWeight:700, color:"#fafafa", marginBottom:12 }}>🤖 AI Deep Dive</div>
+                          {aiAnalysis.assessment && <div style={{ fontSize:14, color:"#d4d4d8", marginBottom:14, lineHeight:1.7 }}>{aiAnalysis.assessment}</div>}
+                          {(aiAnalysis.recommendations || []).length > 0 && (
+                            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                              {aiAnalysis.recommendations.map((rec, i) => (
+                                <div key={i} style={{ padding:"12px 16px", background:"#18181b", borderRadius:10, fontSize:14, color:"#d4d4d8", borderLeft:`3px solid ${rec.priority==="critical" ? "#f87171" : rec.priority==="recommended" ? "#facc15" : "#60a5fa"}` }}>
+                                  <strong style={{ color:"#fafafa" }}>{rec.title}: </strong>{rec.description}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </>
-              )}
 
-              {!scanResult && !scanning && !scanErr && (
-                <div style={S.empty}>Enter a blog post URL above and click Analyze to get your SEO score.</div>
+                    {/* ── RIGHT: SEO Sidebar ── */}
+                    <div style={{ padding:"20px 16px", background:"#09090b", position:"sticky", top:53, maxHeight:"calc(100vh - 53px)", overflowY:"auto" }}>
+
+                      {/* Overall score ring */}
+                      {(() => {
+                        const score = scanResult.scored?.overall ?? 0;
+                        const col = score >= 75 ? "#22c55e" : score >= 50 ? "#facc15" : "#f87171";
+                        const r = 38, circ = 2 * Math.PI * r;
+                        const dash = (score / 100) * circ;
+                        return (
+                          <div style={{ textAlign:"center", padding:"8px 0 16px", borderBottom:"1px solid #3f3f46", marginBottom:16 }}>
+                            <div style={{ position:"relative", width:100, height:100, margin:"0 auto 12px" }}>
+                              <svg width="100" height="100" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r={r} fill="none" stroke="#27272a" strokeWidth="8"/>
+                                <circle cx="50" cy="50" r={r} fill="none" stroke={col} strokeWidth="8"
+                                  strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ / 4}
+                                  strokeLinecap="round" transform="rotate(-90 50 50)" style={{ transition:"stroke-dasharray .6s" }}/>
+                              </svg>
+                              <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+                                <span style={{ fontSize:28, fontWeight:900, color:col, lineHeight:1 }}>{score}</span>
+                                <span style={{ fontSize:11, color:"#71717a", fontWeight:700 }}>/ 100</span>
+                              </div>
+                            </div>
+                            <div style={{ fontSize:13, fontWeight:700, color:"#fafafa", marginBottom:4 }}>SEO Score</div>
+                            <div style={{ display:"flex", justifyContent:"center", gap:16 }}>
+                              {[["Words", scanResult.wordCount], ["Issues", scanResult.scored?.issueCount], ["Grade", scanResult.scored?.grade]].map(([l, v]) => (
+                                <div key={l} style={{ textAlign:"center" }}>
+                                  <div style={{ fontSize:16, fontWeight:800, color:"#fafafa" }}>{v ?? "—"}</div>
+                                  <div style={{ fontSize:10, color:"#71717a", fontWeight:700, letterSpacing:".5px" }}>{l}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Category scores */}
+                      {scanResult.scored?.categories && (
+                        <div style={{ marginBottom:16, borderBottom:"1px solid #3f3f46", paddingBottom:16 }}>
+                          {[
+                            ["Content",   scanResult.scored.categories.content?.score   ?? scanResult.scored.categories.Content?.score],
+                            ["Meta",      scanResult.scored.categories.meta?.score      ?? scanResult.scored.categories.Meta?.score],
+                            ["Keywords",  scanResult.scored.categories.keywords?.score  ?? scanResult.scored.categories.Keywords?.score],
+                            ["Technical", scanResult.scored.categories.technical?.score ?? scanResult.scored.categories.Technical?.score],
+                            ["Structure", scanResult.scored.categories.structure?.score ?? scanResult.scored.categories.Structure?.score],
+                          ].filter(([,v]) => v !== undefined && v !== null).map(([label, score]) => {
+                            const col = score >= 75 ? "#22c55e" : score >= 50 ? "#facc15" : "#f87171";
+                            return (
+                              <div key={label} style={{ marginBottom:10 }}>
+                                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                                  <span style={{ fontSize:12, color:"#a1a1aa", fontWeight:600 }}>{label}</span>
+                                  <span style={{ fontSize:12, fontWeight:700, color:col }}>{score}</span>
+                                </div>
+                                <div style={{ height:5, background:"#27272a", borderRadius:99, overflow:"hidden" }}>
+                                  <div style={{ height:"100%", width:`${score}%`, background:col, borderRadius:99, transition:"width .5s" }}/>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Issues list */}
+                      {(scanResult.scored?.issues || []).length > 0 && (
+                        <div>
+                          <div style={{ fontSize:12, fontWeight:700, color:"#71717a", textTransform:"uppercase", letterSpacing:".5px", marginBottom:10 }}>Issues ({scanResult.scored.issueCount})</div>
+                          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                            {(scanResult.scored.issues || []).filter(iss => !fixedFields.has(iss.field)).slice(0, 8).map((issue, i) => {
+                              const act = getIssueAction(issue.msg);
+                              const sevCol = issue.sev === "high" ? "#f87171" : issue.sev === "medium" ? "#facc15" : "#60a5fa";
+                              const sevBorder = issue.sev === "high" ? "#7f1d1d" : issue.sev === "medium" ? "#78350f" : "#1e3a5f";
+                              return (
+                                <div key={i} style={{ background:"#18181b", border:`1px solid ${sevBorder}`, borderRadius:8, padding:"8px 10px" }}>
+                                  <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
+                                    <span style={{ fontSize:10, fontWeight:700, color:sevCol, background: issue.sev==="high"?"#1c0000":issue.sev==="medium"?"#1c1500":"#0c1a2e", borderRadius:4, padding:"2px 5px", flexShrink:0, marginTop:1 }}>{issue.sev}</span>
+                                    <div style={{ flex:1 }}>
+                                      <div style={{ fontSize:11, color:"#d4d4d8", lineHeight:1.4 }}>{issue.msg}</div>
+                                      {act ? (
+                                        <button onClick={act.action} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>
+                                          ✦ Expand with AI{act.credits ? ` · ${act.credits} cr` : ""}
+                                        </button>
+                                      ) : (
+                                        <button onClick={runAiAnalysis} disabled={aiAnalyzing} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>
+                                          ✦ AI Chat · 1 cr
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {(scanResult.scored.issues || []).filter(i => !fixedFields.has(i.field)).length > 8 && (
+                              <div style={{ fontSize:11, color:"#52525b", textAlign:"center", padding:"4px 0" }}>+{(scanResult.scored.issues || []).filter(i => !fixedFields.has(i.field)).length - 8} more — fix above first</div>
+                            )}
+                          </div>
+
+                          {/* Re-scan button */}
+                          <button
+                            onClick={() => runScan(true)}
+                            disabled={scanning}
+                            style={{ width:"100%", marginTop:12, padding:"8px 0", borderRadius:8, background:"#27272a", color:"#a1a1aa", fontWeight:600, fontSize:12, border:"1px solid #3f3f46", cursor: scanning ? "default" : "pointer" }}
+                          >{scanning ? "Re-scanning..." : "↺ Re-scan Post"}</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
             </>
           )}
