@@ -746,9 +746,9 @@ export default function BlogSEO() {
     if (!wfPickedTitle) return;
     setWfGenerating(true); setWfErr(""); setWfProgress(0); setWfProgressLabel("Writing Article");
     setSection("WriteGenerating");
-    // Longer articles take more time: small ~30s, medium ~60s, long ~100s
+    // Progress timer scaled to article size: small ~35s, medium ~70s, long ~120s
     const startMs = Date.now();
-    const TOTAL_MS = wfOutlineSize === "small" ? 30000 : wfOutlineSize === "long" ? 100000 : 60000;
+    const TOTAL_MS = wfOutlineSize === "small" ? 35000 : wfOutlineSize === "long" ? 120000 : 70000;
     const LABELS = ["Researching topic...", "Writing introduction...", "Writing Article", "Building sections...", "Adding FAQs...", "Polishing content..."];
     let labelIdx = 0;
     wfProgressRef.current = setInterval(() => {
@@ -760,8 +760,8 @@ export default function BlogSEO() {
     }, 300);
     try {
       const outlineList = [...wfOutlines, ...(wfConclusion ? ["Conclusion"] : []), ...(wfFaqs ? ["FAQs — frequently asked questions"] : [])];
-      // Targets sit in the upper half of each advertised range so the article comfortably hits the label
-      const targetWordCount = wfOutlineSize === "small" ? 1200 : wfOutlineSize === "long" ? 4000 : 2500;
+      // Ask for the top of each range — LLMs undershoot by ~20-30% so this lands in the advertised range
+      const targetWordCount = wfOutlineSize === "small" ? 1500 : wfOutlineSize === "long" ? 5000 : 3000;
       const r = await apiFetchJSON(`${API}/ai/full-blog-writer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, outline: outlineList, wordCount: targetWordCount }) });
       clearInterval(wfProgressRef.current); setWfProgress(100);
       if (r.ok) { setWfResult(r); setWfMetaDesc(r.metaDescription || ""); setTimeout(() => setSection("WriteResult"), 400); }
