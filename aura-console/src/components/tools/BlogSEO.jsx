@@ -826,7 +826,7 @@ export default function BlogSEO() {
         .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
         .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
         .replace(/\n\n/g, "</p><p>");
-      const r = await apiFetchJSON(`${API}/ai/score-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, keyword: (kws||[])[0] || "", title: title || "", metaDescription: meta || result?.metaDescription || "" }) });
+      const r = await apiFetchJSON(`${API}/ai/score-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, keyword: (kws||[])[0] || "", title: title || "", metaDescription: meta || result?.metaDescription || "", articleSchema: result?.articleSchema || null }) });
       if (r.ok) setWfSeoScore(r);
     } catch(_) {}
     setWfSeoLoading(false);
@@ -2968,7 +2968,7 @@ export default function BlogSEO() {
                         {/* Issues */}
                         {(wfSeoScore.issues||[]).length > 0 && (
                           <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                            {(wfSeoScore.issues||[]).slice(0,8).map((issue, i) => {
+                            {(wfSeoScore.issues||[]).slice(0,12).map((issue, i) => {
                               const fixing = wfIsFixing[i];
                               // Map each issue to an AI fix action
                               const msg = issue.msg || "";
@@ -2989,10 +2989,18 @@ export default function BlogSEO() {
                                 fixBtn = <button onClick={() => wfContentFix('add_h2s', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Sections &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/keyword.*density.*low|density.*0\./i.test(msg)) {
                                 fixBtn = <button onClick={() => wfContentFix('keyword_boost', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Boost Keywords &middot; {ACTION_COSTS['email-gen']} cr</button>;
-                              } else if (/no.*citation|authoritative|outbound/i.test(msg)) {
+                              } else if (/no.*citation|authoritative|outbound|sources/i.test(msg)) {
                                 fixBtn = <button onClick={() => wfContentFix('citations', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Citations &middot; {ACTION_COSTS['email-gen']} cr</button>;
                               } else if (/first.person|expertise signal|e-e-a-t/i.test(msg)) {
                                 fixBtn = <button onClick={() => wfContentFix('eeat', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Expertise Signal &middot; {ACTION_COSTS['email-gen']} cr</button>;
+                              } else if (/author byline|no author/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('author_byline', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Author Byline &middot; {ACTION_COSTS['email-gen']} cr</button>;
+                              } else if (/internal links|only.*internal/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('internal_links', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Add Internal Links &middot; {ACTION_COSTS['email-gen']} cr</button>;
+                              } else if (/open graph|og tags|social sharing/i.test(msg)) {
+                                fixBtn = <button onClick={() => wfContentFix('og_fix', i)} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>✦ Generate OG Tags &middot; {ACTION_COSTS['seo-analysis']} cr</button>;
+                              } else if (/json-ld|schema|rich results/i.test(msg)) {
+                                fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#22c55e" }}>✓ Schema will be applied on publish</span>;
                               } else if (/no meta description|meta description/i.test(msg)) {
                                 fixBtn = <span style={{ marginTop:5, display:"inline-block", fontSize:10, color:"#facc15" }}>↑ Edit in Meta Description field above</span>;
                               } else if (/keyword.*not in title|title.*keyword/i.test(msg)) {
@@ -3012,8 +3020,8 @@ export default function BlogSEO() {
                                 </div>
                               );
                             })}
-                            {(wfSeoScore.issues||[]).length > 8 && (
-                              <div style={{ fontSize:11, color:"#71717a", textAlign:"center" }}>+{wfSeoScore.issues.length - 8} more — fix the above first</div>
+                            {(wfSeoScore.issues||[]).length > 12 && (
+                              <div style={{ fontSize:11, color:"#71717a", textAlign:"center" }}>+{wfSeoScore.issues.length - 12} more — fix the above first</div>
                             )}
                           </div>
                         )}

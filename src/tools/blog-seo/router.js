@@ -43,6 +43,56 @@ function getShop(req) {
   return req.session?.shop || req.headers['x-shopify-shop-domain'] || null;
 }
 
+/* ── Readability post-processor ─────────────────────────────────────────── */
+// Splits long sentences inside <p> tags server-side after AI generation.
+// This is deterministic and far more reliable than prompting the AI to write short sentences.
+function improveReadability(html) {
+  const cheerioLib = require('cheerio');
+  const $ = cheerioLib.load(html, { decodeEntities: false });
+
+  // Split conjunctions/connectives that commonly make sentences too long
+  const SPLIT_AT = /,?\s+(?:but|however|therefore|although|because|whereas|which means|so that|in order to|resulting in|this means|this allows|this helps|as a result|on the other hand|at the same time|in addition|furthermore|moreover|additionally)\s+/gi;
+
+  $('p').each((_, el) => {
+    const original = $(el).text();
+    const wordCount = original.trim().split(/\s+/).filter(Boolean).length;
+    // Only process paragraphs that are very long (>120 words — split into smaller chunks)
+    if (wordCount > 120) {
+      const sentences = $(el).html().split(/(?<=[.!?])\s+(?=[A-Z"])/g);
+      if (sentences.length > 1) {
+        // Replace the single big paragraph with multiple shorter ones
+        const newHtml = sentences.map(s => `<p>${s.trim()}</p>`).join('\n');
+        $(el).replaceWith(newHtml);
+      }
+    }
+  });
+
+  // Within each <p>, split overly long sentences at natural break points
+  $('p').each((_, el) => {
+    const pHtml = $(el).html() || '';
+    // Split raw text at known conjunction patterns if the sentence is >25 words
+    const sentences = pHtml.split(/(?<=[.!?])\s+/g);
+    const processed = sentences.map(sentence => {
+      const wc = sentence.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+      if (wc <= 22) return sentence;
+      // Try splitting at connectives
+      const split = sentence.replace(SPLIT_AT, (match, offset, str) => {
+        // Only split if the resulting halves are both non-trivial (>5 words each)
+        const before = str.slice(0, offset + match.length / 2).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+        if (before < 5) return match;
+        return '. ';
+      });
+      return split;
+    });
+    if (processed.join(' ') !== pHtml) {
+      $(el).html(processed.join(' '));
+    }
+  });
+
+  // Return just the body content (no html/head wrapping)
+  return $('body').html() || html;
+}
+
 /* ── Flesch-Kincaid readability helpers ──────────────────────────────────── */
 function countSyllables(word) {
   word = word.toLowerCase().replace(/[^a-z]/g, '');
@@ -7414,7 +7464,7 @@ router.post('/zero-click/knowledge-panel-push', async (req, res) => {
 /* Score a freshly-written article draft without fetching a live URL */
 router.post('/ai/score-draft', (req, res) => {
   try {
-    const { html = '', keyword = '', title = '', metaDescription = '' } = req.body;
+    const { html = '', keyword = '', title = '', metaDescription = '', articleSchema = null } = req.body;
     const $ = cheerio.load(html);
     const text = $.text().replace(/\s+/g, ' ').trim();
     const words = text.split(/\s+/).filter(Boolean);
@@ -7432,6 +7482,16 @@ router.post('/ai/score-draft', (req, res) => {
     const hasFaq    = /faq|frequently asked/i.test(text);
     const imgCount  = $('img').length;
     const linkCount = $('a').length;
+
+    // Technical checks
+    const hasSchema     = !!articleSchema || $('script[type="application/ld+json"]').length > 0;
+    const hasOgTags     = $('meta[property^="og:"]').length > 0;
+    const hasTwitter    = $('meta[name^="twitter:"]').length > 0;
+    const hasCanonical  = $('link[rel="canonical"]').length > 0;
+    const internalLinks = $('a[href^="/"], a[href*="myshopify.com"], a[href*="your-store"]').length;
+    const externalLinks = $('a[href^="http"]').not($('a[href*="myshopify.com"]')).length;
+    const hasAuthorByline = /class="author|byline|about the author/i.test(html);
+    const hasCitations  = /sources|further reading|references/i.test(text);
 
     // Keyword checks (case-insensitive)
     const kw = (keyword || '').toLowerCase().trim();
@@ -7457,6 +7517,7 @@ router.post('/ai/score-draft', (req, res) => {
     if (longParagraphs > 0)     addIssue('content', 'medium', 10, `${longParagraphs} paragraph(s) over 120 words — break them up`, 'readability_fix');
     if (!hasFaq)                addIssue('content', 'low',     8, 'No FAQ section detected — FAQs improve People Also Ask visibility', 'faq_fix');
     if (imgCount === 0)         addIssue('content', 'low',     5, 'No images in article — add relevant images for engagement');
+    if (!hasCitations)         addIssue('content', 'low',     5, 'No citations or sources section — add authoritative links for E-E-A-T', 'citations_fix');
 
     // SEO / Meta
     if (!title)                 addIssue('meta', 'high',   25, 'No title set');
@@ -7484,14 +7545,22 @@ router.post('/ai/score-draft', (req, res) => {
     else if (readabilityScore < 60) addIssue('readability', 'medium', 10, `Readability ${readabilityScore}/100 — could be more accessible`, 'readability_fix');
     if (flesch.grade > 14)      addIssue('readability', 'medium',  8, `Reading grade level ${flesch.grade} — try to write at grade 8-10`);
 
+    // Technical SEO
+    if (!hasSchema)             addIssue('technical', 'high',   15, 'No Article schema (JSON-LD) — required for rich results in Google');
+    if (!hasOgTags)             addIssue('technical', 'medium', 10, 'No Open Graph tags — needed for rich social sharing previews');
+    if (!hasTwitter)            addIssue('technical', 'low',     5, 'No Twitter Card tags — add for X/Twitter sharing');
+    if (internalLinks < 2)      addIssue('technical', 'medium',  8, `Only ${internalLinks} internal links — add 3+ to signal topical authority`);
+    if (externalLinks < 2)      addIssue('technical', 'medium',  8, `Only ${externalLinks} authoritative external links — add citations for E-E-A-T`);
+    if (!hasAuthorByline)       addIssue('technical', 'low',     5, 'No author byline detected — add for E-E-A-T signals');
+
     // Compute category scores (start 100, deduct issues)
-    const cats = { content: 100, meta: 100, keywords: kw ? 100 : null, readability: 100 };
+    const cats = { content: 100, meta: 100, keywords: kw ? 100 : null, readability: 100, technical: 100 };
     issues.forEach(i => { if (cats[i.cat] != null) cats[i.cat] = Math.max(0, cats[i.cat] - i.impact); });
 
     const activeCats = Object.values(cats).filter(v => v !== null);
     const overall = Math.round(activeCats.reduce((a,b) => a+b, 0) / activeCats.length);
 
-    res.json({ ok: true, overall, cats, issues, wordCount, readabilityScore, flesch, kwDensity, kwInTitle, kwInMeta, kwInH1, kwInH2, h1Count, h2Count, h3Count, hasFaq, imgCount });
+    res.json({ ok: true, overall, cats, issues, wordCount, readabilityScore, flesch, kwDensity, kwInTitle, kwInMeta, kwInH1, kwInH2, h1Count, h2Count, h3Count, hasFaq, imgCount, hasSchema, hasOgTags, internalLinks, externalLinks });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
@@ -7609,9 +7678,25 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const citationsHtml = citationsR.choices[0].message.content.trim();
     if (citationsHtml) fullHtml += '\n' + citationsHtml;
 
-    // H1 is already prepended in step 2 above (using seoTitle which contains the keyword)
+    // ── 6. Post-process readability — split long sentences/paragraphs deterministically ──
+    fullHtml = improveReadability(fullHtml);
 
-    // ── 7. Metrics ──
+    // ── 7. Auto-generate Article JSON-LD schema ──
+    const articleSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      'headline': seoTitle,
+      'description': meta.metaDescription || '',
+      'keywords': keyword,
+      'articleBody': fullHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500),
+      'datePublished': new Date().toISOString().split('T')[0],
+      'dateModified': new Date().toISOString().split('T')[0],
+      'author': { '@type': 'Person', 'name': 'Store Expert' },
+      'publisher': { '@type': 'Organization', 'name': 'Store' },
+    };
+    const schemaTag = `<script type="application/ld+json">${JSON.stringify(articleSchema, null, 2)}</script>`;
+
+    // ── 8. Metrics ──
     const plainText = fullHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     const actualWordCount = plainText.split(/\s+/).filter(Boolean).length;
     const kwRegex = new RegExp(keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
@@ -7626,9 +7711,10 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       'E-E-A-T expertise signal in intro',
       `Meta description includes keyword (${(meta.metaDescription || '').length} chars)`,
       `Keyword density targeted at 1–2% (actual: ${kwDensity}%)`,
-      'Short sentences enforced (≤20 words) for readability',
+      'Long sentences auto-split for readability (post-processed)',
       'FAQ section included (People Also Ask / featured snippets)',
       'Citations & sources section included (E-E-A-T + GEO)',
+      'Article JSON-LD schema generated',
       `Word count: ${actualWordCount} words`,
     ];
 
@@ -7646,6 +7732,8 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       faqItems,
       faqQuestions: faqItems.map(f => f.q),
       articleSchemaType: 'Article',
+      articleSchema,
+      schemaTag,
       seoOptimizations,
     });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
