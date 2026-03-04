@@ -7529,8 +7529,8 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     // ── 1. Meta + E-E-A-T intro sentence (parallel) ──
     const [metaR, eeatR] = await Promise.all([
       ai.chat.completions.create({
-        model, max_tokens: 300, response_format: { type: 'json_object' },
-        messages: [{ role: 'user', content: `${ctx}\nWrite an SEO-optimised meta description that MUST include the exact phrase "${keyword}". Max 155 chars. Also provide a URL slug and 3 internal link suggestions.\nReturn JSON: {"metaDescription":"string","slug":"string","internalLinkSuggestions":["string"]}` }],
+        model, max_tokens: 400, response_format: { type: 'json_object' },
+        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: must include the exact phrase "${keyword}". 130-155 chars.\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"]}` }],
       }),
       ai.chat.completions.create({
         model, max_tokens: 120,
@@ -7538,6 +7538,12 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       }),
     ]);
     const meta   = JSON.parse(metaR.choices[0].message.content);
+    // Use AI-generated SEO title (contains keyword) — fall back gracefully if AI omitted keyword
+    const seoTitle = (meta.seoTitle && meta.seoTitle.toLowerCase().includes(keyword.toLowerCase()))
+      ? meta.seoTitle
+      : title.toLowerCase().includes(keyword.toLowerCase())
+        ? title
+        : `${title} — ${keyword}`;
     const eeatSentence = eeatR.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
 
     // ── 2. Generate intro ──
@@ -7545,7 +7551,8 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       model, max_tokens: Math.ceil(introWords * 3),
       messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction for this blog post. Target ${introWords} words. Rules:\n- First sentence MUST contain the keyword "${keyword}" exactly.\n- Second sentence: "${eeatSentence}" (use this as the second sentence to signal E-E-A-T).\n- End the intro with a 1-sentence preview of what the article covers.\n- Short sentences only (under 20 words each).\nReturn only HTML starting with <p>.` }],
     });
-    let fullHtml = introR.choices[0].message.content.trim();
+    // H1 uses the SEO title (which contains the keyword) — this satisfies both H1 and title keyword checks
+    let fullHtml = `<h1>${seoTitle}</h1>\n` + introR.choices[0].message.content.trim();
 
     // ── 3. Generate each content section in parallel batches of 3 ──
     // First section H2 always contains the keyword for SEO
@@ -7556,7 +7563,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
         const sectionIdx = i + bi;
         // For the first section, if the heading doesn't already contain the keyword, append it naturally
         const seoHeading = (sectionIdx === 0 && !heading.toLowerCase().includes(keyword.toLowerCase()))
-          ? `${heading}: What You Need to Know About ${keyword.split(' ').slice(0,3).join(' ')}`
+          ? `${heading}: ${keyword}`
           : heading;
         return ai.chat.completions.create({
           model, max_tokens: Math.ceil(sectionWords * 3),
@@ -7602,8 +7609,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const citationsHtml = citationsR.choices[0].message.content.trim();
     if (citationsHtml) fullHtml += '\n' + citationsHtml;
 
-    // ── 6. Prepend H1 tag (required for SEO — keyword in H1) ──
-    fullHtml = `<h1>${title}</h1>\n` + fullHtml;
+    // H1 is already prepended in step 2 above (using seoTitle which contains the keyword)
 
     // ── 7. Metrics ──
     const plainText = fullHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -7629,7 +7635,8 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     if (req.deductCredits) req.deductCredits({ model });
     res.json({
       ok: true,
-      title,
+      title: seoTitle,
+      originalTitle: title,
       metaDescription: meta.metaDescription || '',
       slug,
       fullArticle: fullHtml,

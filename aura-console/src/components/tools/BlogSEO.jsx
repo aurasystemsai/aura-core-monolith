@@ -767,7 +767,13 @@ export default function BlogSEO() {
       const targetWordCount = wfOutlineSize === "small" ? 1200 : wfOutlineSize === "long" ? 4000 : 2300;
       const r = await apiFetchJSON(`${API}/ai/full-blog-writer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, outline: outlineList, wordCount: targetWordCount }) });
       clearInterval(wfProgressRef.current); setWfProgress(100);
-      if (r.ok) { setWfResult(r); setWfMetaDesc(r.metaDescription || ""); setTimeout(() => setSection("WriteResult"), 400); }
+      if (r.ok) {
+        setWfResult(r);
+        setWfMetaDesc(r.metaDescription || "");
+        // Update the picked title to the SEO-optimised one (contains keyword)
+        if (r.title && r.title !== wfPickedTitle) setWfPickedTitle(r.title);
+        setTimeout(() => setSection("WriteResult"), 400);
+      }
       else { setWfErr(r.error || "Article generation failed."); setSection("WriteFlow"); }
     } catch(e) { clearInterval(wfProgressRef.current); setWfErr(e.message || "Failed to generate article."); setSection("WriteFlow"); }
     setWfGenerating(false);
