@@ -845,21 +845,31 @@ router.post('/ai/content-fix', async (req, res) => {
           }
         } catch (_) { /* fall through to title-only prompt */ }
       }
-      // Strip HTML tags for a clean text excerpt to send to AI (cap at ~8000 chars to stay in token budget)
-      const bodyText = bodyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 8000);
-      if (bodyText) {
-        userPrompt = `You are rewriting an existing Shopify blog post to dramatically improve its readability score (target Flesch Reading Ease 60+). Keep ALL the same information, headings structure, and key points — but rewrite every sentence to be shorter (under 20 words), use active voice, and break long paragraphs into 2-3 sentence chunks.
+      // Pass HTML with tags preserved so AI keeps heading structure intact (cap at ~12000 chars)
+      const bodyHtmlTrimmed = bodyHtml.trim().slice(0, 12000);
+      // Also compute plain-text word count so we can instruct the AI to preserve it
+      const existingWordCount = bodyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+      if (bodyHtmlTrimmed) {
+        userPrompt = `You are improving the readability of an existing Shopify blog post WITHOUT removing or condensing any content. Your ONLY goal is to make sentences easier to read (target Flesch Reading Ease 60+).
+
+STRICT RULES:
+1. PRESERVE every H2 and H3 heading exactly as written — do NOT remove or merge any headings.
+2. PRESERVE all existing content, facts, product descriptions, and sections — do NOT delete anything.
+3. MAINTAIN the same word count (currently ~${existingWordCount} words). The output must be at least ${Math.round(existingWordCount * 0.95)} words.
+4. Only change HOW sentences are written — split long sentences (20+ words) into two shorter ones, replace passive voice with active voice, replace long/complex words with simpler synonyms.
+5. Keep all <ul>, <ol>, <li>, <strong>, <em>, <a> tags intact.
+6. Return the COMPLETE rewritten article — never truncate or stop early.
 
 Post title: "${title || h1}"
 Keywords: ${keywords || title || h1}
 
-Current content to rewrite:
-${bodyText}
+Current HTML content to improve:
+${bodyHtmlTrimmed}
 
-Rewrite the FULL content above in clean HTML using only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>. Return only the HTML — nothing else.`;
+Return the FULL rewritten content in clean HTML using only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>. Return only the HTML — nothing else.`;
       } else {
         // No body available — write a strong readable article from scratch
-        userPrompt = `Write a complete, highly readable blog post (Flesch Reading Ease 65+) about the topic below. Use short sentences (under 20 words), active voice, plain language. Structure with H2 subheadings every ~200 words. Include an intro, 4-6 body sections, and a conclusion.
+        userPrompt = `Write a complete, highly readable blog post (Flesch Reading Ease 65+) about the topic below. Use short sentences (under 20 words), active voice, plain language. Structure with H2 subheadings every ~200 words. Include an intro, 4-6 body sections, and a conclusion. Aim for at least 1200 words.
 
 Post title: "${title || h1}"
 Keywords: ${keywords || title || h1}
@@ -990,10 +1000,13 @@ Return only the HTML — nothing else.`;
       return res.status(400).json({ ok: false, error: `Unknown type: ${type}` });
     }
 
+    // Readability rewrites need more tokens to output the full article
+    const maxTokens = type === 'readability' ? 4000 : 1200;
     const completion = await getOpenAI().chat.completions.create({
       model: req.body.model || 'gpt-4o-mini',
       messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
       temperature: 0.7,
+      max_tokens: maxTokens,
     });
     const output = completion.choices[0]?.message?.content?.trim() || '';
     if (!output) return res.status(500).json({ ok: false, error: 'AI returned no content' });
