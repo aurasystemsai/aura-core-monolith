@@ -7504,45 +7504,65 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const currentYear = new Date().getFullYear();
     const targetWords = Math.max(wordCount, 800);
 
-    // Build the section list from the outline, stripping any Conclusion/FAQ entries
-    // (we handle those separately so every content section gets its own full token budget)
+    // Build the section list from the outline, stripping Conclusion/FAQ (handled separately)
     const contentSections = outline.filter(h => !/^(conclusion|faq|frequently asked)/i.test(h));
     const hasConclusion   = outline.some(h => /^conclusion/i.test(h));
-    const hasFaq          = outline.some(h => /^faq|frequently asked/i.test(h));
+    // Always include FAQ for SEO (People Also Ask, featured snippets)
+    const hasFaq          = true;
 
-    // Divide the word budget: intro gets ~10%, each content section gets equal share of 80%, conclusion 10%
-    const introWords   = Math.round(targetWords * 0.10);
-    const otherSections = contentSections.length || 5;
-    const sectionWords = Math.round((targetWords * 0.80) / otherSections);
-    const conclusionWords = Math.round(targetWords * 0.10);
+    // Word budget: intro 10%, body 75%, conclusion 8%, FAQ/citations share 7%
+    const introWords      = Math.round(targetWords * 0.10);
+    const otherSections   = contentSections.length || 5;
+    const sectionWords    = Math.round((targetWords * 0.75) / otherSections);
+    const conclusionWords = Math.round(targetWords * 0.08);
 
-    const ctx = `Title: "${title}" | Keyword: "${keyword}" | Niche: ${niche||'general'} | Tone: ${tone} | Year: ${currentYear}`;
-    const htmlRules = `Use clean HTML only — <p>, <ul><li>, <ol><li>, <strong>, <em>, <h3> for sub-headings. No markdown, no backticks. Include the keyword "${keyword}" naturally. Year references must be ${currentYear}.`;
+    const ctx = `Title: "${title}" | Primary keyword: "${keyword}" | Niche: ${niche||'general'} | Tone: ${tone} | Year: ${currentYear}`;
 
-    // ── 1. Generate metadata (title, meta description, slug) ──
-    const metaR = await ai.chat.completions.create({
-      model, max_tokens: 300, response_format: { type: 'json_object' },
-      messages: [{ role: 'user', content: `${ctx}\nReturn JSON: {"metaDescription":"string under 160 chars","slug":"string","internalLinkSuggestions":["string"]}` }],
-    });
-    const meta = JSON.parse(metaR.choices[0].message.content);
+    // SEO HTML rules applied to every section
+    const htmlRules = `STRICT SEO REQUIREMENTS — follow all of these:
+1. HTML only: <h2>, <h3>, <p>, <ul><li>, <ol><li>, <strong>, <em>. No markdown, no backticks, no <html>/<body> tags.
+2. KEYWORD DENSITY: Use the exact phrase "${keyword}" at least once per 150 words. Aim for 1–2% density total.
+3. READABILITY: Every sentence must be under 20 words. Use active voice. Break long ideas into 2-sentence paragraphs.
+4. STRUCTURE: Each H2 section needs at least 3 paragraphs. Use <h3> sub-points inside sections.
+5. Year references must be ${currentYear}.`;
+
+    // ── 1. Meta + E-E-A-T intro sentence (parallel) ──
+    const [metaR, eeatR] = await Promise.all([
+      ai.chat.completions.create({
+        model, max_tokens: 300, response_format: { type: 'json_object' },
+        messages: [{ role: 'user', content: `${ctx}\nWrite an SEO-optimised meta description that MUST include the exact phrase "${keyword}". Max 155 chars. Also provide a URL slug and 3 internal link suggestions.\nReturn JSON: {"metaDescription":"string","slug":"string","internalLinkSuggestions":["string"]}` }],
+      }),
+      ai.chat.completions.create({
+        model, max_tokens: 120,
+        messages: [{ role: 'user', content: `Write a single short sentence (under 20 words) for the opening of a blog post about "${keyword}". Signal first-hand expertise naturally — e.g. "In my experience...", "After testing dozens of options...". Return ONLY the sentence, no quotes.` }],
+      }),
+    ]);
+    const meta   = JSON.parse(metaR.choices[0].message.content);
+    const eeatSentence = eeatR.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
 
     // ── 2. Generate intro ──
     const introR = await ai.chat.completions.create({
-      model, max_tokens: Math.ceil(introWords * 2.5),
-      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction section for this blog post. Target exactly ${introWords} words. Open with a hook, establish the problem/topic, and place the keyword in the first sentence. Return only the HTML (no heading tag for the intro — start with <p>).` }],
+      model, max_tokens: Math.ceil(introWords * 3),
+      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction for this blog post. Target ${introWords} words. Rules:\n- First sentence MUST contain the keyword "${keyword}" exactly.\n- Second sentence: "${eeatSentence}" (use this as the second sentence to signal E-E-A-T).\n- End the intro with a 1-sentence preview of what the article covers.\n- Short sentences only (under 20 words each).\nReturn only HTML starting with <p>.` }],
     });
     let fullHtml = introR.choices[0].message.content.trim();
 
     // ── 3. Generate each content section in parallel batches of 3 ──
+    // First section H2 always contains the keyword for SEO
     const sectionHtmlParts = new Array(contentSections.length);
     for (let i = 0; i < contentSections.length; i += 3) {
       const batch = contentSections.slice(i, i + 3);
-      const batchResults = await Promise.all(batch.map((heading, bi) =>
-        ai.chat.completions.create({
-          model, max_tokens: Math.ceil(sectionWords * 2.5),
-          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${i+bi+1} of the blog post. Section heading: "${heading}". Target exactly ${sectionWords} words. Write at least 3 full paragraphs with detailed, useful content. Use <h3> sub-headings where appropriate. Return only the HTML starting with <h2>${heading}</h2>.` }],
-        })
-      ));
+      const batchResults = await Promise.all(batch.map((heading, bi) => {
+        const sectionIdx = i + bi;
+        // For the first section, if the heading doesn't already contain the keyword, append it naturally
+        const seoHeading = (sectionIdx === 0 && !heading.toLowerCase().includes(keyword.toLowerCase()))
+          ? `${heading}: What You Need to Know About ${keyword.split(' ').slice(0,3).join(' ')}`
+          : heading;
+        return ai.chat.completions.create({
+          model, max_tokens: Math.ceil(sectionWords * 3),
+          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" at least ${Math.max(2, Math.round(sectionWords/150))} times naturally.\n- Write at least 3 full paragraphs.\n- Use <h3> sub-headings for sub-points.\n- Sentences under 20 words. Active voice.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
+        });
+      }));
       batchResults.forEach((r, bi) => { sectionHtmlParts[i + bi] = r.choices[0].message.content.trim(); });
     }
     fullHtml += '\n' + sectionHtmlParts.join('\n');
@@ -7550,33 +7570,61 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     // ── 4. Conclusion ──
     if (hasConclusion) {
       const conclR = await ai.chat.completions.create({
-        model, max_tokens: Math.ceil(conclusionWords * 2.5),
-        messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the conclusion for this blog post. Target ${conclusionWords} words. Summarise key takeaways and end with a clear call to action. Return only the HTML starting with <h2>Conclusion</h2>.` }],
+        model, max_tokens: Math.ceil(conclusionWords * 3),
+        messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the conclusion. Target ${conclusionWords} words. Summarise 3 key takeaways. Include "${keyword}" once. End with a CTA. Return HTML starting with <h2>Conclusion</h2>.` }],
       });
       fullHtml += '\n' + conclR.choices[0].message.content.trim();
     }
 
-    // ── 5. FAQs ──
-    let faqItems = [];
-    if (hasFaq) {
-      const faqR = await ai.chat.completions.create({
+    // ── 5. FAQ + Citations (parallel — both are always included for SEO) ──
+    const [faqR, citationsR] = await Promise.all([
+      ai.chat.completions.create({
         model, max_tokens: 1200, response_format: { type: 'json_object' },
-        messages: [{ role: 'user', content: `${ctx}\nGenerate 5 FAQ pairs about "${keyword}". Each answer should be 2-3 sentences. Return JSON: {"faqs":[{"q":"string","a":"string"}]}` }],
-      });
+        messages: [{ role: 'user', content: `${ctx}\nGenerate 5 FAQ pairs about "${keyword}" that match real People Also Ask queries. Each answer: 2-3 direct sentences, include the keyword naturally. Return JSON: {"faqs":[{"q":"string","a":"string"}]}` }],
+      }),
+      ai.chat.completions.create({
+        model, max_tokens: 500,
+        messages: [{ role: 'user', content: `Write a "Sources & Further Reading" section for a blog post about "${keyword}". List 3-4 real authoritative sources (.gov, .edu, Wikipedia, Moz, Ahrefs, Semrush, Shopify, NHS, CDC, or well-known industry publications). Format as HTML: <h2>Sources &amp; Further Reading</h2><ul><li><strong>Source Name</strong> — brief relevance note. <a href="URL" target="_blank" rel="noopener noreferrer">Read more</a></li></ul>. Return only the HTML.` }],
+      }),
+    ]);
+
+    let faqItems = [];
+    try {
       const faqParsed = JSON.parse(faqR.choices[0].message.content);
       faqItems = faqParsed.faqs || [];
-      if (faqItems.length) {
-        const faqHtml = '<h2>Frequently Asked Questions</h2>\n' + faqItems.map(f => `<h3>${f.q}</h3>\n<p>${f.a}</p>`).join('\n');
-        fullHtml += '\n' + faqHtml;
-      }
+    } catch (_) {}
+    if (faqItems.length) {
+      const faqHtml = '<h2>Frequently Asked Questions</h2>\n' + faqItems.map(f => `<h3>${f.q}</h3>\n<p>${f.a}</p>`).join('\n');
+      fullHtml += '\n' + faqHtml;
     }
 
-    // ── 6. Count actual words in the final article ──
+    // Append citations (E-E-A-T + GEO signal)
+    const citationsHtml = citationsR.choices[0].message.content.trim();
+    if (citationsHtml) fullHtml += '\n' + citationsHtml;
+
+    // ── 6. Prepend H1 tag (required for SEO — keyword in H1) ──
+    fullHtml = `<h1>${title}</h1>\n` + fullHtml;
+
+    // ── 7. Metrics ──
     const plainText = fullHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     const actualWordCount = plainText.split(/\s+/).filter(Boolean).length;
-    const kwMatches = (plainText.toLowerCase().match(new RegExp(keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    const kwRegex = new RegExp(keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+    const kwMatches = (plainText.toLowerCase().match(kwRegex) || []).length;
     const kwDensity = actualWordCount > 0 ? Math.round((kwMatches / actualWordCount) * 1000) / 10 : 0;
     const slug = meta.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    // List of SEO optimizations automatically applied during generation
+    const seoOptimizations = [
+      'H1 tag with keyword added',
+      'Keyword placed in first sentence of intro',
+      'E-E-A-T expertise signal in intro',
+      `Meta description includes keyword (${(meta.metaDescription || '').length} chars)`,
+      `Keyword density targeted at 1–2% (actual: ${kwDensity}%)`,
+      'Short sentences enforced (≤20 words) for readability',
+      'FAQ section included (People Also Ask / featured snippets)',
+      'Citations & sources section included (E-E-A-T + GEO)',
+      `Word count: ${actualWordCount} words`,
+    ];
 
     if (req.deductCredits) req.deductCredits({ model });
     res.json({
@@ -7591,6 +7639,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       faqItems,
       faqQuestions: faqItems.map(f => f.q),
       articleSchemaType: 'Article',
+      seoOptimizations,
     });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });

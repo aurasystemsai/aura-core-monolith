@@ -2833,6 +2833,7 @@ export default function BlogSEO() {
                   <div style={{ maxWidth:740, margin:"0 auto", padding:"40px 48px 80px" }}>
                     {wfPublishErr && <div style={{ fontSize:12, color:"#f87171", background:"#450a0a", border:"1px solid #7f1d1d", borderRadius:8, padding:"8px 14px", marginBottom:20 }}>{wfPublishErr}</div>}
                     <div
+                      className="wf-article-body"
                       style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:16, lineHeight:1.9, color:"#e4e4e7" }}
                       dangerouslySetInnerHTML={{ __html:
                         (wfResult.fullArticle || wfResult.content || wfResult.draft || "")
@@ -2863,6 +2864,24 @@ export default function BlogSEO() {
 
                 {/* Right sidebar */}
                 <div style={{ padding:"20px 16px", display:"flex", flexDirection:"column", gap:0, background:"#09090b", position:"sticky", top:53, maxHeight:"calc(100vh - 53px)", overflowY:"auto" }}>
+
+                  {/* ── SEO Auto-Applied checklist ── */}
+                  {wfResult?.seoOptimizations?.length > 0 && (
+                    <div style={{ borderBottom:"1px solid #3f3f46", paddingBottom:16, marginBottom:16 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+                        <span style={{ width:16, height:16, borderRadius:"50%", background:"#22c55e", color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700 }}>✓</span>
+                        <span style={{ fontSize:12, fontWeight:700, color:"#22c55e", textTransform:"uppercase", letterSpacing:".5px" }}>SEO Auto-Applied</span>
+                      </div>
+                      <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                        {wfResult.seoOptimizations.map((opt, i) => (
+                          <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:6, fontSize:11, color:"#a1a1aa" }}>
+                            <span style={{ color:"#22c55e", flexShrink:0, marginTop:1 }}>✓</span>
+                            <span>{opt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* ── Meta description ── */}
                   <div style={{ borderBottom:"1px solid #3f3f46", paddingBottom:16, marginBottom:16 }}>
