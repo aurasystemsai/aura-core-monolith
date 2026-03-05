@@ -7825,7 +7825,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     // SEO HTML rules applied to every section
     const htmlRules = `STRICT SEO REQUIREMENTS — follow ALL of these exactly:
 1. HTML only: <h2>, <h3>, <p>, <ul><li>, <ol><li>, <strong>, <em>. No markdown, no backticks, no <html>/<body> tags.
-2. KEYWORD DENSITY: Use the exact phrase "${keyword}" at least once per 150 words. Aim for 1–2% density total.
+2. KEYWORD DENSITY: Use the exact phrase "${keyword}" naturally — roughly once per 300 words. Target 0.8–1.5% density total. Do NOT repeat it in every paragraph.
 3. READABILITY — THIS IS THE MOST IMPORTANT RULE:
    - Every sentence: 6-12 words. HARD MAX 13 words. Count the words. If over 13, split into two sentences.
    - Never start a new sentence with a word longer than 2 syllables.
@@ -7899,7 +7899,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
           : heading;
         return ai.chat.completions.create({
           model, max_tokens: Math.ceil(sectionWords * 3),
-          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" at least ${Math.max(2, Math.round(sectionWords/150))} times naturally.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 6-12 words. HARD MAX 13 words. Count words, split if over 13. Use 1-2 syllable words only.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
+          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" ${Math.max(1, Math.round(sectionWords/300))} time(s) naturally — do not force it in every sentence.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 6-12 words. HARD MAX 13 words. Count words, split if over 13. Use 1-2 syllable words only.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
         });
       }));
       batchResults.forEach((r, bi) => { sectionHtmlParts[i + bi] = r.choices[0].message.content.trim(); });
