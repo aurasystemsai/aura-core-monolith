@@ -1033,7 +1033,15 @@ router.post('/ai/content-fix', async (req, res) => {
 
         if (longParas.length > 0) {
           // Only send the problem paragraphs — AI does vocabulary simplification only
-          const paraList = longParas.slice(0, 20).map((p, n) => `[${n + 1}] ${p.text}`).join('\n\n');
+          // IMPORTANT: skip paragraphs that contain child HTML elements (links, bold, etc.)
+          // to avoid stripping formatting. Only simplify pure-text paragraphs.
+          const simplifiableParas = longParas.filter(p => {
+            const el = $l('p').get(p.idx);
+            return el && $l(el).children().length === 0; // no child tags
+          });
+
+          if (simplifiableParas.length > 0) {
+          const paraList = simplifiableParas.slice(0, 20).map((p, n) => `[${n + 1}] ${p.text}`).join('\n\n');
           userPrompt = `Simplify ONLY the vocabulary in these paragraphs — target Flesch Reading Ease 70+.
 
 STRICT RULES:
@@ -1046,6 +1054,7 @@ STRICT RULES:
   demonstrates→shows, considerable→large, additionally→also, furthermore→also,
   approximately→about, incorporate→use, fundamentally→at heart, understand→see.
 - Convert passive voice to active voice.
+- KEEP the same number of sentences and same factual content.
 - Return a JSON object: keys are the paragraph numbers ("1", "2", etc.), values are the simplified paragraph strings.
 
 Paragraphs:
@@ -1056,8 +1065,8 @@ ${paraList}`;
             model: fixModel,
             messages: [{ role: 'user', content: userPrompt }],
             response_format: { type: 'json_object' },
-            temperature: 0.4,
-            max_tokens: 3000,
+            temperature: 0.3,
+            max_tokens: 4000,
           });
           try {
             const raw = fixResp.choices[0]?.message?.content || '{}';
@@ -1066,7 +1075,7 @@ ${paraList}`;
             // or may return an array — handle both
             const isArr = Array.isArray(parsed);
             $l('p').each((i, el) => {
-              const matchIdx = longParas.findIndex(p => p.idx === i);
+              const matchIdx = simplifiableParas.findIndex(p => p.idx === i);
               if (matchIdx === -1) return;
               let simplified;
               if (isArr) {
@@ -1076,7 +1085,12 @@ ${paraList}`;
                 simplified = parsed[String(matchIdx + 1)] || parsed[String(matchIdx)] || Object.values(parsed)[matchIdx];
               }
               if (simplified && typeof simplified === 'string' && simplified.trim()) {
-                $l(el).text(simplified.trim());
+                // Safety: only apply if the simplified version isn't dramatically shorter
+                const origWords = $l(el).text().split(/\s+/).filter(Boolean).length;
+                const newWords  = simplified.trim().split(/\s+/).filter(Boolean).length;
+                if (newWords >= origWords * 0.85) {
+                  $l(el).text(simplified.trim());
+                }
               }
             });
           } catch (jsonErr) {
@@ -1084,9 +1098,15 @@ ${paraList}`;
           }
 
           if (req.deductCredits) req.deductCredits({ model: fixModel, action: 'email-gen' });
+          } // end if simplifiableParas.length > 0
         }
 
-        const finalHtml = $l('body').html() || locallyImproved;
+        const candidateHtml = $l('body').html() || locallyImproved;
+        // Safety net: if the rewritten body is more than 10% shorter than original, use local-only pass
+        const countWords = h => h.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+        const origWords  = countWords(bodyHtml);
+        const newWords   = countWords(candidateHtml);
+        const finalHtml  = newWords >= origWords * 0.9 ? candidateHtml : locallyImproved;
         return res.json({ ok: true, html: finalHtml, applyAs });
       } else {
         // No body available — write a strong readable article from scratch
@@ -1239,7 +1259,7 @@ Return only the HTML — nothing else.`;
     }
 
     // Readability rewrites need more tokens to output the full article
-    const maxTokens = 1200;
+    const maxTokens = 2000;
     const completion = await getOpenAI().chat.completions.create({
       model: req.body.model || 'gpt-4o-mini',
       messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
