@@ -1142,6 +1142,23 @@ Return JSON: {"og_title": "...", "og_description": "...", "og_type": "article"}`
       if (req.deductCredits) req.deductCredits({ model: ogModel, action: 'seo-analysis' });
       return res.json({ ok: true, ogTitle: ogParsed.og_title || '', ogDescription: ogParsed.og_description || '', applyAs: 'og' });
 
+    } else if (type === 'twitter_fix') {
+      const twPrompt = `Generate Twitter Card meta tag values for this blog post.
+Post title: "${title || h1}"
+Keywords: ${keywords || title || h1}
+Rules: twitter_title ≤ 70 chars, twitter_description ≤ 200 chars, engaging for X/Twitter sharing.
+Return JSON: {"twitter_title": "...", "twitter_description": "..."}`;
+      const twModel = req.body.model || 'gpt-4o-mini';
+      const twR = await getOpenAI().chat.completions.create({
+        model: twModel,
+        messages: [{ role: 'user', content: twPrompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.6,
+      });
+      const twParsed = JSON.parse(twR.choices[0].message.content);
+      if (req.deductCredits) req.deductCredits({ model: twModel, action: 'seo-analysis' });
+      return res.json({ ok: true, twitterTitle: twParsed.twitter_title || '', twitterDescription: twParsed.twitter_description || '', applyAs: 'twitter' });
+
     } else if (type === 'author_byline') {
       applyAs = 'append';
       userPrompt = `Write a short professional author bio section for this blog post. It should feel genuine — written by someone with hands-on experience in the topic. Use first-person plural ("At [store name], we...") if no author name is available. Keep it to 2 sentences max. Include a reference to the team's expertise.
@@ -7699,7 +7716,7 @@ router.post('/zero-click/knowledge-panel-push', async (req, res) => {
 /* Score a freshly-written article draft without fetching a live URL */
 router.post('/ai/score-draft', (req, res) => {
   try {
-    const { html = '', keyword = '', title = '', metaDescription = '', articleSchema = null, ogTitle = '', ogDescription = '' } = req.body;
+    const { html = '', keyword = '', title = '', metaDescription = '', articleSchema = null, ogTitle = '', ogDescription = '', twitterTitle = '', twitterDescription = '' } = req.body;
     const $ = cheerio.load(html);
     const text = $.text().replace(/\s+/g, ' ').trim();
     const words = text.split(/\s+/).filter(Boolean);
@@ -7721,7 +7738,7 @@ router.post('/ai/score-draft', (req, res) => {
     // Technical checks
     const hasSchema     = !!articleSchema || $('script[type="application/ld+json"]').length > 0;
     const hasOgTags     = $('meta[property^="og:"]').length > 0 || (!!ogTitle && !!ogDescription);
-    const hasTwitter    = $('meta[name^="twitter:"]').length > 0;
+    const hasTwitter    = $('meta[name^="twitter:"]').length > 0 || (!!twitterTitle && !!twitterDescription);
     const hasCanonical  = $('link[rel="canonical"]').length > 0;
     const internalLinks = $('a[href^="/"], a[href*="myshopify.com"], a[href*="your-store"]').length;
     const externalLinks = $('a[href^="http"]').not($('a[href*="myshopify.com"]')).length;
@@ -7844,7 +7861,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const [metaR, eeatR] = await Promise.all([
       ai.chat.completions.create({
         model, max_tokens: 400, response_format: { type: 'json_object' },
-        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: MUST include the exact phrase "${keyword}". MUST be between 150 and 160 characters — count every character including spaces. A good example length: "Discover the top snowboards for beginners in 2026. We review the best beginner boards for comfort, control and fun on the slopes." (that is 155 chars).\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"],"ogTitle":"string (max 60 chars, compelling for social sharing)","ogDescription":"string (100-150 chars, compelling social copy)"}` }],
+        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: MUST include the exact phrase "${keyword}". MUST be between 150 and 160 characters — count every character including spaces. A good example length: "Discover the top snowboards for beginners in 2026. We review the best beginner boards for comfort, control and fun on the slopes." (that is 155 chars).\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"],"ogTitle":"string (max 60 chars, compelling for social sharing)","ogDescription":"string (100-150 chars, compelling social copy)","twitterTitle":"string (max 70 chars, engaging for X/Twitter)","twitterDescription":"string (max 200 chars, compelling)"}` }],
       }),
       ai.chat.completions.create({
         model, max_tokens: 120,
@@ -7986,6 +8003,15 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     // ── 6. Post-process readability — split long sentences/paragraphs deterministically ──
     fullHtml = improveReadability(fullHtml);
 
+    // ── 6.5. Auto-append Related Reading (internal links) + Author Byline for instant SEO signals ──
+    const kwSlug = keyword.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const relatedLinks = (meta.internalLinkSuggestions || []).slice(0, 3)
+      .map(t => `<li><a href="/blogs/news/${t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}">${t}</a></li>`)
+      .join('\n') ||
+      `<li><a href="/blogs/news/${kwSlug}-guide">Complete ${keyword} Guide</a></li>\n<li><a href="/blogs/news/${kwSlug}-tips">${keyword} Tips for Beginners</a></li>\n<li><a href="/blogs/news/best-${kwSlug}">Best ${keyword} Picks for ${new Date().getFullYear()}</a></li>`;
+    fullHtml += `\n<div class="related-reading"><h3>Related Reading</h3>\n<ul>\n${relatedLinks}\n</ul></div>`;
+    fullHtml += `\n<div class="author-byline" style="border-top:1px solid #e5e7eb;margin-top:2em;padding-top:1em"><p style="font-size:0.9em;color:#6b7280"><strong>About the Author</strong> — Our team has hands-on experience with ${keyword}. We research and test products to help you make the best choice.</p></div>`;
+
     // ── 7. Auto-generate Article JSON-LD schema ──
     const articleSchema = {
       '@context': 'https://schema.org',
@@ -8031,6 +8057,8 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       metaDescription: meta.metaDescription || '',
       ogTitle: meta.ogTitle || '',
       ogDescription: meta.ogDescription || '',
+      twitterTitle: meta.twitterTitle || '',
+      twitterDescription: meta.twitterDescription || '',
       slug,
       fullArticle: fullHtml,
       wordCount: actualWordCount,
@@ -9300,7 +9328,7 @@ router.get('/ai/unsplash-search', async (req, res) => {
 router.post('/shopify/publish-article', async (req, res) => {
   try {
     const shopTokens = require('../../core/shopTokens');
-    const { title, bodyHtml, metaDescription, tags, asDraft = true, coverImageUrl, coverImageAlt, ogTitle, ogDescription } = req.body;
+    const { title, bodyHtml, metaDescription, tags, asDraft = true, coverImageUrl, coverImageAlt, ogTitle, ogDescription, twitterTitle, twitterDescription } = req.body;
     if (!title || !bodyHtml) return res.status(400).json({ ok: false, error: 'title and bodyHtml required' });
 
     let shop = req.session?.shop
@@ -9367,6 +9395,16 @@ router.post('/shopify/publish-article', async (req, res) => {
           method: 'POST',
           headers,
           body: JSON.stringify({ metafield: { namespace: 'custom', key: 'og_description', value: ogDescription, type: 'multi_line_text_field' } }),
+        })] : []),
+        ...(twitterTitle ? [fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles/${article.id}/metafields.json`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ metafield: { namespace: 'custom', key: 'twitter_title', value: twitterTitle, type: 'single_line_text_field' } }),
+        })] : []),
+        ...(twitterDescription ? [fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles/${article.id}/metafields.json`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ metafield: { namespace: 'custom', key: 'twitter_description', value: twitterDescription, type: 'multi_line_text_field' } }),
         })] : []),
       ];
       await Promise.allSettled(mfPromises); // best-effort — don't fail publish if metafields fail

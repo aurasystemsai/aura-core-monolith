@@ -207,6 +207,7 @@ export default function BlogSEO() {
   const [wfIsFixing,       setWfIsFixing]       = useState({}); // {issueIdx: 'loading'|'ok'|'err'}
   const [wfMetaDesc,       setWfMetaDesc]       = useState("");
   const [wfOgTags,         setWfOgTags]         = useState(null);  // { title, description }
+  const [wfTwitterTags,    setWfTwitterTags]    = useState(null);  // { title, description }
   const [wfProgress,       setWfProgress]       = useState(0);
   const [wfProgressLabel,  setWfProgressLabel]  = useState("Writing Article");
   const [wfSchemaOpen,     setWfSchemaOpen]     = useState(false);
@@ -782,6 +783,7 @@ export default function BlogSEO() {
         setWfResult(r);
         setWfMetaDesc(r.metaDescription || "");
         if (r.ogTitle || r.ogDescription) setWfOgTags({ title: r.ogTitle || '', description: r.ogDescription || '' });
+        if (r.twitterTitle || r.twitterDescription) setWfTwitterTags({ title: r.twitterTitle || '', description: r.twitterDescription || '' });
         // Update the picked title to the SEO-optimised one (contains keyword)
         if (r.title && r.title !== wfPickedTitle) setWfPickedTitle(r.title);
         // Auto-generate cover image if user selected an AI option
@@ -842,36 +844,41 @@ export default function BlogSEO() {
       if (!r.ok) throw new Error(r.error || "Fix failed");
       let newHtml = html;
       let newOgTags = wfOgTags;
+      let newTwitterTags = wfTwitterTags;
       if (r.applyAs === 'og') {
         newOgTags = { title: r.ogTitle || '', description: r.ogDescription || '' };
         setWfOgTags(newOgTags);
         // HTML unchanged — only OG tags stored; rescore will now pass them and clear the issue
+      } else if (r.applyAs === 'twitter') {
+        newTwitterTags = { title: r.twitterTitle || '', description: r.twitterDescription || '' };
+        setWfTwitterTags(newTwitterTags);
+        // HTML unchanged — only Twitter tags stored; rescore will pass them and clear the issue
       } else if (r.applyAs === 'replace') newHtml = r.html || html;
       else if (r.applyAs === 'prepend') newHtml = (r.html || "") + "\n" + html;
       else if (r.applyAs === 'append') newHtml = html + "\n" + (r.html || "");
       const updated = { ...wfResult, fullArticle: newHtml };
       setWfResult(updated);
-      wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc, newOgTags);
+      wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc, newOgTags, newTwitterTags);
       // wfIsFixing is cleared by the wfSeoScore useEffect when rescore completes
     } catch(e) {
       setWfIsFixing(prev => ({ ...prev, [issueIdx]: 'err' }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc, wfOgTags]);
+  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc, wfOgTags, wfTwitterTags]);
 
   const wfSaveToShopify = useCallback(async (asDraft = true) => {
     if (!wfResult) return;
     setWfPublishing(true); setWfPublishErr("");
     try {
       const bodyHtml = wfResult.fullArticle || wfResult.content || wfResult.draft || "";
-      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfMetaDesc || wfResult.metaDescription, tags: wfKeywords.join(","), asDraft, coverImageUrl: wfCoverImg?.source !== 'upload' ? wfCoverImg?.url : undefined, coverImageAlt: wfCoverImg?.alt || '', ogTitle: wfOgTags?.title || '', ogDescription: wfOgTags?.description || '' }) });
+      const r = await apiFetchJSON(`${API}/shopify/publish-article`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: wfPickedTitle, bodyHtml, metaDescription: wfMetaDesc || wfResult.metaDescription, tags: wfKeywords.join(","), asDraft, coverImageUrl: wfCoverImg?.source !== 'upload' ? wfCoverImg?.url : undefined, coverImageAlt: wfCoverImg?.alt || '', ogTitle: wfOgTags?.title || '', ogDescription: wfOgTags?.description || '', twitterTitle: wfTwitterTags?.title || '', twitterDescription: wfTwitterTags?.description || '' }) });
       if (r.ok) setWfPublishOk({ articleUrl: r.articleUrl, published: !asDraft });
       else setWfPublishErr(r.error || "Failed to publish to Shopify.");
     } catch(e) { setWfPublishErr(e.message); }
     setWfPublishing(false);
-  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc, wfCoverImg, wfOgTags]);
+  }, [wfResult, wfPickedTitle, wfKeywords, wfMetaDesc, wfCoverImg, wfOgTags, wfTwitterTags]);
 
-  const wfRunSeoScore = useCallback(async (result, kws, title, meta, ogTags = null) => {
+  const wfRunSeoScore = useCallback(async (result, kws, title, meta, ogTags = null, twitterTags = null) => {
     setWfSeoLoading(true);
     try {
       const raw = result?.fullArticle || result?.content || result?.draft || "";
@@ -886,18 +893,19 @@ export default function BlogSEO() {
         .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
         .replace(/\n\n/g, "</p><p>");
       const activeTags = ogTags || wfOgTags;
-      const r = await apiFetchJSON(`${API}/ai/score-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, keyword: (kws||[])[0] || "", title: title || "", metaDescription: meta || result?.metaDescription || "", articleSchema: result?.articleSchema || null, ogTitle: activeTags?.title || "", ogDescription: activeTags?.description || "" }) });
+      const activeTwitter = twitterTags || wfTwitterTags;
+      const r = await apiFetchJSON(`${API}/ai/score-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ html, keyword: (kws||[])[0] || "", title: title || "", metaDescription: meta || result?.metaDescription || "", articleSchema: result?.articleSchema || null, ogTitle: activeTags?.title || "", ogDescription: activeTags?.description || "", twitterTitle: activeTwitter?.title || "", twitterDescription: activeTwitter?.description || "" }) });
       if (r.ok) setWfSeoScore(r);
     } catch(_) {}
     setWfSeoLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wfOgTags]);
+  }, [wfOgTags, wfTwitterTags]);
 
   // Auto-run SEO score when article result loads
   useEffect(() => {
     if (wfResult) {
       setWfSeoScore(null);
-      wfRunSeoScore(wfResult, wfKeywords, wfPickedTitle, wfMetaDesc || wfResult.metaDescription || "");
+      wfRunSeoScore(wfResult, wfKeywords, wfPickedTitle, wfMetaDesc || wfResult.metaDescription || "", wfOgTags, wfTwitterTags);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wfResult]);
@@ -2981,6 +2989,26 @@ export default function BlogSEO() {
                         <div>
                           <span style={{ color:"#71717a", fontWeight:600, fontSize:11 }}>OG Description</span>
                           <div style={{ color:"#e4e4e7", marginTop:2, wordBreak:"break-word" }}>{wfOgTags.description}</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize:10, color:"#52525b", marginTop:5 }}>Will be saved as Shopify metafields on publish.</div>
+                    </div>
+                  )}
+
+                  {/* ── Twitter / X Card tags panel ── */}
+                  {wfTwitterTags && (
+                    <div style={{ borderBottom:"1px solid #3f3f46", paddingBottom:16, marginBottom:16 }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:"#a1a1aa", textTransform:"uppercase", letterSpacing:".5px", marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
+                        <span style={{ color:"#22c55e" }}>✓</span> Twitter / X Card Tags
+                      </div>
+                      <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:8, padding:"10px 12px", fontSize:12 }}>
+                        <div style={{ marginBottom:6 }}>
+                          <span style={{ color:"#71717a", fontWeight:600, fontSize:11 }}>Twitter Title</span>
+                          <div style={{ color:"#e4e4e7", marginTop:2, wordBreak:"break-word" }}>{wfTwitterTags.title}</div>
+                        </div>
+                        <div>
+                          <span style={{ color:"#71717a", fontWeight:600, fontSize:11 }}>Twitter Description</span>
+                          <div style={{ color:"#e4e4e7", marginTop:2, wordBreak:"break-word" }}>{wfTwitterTags.description}</div>
                         </div>
                       </div>
                       <div style={{ fontSize:10, color:"#52525b", marginTop:5 }}>Will be saved as Shopify metafields on publish.</div>
