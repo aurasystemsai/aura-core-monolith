@@ -7743,18 +7743,26 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const ctx = `Title: "${title}" | Primary keyword: "${keyword}" | Niche: ${niche||'general'} | Tone: ${tone} | Year: ${currentYear}`;
 
     // SEO HTML rules applied to every section
-    const htmlRules = `STRICT SEO REQUIREMENTS — follow all of these:
+    const htmlRules = `STRICT SEO REQUIREMENTS — follow ALL of these exactly:
 1. HTML only: <h2>, <h3>, <p>, <ul><li>, <ol><li>, <strong>, <em>. No markdown, no backticks, no <html>/<body> tags.
 2. KEYWORD DENSITY: Use the exact phrase "${keyword}" at least once per 150 words. Aim for 1–2% density total.
-3. READABILITY: Every sentence must be under 20 words. Use active voice. Break long ideas into 2-sentence paragraphs.
-4. STRUCTURE: Each H2 section needs at least 3 paragraphs. Use <h3> sub-points inside sections.
+3. READABILITY — THIS IS CRITICAL:
+   - Every sentence must be 8-14 words. MAXIMUM 16 words per sentence. If a sentence is longer, split it into two.
+   - After every sentence ask: "Can I split this into two shorter sentences?" If yes, do it.
+   - Use ONLY simple common words. FORBIDDEN words (use the replacement instead):
+     significant→big, particularly→very, exceptional→great, experience→time, experiences→moments,
+     performance→speed, progression→growth, technology→tech, comfortable→easy, confidence→belief,
+     equipment→gear, beginners→new riders, provides→gives, featuring→with, approximately→about,
+     crucial→key, important→key, understanding→knowing, demonstrates→shows, requires→needs.
+   - Active voice only. "The board helps you" NOT "You are helped by the board".
+4. STRUCTURE: Each H2 section needs at least 3 short paragraphs (max 3 sentences each). Use <h3> sub-points.
 5. Year references must be ${currentYear}.`;
 
     // ── 1. Meta + E-E-A-T intro sentence (parallel) ──
     const [metaR, eeatR] = await Promise.all([
       ai.chat.completions.create({
         model, max_tokens: 400, response_format: { type: 'json_object' },
-        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: must include the exact phrase "${keyword}". 130-155 chars.\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"]}` }],
+        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: MUST include the exact phrase "${keyword}". MUST be between 150 and 160 characters — count every character including spaces. A good example length: "Discover the top snowboards for beginners in 2026. We review the best beginner boards for comfort, control and fun on the slopes." (that is 155 chars).\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"]}` }],
       }),
       ai.chat.completions.create({
         model, max_tokens: 120,
@@ -7768,12 +7776,30 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       : title.toLowerCase().includes(keyword.toLowerCase())
         ? title
         : `${title} — ${keyword}`;
+    // Enforce meta description length — if AI returned too short, pad it to hit 150-160 chars
+    let metaDesc = (meta.metaDescription || '').trim();
+    if (metaDesc.length < 140) {
+      // Regenerate with stricter enforcement
+      try {
+        const metaRetry = await ai.chat.completions.create({
+          model, max_tokens: 200, response_format: { type: 'json_object' },
+          messages: [{ role: 'user', content: `Write a meta description for a blog post titled "${seoTitle}" about "${keyword}". It MUST be exactly 150-160 characters (count carefully). Must include "${keyword}". Write one compelling sentence that summarises the article value. Return JSON: {"metaDescription":"string"}` }],
+        });
+        const retryMeta = JSON.parse(metaRetry.choices[0].message.content);
+        if (retryMeta.metaDescription && retryMeta.metaDescription.length >= 140) {
+          metaDesc = retryMeta.metaDescription.trim();
+        }
+      } catch (_) {}
+    }
+    // Final safety: truncate if over 165 chars
+    if (metaDesc.length > 165) metaDesc = metaDesc.slice(0, 162).replace(/\s+\S*$/, '') + '...';
+    meta.metaDescription = metaDesc;
     const eeatSentence = eeatR.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
 
     // ── 2. Generate intro ──
     const introR = await ai.chat.completions.create({
       model, max_tokens: Math.ceil(introWords * 3),
-      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction for this blog post. Target ${introWords} words. Rules:\n- First sentence MUST contain the keyword "${keyword}" exactly.\n- Second sentence: "${eeatSentence}" (use this as the second sentence to signal E-E-A-T).\n- End the intro with a 1-sentence preview of what the article covers.\n- Short sentences only (under 20 words each).\nReturn only HTML starting with <p>.` }],
+      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction for this blog post. Target ${introWords} words. Rules:\n- First sentence MUST contain the keyword "${keyword}" exactly AND be under 14 words.\n- Second sentence: "${eeatSentence}" (use this as the second sentence to signal E-E-A-T).\n- Every sentence: 8-14 words. Simple common words only. Active voice.\n- End the intro with a 1-sentence preview of what the article covers (under 14 words).\nReturn only HTML starting with <p>.` }],
     });
     // H1 uses the SEO title (which contains the keyword) — this satisfies both H1 and title keyword checks
     let fullHtml = `<h1>${seoTitle}</h1>\n` + introR.choices[0].message.content.trim();
@@ -7791,7 +7817,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
           : heading;
         return ai.chat.completions.create({
           model, max_tokens: Math.ceil(sectionWords * 3),
-          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" at least ${Math.max(2, Math.round(sectionWords/150))} times naturally.\n- Write at least 3 full paragraphs.\n- Use <h3> sub-headings for sub-points.\n- Sentences under 20 words. Active voice.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
+          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" at least ${Math.max(2, Math.round(sectionWords/150))} times naturally.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 8-14 words maximum. Simple common words. Active voice only.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
         });
       }));
       batchResults.forEach((r, bi) => { sectionHtmlParts[i + bi] = r.choices[0].message.content.trim(); });
