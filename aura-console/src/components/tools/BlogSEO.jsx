@@ -772,12 +772,27 @@ export default function BlogSEO() {
         setWfMetaDesc(r.metaDescription || "");
         // Update the picked title to the SEO-optimised one (contains keyword)
         if (r.title && r.title !== wfPickedTitle) setWfPickedTitle(r.title);
+        // Auto-generate cover image if user selected an AI option
+        const ratio = genCoverImage === 'ai-16:9' ? '16:9' : genCoverImage === 'ai-4:3' ? '4:3' : '1:1';
+        if (genCoverImage !== 'none') {
+          setWfProgressLabel("Generating cover image...");
+          setWfProgress(98);
+          apiFetchJSON(`${API}/ai/generate-cover-image`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: r.title || wfPickedTitle, ratio })
+          }).then(imgR => {
+            if (imgR?.ok && imgR.imageUrl) {
+              setWfCoverImg({ url: imgR.imageUrl, alt: `Cover image for "${r.title || wfPickedTitle}"`, source: 'ai' });
+            }
+          }).catch(() => {});
+        }
         setTimeout(() => setSection("WriteResult"), 400);
       }
       else { setWfErr(r.error || "Article generation failed."); setSection("WriteFlow"); }
     } catch(e) { clearInterval(wfProgressRef.current); setWfErr(e.message || "Failed to generate article."); setSection("WriteFlow"); }
     setWfGenerating(false);
-  }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs, wfOutlineSize]);
+  }, [wfPickedTitle, wfKeywords, wfOutlines, wfConclusion, wfFaqs, wfOutlineSize, genCoverImage]);
 
   // Apply a content-fix to the draft article and rescore
   const wfContentFix = useCallback(async (type, issueIdx, extraBody = {}) => {

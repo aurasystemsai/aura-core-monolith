@@ -9031,7 +9031,7 @@ router.post('/ai/generate-cover-image', async (req, res) => {
   try {
     const { title, prompt, ratio } = req.body || {};
     if (!title && !prompt) return res.status(400).json({ ok: false, error: 'title or prompt required' });
-    const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024' };
+    const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024', '4:3': '1024x1024' };
     const size = sizeMap[ratio] || '1024x1024';
     const finalPrompt = prompt || `Create a professional, eye-catching cover image for a blog post titled "${title}". Make it visually compelling with high-quality photography or illustration style. No text overlays. Clean, modern aesthetic.`;
     const img = await getOpenAI().images.generate({
