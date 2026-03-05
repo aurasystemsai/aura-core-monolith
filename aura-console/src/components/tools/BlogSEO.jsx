@@ -216,6 +216,7 @@ export default function BlogSEO() {
   const [wfSeoLoading,     setWfSeoLoading]     = useState(false);
   const [wfSeoOpen,        setWfSeoOpen]        = useState(true);  // sidebar panel open
   const wfProgressRef = useRef(null);
+  const wfEditRef     = useRef(null);   // contentEditable article div
 
   /* ── WriteFlow: Cover Image state ── */
   const [wfCoverModalOpen,  setWfCoverModalOpen]  = useState(false);
@@ -230,6 +231,12 @@ export default function BlogSEO() {
   const [wfUnsplashResults, setWfUnsplashResults] = useState([]);
   const [wfUnsplashLoading, setWfUnsplashLoading] = useState(false);
   const [wfUnsplashSel,     setWfUnsplashSel]     = useState(null);
+
+  /* ── Inline image picker (click any article image to replace) ── */
+  const [wfImgPicker,        setWfImgPicker]        = useState(null);  // { oldSrc }
+  const [wfImgPickerQuery,   setWfImgPickerQuery]   = useState('');
+  const [wfImgPickerResults, setWfImgPickerResults] = useState([]);
+  const [wfImgPickerLoading, setWfImgPickerLoading] = useState(false);
   const [wfUploadPreview,   setWfUploadPreview]   = useState(null);
 
   /* ── Optimize / Content+ state ── */
@@ -914,6 +921,63 @@ export default function BlogSEO() {
   useEffect(() => {
     if (wfSeoScore) setWfIsFixing({});
   }, [wfSeoScore]);
+
+  // Sync wfResult.fullArticle → contentEditable DOM (runs on external updates like AI fixes)
+  useEffect(() => {
+    if (!wfEditRef.current || !wfResult) return;
+    const raw = wfResult.fullArticle || wfResult.content || wfResult.draft || "";
+    const processed = raw
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/^## (.+)$/gm,  "<h2>$1</h2>")
+      .replace(/^# (.+)$/gm,   "<h1>$1</h1>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g,    "<em>$1</em>")
+      .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
+      .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+      .replace(/\n\n/g, "</p><p>");
+    if (wfEditRef.current.innerHTML !== processed) wfEditRef.current.innerHTML = processed;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wfResult?.fullArticle, wfResult?.content]);
+
+  // Sync contentEditable → state on blur, then silently rescore
+  const handleWfEditBlur = useCallback(() => {
+    if (!wfEditRef.current || !wfResult) return;
+    const html = wfEditRef.current.innerHTML;
+    const updated = { ...wfResult, fullArticle: html };
+    setWfResult(updated);
+    wfRunSeoScore(updated, wfKeywords, wfPickedTitle, wfMetaDesc, wfOgTags, wfTwitterTags);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wfResult, wfKeywords, wfPickedTitle, wfMetaDesc, wfOgTags, wfTwitterTags]);
+
+  // Detect img click inside article body → open image picker
+  const handleWfArticleClick = useCallback((e) => {
+    if (e.target.tagName === 'IMG') {
+      e.preventDefault();
+      const src = e.target.getAttribute('src') || '';
+      setWfImgPicker({ oldSrc: src });
+      setWfImgPickerQuery((wfKeywords||[])[0] || wfPickedTitle || '');
+      setWfImgPickerResults([]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wfKeywords, wfPickedTitle]);
+
+  // Replace an image src in the article with a new Unsplash pick
+  const replaceArticleImage = useCallback((newUrl, credit) => {
+    if (!wfImgPicker || !wfResult) return;
+    const { oldSrc } = wfImgPicker;
+    let html = wfEditRef.current ? wfEditRef.current.innerHTML : (wfResult.fullArticle || '');
+    const escaped = oldSrc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(new RegExp(`src="${escaped}"`, 'g'), `src="${newUrl}"`);
+    if (credit?.photographer) {
+      const escapedNew = newUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      html = html.replace(new RegExp(`(src="${escapedNew}"[^>]*?)alt="[^"]*"`, 'g'),
+        `$1alt="Photo by ${credit.photographer} on Unsplash"`);
+    }
+    setWfResult(prev => prev ? { ...prev, fullArticle: html } : prev);
+    setWfImgPicker(null);
+    setWfImgPickerResults([]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wfImgPicker, wfResult]);
 
   const runBrief = useCallback(async () => {
     if (!briefTopic.trim()) return;
@@ -2904,23 +2968,18 @@ export default function BlogSEO() {
                     <button title="Edit outline" onClick={() => { setSection("WriteFlow"); }} style={{ width:36, height:36, borderRadius:8, background:"#18181b", border:"1px solid #3f3f46", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:"#d4d4d8" }}>☰</button>
                   </div>
 
-                  {/* Article HTML */}
+                  {/* Article HTML — contentEditable for live editing */}
                   <div style={{ maxWidth:740, margin:"0 auto", padding:"40px 48px 80px" }}>
                     {wfPublishErr && <div style={{ fontSize:12, color:"#f87171", background:"#450a0a", border:"1px solid #7f1d1d", borderRadius:8, padding:"8px 14px", marginBottom:20 }}>{wfPublishErr}</div>}
+                    <div style={{ fontSize:11, color:"#52525b", marginBottom:10, userSelect:"none" }}>Click text to edit &nbsp;·&nbsp; Click any image to replace</div>
                     <div
+                      ref={wfEditRef}
                       className="wf-article-body"
-                      style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:16, lineHeight:1.9, color:"#e4e4e7" }}
-                      dangerouslySetInnerHTML={{ __html:
-                        (wfResult.fullArticle || wfResult.content || wfResult.draft || "")
-                          .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-                          .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-                          .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-                          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                          .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                          .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
-                          .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
-                          .replace(/\n\n/g, "</p><p>")
-                      }}
+                      contentEditable={true}
+                      suppressContentEditableWarning={true}
+                      onBlur={handleWfEditBlur}
+                      onClick={handleWfArticleClick}
+                      style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:16, lineHeight:1.9, color:"#e4e4e7", outline:"none" }}
                     />
                   </div>
 
@@ -2934,6 +2993,9 @@ export default function BlogSEO() {
                     .wf-article-body li { margin-bottom:6px; }
                     .wf-article-body hr { border:none; border-top:1px solid #3f3f46; margin:32px 0; }
                     .wf-article-body strong { font-weight:700; color:#fafafa; }
+                    .wf-article-body img { cursor:pointer; max-width:100%; border-radius:8px; transition:opacity .15s, outline .15s; }
+                    .wf-article-body img:hover { opacity:0.82; outline:3px solid #6366f1; outline-offset:3px; }
+                    .wf-article-body:focus { caret-color:#818cf8; }
                   `}</style>
                 </div>
 
@@ -3294,6 +3356,71 @@ export default function BlogSEO() {
               </div>
 
             {/* ── Cover Image Modal ── */}
+            {/* ── Inline image picker modal ── */}
+            {wfImgPicker && (
+              <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }} onClick={e => { if (e.target === e.currentTarget) { setWfImgPicker(null); setWfImgPickerResults([]); } }}>
+                <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:680, maxHeight:"80vh", display:"flex", flexDirection:"column", gap:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                    <div style={{ fontWeight:700, fontSize:15, color:"#fafafa" }}>Replace Image</div>
+                    <button onClick={() => { setWfImgPicker(null); setWfImgPickerResults([]); }} style={{ background:"none", border:"none", color:"#71717a", cursor:"pointer", fontSize:18 }}>×</button>
+                  </div>
+                  {/* Current image preview */}
+                  <div style={{ marginBottom:14, display:"flex", alignItems:"center", gap:12 }}>
+                    <img src={wfImgPicker.oldSrc} alt="current" style={{ width:80, height:56, objectFit:"cover", borderRadius:6, border:"1px solid #3f3f46" }} />
+                    <span style={{ fontSize:12, color:"#71717a" }}>Currently selected. Search below to swap it out.</span>
+                  </div>
+                  {/* Search bar */}
+                  <div style={{ display:"flex", gap:8, marginBottom:16 }}>
+                    <input
+                      value={wfImgPickerQuery}
+                      onChange={e => setWfImgPickerQuery(e.target.value)}
+                      onKeyDown={async e => {
+                        if (e.key !== 'Enter' || !wfImgPickerQuery.trim()) return;
+                        setWfImgPickerLoading(true); setWfImgPickerResults([]);
+                        try {
+                          const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=12`);
+                          if (r.ok) setWfImgPickerResults(r.results || []);
+                        } catch(_) {}
+                        setWfImgPickerLoading(false);
+                      }}
+                      placeholder="Search Unsplash e.g. snowboard mountain..."
+                      style={{ flex:1, background:"#09090b", border:"1px solid #3f3f46", borderRadius:8, color:"#fafafa", fontSize:13, padding:"8px 12px", outline:"none" }}
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!wfImgPickerQuery.trim()) return;
+                        setWfImgPickerLoading(true); setWfImgPickerResults([]);
+                        try {
+                          const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=12`);
+                          if (r.ok) setWfImgPickerResults(r.results || []);
+                        } catch(_) {}
+                        setWfImgPickerLoading(false);
+                      }}
+                      disabled={wfImgPickerLoading}
+                      style={{ padding:"8px 16px", borderRadius:8, background:"#6366f1", color:"#fff", fontWeight:700, fontSize:13, border:"none", cursor: wfImgPickerLoading ? "default" : "pointer" }}
+                    >{wfImgPickerLoading ? "..." : "Search"}</button>
+                  </div>
+                  {/* Results grid */}
+                  <div style={{ overflowY:"auto", flex:1 }}>
+                    {wfImgPickerResults.length > 0 ? (
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+                        {wfImgPickerResults.map((photo, idx) => (
+                          <div key={idx} onClick={() => replaceArticleImage(photo.urls?.regular || photo.urls?.small, { photographer: photo.user?.name })} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:"2px solid transparent", transition:"border .15s" }} onMouseEnter={e => e.currentTarget.style.border="2px solid #6366f1"} onMouseLeave={e => e.currentTarget.style.border="2px solid transparent"}>
+                            <img src={photo.urls?.small} alt={photo.alt_description || 'photo'} style={{ width:"100%", height:110, objectFit:"cover", display:"block" }} />
+                            <div style={{ fontSize:10, color:"#71717a", padding:"4px 6px", background:"#09090b", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{photo.user?.name}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : wfImgPickerLoading ? (
+                      <div style={{ textAlign:"center", color:"#71717a", fontSize:13, paddingTop:24 }}>Searching Unsplash…</div>
+                    ) : (
+                      <div style={{ textAlign:"center", color:"#52525b", fontSize:13, paddingTop:24 }}>Enter a search term and press Search</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {wfCoverModalOpen && (
               <div style={{ position:"fixed", inset:0, zIndex:2000, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
                 <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, width:"100%", maxWidth:860, maxHeight:"92vh", overflow:"auto", display:"flex", flexDirection:"column" }}>
