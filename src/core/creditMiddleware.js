@@ -35,65 +35,63 @@ function resolveShop(req) {
 function requireCredits(actionType = 'generic-ai', opts = {}) {
   const { deductImmediately = false } = opts;
 
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const shop = resolveShop(req);
     if (!shop) {
-      // No shop context — fail open in dev, block in prod
       if (process.env.NODE_ENV === 'production') {
-        return res.status(400).json({
-          ok: false,
-          error: 'Shop context required for credit tracking',
-          credit_error: true,
-        });
+        return res.status(400).json({ ok: false, error: 'Shop context required for credit tracking', credit_error: true });
       }
-      // Dev mode: attach no-op deductCredits and continue
       req.creditCheck = { allowed: true, cost: 0, balance: 999999, unlimited: true };
-      req.deductCredits = () => ({ ok: true, cost: 0, balance: 999999 });
+      req.deductCredits = async () => ({ ok: true, cost: 0, balance: 999999 });
       return next();
     }
 
-    // Resolve model from request body or query — used for model-aware pricing
     const model = req.body?.model || req.query?.model || null;
-    const check = creditLedger.checkCredits(shop, actionType, model);
-    req.creditCheck = check;
+    try {
+      const check = await creditLedger.checkCredits(shop, actionType, model);
+      req.creditCheck = check;
 
-    if (!check.allowed) {
-      return res.status(402).json({
-        ok: false,
-        error: `Insufficient credits. This action costs ${check.cost} credit${check.cost !== 1 ? 's' : ''}, but you only have ${check.balance}. Purchase a credit top-up pack to continue.`,
-        credit_error: true,
-        credits_needed: check.cost,
-        credits_available: check.balance,
-      });
-    }
+      if (!check.allowed) {
+        return res.status(402).json({
+          ok: false,
+          error: `Insufficient credits. This action costs ${check.cost} credit${check.cost !== 1 ? 's' : ''}, but you only have ${check.balance}. Purchase a credit top-up pack to continue.`,
+          credit_error: true,
+          credits_needed: check.cost,
+          credits_available: check.balance,
+        });
+      }
 
-    if (deductImmediately) {
-      const result = creditLedger.deductCredits(shop, actionType, {
-        tool: req.baseUrl || req.path,
-        ip: req.ip,
-        model,
-      });
-      req.creditDeduction = result;
-      req.deductCredits = () => result; // no-op since already deducted
-    } else {
-      // Lazy deduction — call req.deductCredits() after successful AI action
-      let deducted = false;
-      req.deductCredits = (meta = {}) => {
-        if (deducted) return req.creditDeduction; // idempotent
-        deducted = true;
-        // Allow overriding model at deduction time (if handler selects model dynamically)
-        const effectiveModel = meta.model || model;
-        const result = creditLedger.deductCredits(shop, actionType, {
+      if (deductImmediately) {
+        const result = await creditLedger.deductCredits(shop, actionType, {
           tool: req.baseUrl || req.path,
-          model: effectiveModel,
-          ...meta,
+          ip: req.ip,
+          model,
         });
         req.creditDeduction = result;
-        return result;
-      };
+        req.deductCredits = async () => result;
+      } else {
+        let deducted = false;
+        req.deductCredits = async (meta = {}) => {
+          if (deducted) return req.creditDeduction;
+          deducted = true;
+          const effectiveModel = meta.model || model;
+          const result = await creditLedger.deductCredits(shop, actionType, {
+            tool: req.baseUrl || req.path,
+            model: effectiveModel,
+            ...meta,
+          });
+          req.creditDeduction = result;
+          return result;
+        };
+      }
+      next();
+    } catch (err) {
+      console.error('[CreditMiddleware] Error checking credits:', err.message);
+      // Fail open — attach no-op so the route still works
+      req.creditCheck = { allowed: true, cost: 0, balance: 999999, unlimited: true };
+      req.deductCredits = async () => ({ ok: true, cost: 0, balance: 999999 });
+      next();
     }
-
-    next();
   };
 }
 
@@ -106,14 +104,11 @@ function requireCredits(actionType = 'generic-ai', opts = {}) {
  * @returns {{ ok: boolean, cost: number, balance: number, error?: string }}
  */
 function deductCreditsForShop(shop, actionType, meta = {}) {
-  return creditLedger.deductCredits(shop, actionType, meta);
+  return creditLedger.deductCredits(shop, actionType, meta); // returns Promise
 }
 
-/**
- * Check credits without deducting (for UI display).
- */
 function checkCreditsForShop(shop, actionType) {
-  return creditLedger.checkCredits(shop, actionType);
+  return creditLedger.checkCredits(shop, actionType); // returns Promise
 }
 
 /**

@@ -39,15 +39,12 @@ router.get('/subscription', async (req, res) => {
     // (the ledger file is ephemeral on Render and resets to 'free' on every deploy).
     const shopifyPlan = subscription.plan_id || 'free';
     try {
-      const ledgerStatus = creditLedger.getCreditStatus(shop);
+      const ledgerStatus = await creditLedger.getCreditStatus(shop);
       const ledgerPlan = ledgerStatus?.plan || 'free';
       if (shopifyPlan !== 'free' && subscription.status === 'active' && ledgerPlan !== shopifyPlan) {
-        // Ledger is stale (likely wiped by a deploy) — resync from Shopify
         console.log(`[Billing] Resyncing plan for ${shop}: ledger=${ledgerPlan} → shopify=${shopifyPlan}`);
-        creditLedger.updatePlan(shop, shopifyPlan);
+        await creditLedger.updatePlan(shop, shopifyPlan);
       } else if (shopifyPlan === 'free' && ledgerPlan !== 'free') {
-        // Shopify shows no active sub but ledger has a plan — trust the ledger
-        // (can happen if Shopify test charge was cancelled but ledger was set manually)
         subscription.plan_id = ledgerPlan;
       }
     } catch (_) {}
@@ -114,7 +111,7 @@ router.post('/subscribe', async (req, res) => {
     // If the plan activated immediately (free plan / no Shopify redirect needed),
     // update the credit ledger right away so balance & plan display are correct.
     if (!result.confirmationUrl) {
-      try { creditLedger.updatePlan(shop, planId); } catch(e) { console.error('[Billing] updatePlan on subscribe failed:', e.message); }
+      try { await creditLedger.updatePlan(shop, planId); } catch(e) { console.error('[Billing] updatePlan on subscribe failed:', e.message); }
     }
 
     res.json(result);
@@ -142,8 +139,7 @@ router.post('/cancel', async (req, res) => {
     }
 
     const result = await shopifyBillingService.cancelSubscription(shop, subscriptionId);
-    // Downgrade ledger to free on cancellation
-    try { creditLedger.updatePlan(shop, 'free'); } catch(e) { console.error('[Billing] updatePlan on cancel failed:', e.message); }
+    try { await creditLedger.updatePlan(shop, 'free'); } catch(e) { console.error('[Billing] updatePlan on cancel failed:', e.message); }
     res.json(result);
   } catch (error) {
     console.error('Cancel subscription error:', error);
@@ -168,20 +164,18 @@ router.get('/invoices/:invoiceId/pdf', async (req, res) => {
  * Billing confirmation callback from Shopify
  * GET /api/billing/confirm
  */
-router.get('/confirm', (req, res) => {
+router.get('/confirm', async (req, res) => {
   const { charge_id, shop: queryShop, plan, credits } = req.query;
   const shop = queryShop || req.session?.shop || req.headers['x-shopify-shop-domain'];
 
   if (shop) {
-    // Activate plan credits in the ledger when a subscription is confirmed
     if (plan) {
-      try { creditLedger.updatePlan(shop, plan); } catch(e) { console.error('[Billing] updatePlan failed:', e.message); }
+      try { await creditLedger.updatePlan(shop, plan); } catch(e) { console.error('[Billing] updatePlan failed:', e.message); }
     }
-    // Activate top-up credits in the ledger when a one-time pack is confirmed
     if (credits) {
       const creditsNum = parseInt(credits, 10);
       if (!isNaN(creditsNum) && creditsNum > 0) {
-        try { creditLedger.addTopupCredits(shop, creditsNum, { source: 'shopify_confirm', charge_id }); } catch(e) { console.error('[Billing] addTopupCredits failed:', e.message); }
+        try { await creditLedger.addTopupCredits(shop, creditsNum, { source: 'shopify_confirm', charge_id }); } catch(e) { console.error('[Billing] addTopupCredits failed:', e.message); }
       }
     }
   }
@@ -212,8 +206,8 @@ router.post('/sync-plan', async (req, res) => {
     if (!shop) return res.status(400).json({ ok: false, error: 'Shop required' });
     const { planId } = req.body;
     if (!planId) return res.status(400).json({ ok: false, error: 'planId required' });
-    creditLedger.updatePlan(shop, planId);
-    const status = creditLedger.getCreditStatus(shop);
+    await creditLedger.updatePlan(shop, planId);
+    const status = await creditLedger.getCreditStatus(shop);
     res.json({ ok: true, ...status });
   } catch (error) {
     console.error('sync-plan error:', error);
@@ -272,7 +266,7 @@ router.get('/credits', async (req, res) => {
     if (!shop) {
       return res.json({ ok: true, balance: 10, used: 0, plan_credits: 10, topup_credits: 0 });
     }
-    let status = creditLedger.getCreditStatus(shop);
+    let status = await creditLedger.getCreditStatus(shop);
 
     // Self-heal: if ledger shows 'free' (wiped by a Render deploy), re-check Shopify
     if (status.plan === 'free') {
@@ -280,8 +274,8 @@ router.get('/credits', async (req, res) => {
         const subscription = await shopifyBillingService.getSubscription(shop);
         if (subscription.plan_id && subscription.plan_id !== 'free' && subscription.status === 'active') {
           console.log(`[Billing] Auto-restoring plan for ${shop} from Shopify: ${subscription.plan_id}`);
-          creditLedger.updatePlan(shop, subscription.plan_id);
-          status = creditLedger.getCreditStatus(shop);
+          await creditLedger.updatePlan(shop, subscription.plan_id);
+          status = await creditLedger.getCreditStatus(shop);
         }
       } catch (_) { /* non-fatal — return ledger status as-is */ }
     }
@@ -316,12 +310,12 @@ router.get('/credit-costs', (req, res) => {
  * Get transaction history for a shop
  * GET /api/billing/credit-history
  */
-router.get('/credit-history', (req, res) => {
+router.get('/credit-history', async (req, res) => {
   try {
     const shop = resolveShop(req);
     if (!shop) return res.json({ ok: true, transactions: [] });
-    const account = creditLedger.getShopAccount(shop);
-    res.json({ ok: true, transactions: (account.transactions || []).slice(-100).reverse() });
+    const account = await creditLedger.getShopAccount(shop);
+    res.json({ ok: true, transactions: (account.transactions || account.recent_transactions || []).slice(-100).reverse() });
   } catch (error) {
     console.error('Credit history error:', error);
     res.json({ ok: true, transactions: [] });
