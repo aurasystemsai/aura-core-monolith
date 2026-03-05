@@ -46,49 +46,97 @@ function getShop(req) {
 /* ── Readability post-processor ─────────────────────────────────────────── */
 // Splits long sentences inside <p> tags server-side after AI generation.
 // This is deterministic and far more reliable than prompting the AI to write short sentences.
-function splitLongSentence(sentence) {
-  const wordCount = (s) => s.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-  const wc = wordCount(sentence);
-  if (wc <= 15) return sentence;
+// Common polysyllabic words → shorter replacements (applied in local pass)
+const VOCAB_SIMPLIFY = [
+  [/\bsignificantly\b/gi, 'greatly'], [/\bsignificant\b/gi, 'big'], [/\bparticularly\b/gi, 'very'],
+  [/\bexceptional(?:ly)?\b/gi, 'great'], [/\bextraordinary\b/gi, 'amazing'],
+  [/\bprovides\b/gi, 'gives'], [/\bprovide\b/gi, 'give'], [/\bproviding\b/gi, 'giving'],
+  [/\bfeatures\b/gi, (m) => /^[A-Z]/.test(m) ? 'Has' : 'has'], [/\bfeaturing\b/gi, 'with'],
+  [/\butilizes\b/gi, 'uses'], [/\butilize\b/gi, 'use'], [/\butilising\b/gi, 'using'],
+  [/\bpurchase\b/gi, 'buy'], [/\bpurchasing\b/gi, 'buying'],
+  [/\brequires\b/gi, 'needs'], [/\brequire\b/gi, 'need'],
+  [/\bdemonstrates\b/gi, 'shows'], [/\bdemonstrate\b/gi, 'show'],
+  [/\bconsiderable\b/gi, 'large'], [/\bconsiderably\b/gi, 'much'],
+  [/\badditionally\b/gi, 'also'], [/\bfurthermore\b/gi, 'also'],
+  [/\bnevertheless\b/gi, 'still'], [/\bconsequently\b/gi, 'so'],
+  [/\baccomplish\b/gi, 'do'], [/\bachieve\b/gi, 'reach'],
+  [/\bexperience\b/gi, 'feel'], [/\bexperiencing\b/gi, 'feeling'],
+  [/\bperformance\b/gi, 'speed'], [/\bprogression\b/gi, 'growth'],
+  [/\btechnology\b/gi, 'tech'], [/\btechnologies\b/gi, 'tech'],
+  [/\bunquestionably\b/gi, 'clearly'], [/\bundoubtedly\b/gi, 'clearly'],
+  [/\bapproximately\b/gi, 'about'], [/\bsubstantially\b/gi, 'greatly'],
+  [/\boptimized\b/gi, 'tuned'], [/\boptimise\b/gi, 'tune'],
+  [/\bcomfortable\b/gi, 'easy'], [/\bcomfortably\b/gi, 'easily'],
+  [/\bincorporates\b/gi, 'uses'], [/\bincorporate\b/gi, 'use'],
+];
 
-  // 1. Split at semicolons → two sentences
+function applyVocabSimplify(text) {
+  let result = text;
+  for (const [pattern, replacement] of VOCAB_SIMPLIFY) {
+    result = result.replace(pattern, replacement);
+  }
+  return result;
+}
+
+function splitLongSentence(sentence) {
+  const wc = (s) => s.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+  if (wc(sentence) <= 14) return sentence;
+
+  // 1. Semicolons → full stop
   if (/;\s+/.test(sentence)) {
     return sentence.replace(/;\s+/g, '. ');
   }
 
-  // 2. Split at strong connective adverbs at any position
+  // 2. Relative clauses: ", which ..." or ", that ..." — extract as a new sentence
+  const REL_CLAUSE = /,\s+(which|that)\s+/gi;
+  const relResult = sentence.replace(REL_CLAUSE, (match, pronoun, offset, str) => {
+    const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    const after = str.slice(offset + match.length).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    if (before < 4 || after < 3) return match;
+    return '. It ';
+  });
+  if (relResult !== sentence) return relResult;
+
+  // 3. Participial phrase: ", offering/providing/featuring/allowing/making ..."
+  const PARTICIPIAL = /,\s+(offering|providing|featuring|allowing|making|helping|giving|keeping|creating|ensuring|enabling|improving|increasing|reducing|delivering)\s+/gi;
+  const partResult = sentence.replace(PARTICIPIAL, (match, verb, offset, str) => {
+    const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    const after = str.slice(offset + match.length).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    if (before < 4 || after < 3) return match;
+    return '. This ';
+  });
+  if (partResult !== sentence) return partResult;
+
+  // 4. Connective adverbs
   const ADVERB_SPLIT = /,?\s+(?:however|therefore|although|because|whereas|which means|so that|in order to|resulting in|this means|this allows|this helps|as a result|on the other hand|at the same time|in addition|furthermore|moreover|additionally|despite|even though|rather than|instead of)\s+/gi;
-  const adverbResult = sentence.replace(ADVERB_SPLIT, (match, offset, str) => {
+  const advResult = sentence.replace(ADVERB_SPLIT, (match, offset, str) => {
     const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
     if (before < 5) return match;
     return '. ';
   });
-  if (adverbResult !== sentence) return adverbResult;
+  if (advResult !== sentence) return advResult;
 
-  // 3. Split at ", and " / ", or " / ", but " / ", while " / ", when " / ", since "
+  // 5. ", and/or/but/while/when/since/so "
   const COMMA_CONJ = /,\s+(and|or|but|while|when|since|if|unless|so)\s+/gi;
   const conjResult = sentence.replace(COMMA_CONJ, (match, conj, offset, str) => {
     const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
     const after = str.slice(offset + match.length).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
     if (before < 5 || after < 4) return match;
-    // Capitalise the start of the new sentence
-    const conjCapital = conj.charAt(0).toUpperCase() + conj.slice(1);
-    return `. ${conjCapital} `;
+    return `. ${conj.charAt(0).toUpperCase() + conj.slice(1)} `;
   });
   if (conjResult !== sentence) return conjResult;
 
-  // 4. For sentences >25 words with no comma split points, split at naked " and " / " or "
-  if (wc > 25) {
+  // 6. Bare " and/or " in sentences >22 words
+  if (wc(sentence) > 22) {
     const NAKED_AND = /\s+(and|or)\s+(?=[A-Za-z])/g;
-    let splitCount = 0;
+    let done = false;
     const andResult = sentence.replace(NAKED_AND, (match, conj, offset, str) => {
-      if (splitCount > 0) return match; // only one split
+      if (done) return match;
       const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
       const after = str.slice(offset + match.length).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
       if (before < 7 || after < 5) return match;
-      splitCount++;
-      const conjCapital = conj.charAt(0).toUpperCase() + conj.slice(1);
-      return `. ${conjCapital} `;
+      done = true;
+      return `. ${conj.charAt(0).toUpperCase() + conj.slice(1)} `;
     });
     if (andResult !== sentence) return andResult;
   }
@@ -100,10 +148,10 @@ function improveReadability(html) {
   const cheerioLib = require('cheerio');
   const $ = cheerioLib.load(html, { decodeEntities: false });
 
-  // Pass 1: break massive paragraphs (>80 words) into individual sentence paragraphs
+  // Pass 1: break big paragraphs (>60 words) into individual sentence paragraphs
   $('p').each((_, el) => {
     const wordCount = $(el).text().trim().split(/\s+/).filter(Boolean).length;
-    if (wordCount > 80) {
+    if (wordCount > 60) {
       const sentences = $(el).html().split(/(?<=[.!?])\s+(?=[A-Z"])/g);
       if (sentences.length > 1) {
         const newHtml = sentences.map(s => `<p>${s.trim()}</p>`).join('\n');
@@ -112,15 +160,22 @@ function improveReadability(html) {
     }
   });
 
-  // Pass 2: split long sentences within each <p> at natural break points
+  // Pass 2: split long sentences — run TWO rounds so chained clauses get split
+  for (let round = 0; round < 2; round++) {
+    $('p').each((_, el) => {
+      const pHtml = $(el).html() || '';
+      const sentences = pHtml.split(/(?<=[.!?])\s+/g);
+      const processed = sentences.map(s => splitLongSentence(s));
+      const result = processed.join(' ');
+      if (result !== pHtml) $(el).html(result);
+    });
+  }
+
+  // Pass 3: vocabulary simplification — replace polysyllabic words in <p> text nodes
   $('p').each((_, el) => {
     const pHtml = $(el).html() || '';
-    const sentences = pHtml.split(/(?<=[.!?])\s+/g);
-    const processed = sentences.map(s => splitLongSentence(s));
-    const result = processed.join(' ');
-    if (result !== pHtml) {
-      $(el).html(result);
-    }
+    const simplified = applyVocabSimplify(pHtml);
+    if (simplified !== pHtml) $(el).html(simplified);
   });
 
   // Return just the body content (no html/head wrapping)
@@ -900,17 +955,21 @@ router.post('/ai/content-fix', async (req, res) => {
         if (longParas.length > 0) {
           // Only send the problem paragraphs — AI does vocabulary simplification only
           const paraList = longParas.slice(0, 20).map((p, n) => `[${n + 1}] ${p.text}`).join('\n\n');
-          userPrompt = `Simplify the vocabulary in the paragraphs below so they score Flesch Reading Ease 65+. 
+          userPrompt = `Simplify ONLY the vocabulary in these paragraphs — target Flesch Reading Ease 70+.
 
 STRICT RULES:
-- Do NOT remove any sentences or facts.
-- Do NOT merge or reorder sentences.  
-- Only replace long/complex words with shorter common synonyms and convert passive voice to active.
-- Keep the same number of sentences per paragraph.
-- Return ONLY a JSON array of strings — one simplified paragraph per entry, same order as input.
-- No extra keys, no commentary, just the JSON array.
+- Do NOT remove sentences, facts, or headings.
+- Do NOT merge or reorder sentences.
+- Replace every word with 3+ syllables with a 1-2 syllable synonym. Examples:
+  significantly→much, particularly→very, exceptional→great, experience→feel,
+  performance→speed, progression→growth, technology→tech, comfortable→easy,
+  provides→gives, features→has, utilizes→uses, purchase→buy, requires→needs,
+  demonstrates→shows, considerable→large, additionally→also, furthermore→also,
+  approximately→about, incorporate→use, fundamentally→at heart, understand→see.
+- Convert passive voice to active voice.
+- Return a JSON object: keys are the paragraph numbers ("1", "2", etc.), values are the simplified paragraph strings.
 
-Paragraphs to simplify:
+Paragraphs:
 ${paraList}`;
 
           const fixModel = req.body.model || 'gpt-4o-mini';
@@ -923,20 +982,27 @@ ${paraList}`;
           });
           try {
             const raw = fixResp.choices[0]?.message?.content || '{}';
-            // Model may return {"paragraphs":[...]} or just an array-wrapped object
             const parsed = JSON.parse(raw);
-            const simplified = Array.isArray(parsed) ? parsed : (parsed.paragraphs || parsed.result || Object.values(parsed)[0]);
-            if (Array.isArray(simplified)) {
-              // Replace the original long paragraphs with simplified versions
-              let pIdx = 0;
-              $l('p').each((i, el) => {
-                const match = longParas.findIndex(p => p.idx === i);
-                if (match !== -1 && match < simplified.length && simplified[match]) {
-                  $l(el).text(simplified[match]);
-                }
-              });
-            }
-          } catch (_) { /* if JSON parse fails, keep the locally-improved version */ }
+            // Model returns {"1":"...","2":"..."} keyed by paragraph number (1-based)
+            // or may return an array — handle both
+            const isArr = Array.isArray(parsed);
+            $l('p').each((i, el) => {
+              const matchIdx = longParas.findIndex(p => p.idx === i);
+              if (matchIdx === -1) return;
+              let simplified;
+              if (isArr) {
+                simplified = parsed[matchIdx];
+              } else {
+                // Try 1-based key first, then 0-based, then positional object value
+                simplified = parsed[String(matchIdx + 1)] || parsed[String(matchIdx)] || Object.values(parsed)[matchIdx];
+              }
+              if (simplified && typeof simplified === 'string' && simplified.trim()) {
+                $l(el).text(simplified.trim());
+              }
+            });
+          } catch (jsonErr) {
+            console.warn('[Readability] AI JSON parse failed, keeping local pass result:', jsonErr.message);
+          }
 
           if (req.deductCredits) req.deductCredits({ model: fixModel, action: 'email-gen' });
         }
