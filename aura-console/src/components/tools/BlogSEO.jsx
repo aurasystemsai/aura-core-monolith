@@ -3405,9 +3405,9 @@ export default function BlogSEO() {
                     {wfImgPickerResults.length > 0 ? (
                       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
                         {wfImgPickerResults.map((photo, idx) => (
-                          <div key={idx} onClick={() => replaceArticleImage(photo.urls?.regular || photo.urls?.small, { photographer: photo.user?.name })} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:"2px solid transparent", transition:"border .15s" }} onMouseEnter={e => e.currentTarget.style.border="2px solid #6366f1"} onMouseLeave={e => e.currentTarget.style.border="2px solid transparent"}>
-                            <img src={photo.urls?.small} alt={photo.alt_description || 'photo'} style={{ width:"100%", height:110, objectFit:"cover", display:"block" }} />
-                            <div style={{ fontSize:10, color:"#71717a", padding:"4px 6px", background:"#09090b", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{photo.user?.name}</div>
+                          <div key={idx} onClick={() => replaceArticleImage(photo.full || photo.thumb, { photographer: photo.author })} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:"2px solid transparent", transition:"border .15s" }} onMouseEnter={e => e.currentTarget.style.border="2px solid #6366f1"} onMouseLeave={e => e.currentTarget.style.border="2px solid transparent"}>
+                            <img src={photo.thumb} alt={photo.alt || 'photo'} style={{ width:"100%", height:110, objectFit:"cover", display:"block" }} />
+                            <div style={{ fontSize:10, color:"#71717a", padding:"4px 6px", background:"#09090b", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{photo.author}</div>
                           </div>
                         ))}
                       </div>
