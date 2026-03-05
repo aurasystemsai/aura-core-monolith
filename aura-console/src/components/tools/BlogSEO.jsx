@@ -2513,23 +2513,32 @@ export default function BlogSEO() {
                           <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                             {(scanResult.scored.issues || []).filter(iss => !fixedFields.has(iss.field)).slice(0, 8).map((issue, i) => {
                               const act = getIssueAction(issue.msg);
+                              const fixSt = bannerFixState[issue.msg];
+                              const alreadyFixed = fixSt === "ok" || fixedFields.has(issue.field || "");
                               const sevCol = issue.sev === "high" ? "#f87171" : issue.sev === "medium" ? "#facc15" : "#60a5fa";
                               const sevBorder = issue.sev === "high" ? "#7f1d1d" : issue.sev === "medium" ? "#78350f" : "#1e3a5f";
                               return (
-                                <div key={i} style={{ background:"#18181b", border:`1px solid ${sevBorder}`, borderRadius:8, padding:"8px 10px" }}>
+                                <div key={i} style={{ background: fixSt === "loading" ? "#1e1b4b" : "#18181b", border:`1px solid ${fixSt === "loading" ? "#4338ca" : sevBorder}`, borderRadius:8, padding:"8px 10px", transition:"background 0.2s" }}>
                                   <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
-                                    <span style={{ fontSize:10, fontWeight:700, color:sevCol, background: issue.sev==="high"?"#1c0000":issue.sev==="medium"?"#1c1500":"#0c1a2e", borderRadius:4, padding:"2px 5px", flexShrink:0, marginTop:1 }}>{issue.sev}</span>
+                                    {alreadyFixed
+                                      ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
+                                      : <span style={{ fontSize:10, fontWeight:700, color:sevCol, background: issue.sev==="high"?"#1c0000":issue.sev==="medium"?"#1c1500":"#0c1a2e", borderRadius:4, padding:"2px 5px", flexShrink:0, marginTop:1 }}>{issue.sev}</span>
+                                    }
                                     <div style={{ flex:1 }}>
-                                      <div style={{ fontSize:11, color:"#d4d4d8", lineHeight:1.4 }}>{issue.msg}</div>
-                                      {act ? (
-                                        <button onClick={act.action} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>
-                                          ✦ Expand with AI{act.credits ? ` · ${act.credits} cr` : ""}
+                                      <div style={{ fontSize:11, color: alreadyFixed ? "#52525b" : "#d4d4d8", lineHeight:1.4, textDecoration: alreadyFixed ? "line-through" : "none" }}>{issue.msg}</div>
+                                      {!alreadyFixed && (act ? (
+                                        <button
+                                          onClick={act.action}
+                                          disabled={fixSt === "loading"}
+                                          style={{ marginTop:5, fontSize:10, color: fixSt === "loading" ? "#c7d2fe" : "#818cf8", background: fixSt === "loading" ? "#312e81" : "none", border:`1px solid ${fixSt === "loading" ? "#4338ca" : "#4338ca"}`, borderRadius:5, padding:"3px 8px", cursor: fixSt === "loading" ? "default" : "pointer", minWidth:90 }}>
+                                          {fixSt === "loading" ? `${spinChar} Working…` : `✦ ${act.label}${act.credits ? ` · ${act.credits} cr` : ""}`}
                                         </button>
                                       ) : (
                                         <button onClick={runAiAnalysis} disabled={aiAnalyzing} style={{ marginTop:5, fontSize:10, color:"#818cf8", background:"none", border:"1px solid #4338ca", borderRadius:5, padding:"3px 8px", cursor:"pointer" }}>
-                                          ✦ AI Chat · 1 cr
+                                          {aiAnalyzing ? `${spinChar} Working…` : "✦ AI Chat · 1 cr"}
                                         </button>
-                                      )}
+                                      ))}
+                                      {fixSt === "error" && <span style={{ fontSize:10, color:"#fca5a5", marginLeft:6 }}>✗ failed</span>}
                                     </div>
                                   </div>
                                 </div>
