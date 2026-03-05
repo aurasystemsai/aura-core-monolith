@@ -782,14 +782,19 @@ export default function BlogSEO() {
           apiFetchJSON(`${API}/ai/generate-cover-image`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: r.title || wfPickedTitle, ratio })
+            body: JSON.stringify({ title: r.title || wfPickedTitle, keyword: wfKeywords[0] || wfPickedTitle, ratio })
           }).then(imgR => {
             setWfCoverGenerating(false);
             if (imgR?.ok && imgR.imageUrl) {
               // Also inject the cover image into the article body HTML after the intro
               // so the SEO checker counts imgCount > 0
-              const altText = `Cover image for \"${r.title || wfPickedTitle}\"`;
-              const coverFigure = `<figure style="margin:2em 0;text-align:center"><img src="${imgR.imageUrl}" alt="${altText}" style="max-width:100%;border-radius:8px" loading="lazy" /></figure>`;
+              const altText = imgR.credit
+                ? `${r.title || wfPickedTitle} — Photo by ${imgR.credit.photographer} on Unsplash`
+                : `Cover image for "${r.title || wfPickedTitle}"`;
+              const creditHtml = imgR.credit
+                ? ` <small>Photo by <a href="${imgR.credit.profileUrl}?utm_source=aura_seo&utm_medium=referral" target="_blank" rel="noopener noreferrer">${imgR.credit.photographer}</a> on Unsplash</small>`
+                : '';
+              const coverFigure = `<figure style="margin:2em 0;text-align:center"><img src="${imgR.imageUrl}" alt="${altText}" style="max-width:100%;border-radius:8px" loading="lazy" />${creditHtml ? `<figcaption style="font-size:0.85em;color:#666;margin-top:0.5em">${creditHtml}</figcaption>` : ''}</figure>`;
               setWfResult(prev => {
                 if (!prev) return prev;
                 const html = prev.fullArticle || '';
@@ -799,7 +804,7 @@ export default function BlogSEO() {
                   : html + '\n' + coverFigure;
                 return { ...prev, fullArticle: newHtml };
               });
-              setWfCoverImg({ url: imgR.imageUrl, alt: altText, source: 'ai' });
+              setWfCoverImg({ url: imgR.imageUrl, alt: altText, source: imgR.source || 'ai' });
             } else {
               const msg = imgR?.error || 'Image generation failed';
               console.error('[Cover image] DALL-E error:', msg);

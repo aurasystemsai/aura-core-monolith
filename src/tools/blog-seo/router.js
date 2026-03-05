@@ -9174,11 +9174,34 @@ router.post('/apply-date-refresh', async (req, res) => {
    ========================================================================= */
 router.post('/ai/generate-cover-image', async (req, res) => {
   try {
-    const { title, prompt, ratio } = req.body || {};
+    const { title, prompt, ratio, keyword } = req.body || {};
     if (!title && !prompt) return res.status(400).json({ ok: false, error: 'title or prompt required' });
-    const finalPrompt = prompt || `Create a professional, eye-catching cover image for a blog post titled "${title}". Make it visually compelling with high-quality photography or illustration style. No text overlays. Clean, modern aesthetic.`;
 
-    // Use dall-e-3 — reliable, supports URL responses
+    // 1. Try Unsplash first — fast, free, professional real photos, no garbled text
+    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+    if (unsplashKey && !prompt) {
+      try {
+        const searchQuery = encodeURIComponent((keyword || title || '').slice(0, 60));
+        const uRes = await fetch(`https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=5&orientation=landscape&content_filter=high`, {
+          headers: { Authorization: `Client-ID ${unsplashKey}` },
+        });
+        if (uRes.ok) {
+          const uData = await uRes.json();
+          const photo = uData.results?.[0];
+          if (photo?.urls?.regular) {
+            return res.json({
+              ok: true,
+              imageUrl: photo.urls.regular,
+              credit: { photographer: photo.user.name, profileUrl: photo.user.links.html },
+              source: 'unsplash',
+            });
+          }
+        }
+      } catch (_) { /* fall through to DALL-E */ }
+    }
+
+    // 2. Fall back to DALL-E — explicitly forbid all text/letters
+    const finalPrompt = prompt || `Professional photography style cover image for a blog post about "${keyword || title}". High quality, visually compelling, clean modern aesthetic. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS, NO TYPOGRAPHY anywhere in the image. Pure visual only.`;
     const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024', '4:3': '1024x1024' };
     const img = await getOpenAI().images.generate({
       model: 'dall-e-3',
@@ -9188,11 +9211,9 @@ router.post('/ai/generate-cover-image', async (req, res) => {
       quality: 'standard',
     });
     const imageUrl = img.data[0]?.url;
-    const usedModel = 'dall-e-3';
-
     if (!imageUrl) return res.status(500).json({ ok: false, error: 'No image generated' });
-    if (req.deductCredits) req.deductCredits({ model: usedModel, action: 'blog-draft' });
-    res.json({ ok: true, imageUrl, prompt: finalPrompt });
+    if (req.deductCredits) req.deductCredits({ model: 'dall-e-3', action: 'blog-draft' });
+    res.json({ ok: true, imageUrl, source: 'dalle' });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
