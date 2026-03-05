@@ -34,13 +34,21 @@ router.get('/subscription', async (req, res) => {
     }
     const subscription = await shopifyBillingService.getSubscription(shop);
 
-    // The credit ledger is the authoritative plan source (updated on billing confirm + sync-plan).
-    // Always prefer the ledger plan over what Shopify's GraphQL returns (Shopify may show an
-    // old active subscription even after a downgrade or a failed cancellation).
+    // Shopify's active subscription is the source of truth for the plan.
+    // If Shopify shows a paid active plan, always honour it and sync the ledger
+    // (the ledger file is ephemeral on Render and resets to 'free' on every deploy).
+    const shopifyPlan = subscription.plan_id || 'free';
     try {
       const ledgerStatus = creditLedger.getCreditStatus(shop);
-      if (ledgerStatus && ledgerStatus.plan) {
-        subscription.plan_id = ledgerStatus.plan;
+      const ledgerPlan = ledgerStatus?.plan || 'free';
+      if (shopifyPlan !== 'free' && subscription.status === 'active' && ledgerPlan !== shopifyPlan) {
+        // Ledger is stale (likely wiped by a deploy) — resync from Shopify
+        console.log(`[Billing] Resyncing plan for ${shop}: ledger=${ledgerPlan} → shopify=${shopifyPlan}`);
+        creditLedger.updatePlan(shop, shopifyPlan);
+      } else if (shopifyPlan === 'free' && ledgerPlan !== 'free') {
+        // Shopify shows no active sub but ledger has a plan — trust the ledger
+        // (can happen if Shopify test charge was cancelled but ledger was set manually)
+        subscription.plan_id = ledgerPlan;
       }
     } catch (_) {}
 
@@ -264,7 +272,20 @@ router.get('/credits', async (req, res) => {
     if (!shop) {
       return res.json({ ok: true, balance: 10, used: 0, plan_credits: 10, topup_credits: 0 });
     }
-    const status = creditLedger.getCreditStatus(shop);
+    let status = creditLedger.getCreditStatus(shop);
+
+    // Self-heal: if ledger shows 'free' (wiped by a Render deploy), re-check Shopify
+    if (status.plan === 'free') {
+      try {
+        const subscription = await shopifyBillingService.getSubscription(shop);
+        if (subscription.plan_id && subscription.plan_id !== 'free' && subscription.status === 'active') {
+          console.log(`[Billing] Auto-restoring plan for ${shop} from Shopify: ${subscription.plan_id}`);
+          creditLedger.updatePlan(shop, subscription.plan_id);
+          status = creditLedger.getCreditStatus(shop);
+        }
+      } catch (_) { /* non-fatal — return ledger status as-is */ }
+    }
+
     res.json(status);
   } catch (error) {
     console.error('Get credits error:', error);
