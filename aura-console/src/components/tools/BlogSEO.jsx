@@ -197,6 +197,7 @@ export default function BlogSEO() {
 
   /* ── WriteResult page ── */
   const [wfResult,         setWfResult]         = useState(null);
+  const [wfCoverErr,       setWfCoverErr]       = useState("");    // error from DALL-E cover gen
   const [wfPublishing,     setWfPublishing]     = useState(false);
   const [wfPublishOk,      setWfPublishOk]      = useState(null);
   const [wfPublishErr,     setWfPublishErr]     = useState("");
@@ -747,7 +748,7 @@ export default function BlogSEO() {
 
   const wfGenerateArticle = useCallback(async () => {
     if (!wfPickedTitle) return;
-    setWfGenerating(true); setWfErr(""); setWfProgress(0); setWfProgressLabel("Writing Article");
+    setWfGenerating(true); setWfErr(""); setWfCoverErr(""); setWfProgress(0); setWfProgressLabel("Writing Article");
     setSection("WriteGenerating");
     // Section-by-section: each section is a separate API call, so timing scales with section count
     const startMs = Date.now();
@@ -784,8 +785,15 @@ export default function BlogSEO() {
           }).then(imgR => {
             if (imgR?.ok && imgR.imageUrl) {
               setWfCoverImg({ url: imgR.imageUrl, alt: `Cover image for "${r.title || wfPickedTitle}"`, source: 'ai' });
+            } else {
+              const msg = imgR?.error || 'Image generation failed';
+              console.error('[Cover image] DALL-E error:', msg);
+              setWfCoverErr(msg);
             }
-          }).catch(() => {});
+          }).catch(err => {
+            console.error('[Cover image] Network error:', err);
+            setWfCoverErr(err?.message || 'Network error');
+          });
         }
         setTimeout(() => setSection("WriteResult"), 400);
       }
@@ -3078,21 +3086,29 @@ export default function BlogSEO() {
                     {wfCoverImg ? (
                       <img src={wfCoverImg.url} alt={wfCoverImg.alt||wfPickedTitle} style={{ width:"100%", borderRadius:10, border:"1px solid #3f3f46", objectFit:"cover", aspectRatio:"16/9", display:"block" }} />
                     ) : (
-                      <button
-                        onClick={() => {
-                          setWfCoverTab('ai');
-                          setWfCoverAiPrompt(`Create a professional cover image for a blog post titled "${wfPickedTitle}". Make it visually compelling and relevant to: ${(wfKeywords||[]).join(', ')||wfPickedTitle}. No text overlays. Clean modern aesthetic.`);
-                          setWfCoverAltDraft(`Cover image for "${wfPickedTitle}"`);
-                          setWfCoverAiPreview(null); setWfUnsplashSel(null); setWfUploadPreview(null);
-                          setWfUnsplashQuery((wfKeywords||[])[0]||wfPickedTitle);
-                          setWfCoverModalOpen(true);
-                        }}
-                        style={{ width:"100%", aspectRatio:"16/9", background:"#18181b", border:"2px dashed #3f3f46", borderRadius:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, cursor:"pointer", fontSize:12, color:"#71717a" }}
-                      >
-                        <span style={{ fontSize:28 }}>🖼</span>
-                        <span style={{ fontWeight:600 }}>Add Cover Image</span>
-                        <span style={{ fontSize:11, color:"#52525b" }}>AI Generate · Unsplash · Upload</span>
-                      </button>
+                      <>
+                        {wfCoverErr && (
+                          <div style={{ background:"#27272a", border:"1px solid #7f1d1d", borderRadius:8, padding:"10px 12px", marginBottom:10, fontSize:12, color:"#f87171", lineHeight:1.5 }}>
+                            <strong>Cover image failed:</strong> {wfCoverErr}<br/>
+                            <span style={{ color:"#a1a1aa" }}>Add one manually below (Unsplash or upload).</span>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => {
+                            setWfCoverTab('ai');
+                            setWfCoverAiPrompt(`Create a professional cover image for a blog post titled "${wfPickedTitle}". Make it visually compelling and relevant to: ${(wfKeywords||[]).join(', ')||wfPickedTitle}. No text overlays. Clean modern aesthetic.`);
+                            setWfCoverAltDraft(`Cover image for "${wfPickedTitle}"`);
+                            setWfCoverAiPreview(null); setWfUnsplashSel(null); setWfUploadPreview(null);
+                            setWfUnsplashQuery((wfKeywords||[])[0]||wfPickedTitle);
+                            setWfCoverModalOpen(true);
+                          }}
+                          style={{ width:"100%", aspectRatio:"16/9", background:"#18181b", border:"2px dashed #3f3f46", borderRadius:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, cursor:"pointer", fontSize:12, color:"#71717a" }}
+                        >
+                          <span style={{ fontSize:28 }}>🖼</span>
+                          <span style={{ fontWeight:600 }}>Add Cover Image</span>
+                          <span style={{ fontSize:11, color:"#52525b" }}>AI Generate · Unsplash · Upload</span>
+                        </button>
+                      </>
                     )}
                     {wfCoverImg && (
                       <div style={{ background:"#27272a", color:"#a1a1aa", borderRadius:6, padding:"6px 10px", marginTop:8, fontSize:11, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>ALT {wfCoverImg.alt||wfPickedTitle}</div>
