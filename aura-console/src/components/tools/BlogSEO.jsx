@@ -922,7 +922,7 @@ export default function BlogSEO() {
     if (wfSeoScore) setWfIsFixing({});
   }, [wfSeoScore]);
 
-  // Sync wfResult.fullArticle → contentEditable DOM (runs on external updates like AI fixes)
+  // Sync wfResult.fullArticle → contentEditable DOM (also fires when section mounts WriteResult)
   useEffect(() => {
     if (!wfEditRef.current || !wfResult) return;
     const raw = wfResult.fullArticle || wfResult.content || wfResult.draft || "";
@@ -937,7 +937,7 @@ export default function BlogSEO() {
       .replace(/\n\n/g, "</p><p>");
     if (wfEditRef.current.innerHTML !== processed) wfEditRef.current.innerHTML = processed;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wfResult?.fullArticle, wfResult?.content]);
+  }, [wfResult?.fullArticle, wfResult?.content, section]);
 
   // Sync contentEditable → state on blur, then silently rescore
   const handleWfEditBlur = useCallback(() => {
