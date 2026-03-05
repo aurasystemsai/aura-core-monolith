@@ -7699,7 +7699,7 @@ router.post('/zero-click/knowledge-panel-push', async (req, res) => {
 /* Score a freshly-written article draft without fetching a live URL */
 router.post('/ai/score-draft', (req, res) => {
   try {
-    const { html = '', keyword = '', title = '', metaDescription = '', articleSchema = null } = req.body;
+    const { html = '', keyword = '', title = '', metaDescription = '', articleSchema = null, ogTitle = '', ogDescription = '' } = req.body;
     const $ = cheerio.load(html);
     const text = $.text().replace(/\s+/g, ' ').trim();
     const words = text.split(/\s+/).filter(Boolean);
@@ -7720,7 +7720,7 @@ router.post('/ai/score-draft', (req, res) => {
 
     // Technical checks
     const hasSchema     = !!articleSchema || $('script[type="application/ld+json"]').length > 0;
-    const hasOgTags     = $('meta[property^="og:"]').length > 0;
+    const hasOgTags     = $('meta[property^="og:"]').length > 0 || (!!ogTitle && !!ogDescription);
     const hasTwitter    = $('meta[name^="twitter:"]').length > 0;
     const hasCanonical  = $('link[rel="canonical"]').length > 0;
     const internalLinks = $('a[href^="/"], a[href*="myshopify.com"], a[href*="your-store"]').length;
@@ -7844,7 +7844,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const [metaR, eeatR] = await Promise.all([
       ai.chat.completions.create({
         model, max_tokens: 400, response_format: { type: 'json_object' },
-        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: MUST include the exact phrase "${keyword}". MUST be between 150 and 160 characters — count every character including spaces. A good example length: "Discover the top snowboards for beginners in 2026. We review the best beginner boards for comfort, control and fun on the slopes." (that is 155 chars).\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"]}` }],
+        messages: [{ role: 'user', content: `${ctx}\nGenerate SEO metadata for this blog post. Rules:\n- seoTitle: a compelling title that MUST naturally include the exact phrase "${keyword}". Max 60 chars. Slightly different from the original title is fine.\n- metaDescription: MUST include the exact phrase "${keyword}". MUST be between 150 and 160 characters — count every character including spaces. A good example length: "Discover the top snowboards for beginners in 2026. We review the best beginner boards for comfort, control and fun on the slopes." (that is 155 chars).\n- slug: lowercase hyphenated URL slug.\n- internalLinkSuggestions: 3 related article titles.\nReturn JSON: {"seoTitle":"string","metaDescription":"string","slug":"string","internalLinkSuggestions":["string"],"ogTitle":"string (max 60 chars, compelling for social sharing)","ogDescription":"string (100-150 chars, compelling social copy)"}` }],
       }),
       ai.chat.completions.create({
         model, max_tokens: 120,
@@ -8029,6 +8029,8 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       title: seoTitle,
       originalTitle: title,
       metaDescription: meta.metaDescription || '',
+      ogTitle: meta.ogTitle || '',
+      ogDescription: meta.ogDescription || '',
       slug,
       fullArticle: fullHtml,
       wordCount: actualWordCount,
@@ -9298,7 +9300,7 @@ router.get('/ai/unsplash-search', async (req, res) => {
 router.post('/shopify/publish-article', async (req, res) => {
   try {
     const shopTokens = require('../../core/shopTokens');
-    const { title, bodyHtml, metaDescription, tags, asDraft = true, coverImageUrl, coverImageAlt } = req.body;
+    const { title, bodyHtml, metaDescription, tags, asDraft = true, coverImageUrl, coverImageAlt, ogTitle, ogDescription } = req.body;
     if (!title || !bodyHtml) return res.status(400).json({ ok: false, error: 'title and bodyHtml required' });
 
     let shop = req.session?.shop
@@ -9356,6 +9358,16 @@ router.post('/shopify/publish-article', async (req, res) => {
           headers,
           body: JSON.stringify({ metafield: { namespace: 'global', key: 'title_tag', value: title, type: 'single_line_text_field' } }),
         }),
+        ...(ogTitle ? [fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles/${article.id}/metafields.json`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ metafield: { namespace: 'custom', key: 'og_title', value: ogTitle, type: 'single_line_text_field' } }),
+        })] : []),
+        ...(ogDescription ? [fetch(`https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles/${article.id}/metafields.json`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ metafield: { namespace: 'custom', key: 'og_description', value: ogDescription, type: 'multi_line_text_field' } }),
+        })] : []),
       ];
       await Promise.allSettled(mfPromises); // best-effort — don't fail publish if metafields fail
     }
