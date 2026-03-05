@@ -3379,7 +3379,7 @@ export default function BlogSEO() {
                         setWfImgPickerLoading(true); setWfImgPickerResults([]);
                         try {
                           const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=12`);
-                          if (r.ok) setWfImgPickerResults(r.results || []);
+                          if (r.ok) setWfImgPickerResults(r.photos || []);
                         } catch(_) {}
                         setWfImgPickerLoading(false);
                       }}
@@ -3392,7 +3392,7 @@ export default function BlogSEO() {
                         setWfImgPickerLoading(true); setWfImgPickerResults([]);
                         try {
                           const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=12`);
-                          if (r.ok) setWfImgPickerResults(r.results || []);
+                          if (r.ok) setWfImgPickerResults(r.photos || []);
                         } catch(_) {}
                         setWfImgPickerLoading(false);
                       }}
