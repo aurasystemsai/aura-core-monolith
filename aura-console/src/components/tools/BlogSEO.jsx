@@ -237,6 +237,8 @@ export default function BlogSEO() {
   const [wfImgPickerQuery,   setWfImgPickerQuery]   = useState('');
   const [wfImgPickerResults, setWfImgPickerResults] = useState([]);
   const [wfImgPickerLoading, setWfImgPickerLoading] = useState(false);
+  const [wfImgPickerPage,    setWfImgPickerPage]    = useState(1);
+  const [wfImgPickerTotal,   setWfImgPickerTotal]   = useState(0);
   const [wfUploadPreview,   setWfUploadPreview]   = useState(null);
 
   /* ── Optimize / Content+ state ── */
@@ -3380,10 +3382,10 @@ export default function BlogSEO() {
                       onChange={e => setWfImgPickerQuery(e.target.value)}
                       onKeyDown={async e => {
                         if (e.key !== 'Enter' || !wfImgPickerQuery.trim()) return;
-                        setWfImgPickerLoading(true); setWfImgPickerResults([]);
+                        setWfImgPickerLoading(true); setWfImgPickerResults([]); setWfImgPickerPage(1);
                         try {
-                          const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=12`);
-                          if (r.ok) setWfImgPickerResults(r.photos || []);
+                          const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=30&page=1`);
+                          if (r.ok) { setWfImgPickerResults(r.photos || []); setWfImgPickerTotal(r.total || 0); }
                         } catch(_) {}
                         setWfImgPickerLoading(false);
                       }}
@@ -3393,10 +3395,10 @@ export default function BlogSEO() {
                     <button
                       onClick={async () => {
                         if (!wfImgPickerQuery.trim()) return;
-                        setWfImgPickerLoading(true); setWfImgPickerResults([]);
+                        setWfImgPickerLoading(true); setWfImgPickerResults([]); setWfImgPickerPage(1);
                         try {
-                          const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=12`);
-                          if (r.ok) setWfImgPickerResults(r.photos || []);
+                          const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=30&page=1`);
+                          if (r.ok) { setWfImgPickerResults(r.photos || []); setWfImgPickerTotal(r.total || 0); }
                         } catch(_) {}
                         setWfImgPickerLoading(false);
                       }}
@@ -3407,14 +3409,33 @@ export default function BlogSEO() {
                   {/* Results grid */}
                   <div style={{ overflowY:"auto", flex:1 }}>
                     {wfImgPickerResults.length > 0 ? (
-                      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
-                        {wfImgPickerResults.map((photo, idx) => (
-                          <div key={idx} onClick={() => replaceArticleImage(photo.full || photo.thumb, { photographer: photo.author })} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:"2px solid transparent", transition:"border .15s" }} onMouseEnter={e => e.currentTarget.style.border="2px solid #6366f1"} onMouseLeave={e => e.currentTarget.style.border="2px solid transparent"}>
-                            <img src={photo.thumb} alt={photo.alt || 'photo'} style={{ width:"100%", height:110, objectFit:"cover", display:"block" }} />
-                            <div style={{ fontSize:10, color:"#71717a", padding:"4px 6px", background:"#09090b", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{photo.author}</div>
+                      <>
+                        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+                          {wfImgPickerResults.map((photo, idx) => (
+                            <div key={idx} onClick={() => replaceArticleImage(photo.full || photo.thumb, { photographer: photo.author })} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:"2px solid transparent", transition:"border .15s" }} onMouseEnter={e => e.currentTarget.style.border="2px solid #6366f1"} onMouseLeave={e => e.currentTarget.style.border="2px solid transparent"}>
+                              <img src={photo.thumb} alt={photo.alt || 'photo'} style={{ width:"100%", height:110, objectFit:"cover", display:"block" }} />
+                              <div style={{ fontSize:10, color:"#71717a", padding:"4px 6px", background:"#09090b", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{photo.author}</div>
+                            </div>
+                          ))}
+                        </div>
+                        {wfImgPickerResults.length < wfImgPickerTotal && (
+                          <div style={{ textAlign:"center", marginTop:14 }}>
+                            <button
+                              onClick={async () => {
+                                const nextPage = wfImgPickerPage + 1;
+                                setWfImgPickerLoading(true);
+                                try {
+                                  const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfImgPickerQuery)}&per_page=30&page=${nextPage}`);
+                                  if (r.ok) { setWfImgPickerResults(prev => [...prev, ...(r.photos || [])]); setWfImgPickerPage(nextPage); setWfImgPickerTotal(r.total || 0); }
+                                } catch(_) {}
+                                setWfImgPickerLoading(false);
+                              }}
+                              disabled={wfImgPickerLoading}
+                              style={{ padding:"8px 24px", borderRadius:8, background:"#27272a", color:"#a1a1aa", fontWeight:600, fontSize:13, border:"1px solid #3f3f46", cursor: wfImgPickerLoading ? "default" : "pointer" }}
+                            >{wfImgPickerLoading ? "Loading…" : `Load more (${wfImgPickerResults.length} / ${wfImgPickerTotal})`}</button>
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
                     ) : wfImgPickerLoading ? (
                       <div style={{ textAlign:"center", color:"#71717a", fontSize:13, paddingTop:24 }}>Searching Unsplash…</div>
                     ) : (
@@ -3518,7 +3539,7 @@ export default function BlogSEO() {
                                 if (!wfUnsplashQuery.trim()) return;
                                 setWfUnsplashLoading(true); setWfUnsplashResults([]);
                                 try {
-                                  const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfUnsplashQuery)}&per_page=12`);
+                                  const r = await apiFetchJSON(`${API}/ai/unsplash-search?query=${encodeURIComponent(wfUnsplashQuery)}&per_page=30`);
                                   if (r.ok) setWfUnsplashResults(r.photos || []);
                                 } catch(_) {}
                                 setWfUnsplashLoading(false);
