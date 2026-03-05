@@ -9138,19 +9138,41 @@ router.post('/ai/generate-cover-image', async (req, res) => {
   try {
     const { title, prompt, ratio } = req.body || {};
     if (!title && !prompt) return res.status(400).json({ ok: false, error: 'title or prompt required' });
-    const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024', '4:3': '1024x1024' };
-    const size = sizeMap[ratio] || '1024x1024';
     const finalPrompt = prompt || `Create a professional, eye-catching cover image for a blog post titled "${title}". Make it visually compelling with high-quality photography or illustration style. No text overlays. Clean, modern aesthetic.`;
-    const img = await getOpenAI().images.generate({
-      model: 'dall-e-3',
-      prompt: finalPrompt,
-      n: 1,
-      size,
-      quality: 'standard',
-    });
-    const imageUrl = img.data[0]?.url;
+
+    // Try gpt-image-1 first (OpenAI's current model), fall back to dall-e-3
+    let imageUrl = null;
+    let usedModel = 'gpt-image-1';
+    try {
+      // gpt-image-1 size map: landscape=1536x1024, square=1024x1024
+      const sizeMap1 = { '1:1': '1024x1024', '16:9': '1536x1024', '4:3': '1024x1024' };
+      const img = await getOpenAI().images.generate({
+        model: 'gpt-image-1',
+        prompt: finalPrompt,
+        n: 1,
+        size: sizeMap1[ratio] || '1024x1024',
+        quality: 'medium',
+      });
+      // gpt-image-1 returns base64
+      const b64 = img.data[0]?.b64_json;
+      if (b64) imageUrl = `data:image/png;base64,${b64}`;
+      else if (img.data[0]?.url) imageUrl = img.data[0].url;
+    } catch (e1) {
+      // Fall back to dall-e-3
+      usedModel = 'dall-e-3';
+      const sizeMap3 = { '1:1': '1024x1024', '16:9': '1792x1024', '4:3': '1024x1024' };
+      const img = await getOpenAI().images.generate({
+        model: 'dall-e-3',
+        prompt: finalPrompt,
+        n: 1,
+        size: sizeMap3[ratio] || '1024x1024',
+        quality: 'standard',
+      });
+      imageUrl = img.data[0]?.url;
+    }
+
     if (!imageUrl) return res.status(500).json({ ok: false, error: 'No image generated' });
-    if (req.deductCredits) req.deductCredits({ model: 'dall-e-3', action: 'blog-draft' });
+    if (req.deductCredits) req.deductCredits({ model: usedModel, action: 'blog-draft' });
     res.json({ ok: true, imageUrl, prompt: finalPrompt });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
