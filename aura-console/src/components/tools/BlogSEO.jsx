@@ -965,15 +965,19 @@ export default function BlogSEO() {
   const replaceArticleImage = useCallback((newUrl, credit) => {
     if (!wfImgPicker || !wfResult) return;
     const { oldSrc } = wfImgPicker;
-    let html = wfEditRef.current ? wfEditRef.current.innerHTML : (wfResult.fullArticle || '');
-    const escaped = oldSrc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    html = html.replace(new RegExp(`src="${escaped}"`, 'g'), `src="${newUrl}"`);
-    if (credit?.photographer) {
-      const escapedNew = newUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      html = html.replace(new RegExp(`(src="${escapedNew}"[^>]*?)alt="[^"]*"`, 'g'),
-        `$1alt="Photo by ${credit.photographer} on Unsplash"`);
+    // Directly update the DOM element — avoids innerHTML &amp; encoding mismatch
+    if (wfEditRef.current) {
+      const imgs = wfEditRef.current.querySelectorAll('img');
+      imgs.forEach(img => {
+        if (img.getAttribute('src') === oldSrc) {
+          img.setAttribute('src', newUrl);
+          if (credit?.photographer) img.setAttribute('alt', `Photo by ${credit.photographer} on Unsplash`);
+        }
+      });
+      // Sync the updated DOM → state so it persists
+      const updatedHtml = wfEditRef.current.innerHTML;
+      setWfResult(prev => prev ? { ...prev, fullArticle: updatedHtml } : prev);
     }
-    setWfResult(prev => prev ? { ...prev, fullArticle: html } : prev);
     setWfImgPicker(null);
     setWfImgPickerResults([]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
