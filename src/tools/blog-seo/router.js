@@ -47,27 +47,106 @@ function getShop(req) {
 // Splits long sentences inside <p> tags server-side after AI generation.
 // This is deterministic and far more reliable than prompting the AI to write short sentences.
 // Common polysyllabic words → shorter replacements (applied in local pass)
+// Covers virtually every 3+ syllable word that appears in blog / e-commerce content.
 const VOCAB_SIMPLIFY = [
-  [/\bsignificantly\b/gi, 'greatly'], [/\bsignificant\b/gi, 'big'], [/\bparticularly\b/gi, 'very'],
-  [/\bexceptional(?:ly)?\b/gi, 'great'], [/\bextraordinary\b/gi, 'amazing'],
+  // 5+ syllable words first (longest → shortest to avoid partial re-matches)
+  [/\binternational(?:ly)?\b/gi, 'global'],
+  [/\bopportunity\b/gi, 'chance'], [/\bopportunities\b/gi, 'chances'],
+  [/\bversatility\b/gi, 'range'], [/\bversatile\b/gi, 'flexible'],
+  [/\bdurability\b/gi, 'strength'], [/\bdurable\b/gi, 'strong'],
+  [/\bflexibility\b/gi, 'flex'], [/\bflexible\b/gi, 'flex'],
+  [/\bstability\b/gi, 'balance'], [/\bstabilize\b/gi, 'balance'],
+  [/\bvisibility\b/gi, 'sight'],
+  [/\breliability\b/gi, 'trust'], [/\breliable\b/gi, 'solid'],
+  [/\bexceptional(?:ly)?\b/gi, 'great'],
+  [/\bextraordinary\b/gi, 'amazing'],
+  [/\bimmediately\b/gi, 'at once'],
+  [/\bsubstantially\b/gi, 'much'], [/\bsubstantial\b/gi, 'big'],
+  [/\bunquestionably\b/gi, 'clearly'], [/\bundoubtedly\b/gi, 'clearly'],
+  [/\bunnecessarily\b/gi, 'needlessly'],
+  // 4 syllable words
+  [/\bsignificantly\b/gi, 'much'], [/\bsignificant\b/gi, 'big'],
+  [/\bparticularly\b/gi, 'very'], [/\bparticularly\b/gi, 'very'],
+  [/\bespecially\b/gi, 'most'],
+  [/\badditionally\b/gi, 'also'],
+  [/\bfurthermore\b/gi, 'also'],
+  [/\bconsequently\b/gi, 'so'],
+  [/\bnevertheless\b/gi, 'still'],
+  [/\bnotwithstanding\b/gi, 'despite'],
+  [/\bapproximately\b/gi, 'about'],
+  [/\bconsiderably\b/gi, 'much'], [/\bconsiderable\b/gi, 'large'],
+  [/\bcomfortably\b/gi, 'easily'], [/\bcomfortable\b/gi, 'easy'],
+  [/\boriginally\b/gi, 'at first'],
+  [/\beventually\b/gi, 'in time'],
+  [/\bexperiences\b/gi, 'moments'], [/\bexperience\b/gi, 'time'], [/\bexperiencing\b/gi, 'having'],
+  [/\btechnology\b/gi, 'tech'], [/\btechnologies\b/gi, 'tech'],
+  [/\bprogression\b/gi, 'growth'],
+  [/\bperformance\b/gi, 'speed'],
+  [/\bunderstanding\b/gi, 'knowing'], [/\bunderstand\b/gi, 'see'],
+  [/\binteresting\b/gi, 'fun'],
+  [/\bdifficulties\b/gi, 'problems'], [/\bdifficulty\b/gi, 'problem'],
+  [/\bavailability\b/gi, 'supply'],
+  [/\bopportunity\b/gi, 'chance'],
+  [/\binformation\b/gi, 'info'],
+  [/\bdevelopment\b/gi, 'growth'],
+  [/\benvironment\b/gi, 'place'],
+  [/\bcommunity\b/gi, 'group'],
+  [/\bcategory\b/gi, 'type'], [/\bcategories\b/gi, 'types'],
+  [/\bability\b/gi, 'skill'],
+  [/\bquality\b/gi, 'good'],
+  [/\bmaterial\b/gi, 'build'],
+  [/\bbeautiful\b/gi, 'great'], [/\bbeautifully\b/gi, 'well'],
+  [/\bgenerally\b/gi, 'often'],
+  [/\bactually\b/gi, 'in fact'],
+  [/\bpopularly\b/gi, 'widely'], [/\bpopular\b/gi, 'top'],
+  [/\bprimarily\b/gi, 'mainly'],
+  [/\bnaturally\b/gi, 'by nature'],
+  [/\bcarefully\b/gi, 'with care'],
+  [/\bcompatible\b/gi, 'works with'],
+  [/\bcompletely\b/gi, 'fully'],
+  [/\bexactly\b/gi, 'just'],
+  [/\bregularly\b/gi, 'often'],
+  [/\btypically\b/gi, 'often'],
+  [/\bspecifically\b/gi, 'just'],
+  // 3 syllable words
   [/\bprovides\b/gi, 'gives'], [/\bprovide\b/gi, 'give'], [/\bproviding\b/gi, 'giving'],
   [/\bfeatures\b/gi, (m) => /^[A-Z]/.test(m) ? 'Has' : 'has'], [/\bfeaturing\b/gi, 'with'],
   [/\butilizes\b/gi, 'uses'], [/\butilize\b/gi, 'use'], [/\butilising\b/gi, 'using'],
-  [/\bpurchase\b/gi, 'buy'], [/\bpurchasing\b/gi, 'buying'],
+  [/\bpurchases\b/gi, 'buys'], [/\bpurchase\b/gi, 'buy'], [/\bpurchasing\b/gi, 'buying'],
   [/\brequires\b/gi, 'needs'], [/\brequire\b/gi, 'need'],
   [/\bdemonstrates\b/gi, 'shows'], [/\bdemonstrate\b/gi, 'show'],
-  [/\bconsiderable\b/gi, 'large'], [/\bconsiderably\b/gi, 'much'],
-  [/\badditionally\b/gi, 'also'], [/\bfurthermore\b/gi, 'also'],
-  [/\bnevertheless\b/gi, 'still'], [/\bconsequently\b/gi, 'so'],
-  [/\baccomplish\b/gi, 'do'], [/\bachieve\b/gi, 'reach'],
-  [/\bexperience\b/gi, 'feel'], [/\bexperiencing\b/gi, 'feeling'],
-  [/\bperformance\b/gi, 'speed'], [/\bprogression\b/gi, 'growth'],
-  [/\btechnology\b/gi, 'tech'], [/\btechnologies\b/gi, 'tech'],
-  [/\bunquestionably\b/gi, 'clearly'], [/\bundoubtedly\b/gi, 'clearly'],
-  [/\bapproximately\b/gi, 'about'], [/\bsubstantially\b/gi, 'greatly'],
+  [/\badditional\b/gi, 'more'],
+  [/\baccomplish\b/gi, 'do'],
+  [/\bachievement\b/gi, 'win'], [/\bachieve\b/gi, 'reach'],
   [/\boptimized\b/gi, 'tuned'], [/\boptimise\b/gi, 'tune'],
-  [/\bcomfortable\b/gi, 'easy'], [/\bcomfortably\b/gi, 'easily'],
   [/\bincorporates\b/gi, 'uses'], [/\bincorporate\b/gi, 'use'],
+  [/\binitially\b/gi, 'at first'],
+  [/\bidentify\b/gi, 'find'],
+  [/\brecommend\b/gi, 'suggest'], [/\brecommends\b/gi, 'suggests'],
+  [/\bdiscover\b/gi, 'find'], [/\bdiscovery\b/gi, 'find'],
+  [/\bhowever\b/gi, 'but'],
+  [/\bconsider\b/gi, 'think about'], [/\bconsiders\b/gi, 'thinks about'],
+  [/\bremember\b/gi, 'note'],
+  [/\bprotection\b/gi, 'cover'],
+  [/\bdirection\b/gi, 'way'],
+  [/\bcollection\b/gi, 'range'],
+  [/\bselection\b/gi, 'range'],
+  [/\bconnection\b/gi, 'link'],
+  [/\bposition\b/gi, 'place'],
+  [/\bsituation\b/gi, 'case'],
+  [/\bcondition\b/gi, 'state'],
+  [/\bcompetition\b/gi, 'race'],
+  [/\bcontrolling\b/gi, 'guiding'], [/\bcontrol\b/gi, 'guide'],
+  [/\bdesigning\b/gi, 'building'], [/\bdesigned\b/gi, 'built'],
+  [/\bimportant\b/gi, 'key'],
+  [/\bimportance\b/gi, 'value'],
+  [/\beveryone\b/gi, 'all'],
+  [/\beverything\b/gi, 'all'],
+  [/\bdifferent\b/gi, 'new'],
+  [/\bexcellent\b/gi, 'top'],
+  [/\beffective\b/gi, 'good'], [/\beffectively\b/gi, 'well'],
+  [/\befficient\b/gi, 'fast'], [/\befficiently\b/gi, 'fast'],
+  [/\bpowerful\b/gi, 'strong'],
 ];
 
 function applyVocabSimplify(text) {
@@ -80,7 +159,7 @@ function applyVocabSimplify(text) {
 
 function splitLongSentence(sentence) {
   const wc = (s) => s.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-  if (wc(sentence) <= 14) return sentence;
+  if (wc(sentence) <= 11) return sentence;
 
   // 1. Semicolons → full stop
   if (/;\s+/.test(sentence)) {
@@ -7746,14 +7825,16 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const htmlRules = `STRICT SEO REQUIREMENTS — follow ALL of these exactly:
 1. HTML only: <h2>, <h3>, <p>, <ul><li>, <ol><li>, <strong>, <em>. No markdown, no backticks, no <html>/<body> tags.
 2. KEYWORD DENSITY: Use the exact phrase "${keyword}" at least once per 150 words. Aim for 1–2% density total.
-3. READABILITY — THIS IS CRITICAL:
-   - Every sentence must be 8-14 words. MAXIMUM 16 words per sentence. If a sentence is longer, split it into two.
-   - After every sentence ask: "Can I split this into two shorter sentences?" If yes, do it.
-   - Use ONLY simple common words. FORBIDDEN words (use the replacement instead):
-     significant→big, particularly→very, exceptional→great, experience→time, experiences→moments,
-     performance→speed, progression→growth, technology→tech, comfortable→easy, confidence→belief,
-     equipment→gear, beginners→new riders, provides→gives, featuring→with, approximately→about,
-     crucial→key, important→key, understanding→knowing, demonstrates→shows, requires→needs.
+3. READABILITY — THIS IS THE MOST IMPORTANT RULE:
+   - Every sentence: 6-12 words. HARD MAX 13 words. Count the words. If over 13, split into two sentences.
+   - Never start a new sentence with a word longer than 2 syllables.
+   - Use ONLY 1-2 syllable words. Replace every long word:
+     important→key, significant→big, particularly→very, comfortable→easy, confidence→trust,
+     experience→time, performance→speed, technology→tech, beginners→new riders,
+     progression→growth, excellent→top, equipment→gear, provides→gives,
+     featuring→with, approximately→about, understand→see, remember→note,
+     however→but, additionally→also, especially→most, generally→often,
+     discover→find, consider→think, recommend→suggest, available→out there.
    - Active voice only. "The board helps you" NOT "You are helped by the board".
 4. STRUCTURE: Each H2 section needs at least 3 short paragraphs (max 3 sentences each). Use <h3> sub-points.
 5. Year references must be ${currentYear}.`;
@@ -7799,7 +7880,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     // ── 2. Generate intro ──
     const introR = await ai.chat.completions.create({
       model, max_tokens: Math.ceil(introWords * 3),
-      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction for this blog post. Target ${introWords} words. Rules:\n- First sentence MUST contain the keyword "${keyword}" exactly AND be under 14 words.\n- Second sentence: "${eeatSentence}" (use this as the second sentence to signal E-E-A-T).\n- Every sentence: 8-14 words. Simple common words only. Active voice.\n- End the intro with a 1-sentence preview of what the article covers (under 14 words).\nReturn only HTML starting with <p>.` }],
+      messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the introduction for this blog post. Target ${introWords} words. Rules:\n- First sentence MUST contain the keyword "${keyword}" exactly AND be 6-12 words.\n- Second sentence: "${eeatSentence}" (use this as the second sentence to signal E-E-A-T).\n- Every sentence: 6-12 words. HARD MAX 13 words. 1-2 syllable words only. Active voice.\n- End with a 1-sentence preview under 12 words.\nReturn only HTML starting with <p>.` }],
     });
     // H1 uses the SEO title (which contains the keyword) — this satisfies both H1 and title keyword checks
     let fullHtml = `<h1>${seoTitle}</h1>\n` + introR.choices[0].message.content.trim();
@@ -7817,7 +7898,7 @@ router.post('/ai/full-blog-writer', async (req, res) => {
           : heading;
         return ai.chat.completions.create({
           model, max_tokens: Math.ceil(sectionWords * 3),
-          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" at least ${Math.max(2, Math.round(sectionWords/150))} times naturally.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 8-14 words maximum. Simple common words. Active voice only.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
+          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" at least ${Math.max(2, Math.round(sectionWords/150))} times naturally.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 6-12 words. HARD MAX 13 words. Count words, split if over 13. Use 1-2 syllable words only.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
         });
       }));
       batchResults.forEach((r, bi) => { sectionHtmlParts[i + bi] = r.choices[0].message.content.trim(); });
