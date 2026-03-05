@@ -51,7 +51,7 @@ function improveReadability(html) {
   const $ = cheerioLib.load(html, { decodeEntities: false });
 
   // Split conjunctions/connectives that commonly make sentences too long
-  const SPLIT_AT = /,?\s+(?:but|however|therefore|although|because|whereas|which means|so that|in order to|resulting in|this means|this allows|this helps|as a result|on the other hand|at the same time|in addition|furthermore|moreover|additionally)\s+/gi;
+  const SPLIT_AT = /,?\s+(?:but|however|therefore|although|because|whereas|which means|so that|in order to|resulting in|this means|this allows|this helps|as a result|on the other hand|at the same time|in addition|furthermore|moreover|additionally|while|when|since|if|unless|despite|even though|rather than|instead of)\s+/gi;
 
   $('p').each((_, el) => {
     const original = $(el).text();
@@ -74,11 +74,11 @@ function improveReadability(html) {
     const sentences = pHtml.split(/(?<=[.!?])\s+/g);
     const processed = sentences.map(sentence => {
       const wc = sentence.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-      if (wc <= 22) return sentence;
+      if (wc <= 20) return sentence;
       // Try splitting at connectives
       const split = sentence.replace(SPLIT_AT, (match, offset, str) => {
-        // Only split if the resulting halves are both non-trivial (>5 words each)
-        const before = str.slice(0, offset + match.length / 2).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+        // Only split if the text BEFORE the match is non-trivial (>5 words)
+        const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
         if (before < 5) return match;
         return '. ';
       });
@@ -845,28 +845,70 @@ router.post('/ai/content-fix', async (req, res) => {
           }
         } catch (_) { /* fall through to title-only prompt */ }
       }
-      // Pass HTML with tags preserved so AI keeps heading structure intact (cap at ~12000 chars)
-      const bodyHtmlTrimmed = bodyHtml.trim().slice(0, 12000);
-      // Also compute plain-text word count so we can instruct the AI to preserve it
-      const existingWordCount = bodyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-      if (bodyHtmlTrimmed) {
-        userPrompt = `You are improving the readability of an existing Shopify blog post WITHOUT removing or condensing any content. Your ONLY goal is to make sentences easier to read (target Flesch Reading Ease 60+).
+
+      if (bodyHtml.trim()) {
+        // ── STEP 1: Local deterministic pass (splits long paragraphs & sentences at
+        //           conjunctions — zero content loss, headings untouched) ──────────
+        const locallyImproved = improveReadability(bodyHtml);
+
+        // ── STEP 2: Find <p> blocks that still contain long sentences (>20 words)
+        //           and ask AI to ONLY simplify vocabulary in those sentences ──────
+        const cheerioLocal = require('cheerio');
+        const $l = cheerioLocal.load(locallyImproved, { decodeEntities: false });
+        const longParas = [];
+        $l('p').each((i, el) => {
+          const text = $l(el).text();
+          const sentences = text.split(/(?<=[.!?])\s+/);
+          const hasLong = sentences.some(s => s.trim().split(/\s+/).filter(Boolean).length > 20);
+          if (hasLong) longParas.push({ idx: i, text: text.trim() });
+        });
+
+        if (longParas.length > 0) {
+          // Only send the problem paragraphs — AI does vocabulary simplification only
+          const paraList = longParas.slice(0, 20).map((p, n) => `[${n + 1}] ${p.text}`).join('\n\n');
+          userPrompt = `Simplify the vocabulary in the paragraphs below so they score Flesch Reading Ease 65+. 
 
 STRICT RULES:
-1. PRESERVE every H2 and H3 heading exactly as written — do NOT remove or merge any headings.
-2. PRESERVE all existing content, facts, product descriptions, and sections — do NOT delete anything.
-3. MAINTAIN the same word count (currently ~${existingWordCount} words). The output must be at least ${Math.round(existingWordCount * 0.95)} words.
-4. Only change HOW sentences are written — split long sentences (20+ words) into two shorter ones, replace passive voice with active voice, replace long/complex words with simpler synonyms.
-5. Keep all <ul>, <ol>, <li>, <strong>, <em>, <a> tags intact.
-6. Return the COMPLETE rewritten article — never truncate or stop early.
+- Do NOT remove any sentences or facts.
+- Do NOT merge or reorder sentences.  
+- Only replace long/complex words with shorter common synonyms and convert passive voice to active.
+- Keep the same number of sentences per paragraph.
+- Return ONLY a JSON array of strings — one simplified paragraph per entry, same order as input.
+- No extra keys, no commentary, just the JSON array.
 
-Post title: "${title || h1}"
-Keywords: ${keywords || title || h1}
+Paragraphs to simplify:
+${paraList}`;
 
-Current HTML content to improve:
-${bodyHtmlTrimmed}
+          const fixModel = req.body.model || 'gpt-4o-mini';
+          const fixResp = await getOpenAI().chat.completions.create({
+            model: fixModel,
+            messages: [{ role: 'user', content: userPrompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.4,
+            max_tokens: 3000,
+          });
+          try {
+            const raw = fixResp.choices[0]?.message?.content || '{}';
+            // Model may return {"paragraphs":[...]} or just an array-wrapped object
+            const parsed = JSON.parse(raw);
+            const simplified = Array.isArray(parsed) ? parsed : (parsed.paragraphs || parsed.result || Object.values(parsed)[0]);
+            if (Array.isArray(simplified)) {
+              // Replace the original long paragraphs with simplified versions
+              let pIdx = 0;
+              $l('p').each((i, el) => {
+                const match = longParas.findIndex(p => p.idx === i);
+                if (match !== -1 && match < simplified.length && simplified[match]) {
+                  $l(el).text(simplified[match]);
+                }
+              });
+            }
+          } catch (_) { /* if JSON parse fails, keep the locally-improved version */ }
 
-Return the FULL rewritten content in clean HTML using only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>. Return only the HTML — nothing else.`;
+          if (req.deductCredits) req.deductCredits({ model: fixModel, action: 'email-gen' });
+        }
+
+        const finalHtml = $l('body').html() || locallyImproved;
+        return res.json({ ok: true, html: finalHtml, applyAs });
       } else {
         // No body available — write a strong readable article from scratch
         userPrompt = `Write a complete, highly readable blog post (Flesch Reading Ease 65+) about the topic below. Use short sentences (under 20 words), active voice, plain language. Structure with H2 subheadings every ~200 words. Include an intro, 4-6 body sections, and a conclusion. Aim for at least 1200 words.
@@ -1001,7 +1043,7 @@ Return only the HTML — nothing else.`;
     }
 
     // Readability rewrites need more tokens to output the full article
-    const maxTokens = type === 'readability' ? 4000 : 1200;
+    const maxTokens = 1200;
     const completion = await getOpenAI().chat.completions.create({
       model: req.body.model || 'gpt-4o-mini',
       messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
