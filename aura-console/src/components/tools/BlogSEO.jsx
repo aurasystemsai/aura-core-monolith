@@ -198,6 +198,7 @@ export default function BlogSEO() {
   /* ── WriteResult page ── */
   const [wfResult,         setWfResult]         = useState(null);
   const [wfCoverErr,       setWfCoverErr]       = useState("");    // error from DALL-E cover gen
+  const [wfCoverGenerating,setWfCoverGenerating]= useState(false); // spinner while DALL-E runs
   const [wfPublishing,     setWfPublishing]     = useState(false);
   const [wfPublishOk,      setWfPublishOk]      = useState(null);
   const [wfPublishErr,     setWfPublishErr]     = useState("");
@@ -748,7 +749,7 @@ export default function BlogSEO() {
 
   const wfGenerateArticle = useCallback(async () => {
     if (!wfPickedTitle) return;
-    setWfGenerating(true); setWfErr(""); setWfCoverErr(""); setWfProgress(0); setWfProgressLabel("Writing Article");
+    setWfGenerating(true); setWfErr(""); setWfCoverErr(""); setWfCoverGenerating(false); setWfProgress(0); setWfProgressLabel("Writing Article");
     setSection("WriteGenerating");
     // Section-by-section: each section is a separate API call, so timing scales with section count
     const startMs = Date.now();
@@ -776,13 +777,14 @@ export default function BlogSEO() {
         // Auto-generate cover image if user selected an AI option
         const ratio = genCoverImage === 'ai-16:9' ? '16:9' : genCoverImage === 'ai-4:3' ? '4:3' : '1:1';
         if (genCoverImage !== 'none') {
-          setWfProgressLabel("Generating cover image...");
-          setWfProgress(98);
+          setWfCoverGenerating(true);
+          setWfCoverErr("");
           apiFetchJSON(`${API}/ai/generate-cover-image`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title: r.title || wfPickedTitle, ratio })
           }).then(imgR => {
+            setWfCoverGenerating(false);
             if (imgR?.ok && imgR.imageUrl) {
               setWfCoverImg({ url: imgR.imageUrl, alt: `Cover image for "${r.title || wfPickedTitle}"`, source: 'ai' });
             } else {
@@ -791,6 +793,7 @@ export default function BlogSEO() {
               setWfCoverErr(msg);
             }
           }).catch(err => {
+            setWfCoverGenerating(false);
             console.error('[Cover image] Network error:', err);
             setWfCoverErr(err?.message || 'Network error');
           });
@@ -3085,6 +3088,11 @@ export default function BlogSEO() {
                     </div>
                     {wfCoverImg ? (
                       <img src={wfCoverImg.url} alt={wfCoverImg.alt||wfPickedTitle} style={{ width:"100%", borderRadius:10, border:"1px solid #3f3f46", objectFit:"cover", aspectRatio:"16/9", display:"block" }} />
+                    ) : wfCoverGenerating ? (
+                      <div style={{ width:"100%", aspectRatio:"16/9", background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10 }}>
+                        <span style={S.spinner}/>
+                        <span style={{ fontSize:12, color:"#71717a" }}>Generating cover image with AI...</span>
+                      </div>
                     ) : (
                       <>
                         {wfCoverErr && (
