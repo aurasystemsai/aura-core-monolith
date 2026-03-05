@@ -2518,7 +2518,8 @@ export default function BlogSEO() {
                               const sevCol = issue.sev === "high" ? "#f87171" : issue.sev === "medium" ? "#facc15" : "#60a5fa";
                               const sevBorder = issue.sev === "high" ? "#7f1d1d" : issue.sev === "medium" ? "#78350f" : "#1e3a5f";
                               return (
-                                <div key={i} style={{ background: fixSt === "loading" ? "#1e1b4b" : "#18181b", border:`1px solid ${fixSt === "loading" ? "#4338ca" : sevBorder}`, borderRadius:8, padding:"8px 10px", transition:"background 0.2s" }}>
+                                <div key={i} style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                                  <div style={{ background: fixSt === "loading" ? "#1e1b4b" : "#18181b", border:`1px solid ${fixSt === "loading" ? "#4338ca" : sevBorder}`, borderRadius:8, padding:"8px 10px", transition:"background 0.2s" }}>
                                   <div style={{ display:"flex", alignItems:"flex-start", gap:6 }}>
                                     {alreadyFixed
                                       ? <span style={{ fontSize:13, flexShrink:0 }}>✅</span>
@@ -2541,6 +2542,30 @@ export default function BlogSEO() {
                                       {fixSt === "error" && <span style={{ fontSize:10, color:"#fca5a5", marginLeft:6 }}>✗ failed</span>}
                                     </div>
                                   </div>
+                                  </div>
+                                  {/* Before / after card */}
+                                  {fixSt === "ok" && fixSummaries[issue.msg] && (() => {
+                                    const s = fixSummaries[issue.msg];
+                                    return (
+                                      <div style={{ background:"#052e16", border:"1px solid #166534", borderRadius:6, padding:"8px 12px", fontSize:11, color:"#bbf7d0", lineHeight:1.6, marginLeft:4 }}>
+                                        <span style={{ color:"#4ade80", fontWeight:700 }}>✓ {s.what} updated</span>
+                                        {s.before != null && s.after != null ? (
+                                          <div style={{ marginTop:4, display:"flex", flexDirection:"column", gap:3 }}>
+                                            <div style={{ background:"#0f1e14", borderRadius:4, padding:"4px 8px" }}>
+                                              <span style={{ color:"#6b7280", fontSize:10, fontWeight:600, display:"block", marginBottom:1 }}>BEFORE</span>
+                                              <span style={{ color:"#9ca3af" }}>{s.before || "(empty)"}</span>
+                                            </div>
+                                            <div style={{ background:"#0a2e14", borderRadius:4, padding:"4px 8px" }}>
+                                              <span style={{ color:"#4ade80", fontSize:10, fontWeight:600, display:"block", marginBottom:1 }}>AFTER</span>
+                                              <span style={{ color:"#bbf7d0" }}>{s.after}</span>
+                                            </div>
+                                          </div>
+                                        ) : s.detail ? (
+                                          <div style={{ marginTop:4, background:"#0a2e14", borderRadius:4, padding:"4px 8px", color:"#86efac" }}>{s.detail}</div>
+                                        ) : null}
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
                               );
                             })}
