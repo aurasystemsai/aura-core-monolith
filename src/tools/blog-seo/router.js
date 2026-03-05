@@ -46,46 +46,80 @@ function getShop(req) {
 /* ── Readability post-processor ─────────────────────────────────────────── */
 // Splits long sentences inside <p> tags server-side after AI generation.
 // This is deterministic and far more reliable than prompting the AI to write short sentences.
+function splitLongSentence(sentence) {
+  const wordCount = (s) => s.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+  const wc = wordCount(sentence);
+  if (wc <= 15) return sentence;
+
+  // 1. Split at semicolons → two sentences
+  if (/;\s+/.test(sentence)) {
+    return sentence.replace(/;\s+/g, '. ');
+  }
+
+  // 2. Split at strong connective adverbs at any position
+  const ADVERB_SPLIT = /,?\s+(?:however|therefore|although|because|whereas|which means|so that|in order to|resulting in|this means|this allows|this helps|as a result|on the other hand|at the same time|in addition|furthermore|moreover|additionally|despite|even though|rather than|instead of)\s+/gi;
+  const adverbResult = sentence.replace(ADVERB_SPLIT, (match, offset, str) => {
+    const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    if (before < 5) return match;
+    return '. ';
+  });
+  if (adverbResult !== sentence) return adverbResult;
+
+  // 3. Split at ", and " / ", or " / ", but " / ", while " / ", when " / ", since "
+  const COMMA_CONJ = /,\s+(and|or|but|while|when|since|if|unless|so)\s+/gi;
+  const conjResult = sentence.replace(COMMA_CONJ, (match, conj, offset, str) => {
+    const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    const after = str.slice(offset + match.length).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    if (before < 5 || after < 4) return match;
+    // Capitalise the start of the new sentence
+    const conjCapital = conj.charAt(0).toUpperCase() + conj.slice(1);
+    return `. ${conjCapital} `;
+  });
+  if (conjResult !== sentence) return conjResult;
+
+  // 4. For sentences >25 words with no comma split points, split at naked " and " / " or "
+  if (wc > 25) {
+    const NAKED_AND = /\s+(and|or)\s+(?=[A-Za-z])/g;
+    let splitCount = 0;
+    const andResult = sentence.replace(NAKED_AND, (match, conj, offset, str) => {
+      if (splitCount > 0) return match; // only one split
+      const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+      const after = str.slice(offset + match.length).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+      if (before < 7 || after < 5) return match;
+      splitCount++;
+      const conjCapital = conj.charAt(0).toUpperCase() + conj.slice(1);
+      return `. ${conjCapital} `;
+    });
+    if (andResult !== sentence) return andResult;
+  }
+
+  return sentence;
+}
+
 function improveReadability(html) {
   const cheerioLib = require('cheerio');
   const $ = cheerioLib.load(html, { decodeEntities: false });
 
-  // Split conjunctions/connectives that commonly make sentences too long
-  const SPLIT_AT = /,?\s+(?:but|however|therefore|although|because|whereas|which means|so that|in order to|resulting in|this means|this allows|this helps|as a result|on the other hand|at the same time|in addition|furthermore|moreover|additionally|while|when|since|if|unless|despite|even though|rather than|instead of)\s+/gi;
-
+  // Pass 1: break massive paragraphs (>80 words) into individual sentence paragraphs
   $('p').each((_, el) => {
-    const original = $(el).text();
-    const wordCount = original.trim().split(/\s+/).filter(Boolean).length;
-    // Only process paragraphs that are very long (>120 words — split into smaller chunks)
-    if (wordCount > 120) {
+    const wordCount = $(el).text().trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount > 80) {
       const sentences = $(el).html().split(/(?<=[.!?])\s+(?=[A-Z"])/g);
       if (sentences.length > 1) {
-        // Replace the single big paragraph with multiple shorter ones
         const newHtml = sentences.map(s => `<p>${s.trim()}</p>`).join('\n');
         $(el).replaceWith(newHtml);
       }
     }
   });
 
-  // Within each <p>, split overly long sentences at natural break points
+  // Pass 2: split long sentences within each <p> at natural break points
   $('p').each((_, el) => {
     const pHtml = $(el).html() || '';
-    // Split raw text at known conjunction patterns if the sentence is >25 words
     const sentences = pHtml.split(/(?<=[.!?])\s+/g);
-    const processed = sentences.map(sentence => {
-      const wc = sentence.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-      if (wc <= 20) return sentence;
-      // Try splitting at connectives
-      const split = sentence.replace(SPLIT_AT, (match, offset, str) => {
-        // Only split if the text BEFORE the match is non-trivial (>5 words)
-        const before = str.slice(0, offset).replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-        if (before < 5) return match;
-        return '. ';
-      });
-      return split;
-    });
-    if (processed.join(' ') !== pHtml) {
-      $(el).html(processed.join(' '));
+    const processed = sentences.map(s => splitLongSentence(s));
+    const result = processed.join(' ');
+    if (result !== pHtml) {
+      $(el).html(result);
     }
   });
 
@@ -859,7 +893,7 @@ router.post('/ai/content-fix', async (req, res) => {
         $l('p').each((i, el) => {
           const text = $l(el).text();
           const sentences = text.split(/(?<=[.!?])\s+/);
-          const hasLong = sentences.some(s => s.trim().split(/\s+/).filter(Boolean).length > 20);
+          const hasLong = sentences.some(s => s.trim().split(/\s+/).filter(Boolean).length > 16);
           if (hasLong) longParas.push({ idx: i, text: text.trim() });
         });
 
