@@ -703,7 +703,7 @@ export default function BlogSEO() {
     if (!genKwInput.trim()) return;
     setGenKwLoading(true); setGenModalErr("");
     try {
-      const r = await apiFetchJSON(`${API}/ai/expand-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seed: genKwInput.trim(), count: 5 }) });
+      const r = await apiFetchJSON(`${API}/ai/expand-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seed: genKwInput.trim(), count: 5, shopContext: genShopSuggestions.length ? genShopSuggestions.slice(0,5).join(', ') : undefined }) });
       if (r.ok) setGenKeywords(r.keywords || []);
       else setGenModalErr(r.error || "Failed to expand keywords");
     } catch(e) { setGenModalErr(e.message); }

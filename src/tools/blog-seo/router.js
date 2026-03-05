@@ -4186,9 +4186,10 @@ router.post('/ai/title-ideas', async (req, res) => {
 /* 28b. AI Keyword Expander — seed keyword → 5 long-tail variations */
 router.post('/ai/expand-keywords', async (req, res) => {
   try {
-    const { seed, count = 5, model = 'gpt-4o-mini' } = req.body || {};
+    const { seed, count = 5, model = 'gpt-4o-mini', shopContext } = req.body || {};
     if (!seed) return res.status(400).json({ ok: false, error: 'seed keyword required' });
-    const prompt = `Generate ${count} specific, high-traffic, long-tail keyword variations based on the seed keyword: "${seed}". Return only SEO-friendly 2–4 word keyword phrases (no titles, no punctuation). Return JSON: {"keywords": ["phrase1","phrase2","phrase3","phrase4","phrase5"]}`;
+    const contextLine = shopContext ? `\nShop context (what this merchant sells): ${shopContext}. All keyword suggestions MUST be relevant to this niche.` : '';
+    const prompt = `Generate ${count} specific, high-traffic, long-tail keyword variations based on the seed keyword: "${seed}".${contextLine}\nReturn only SEO-friendly 2–4 word keyword phrases (no titles, no punctuation). Return JSON: {"keywords": ["phrase1","phrase2","phrase3","phrase4","phrase5"]}`;
     const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(r.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
