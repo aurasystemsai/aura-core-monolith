@@ -7940,6 +7940,44 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const citationsHtml = citationsR.choices[0].message.content.trim();
     if (citationsHtml) fullHtml += '\n' + citationsHtml;
 
+    // ── 5.5. Inject inline images via Unsplash (if key configured) ──
+    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+    if (unsplashKey) {
+      try {
+        // Find every </h2> position and inject an image after every 2nd one
+        const h2Positions = [];
+        let searchFrom = 0;
+        while (true) {
+          const idx = fullHtml.indexOf('</h2>', searchFrom);
+          if (idx === -1) break;
+          h2Positions.push(idx + 5); // position right after </h2>
+          searchFrom = idx + 5;
+        }
+        // Pick positions: after 2nd, 4th H2 (skip intro h1 area)
+        const insertPositions = h2Positions.filter((_, i) => i % 2 === 1).slice(0, 3);
+        // Fetch Unsplash images in parallel
+        const imgResults = await Promise.all(insertPositions.map(async (_, i) => {
+          const sectionHeading = contentSections[i * 2 + 1] || contentSections[i] || keyword;
+          const query = encodeURIComponent(`${keyword} ${sectionHeading}`.slice(0, 60));
+          try {
+            const r2 = await fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=1&orientation=landscape`, {
+              headers: { Authorization: `Client-ID ${unsplashKey}` },
+            });
+            if (!r2.ok) return null;
+            const j2 = await r2.json();
+            const photo = j2.results?.[0];
+            if (!photo) return null;
+            return `\n<figure style="margin:2em 0;text-align:center"><img src="${photo.urls.regular}" alt="${(photo.alt_description || sectionHeading).replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px" loading="lazy" /><figcaption style="font-size:0.85em;color:#666;margin-top:0.5em">Photo by <a href="${photo.user.links.html}?utm_source=aura_seo&utm_medium=referral" target="_blank" rel="noopener noreferrer">${photo.user.name}</a> on Unsplash</figcaption></figure>\n`;
+          } catch (_) { return null; }
+        }));
+        // Inject images into HTML (insert from end to front to preserve positions)
+        const pairs = insertPositions.map((pos, i) => ({ pos, html: imgResults[i] })).filter(p => p.html).reverse();
+        for (const { pos, html: imgHtml } of pairs) {
+          fullHtml = fullHtml.slice(0, pos) + imgHtml + fullHtml.slice(pos);
+        }
+      } catch (_) { /* Unsplash injection failed silently — not critical */ }
+    }
+
     // ── 6. Post-process readability — split long sentences/paragraphs deterministically ──
     fullHtml = improveReadability(fullHtml);
 

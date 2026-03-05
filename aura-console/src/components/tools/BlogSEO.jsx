@@ -786,7 +786,20 @@ export default function BlogSEO() {
           }).then(imgR => {
             setWfCoverGenerating(false);
             if (imgR?.ok && imgR.imageUrl) {
-              setWfCoverImg({ url: imgR.imageUrl, alt: `Cover image for "${r.title || wfPickedTitle}"`, source: 'ai' });
+              // Also inject the cover image into the article body HTML after the intro
+              // so the SEO checker counts imgCount > 0
+              const altText = `Cover image for \"${r.title || wfPickedTitle}\"`;
+              const coverFigure = `<figure style="margin:2em 0;text-align:center"><img src="${imgR.imageUrl}" alt="${altText}" style="max-width:100%;border-radius:8px" loading="lazy" /></figure>`;
+              setWfResult(prev => {
+                if (!prev) return prev;
+                const html = prev.fullArticle || '';
+                const insertAt = html.indexOf('</p>');
+                const newHtml = insertAt >= 0
+                  ? html.slice(0, insertAt + 4) + '\n' + coverFigure + '\n' + html.slice(insertAt + 4)
+                  : html + '\n' + coverFigure;
+                return { ...prev, fullArticle: newHtml };
+              });
+              setWfCoverImg({ url: imgR.imageUrl, alt: altText, source: 'ai' });
             } else {
               const msg = imgR?.error || 'Image generation failed';
               console.error('[Cover image] DALL-E error:', msg);
