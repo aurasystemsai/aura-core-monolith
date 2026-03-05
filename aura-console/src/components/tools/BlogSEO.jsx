@@ -173,6 +173,8 @@ export default function BlogSEO() {
   /* ── Generate Article flow ── */
   const [showGenModal,     setShowGenModal]     = useState(false);
   const [genKwMode,        setGenKwMode]        = useState("ai");   // "manual" | "ai"
+  const [genShopSuggestions, setGenShopSuggestions] = useState([]);  // from shop products
+  const [genSuggestionsLoading, setGenSuggestionsLoading] = useState(false);
   const [genKeywords,      setGenKeywords]      = useState([]);      // tag array
   const [genKwInput,       setGenKwInput]       = useState("");      // text field
   const [genKwLoading,     setGenKwLoading]     = useState(false);   // AI keyword expansion
@@ -689,6 +691,12 @@ export default function BlogSEO() {
   /* ─── Generate Article modal handlers ─── */
   const openGenModal = useCallback(() => {
     setShowGenModal(true); setGenKwMode("ai"); setGenKeywords([]); setGenKwInput(""); setGenKwLoading(false); setGenTitleLoading(false); setGenModalErr("");
+    // Auto-fetch shop product keywords
+    setGenShopSuggestions([]); setGenSuggestionsLoading(true);
+    apiFetchJSON(`${API}/ai/shop-keywords`).then(r => {
+      setGenSuggestionsLoading(false);
+      if (r.ok && r.keywords?.length) setGenShopSuggestions(r.keywords);
+    }).catch(() => setGenSuggestionsLoading(false));
   }, []);
 
   const genExpandKeywords = useCallback(async () => {
@@ -4754,30 +4762,51 @@ export default function BlogSEO() {
 
           {/* Keyword input area */}
           {genKwMode === "ai" ? (
-            <div style={{ border:"1.5px solid #3f3f46", borderRadius:10, padding:"10px 12px", marginBottom:14, background:"#09090b" }}>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
-                {genKeywords.map((kw,i) => (
-                  <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#d4d4d8" }}>
-                    {kw}
-                    <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:13, padding:0, lineHeight:1 }}>×</button>
-                  </span>
-                ))}
-              </div>
-              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                <input
-                  autoFocus
-                  style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:"#fafafa", padding:"2px 0" }}
-                  placeholder={genKeywords.length ? "Add more keywords..." : "e.g. snowboards"}
-                  value={genKwInput}
-                  onChange={e => setGenKwInput(e.target.value)}
-                  onKeyDown={e => { if(e.key==="Enter" && genKwInput.trim()) { setGenKeywords(prev=>[...prev, genKwInput.trim()]); setGenKwInput(""); } }}
-                />
-                <button
-                  onClick={genExpandKeywords}
-                  disabled={!genKwInput.trim() || genKwLoading}
-                  title="AI Generate keyword variations"
-                  style={{ background:"#6366f1", border:"none", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor: !genKwInput.trim() || genKwLoading ? "default" : "pointer", opacity: !genKwInput.trim() || genKwLoading ? 0.5 : 1 }}
-                >{genKwLoading ? <span style={S.spinner}/> : <span style={{ color:"#fff", fontSize:14 }}>✦</span>}</button>
+            <div style={{ marginBottom:14 }}>
+              {/* Shop product suggestions */}
+              {(genSuggestionsLoading || genShopSuggestions.length > 0) && (
+                <div style={{ marginBottom:8 }}>
+                  <div style={{ fontSize:11, color:"#71717a", marginBottom:6 }}>
+                    {genSuggestionsLoading ? "Loading from your shop..." : "From your shop — click to add:"}
+                  </div>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                    {genSuggestionsLoading
+                      ? <span style={S.spinner}/>
+                      : genShopSuggestions.map((kw, i) => (
+                          <button key={i}
+                            onClick={() => { if (!genKeywords.includes(kw)) setGenKeywords(prev => [...prev, kw]); }}
+                            style={{ background: genKeywords.includes(kw) ? "#4f46e5" : "#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color: genKeywords.includes(kw) ? "#fff" : "#d4d4d8", cursor:"pointer" }}
+                          >{kw}</button>
+                        ))
+                    }
+                  </div>
+                </div>
+              )}
+              <div style={{ border:"1.5px solid #3f3f46", borderRadius:10, padding:"10px 12px", background:"#09090b" }}>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
+                  {genKeywords.map((kw,i) => (
+                    <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#d4d4d8" }}>
+                      {kw}
+                      <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+                    </span>
+                  ))}
+                </div>
+                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                  <input
+                    autoFocus
+                    style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:"#fafafa", padding:"2px 0" }}
+                    placeholder={genKeywords.length ? "Add more keywords..." : "Or type a keyword..."}
+                    value={genKwInput}
+                    onChange={e => setGenKwInput(e.target.value)}
+                    onKeyDown={e => { if(e.key==="Enter" && genKwInput.trim()) { setGenKeywords(prev=>[...prev, genKwInput.trim()]); setGenKwInput(""); } }}
+                  />
+                  <button
+                    onClick={genExpandKeywords}
+                    disabled={!genKwInput.trim() || genKwLoading}
+                    title="AI Generate keyword variations"
+                    style={{ background:"#6366f1", border:"none", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor: !genKwInput.trim() || genKwLoading ? "default" : "pointer", opacity: !genKwInput.trim() || genKwLoading ? 0.5 : 1 }}
+                  >{genKwLoading ? <span style={S.spinner}/> : <span style={{ color:"#fff", fontSize:14 }}>✦</span>}</button>
+                </div>
               </div>
             </div>
           ) : (

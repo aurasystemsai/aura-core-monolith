@@ -9172,6 +9172,49 @@ router.post('/apply-date-refresh', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+/* =========================================================================
+   AI: SHOP KEYWORDS — pull product titles/types as keyword suggestions
+   ========================================================================= */
+router.get('/ai/shop-keywords', async (req, res) => {
+  try {
+    const shopTokens = require('../../core/shopTokens');
+    let shop = req.session?.shop
+      || req.headers['x-shopify-shop-domain']
+      || (shopTokens.loadAll ? (() => { const all = shopTokens.loadAll(); const keys = Object.keys(all || {}); return keys.length === 1 ? keys[0] : null; })() : null)
+      || process.env.SHOPIFY_STORE_URL || null;
+    if (!shop) return res.json({ ok: true, keywords: [] });
+    const token = shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null);
+    if (!token) return res.json({ ok: true, keywords: [] });
+    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+    const r = await fetch(`https://${shop}/admin/api/${ver}/products.json?limit=20&fields=title,product_type,tags`, { headers });
+    if (!r.ok) return res.json({ ok: true, keywords: [] });
+    const { products = [] } = await r.json();
+    // Build keyword list: product types first, then product title keywords, deduplicated
+    const seen = new Set();
+    const keywords = [];
+    // Product types (e.g. "Snowboards", "Bindings")
+    for (const p of products) {
+      if (p.product_type && !seen.has(p.product_type.toLowerCase())) {
+        seen.add(p.product_type.toLowerCase());
+        keywords.push(p.product_type);
+      }
+    }
+    // First word(s) of product titles as topic ideas
+    for (const p of products) {
+      // Extract the first 3 words as a topic keyword
+      const short = (p.title || '').split(' ').slice(0, 3).join(' ');
+      if (short && !seen.has(short.toLowerCase())) {
+        seen.add(short.toLowerCase());
+        keywords.push(short);
+      }
+    }
+    res.json({ ok: true, keywords: keywords.slice(0, 12) });
+  } catch (err) {
+    res.json({ ok: true, keywords: [] }); // fail silently
+  }
+});
+
 /* ── Publish article to Shopify as draft ───────────────────────────────── */
 /* =========================================================================
    AI: GENERATE COVER IMAGE — DALL-E 3
