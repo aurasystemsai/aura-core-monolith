@@ -4744,7 +4744,7 @@ export default function BlogSEO() {
     {showGenModal && (
       <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
         onClick={e => { if(e.target === e.currentTarget) setShowGenModal(false); }}>
-        <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:520, position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.7)", color:"#fafafa" }}>
+        <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:520, maxHeight:"90vh", overflowY:"auto", position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.7)", color:"#fafafa" }}>
           <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:14, right:16, background:"#27272a", border:"1px solid #3f3f46", color:"#a1a1aa", cursor:"pointer", fontSize:16, lineHeight:1, borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
 
           <div style={{ fontSize:17, fontWeight:700, color:"#fafafa", marginBottom:4 }}>Generate Article Title from Keywords</div>
