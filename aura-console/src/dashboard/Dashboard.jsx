@@ -128,6 +128,7 @@ const [scanningInProgress, setScanningInProgress] = useState(false);
 const [showScanModal, setShowScanModal] = useState(false);
 const [lastScanTime, setLastScanTime] = useState(null);
 const [scanRemainingTime, setScanRemainingTime] = useState(0);
+const [scanError, setScanError] = useState(null);
 
 const showToast = useCallback((message, type = "success") => {
 const id = Date.now();
@@ -138,10 +139,12 @@ setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
 useEffect(() => {
 const fetchShop = async () => {
 try {
-const res = await apiFetchJSON("/api/shopify/shop");
-setShop(res?.shop || res || { name: "My Store", domain: "" });
+const res = await apiFetchJSON("/api/session");
+const domain = res?.shop || localStorage.getItem("auraShop") || "";
+setShop({ name: domain, domain, myshopify_domain: domain });
 } catch {
-setShop({ name: "My Store", domain: "" });
+const domain = localStorage.getItem("auraShop") || "";
+setShop({ name: domain, domain, myshopify_domain: domain });
 }
 };
 fetchShop();
@@ -255,11 +258,17 @@ setShowScanModal(true);
 setScanRemainingTime(90);
 const countdown = setInterval(() => setScanRemainingTime(r => Math.max(0, r - 1)), 1000);
 try {
-const shopDomain = shop?.domain || localStorage.getItem("shopDomain");
-if (!shopDomain) { showToast("No shop domain found", "error"); return; }
+// Try every possible source for the shop domain
+const shopDomain =
+  shop?.myshopify_domain ||
+  shop?.domain ||
+  localStorage.getItem("auraShop") ||
+  localStorage.getItem("shopDomain") ||
+  new URLSearchParams(window.location.search).get("shop") ||
+  "";
 const res = await apiFetch("/api/tools/seo-site-crawler/crawl", {
 method: "POST",
-headers: { "Content-Type": "application/json", "x-shopify-shop-domain": shopDomain },
+headers: { "Content-Type": "application/json", ...(shopDomain ? { "x-shopify-shop-domain": shopDomain } : {}) },
 body: JSON.stringify({ shopDomain }),
 });
 clearInterval(countdown);
@@ -270,12 +279,12 @@ const result = data.result || data;
 const health = Math.max(0, Math.round(100 - (result.high || 0) * 3 - (result.medium || 0) * 1.5 - (result.low || 0) * 0.5));
 setSiteAudit({ health, errors: result.high || 0, warnings: result.medium || 0, crawledPages: result.pagesScanned, lastUpdated: new Date().toLocaleDateString(), crawlResults: result });
 setLastScanTime(new Date().toLocaleTimeString());
-showToast("Scan complete — " + ((result.high || 0) + (result.medium || 0) + (result.low || 0)) + " issues found");
+setScanError(null);
 } else {
-showToast(data.error || "Scan failed", "error");
+setScanError(data.error || "Scan failed");
 }
 } catch (e) {
-    setShowScanModal(false);
+setScanError(e.message || "Scan failed");
 } finally {
 clearInterval(countdown);
 setScanningInProgress(false);
@@ -340,17 +349,18 @@ style={{ background: "none", border: "none", color: "inherit", cursor: "pointer"
 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 {scanningInProgress
 ? <div style={{ width: 32, height: 32, border: "3px solid #6366f1", borderTop: "3px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+: scanError ? <span style={{ fontSize: 28 }}>⚠️</span>
 : <span style={{ fontSize: 28 }}>🔍</span>}
 <div>
 <h2 style={{ color: "#fafafa", fontWeight: 800, fontSize: 18, margin: 0 }}>
-{scanningInProgress ? "Scanning site…" : "Scan Complete — " + (siteAudit.errors ?? 0) + " errors, " + (siteAudit.warnings ?? 0) + " warnings"}
+{scanningInProgress ? "Scanning site…" : scanError ? "Scan Failed" : "Scan Complete — " + (siteAudit.errors ?? 0) + " errors, " + (siteAudit.warnings ?? 0) + " warnings"}
 </h2>
 <p style={{ color: "#a1a1aa", fontSize: 13, margin: "3px 0 0" }}>
 {scanningInProgress ? "Analysing your store pages…" : (siteAudit.crawledPages ?? 0) + " pages crawled"}
 </p>
 </div>
 </div>
-{!scanningInProgress && <button onClick={() => setShowScanModal(false)} style={{ background: "#27272a", border: "none", color: "#a1a1aa", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 14 }}>Close</button>}
+{!scanningInProgress && <button onClick={() => { setShowScanModal(false); setScanError(null); }} style={{ background: "#27272a", border: "none", color: "#a1a1aa", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 14 }}>Close</button>}
 </div>
 {scanningInProgress && (
 <div style={{ padding: "18px 26px", flex: 1, overflowY: "auto" }}>
@@ -365,7 +375,15 @@ Est. remaining: <strong style={{ color: "#a1a1aa" }}>{Math.floor(scanRemainingTi
 )}
 </div>
 )}
-{!scanningInProgress && siteAudit.crawlResults && (
+{!scanningInProgress && scanError && (
+<div style={{ padding: "24px 26px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+<span style={{ fontSize: 36 }}>⚠️</span>
+<div style={{ color: "#fc8181", fontWeight: 700, fontSize: 15, textAlign: "center" }}>{scanError}</div>
+<div style={{ color: "#71717a", fontSize: 13, textAlign: "center" }}>Make sure your store is connected and re-install the app if the issue persists.</div>
+<button onClick={() => { setScanError(null); setShowScanModal(false); }} style={{ marginTop: 6, background: "#3f3f46", border: "none", color: "#fafafa", borderRadius: 8, padding: "9px 20px", cursor: "pointer", fontWeight: 600 }}>Close</button>
+</div>
+)}
+{!scanningInProgress && !scanError && siteAudit.crawlResults && (
 <div style={{ flex: 1, overflowY: "auto", padding: "0 26px 22px" }}>
 <div style={{ display: "flex", gap: 10, padding: "14px 0", flexWrap: "wrap" }}>
 <span style={{ background: "#2d1515", border: "1px solid #e53e3e", color: "#fc8181", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>🔴 {siteAudit.errors} High</span>
