@@ -169,7 +169,7 @@ const Dashboard = ({ setActiveSection }) => {
 	});
 	const [previousStats, setPreviousStats] = useState(null);
 	const [loading, setLoading] = useState(true);
-	const [autoRefresh, setAutoRefresh] = useState(true);
+
 	const [copilotInput, setCopilotInput] = useState("");
 	const [copilotReply, setCopilotReply] = useState("");
 	const [copilotLoading, setCopilotLoading] = useState(false);
@@ -568,16 +568,6 @@ const Dashboard = ({ setActiveSection }) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [timePeriod]);
 
-	// Auto-refresh every 30 seconds
-	useEffect(() => {
-		if (!autoRefresh) return;
-		const interval = setInterval(() => {
-			fetchStats();
-		}, 30000);
-		return () => clearInterval(interval);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [autoRefresh, timePeriod]);
-
 	// Scan countdown timer
 	useEffect(() => {
 		if (!scanningInProgress || scanRemainingTime <= 0) {
@@ -919,26 +909,6 @@ const Dashboard = ({ setActiveSection }) => {
 							<option value={30}>Last 30 Days</option>
 							<option value={90}>Last 90 Days</option>
 						</select>
-						{/* Auto-refresh Toggle */}
-						<button
-							onClick={() => setAutoRefresh(!autoRefresh)}
-							style={{
-								background: autoRefresh ? "#4f46e5" : "#18181b",
-								border: "1px solid #27272a",
-								borderRadius: 8,
-								padding: "10px 16px",
-								color: autoRefresh ? "#18181b" : "#4f46e5",
-								fontSize: 14,
-								fontWeight: 600,
-								cursor: "pointer",
-								display: "flex",
-								alignItems: "center",
-								gap: 6,
-							}}
-							title={autoRefresh ? "Auto-refresh ON (30s)" : "Auto-refresh OFF"}
-						>
-							 {autoRefresh ? "ON" : "OFF"}
-						</button>
 						{/* Refresh Button */}
 						<button
 							onClick={() => fetchStats()}
