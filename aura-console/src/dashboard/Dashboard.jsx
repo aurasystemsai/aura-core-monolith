@@ -400,6 +400,15 @@ style={{ background: "#09090b", border: "1px solid " + (issue.severity === "high
 </div>
 </div>
 ))}
+{(siteAudit.errors > 0 || siteAudit.warnings > 0) && (
+<div style={{ paddingTop: 16, borderTop: "1px solid #27272a", marginTop: 8 }}>
+<button
+onClick={() => { setShowScanModal(false); setActiveSection && setActiveSection("site-audit-fixer"); }}
+style={{ background: "#4f46e5", border: "none", borderRadius: 8, padding: "11px 22px", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", width: "100%" }}>
+🤖 Fix All Issues with AI →
+</button>
+</div>
+)}
 </div>
 )}
 </div>
@@ -618,6 +627,7 @@ style={{ background: scanningInProgress ? "#3f3f46" : "#6366f1", border: "none",
 </div>
 }>
 {siteAudit.health != null ? (
+<>
 <div style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr", gap: 20, alignItems: "center" }}>
 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 <span style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", marginBottom: 8 }}>Site Health</span>
@@ -644,6 +654,16 @@ style={{ background: scanningInProgress ? "#3f3f46" : "#6366f1", border: "none",
 </div>
 </div>
 </div>
+{(siteAudit.errors > 0 || siteAudit.warnings > 0) && (
+<div style={{ borderTop: "1px solid #27272a", paddingTop: 14, marginTop: 14 }}>
+<button
+onClick={() => setActiveSection && setActiveSection("site-audit-fixer")}
+style={{ background: "#4f46e5", border: "none", borderRadius: 8, padding: "10px 18px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+🤖 Fix All Issues with AI →
+</button>
+</div>
+)}
+</>
 ) : (
 <div style={{ textAlign: "center", padding: "24px 0" }}>
 <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>

@@ -1,9 +1,12 @@
 const express = require("express");
 const { crawlSite } = require("./seoSiteCrawlerService");
 const shopTokens = require("../../core/shopTokens");
+const { applyProductFields } = require("../../core/shopifyApply");
+const { getOpenAIClient } = require("../../core/openaiClient");
+const axios = require("axios");
 const router = express.Router();
 
-// In-memory history store (persists for server session)
+const SHOPIFY_API_VERSION = "2024-01";
 const crawlHistory = [];
 let nextId = 1;
 const analyticsEvents = [];
@@ -72,6 +75,131 @@ router.post("/crawl", async (req, res) => {
     if (!token) return res.json({ ok: false, error: "No access token for " + shop });
     const result = await crawlSite(shop, token);
     res.json({ ok: true, result });
+  } catch (err) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
+// ── Bulk AI fix — generates SEO fixes for all products with issues ────────────
+router.post("/bulk-fix", async (req, res) => {
+  try {
+    const { shop, token } = getShopAndToken(req);
+    if (!shop) return res.json({ ok: false, error: "No shop domain" });
+    if (!token) return res.json({ ok: false, error: "No access token for " + shop });
+
+    // Get the last crawl result or use what was passed
+    const crawlResult = req.body.crawlResult || (crawlHistory[0] && crawlHistory[0].result);
+    if (!crawlResult) return res.json({ ok: false, error: "No scan data — run a Site Audit first" });
+
+    const openai = getOpenAIClient();
+    if (!openai) return res.json({ ok: false, error: "OpenAI not configured" });
+
+    // Get product pages from crawl results
+    const productPages = (crawlResult.pages || []).filter(p => p.url && p.url.includes("/products/"));
+    if (productPages.length === 0) return res.json({ ok: false, fixes: [], message: "No product issues to fix" });
+
+    // Fetch full product list from Shopify to get IDs
+    const { data: shopData } = await axios.get(
+      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products.json?limit=100&fields=id,title,handle,body_html`,
+      { headers: { "X-Shopify-Access-Token": token }, timeout: 15000 }
+    );
+    const allProducts = shopData.products || [];
+    const byHandle = {};
+    for (const p of allProducts) byHandle[p.handle] = p;
+
+    const fixes = [];
+    for (const page of productPages) {
+      const handle = page.url.split("/products/")[1]?.split("?")[0]?.split("/")[0];
+      const product = handle && byHandle[handle];
+      if (!product) continue;
+
+      // Only fix pages that actually have issues
+      const hasIssues = (page.issues || []).length > 0;
+      if (!hasIssues) continue;
+
+      const bodyText = (product.body_html || "").replace(/<[^>]+>/g, "").trim().slice(0, 400);
+
+      const prompt = `You are an expert Shopify SEO copywriter. Write optimised SEO fields for this product.
+
+Product Name: ${product.title}
+Product Description: ${bodyText || "(none provided)"}
+
+Return ONLY this JSON (no markdown, no extra text):
+{
+  "seoTitle": "50-60 char compelling title with primary keyword naturally included",
+  "metaDescription": "150-160 char meta description — benefit-first, specific, ends with CTA",
+  "altText": "12-15 word vivid image alt text including primary keyword"
+}`;
+
+      try {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 300,
+          temperature: 0.7,
+        });
+        const raw = completion.choices[0]?.message?.content?.trim() || "{}";
+        let parsed = {};
+        try { parsed = JSON.parse(raw); } catch (_) {
+          const m = raw.match(/\{[\s\S]*\}/);
+          if (m) try { parsed = JSON.parse(m[0]); } catch (_) {}
+        }
+        fixes.push({
+          productId: String(product.id),
+          handle: product.handle,
+          productName: product.title,
+          url: page.url,
+          issues: page.issues || [],
+          seoTitle: parsed.seoTitle || "",
+          metaDescription: parsed.metaDescription || "",
+          altText: parsed.altText || "",
+          applied: false,
+        });
+      } catch (e) {
+        console.error("[bulk-fix] AI error for " + product.title, e.message);
+      }
+    }
+
+    res.json({ ok: true, fixes, total: fixes.length });
+  } catch (err) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
+// ── Apply fixes — pushes AI-generated SEO to Shopify ─────────────────────────
+router.post("/apply-fixes", async (req, res) => {
+  try {
+    const { shop, token } = getShopAndToken(req);
+    if (!shop) return res.json({ ok: false, error: "No shop domain" });
+    if (!token) return res.json({ ok: false, error: "No access token" });
+
+    const { fixes } = req.body;
+    if (!Array.isArray(fixes) || !fixes.length) return res.json({ ok: false, error: "No fixes to apply" });
+
+    const results = [];
+    for (const fix of fixes) {
+      if (!fix.productId) continue;
+      try {
+        await applyProductFields(shop, fix.productId, {
+          seoTitle: fix.seoTitle,
+          metaDescription: fix.metaDescription,
+        });
+
+        // Apply alt text to product images if provided
+        if (fix.altText && fix.imageId) {
+          await axios.put(
+            `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products/${fix.productId}/images/${fix.imageId}.json`,
+            { image: { id: fix.imageId, alt: fix.altText } },
+            { headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" }, timeout: 10000 }
+          );
+        }
+        results.push({ productId: fix.productId, ok: true });
+      } catch (e) {
+        results.push({ productId: fix.productId, ok: false, error: e.message });
+      }
+    }
+    const success = results.filter(r => r.ok).length;
+    res.json({ ok: true, results, success, failed: results.length - success });
   } catch (err) {
     res.json({ ok: false, error: err.message });
   }

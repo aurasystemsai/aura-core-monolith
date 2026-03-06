@@ -57,6 +57,7 @@ const WeeklyBlogContentEngine = lazy(() => import("./components/tools/WeeklyBlog
 const OnPageSEOEngine = lazy(() => import("./components/tools/OnPageSEOEngine.jsx"));
 const TechnicalSEOAuditor = lazy(() => import("./components/tools/TechnicalSEOAuditor.jsx"));
 const SEOSiteCrawler = lazy(() => import("./components/tools/SEOSiteCrawler.jsx"));
+const SiteAuditFixer = lazy(() => import("./components/tools/SiteAuditFixer.jsx"));
 const SocialSchedulerContentEngine = lazy(() => import("./components/tools/SocialSchedulerContentEngine.jsx"));
 const SchemaRichResultsEngine = lazy(() => import("./components/tools/SchemaRichResultsEngine.jsx"));
 const ReviewUGCEngine = lazy(() => import("./components/tools/ReviewUGCEngine.jsx"));
@@ -536,6 +537,7 @@ function App() {
  {activeSection === "rank-visibility-tracker"&& <RankVisibilityTracker />}
  {activeSection === "ai-visibility-tracker"&& <AIVisibilityTracker />}
  {activeSection === "seo-site-crawler"&& <SEOSiteCrawler />}
+ {activeSection === "site-audit-fixer"&& <SiteAuditFixer />}
  {activeSection === "internal-link-optimizer"&& <InternalLinkOptimizer />}
  {activeSection === "ai-content-brief-generator"&& <AIContentBriefGenerator />}
  {activeSection === "content-scoring-optimization"&& <ContentScoringOptimization />}
