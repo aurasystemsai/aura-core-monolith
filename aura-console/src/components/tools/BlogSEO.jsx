@@ -1747,6 +1747,12 @@ export default function BlogSEO() {
     /* Truly technical — not fixable via content API, show inline tip */
     if (m.includes("canonical") || m.includes("robots") || m.includes("noindex"))
       return { label: "? How to fix", tip: "In your Shopify theme editor, check your blog-article.liquid template. Shopify adds canonical tags automatically — if this persists, a conflicting app may be overriding it.", action: () => setInlineTipIssue(msg) };
+    if (m.includes("favicon"))
+      return { label: "? How to fix", tip: "A favicon is set in your Shopify theme, not per blog post. Go to Shopify Admin → Online Store → Themes → Customize → scroll to Logo/Brand and upload a favicon icon (32×32px PNG or ICO).", action: () => setInlineTipIssue(msg) };
+    if (m.includes("charset") || m.includes("character set") || m.includes("encoding"))
+      return { label: "? How to fix", tip: "The charset meta tag is added by your Shopify theme. Go to Online Store → Themes → Edit Code → layout/theme.liquid and ensure <meta charset=\"utf-8\"> is inside <head>. Most modern Shopify themes include this automatically.", action: () => setInlineTipIssue(msg) };
+    if (m.includes("table of contents") || m.includes("toc"))
+      return { label: "? How to fix", tip: "Long posts benefit from a table of contents. You can add one manually to this post using anchor links in the Shopify post editor, or install a ToC app from the Shopify App Store.", action: () => setInlineTipIssue(msg) };
     if (m.includes("https"))
       return { label: "? How to fix", tip: "Shopify handles HTTPS automatically. This issue usually means your content (images or links) is using http:// URLs — edit the post and update any http:// links to https://.", action: () => setInlineTipIssue(msg) };
     if (m.includes("core web") || m.includes("speed") || m.includes("lcp") || m.includes("cls") || m.includes("inp"))
@@ -2396,6 +2402,44 @@ export default function BlogSEO() {
                           </div>
                         ))}
                       </div>
+
+                      {/* Article Content expandable */}
+                      {scanResult.articleBodyHtml && (
+                        <div style={{ marginBottom:24 }}>
+                          <button
+                            onClick={() => setShowArticleBody(v => !v)}
+                            style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"1px solid #3f3f46", borderRadius:8, padding:"8px 14px", color:"#a1a1aa", fontSize:12, fontWeight:600, cursor:"pointer", width:"100%", justifyContent:"space-between" }}
+                          >
+                            <span>📄 View Article Content</span>
+                            <span style={{ fontSize:10 }}>{showArticleBody ? "▲ Hide" : "▼ Show"}</span>
+                          </button>
+                          {showArticleBody && (
+                            <div
+                              style={{ marginTop:10, background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, padding:"20px 22px", maxHeight:600, overflowY:"auto", fontSize:14, color:"#d4d4d8", lineHeight:1.75 }}
+                              dangerouslySetInnerHTML={{ __html: scanResult.articleBodyHtml }}
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {/* Article Content expandable */}
+                      {scanResult.articleBodyHtml && (
+                        <div style={{ marginBottom:24 }}>
+                          <button
+                            onClick={() => setShowArticleBody(v => !v)}
+                            style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"1px solid #3f3f46", borderRadius:8, padding:"8px 14px", color:"#a1a1aa", fontSize:12, fontWeight:600, cursor:"pointer", width:"100%", justifyContent:"space-between" }}
+                          >
+                            <span>📄 View Article Content</span>
+                            <span style={{ fontSize:10 }}>{showArticleBody ? "▲ Hide" : "▼ Show"}</span>
+                          </button>
+                          {showArticleBody && (
+                            <div
+                              style={{ marginTop:10, background:"#18181b", border:"1px solid #3f3f46", borderRadius:10, padding:"20px 22px", maxHeight:600, overflowY:"auto", fontSize:14, color:"#d4d4d8", lineHeight:1.75 }}
+                              dangerouslySetInnerHTML={{ __html: scanResult.articleBodyHtml }}
+                            />
+                          )}
+                        </div>
+                      )}
 
                       {/* AI Rewrite bar */}
                       <div style={{ borderTop:"1px solid #3f3f46", paddingTop:20, marginBottom:20 }}>

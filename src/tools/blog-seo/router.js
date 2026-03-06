@@ -431,6 +431,10 @@ router.post('/analyze', async (req, res) => {
 
     /* ── CONTENT ── */
     const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+    // Extract article body HTML for the UI preview (Shopify blog selectors)
+    const $articleBody = $('article .rte, article .article__content, .article-template__content, article[class*="content"], .blog-article, article').first();
+    const rawBodyHtml = $articleBody.length ? $articleBody.html() : $('main').first().html() || '';
+    const articleBodyHtml = (rawBodyHtml || '').slice(0, 60000); // cap at 60KB
     const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
     const paragraphs = $('p').map((_, el) => $(el).text().trim()).get().filter(t => t.length > 10);
     const avgParagraphLength = paragraphs.length
@@ -680,6 +684,7 @@ router.post('/analyze', async (req, res) => {
       genericAnchorCount, eeatSignals,
       aiCitationReadiness,
       scored,
+      articleBodyHtml,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
