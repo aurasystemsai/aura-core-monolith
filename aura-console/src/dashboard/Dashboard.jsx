@@ -477,50 +477,111 @@ action={<span style={{ color: "#52525b", fontSize: 12 }}>Root Domain · 🇺🇸
 
 {/* ══ ROW 2 — Position Tracking (full width) ═══════════════════ */}
 <Widget title="Position Tracking" info="Keyword ranking visibility"
-style={{ marginBottom: 20 }}
-action={
-<div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-<span style={{ color: "#52525b", fontSize: 12 }}>🌍 Google · English</span>
-<button onClick={() => setActiveSection && setActiveSection("rank-tracker")}
-style={{ background: "#6366f1", border: "none", borderRadius: 6, padding: "5px 12px", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-View Full Report
-</button>
-</div>
-}>
-<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr", gap: 16, alignItems: "center" }}>
-<div>
-<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Visibility</div>
-<div style={{ fontSize: 28, fontWeight: 900, color: "#6366f1" }}>{positionTracking.visibility ?? "0.00"}%</div>
-<div style={{ fontSize: 11, color: "#ef4444" }}>−0.22%</div>
-</div>
-{[
-{ label: "Top 3", val: positionTracking.top3, col: "#4ade80" },
-{ label: "Top 10", val: positionTracking.top10, col: "#22d3ee" },
-{ label: "Top 20", val: positionTracking.top20, col: "#a3e635" },
-{ label: "Top 100", val: positionTracking.top100, col: "#fbbf24" },
-].map(({ label, val, col }) => (
-<div key={label} style={{ textAlign: "center" }}>
-<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-<div style={{ fontSize: 28, fontWeight: 900, color: val > 0 ? col : "#52525b" }}>{val}</div>
-<div style={{ fontSize: 11, color: "#52525b" }}>new 0 / lost 0</div>
-</div>
-))}
-<div style={{ borderLeft: "1px solid #27272a", paddingLeft: 16 }}>
-<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", marginBottom: 8 }}>Top Keywords</div>
-{positionTracking.keywords.length > 0
-? positionTracking.keywords.slice(0, 3).map((kw, i) => (
-<div key={i} className="aura-kw-row" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", marginBottom: 4 }}>
-<span style={{ color: "#a5b4fc", fontSize: 13, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{kw.keyword}</span>
-<span style={{ color: "#fafafa", fontSize: 13, fontWeight: 700 }}>{kw.position}</span>
-<span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
-</div>
-))
-: <div style={{ color: "#52525b", fontSize: 12 }}>No keywords yet.{" "}
-<span onClick={() => setActiveSection && setActiveSection("rank-tracker")} style={{ color: "#6366f1", cursor: "pointer" }}>Set up →</span>
-</div>
-}
-</div>
-</div>
+	style={{ marginBottom: 20 }}
+	action={
+		<div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+			<span style={{ color: "#52525b", fontSize: 12 }}>🌍 Google · English</span>
+			<span style={{ color: "#52525b", fontSize: 12 }}>Feb 28 – Mar 6, 2026</span>
+			<button onClick={() => setActiveSection && setActiveSection("rank-tracker")}
+				style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 6, padding: "5px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>
+				View Full Report
+			</button>
+		</div>
+	}>
+	{/* 3-column layout: Visibility | Chart | Keywords grid | Top Keywords table */}
+	<div style={{ display: "grid", gridTemplateColumns: "140px 1fr 280px 1fr", gap: 24, alignItems: "start" }}>
+
+		{/* Visibility % */}
+		<div>
+			<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Visibility</div>
+			<div style={{ fontSize: 32, fontWeight: 900, color: "#6366f1", lineHeight: 1 }}>
+				{positionTracking.visibility ?? "0.00"}%
+			</div>
+			<div style={{ fontSize: 12, color: "#ef4444", marginTop: 6, fontWeight: 600 }}>−0.22%</div>
+		</div>
+
+		{/* Mini area/line chart */}
+		<div style={{ paddingTop: 4 }}>
+			<svg width="100%" height="80" viewBox="0 0 200 80" preserveAspectRatio="none">
+				<defs>
+					<linearGradient id="visGrad" x1="0" y1="0" x2="0" y2="1">
+						<stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
+						<stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+					</linearGradient>
+				</defs>
+				{/* Generate a downward-trending line matching the screenshot */}
+				<polyline
+					points="0,20 28,22 56,25 84,30 112,40 140,52 168,62 200,70"
+					fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+				/>
+				<polygon
+					points="0,20 28,22 56,25 84,30 112,40 140,52 168,62 200,70 200,80 0,80"
+					fill="url(#visGrad)"
+				/>
+			</svg>
+			<div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+				<span style={{ fontSize: 11, color: "#52525b" }}>Feb 28</span>
+				<span style={{ fontSize: 11, color: "#52525b" }}>Mar 6</span>
+			</div>
+		</div>
+
+		{/* Keyword counts with circular indicators */}
+		<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+			{[
+				{ label: "Top 3",   val: positionTracking.top3,   activeColor: "#4ade80"  },
+				{ label: "Top 10",  val: positionTracking.top10,  activeColor: "#22d3ee"  },
+				{ label: "Top 20",  val: positionTracking.top20,  activeColor: "#a3e635"  },
+				{ label: "Top 100", val: positionTracking.top100, activeColor: "#6366f1"  },
+			].map(({ label, val, activeColor }) => (
+				<div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+					<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</div>
+					{/* Circle badge */}
+					<div style={{
+						width: 48, height: 48, borderRadius: "50%",
+						border: "3px solid " + (val > 0 ? activeColor : "#3f3f46"),
+						display: "flex", alignItems: "center", justifyContent: "center",
+						fontSize: 18, fontWeight: 900,
+						color: val > 0 ? activeColor : "#52525b",
+						background: val > 0 ? (activeColor + "18") : "transparent",
+						transition: "all 0.3s",
+					}}>{val}</div>
+					<div style={{ fontSize: 10, color: "#52525b", lineHeight: 1.4, textAlign: "center" }}>
+						new 0 / lost 0
+					</div>
+				</div>
+			))}
+		</div>
+
+		{/* Top Keywords table */}
+		<div style={{ borderLeft: "1px solid #27272a", paddingLeft: 20 }}>
+			<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>Top Keywords</div>
+			{positionTracking.keywords.length > 0 ? (
+				<>
+					{/* Table header */}
+					<div style={{ display: "grid", gridTemplateColumns: "1fr 64px 70px", gap: 8, marginBottom: 6, padding: "0 4px" }}>
+						<span style={{ fontSize: 11, color: "#52525b", fontWeight: 600 }}>KEYWORDS</span>
+						<span style={{ fontSize: 11, color: "#52525b", fontWeight: 600, textAlign: "center" }}>POSITION</span>
+						<span style={{ fontSize: 11, color: "#52525b", fontWeight: 600, textAlign: "right" }}>VISIBILITY</span>
+					</div>
+					{positionTracking.keywords.slice(0, 5).map((kw, i) => {
+						const vis = ((1 / Math.max(kw.position, 1)) * 100).toFixed(2);
+						return (
+							<div key={i} className="aura-kw-row" style={{ display: "grid", gridTemplateColumns: "1fr 64px 70px", gap: 8, padding: "7px 4px", borderBottom: "1px solid #27272a" }}>
+								<span style={{ color: "#a5b4fc", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{kw.keyword}</span>
+								<span style={{ color: "#ef4444", fontSize: 13, fontWeight: 700, textAlign: "center" }}>{kw.position}</span>
+								<span style={{ color: "#a1a1aa", fontSize: 12, textAlign: "right" }}>{vis}%</span>
+							</div>
+						);
+					})}
+				</>
+			) : (
+				<div style={{ color: "#52525b", fontSize: 13, lineHeight: 1.5 }}>
+					No keywords yet.{" "}
+					<span onClick={() => setActiveSection && setActiveSection("rank-tracker")} style={{ color: "#6366f1", cursor: "pointer", fontWeight: 600 }}>Set up →</span>
+				</div>
+			)}
+		</div>
+	</div>
 </Widget>
 
 {/* ══ ROW 3 — Site Audit | Tool Setup Cards ════════════════════ */}
