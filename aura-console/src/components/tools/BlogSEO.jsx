@@ -426,6 +426,8 @@ export default function BlogSEO() {
   const [bulkFixing,       setBulkFixing]       = useState(false);
   const [bulkFixProgress,  setBulkFixProgress]  = useState(null); // {done, total}
   const [inlineTipIssue,   setInlineTipIssue]   = useState(null); // issue.msg showing inline help tip
+  const [dismissedIssues, setDismissedIssues]   = useState(() => { try { return JSON.parse(localStorage.getItem('aura-dismissed-issues') || '[]'); } catch { return []; } });
+  const dismissIssue = (msg) => { const next = [...dismissedIssues, msg]; setDismissedIssues(next); try { localStorage.setItem('aura-dismissed-issues', JSON.stringify(next)); } catch {} setScanResult(prev => prev ? { ...prev, scored: { ...prev.scored, issues: (prev.scored?.issues || []).filter(i => i.msg !== msg) } } : prev); setInlineTipIssue(null); };
   const [spinTick,         setSpinTick]         = useState(0);   // drives spinner without CSS classes
 
   /* ── Smart-Fix (one-click all tools) state ── */
@@ -1366,6 +1368,7 @@ export default function BlogSEO() {
         if (!dr.ok) throw new Error(dr.error || "Date refresh failed");
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
+        setScanResult(prev => prev ? { ...prev, scored: { ...prev.scored, issues: (prev.scored?.issues || []).filter(i => i.msg !== issueKey) } } : prev);
         setFixSummaries(p => ({ ...p, [issueKey]: { what: "Published date", detail: `Refreshed to ${new Date().toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })}` } }));
         if (!silent) { showToast("✓ Published date refreshed to today — rescanning post..."); setTimeout(() => runScan(true), 1500); }
         return true;
@@ -1397,6 +1400,7 @@ export default function BlogSEO() {
         }
         setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
         setFixedFields(p => new Set([...p, field]));
+        setScanResult(prev => prev ? { ...prev, scored: { ...prev.scored, issues: (prev.scored?.issues || []).filter(i => i.msg !== issueKey) } } : prev);
         setFixSummaries(p => ({ ...p, [issueKey]: { what: "OG tags (title + description)", detail: `Title: ${ogTitle.slice(0,60)} | Desc: ${ogDesc.slice(0, 80)}…` } }));
         // Remove the OG issue from scanResult so it can't reappear on rescan (Shopify CDN delay)
         setScanResult(prev => prev ? { ...prev, scored: { ...prev.scored, issues: (prev.scored?.issues || []).filter(i => !i.msg?.toLowerCase().includes("open graph") && !i.msg?.toLowerCase().includes("og:")) } } : prev);
@@ -1454,6 +1458,7 @@ export default function BlogSEO() {
       if (!ap.ok) throw new Error(ap.error || "Apply failed");
       setBannerFixState(p => ({ ...p, [issueKey]: "ok" }));
       setFixedFields(p => new Set([...p, field]));
+      setScanResult(prev => prev ? { ...prev, scored: { ...prev.scored, issues: (prev.scored?.issues || []).filter(i => i.msg !== issueKey) } } : prev);
       // Build summary card data
       const _trunc = (s, n) => s && s.length > n ? s.slice(0, n) + "…" : (s || "");
       const _fieldLabels = { title:"Page title", metaDescription:"Meta description", h1:"H1 heading", headings:"H2 sub-headings", handle:"URL slug", schema:"Schema markup", body_append:"Content" };
@@ -1993,7 +1998,7 @@ export default function BlogSEO() {
           {section && !["Analyze","WriteResult","WriteGenerating","WriteFlow"].includes(section) && scanResult && (() => {
             const score   = scanResult.scored?.overall ?? null;
             const grade   = scanResult.scored?.grade   ?? "";
-            const issues  = scanResult.scored?.issues  ?? [];
+            const issues  = (scanResult.scored?.issues ?? []).filter(i => !dismissedIssues.includes(i.msg));
             const scoreColor = score === null ? C.dim : score >= 75 ? C.green : score >= 50 ? C.yellow : C.red;
             /* filter issues relevant to current section */
             const relevance = {
@@ -2038,6 +2043,9 @@ export default function BlogSEO() {
                     style={{ ...S.btn(), fontSize:11, padding:"4px 12px", flexShrink:0 }}
                     onClick={() => setSection("Analyze")}
                   >View full report</button>
+                  {scannedArtId && scannedBlogId && (
+                    <a href={`https://${shopDomain}/admin/blogs/${scannedBlogId}/articles/${scannedArtId}`} target="_blank" rel="noreferrer" style={{ ...S.btn(), fontSize:11, padding:"4px 12px", flexShrink:0, textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4 }}>↗ Shopify</a>
+                  )}
                 </div>
                 {/* relevant issues */}
                 {shown.length > 0 && (
@@ -2168,7 +2176,10 @@ export default function BlogSEO() {
                               <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:8, padding:"10px 14px", fontSize:12, color:"#fbbf24", lineHeight:1.6, display:"flex", gap:10, alignItems:"flex-start", marginLeft:14 }}>
                                 <span style={{ flexShrink:0 }}>💡</span>
                                 <span style={{ flex:1 }}>{act.tip}</span>
-                                <button style={{ ...S.btn(), fontSize:10, padding:"2px 8px", flexShrink:0 }} onClick={() => setInlineTipIssue(null)}>✕</button>
+                                <div style={{ display:"flex", flexDirection:"column", gap:4, flexShrink:0 }}>
+                                  <button style={{ ...S.btn(), fontSize:10, padding:"2px 8px" }} onClick={() => setInlineTipIssue(null)}>✕ Close</button>
+                                  <button style={{ fontSize:10, padding:"2px 8px", background:"#78350f", border:"1px solid #92400e", borderRadius:5, color:"#fcd34d", cursor:"pointer" }} onClick={() => dismissIssue(issue.msg)}>🚫 Dismiss</button>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -2555,7 +2566,7 @@ export default function BlogSEO() {
                         <div>
                           <div style={{ fontSize:12, fontWeight:700, color:"#71717a", textTransform:"uppercase", letterSpacing:".5px", marginBottom:10 }}>Issues ({scanResult.scored.issueCount})</div>
                           <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                            {(scanResult.scored.issues || []).filter(iss => !fixedFields.has(iss.field)).slice(0, 8).map((issue, i) => {
+                            {(scanResult.scored.issues || []).filter(iss => !fixedFields.has(iss.field) && !dismissedIssues.includes(iss.msg)).slice(0, 8).map((issue, i) => {
                               const act = getIssueAction(issue.msg);
                               const fixSt = bannerFixState[issue.msg];
                               const alreadyFixed = fixSt === "ok" || fixedFields.has(issue.field || "");
@@ -2587,6 +2598,17 @@ export default function BlogSEO() {
                                     </div>
                                   </div>
                                   </div>
+                                  {/* Inline tip (for how-to-fix non-AI issues) */}
+                                  {inlineTipIssue === issue.msg && act?.tip && (
+                                    <div style={{ background:"#1c1007", border:"1px solid #92400e", borderRadius:8, padding:"10px 12px", fontSize:11, color:"#fbbf24", lineHeight:1.5, display:"flex", gap:8, marginTop:4 }}>
+                                      <span style={{ flexShrink:0 }}>💡</span>
+                                      <span style={{ flex:1 }}>{act.tip}</span>
+                                      <div style={{ display:"flex", flexDirection:"column", gap:3, flexShrink:0 }}>
+                                        <button style={{ fontSize:10, padding:"2px 6px", background:"none", border:"1px solid #92400e", borderRadius:5, color:"#fbbf24", cursor:"pointer" }} onClick={() => setInlineTipIssue(null)}>✕</button>
+                                        <button style={{ fontSize:10, padding:"2px 6px", background:"#78350f", border:"1px solid #92400e", borderRadius:5, color:"#fcd34d", cursor:"pointer" }} onClick={() => dismissIssue(issue.msg)}>🚫 Dismiss</button>
+                                      </div>
+                                    </div>
+                                  )}
                                   {/* Before / after card */}
                                   {fixSt === "ok" && fixSummaries[issue.msg] && (() => {
                                     const s = fixSummaries[issue.msg];
@@ -2613,8 +2635,8 @@ export default function BlogSEO() {
                                 </div>
                               );
                             })}
-                            {(scanResult.scored.issues || []).filter(i => !fixedFields.has(i.field)).length > 8 && (
-                              <div style={{ fontSize:11, color:"#52525b", textAlign:"center", padding:"4px 0" }}>+{(scanResult.scored.issues || []).filter(i => !fixedFields.has(i.field)).length - 8} more — fix above first</div>
+                            {(scanResult.scored.issues || []).filter(i => !fixedFields.has(i.field) && !dismissedIssues.includes(i.msg)).length > 8 && (
+                              <div style={{ fontSize:11, color:"#52525b", textAlign:"center", padding:"4px 0" }}>+{(scanResult.scored.issues || []).filter(i => !fixedFields.has(i.field) && !dismissedIssues.includes(i.msg)).length - 8} more — fix above first</div>
                             )}
                           </div>
 
