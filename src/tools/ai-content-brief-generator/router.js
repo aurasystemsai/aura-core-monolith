@@ -1788,4 +1788,90 @@ router.get('/system/metrics', (req, res) => {
   });
 });
 
+// ============================================================================
+// AI BRIEF GENERATION — calls OpenAI to produce a full SEO content brief
+// ============================================================================
+router.post('/generate', async (req, res) => {
+  try {
+    const { keyword, audience = 'general audience', tone = 'Professional', language = 'English', competitors = [] } = req.body || {};
+    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword is required' });
+
+    const { getOpenAIClient } = require('../../core/openaiClient');
+    const openai = getOpenAIClient();
+
+    const systemPrompt = `You are an expert SEO content strategist. You produce detailed, actionable content briefs that help writers create top-ranking content. Always respond with valid JSON only — no markdown, no extra text.`;
+
+    const userPrompt = `Generate a comprehensive SEO content brief for the keyword: "${keyword}"
+Target audience: ${audience}
+Tone: ${tone}
+Language: ${language}
+${competitors.length ? `Competitor topics to differentiate from: ${competitors.join(', ')}` : ''}
+
+Return a JSON object with EXACTLY this structure:
+{
+  "keyword": "${keyword}",
+  "searchIntent": "informational|commercial|transactional|navigational",
+  "searchIntentExplain": "one sentence explaining the intent",
+  "estimatedWordCount": 1500,
+  "readingLevel": "intermediate",
+  "titles": [
+    {"text": "title option 1", "score": 88, "reason": "why it works"},
+    {"text": "title option 2", "score": 82, "reason": "why it works"},
+    {"text": "title option 3", "score": 79, "reason": "why it works"}
+  ],
+  "metaDescriptions": [
+    {"text": "meta desc option 1 (150-160 chars)", "charCount": 155},
+    {"text": "meta desc option 2", "charCount": 152}
+  ],
+  "primaryKeyword": "${keyword}",
+  "secondaryKeywords": ["related keyword 1", "related keyword 2", "related keyword 3", "related keyword 4", "related keyword 5"],
+  "lsiKeywords": ["semantic keyword 1", "semantic keyword 2", "semantic keyword 3"],
+  "outline": [
+    {"id": "s1", "tag": "H1", "text": "Main headline", "direction": "State the key benefit or outcome", "wordCount": 0, "keywordsToInclude": []},
+    {"id": "s2", "tag": "H2", "text": "Introduction heading", "direction": "Hook the reader, state the problem and what they'll learn", "wordCount": 150, "keywordsToInclude": ["keyword"]},
+    {"id": "s3", "tag": "H2", "text": "Section 2", "direction": "Explain the core concept with examples", "wordCount": 250, "keywordsToInclude": []},
+    {"id": "s4", "tag": "H3", "text": "Subsection", "direction": "Detail or step", "wordCount": 150, "keywordsToInclude": []},
+    {"id": "s5", "tag": "H2", "text": "Section 3", "direction": "Actionable advice or how-to", "wordCount": 300, "keywordsToInclude": []},
+    {"id": "s6", "tag": "H2", "text": "Section 4", "direction": "Common mistakes or misconceptions", "wordCount": 200, "keywordsToInclude": []},
+    {"id": "s7", "tag": "H2", "text": "FAQ", "direction": "Answer 3-4 common questions people also ask", "wordCount": 200, "keywordsToInclude": []},
+    {"id": "s8", "tag": "H2", "text": "Conclusion", "direction": "Summarise key takeaways and include a call to action", "wordCount": 150, "keywordsToInclude": []}
+  ],
+  "faqQuestions": [
+    "Question 1?",
+    "Question 2?",
+    "Question 3?",
+    "Question 4?"
+  ],
+  "competitorTopics": [
+    {"topic": "Competing angle 1", "gap": "what we can do better"},
+    {"topic": "Competing angle 2", "gap": "what we can do better"}
+  ],
+  "contentGoals": ["goal 1", "goal 2", "goal 3"],
+  "callToAction": "Suggested CTA text",
+  "internalLinkSuggestions": ["topic to link to 1", "topic to link to 2"],
+  "keyTakeaways": ["takeaway 1", "takeaway 2", "takeaway 3"]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      max_tokens: 2000,
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    });
+
+    const raw = completion.choices[0].message.content;
+    let brief;
+    try { brief = JSON.parse(raw); } catch { return res.status(500).json({ ok: false, error: 'AI returned invalid JSON' }); }
+
+    return res.json({ ok: true, brief });
+  } catch (err) {
+    console.error('[content-brief/generate]', err.message);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

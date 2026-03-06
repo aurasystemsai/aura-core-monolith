@@ -1,923 +1,424 @@
-﻿import React, { useMemo, useRef, useState } from "react";
-import BackButton from "./BackButton";
-import "../../content-brief/AIContentBriefGenerator.css";
+﻿import React, { useState, useCallback } from "react";
+import { apiFetch } from "../../api";
 
-const TAB_GROUPS = {
- manage: ["Briefs", "Personas", "Outline", "Tasks", "Comments", "Approvals"],
- optimize: ["SEO", "Readability", "Distribution", "Links", "Schema", "A/B Tests"],
- advanced: ["AI Orchestration", "Ensembles", "Providers", "Guardrails", "Routing", "Red Team"],
- tools: ["Templates", "Snippets", "Assets", "FAQ", "Checklists", "Exports"],
- monitoring: ["Health", "Audit", "Performance", "SLA", "Alerts", "Versioning"],
- settings: ["API Keys", "Brand", "Compliance", "Integrations", "Backups", "Access"],
- "world-class": ["Collaboration", "Security", "Analytics", "BI", "SDK", "White-label"],
+const API = "/api/ai-content-brief-generator";
+
+const C = {
+  bg: "#09090b", card: "#18181b", border: "#27272a", borderBright: "#3f3f46",
+  text: "#fafafa", sub: "#a1a1aa", dim: "#71717a",
+  green: "#4ade80", greenBg: "#052e16", greenBorder: "#166534",
+  blue: "#60a5fa", blueBg: "#0c1a2e", blueBorder: "#1e3a5f",
+  yellow: "#fbbf24", yellowBg: "#1c1007", yellowBorder: "#92400e",
+  purple: "#a78bfa", purpleBg: "#1e1b4b", purpleBorder: "#4338ca",
+  indigo: "#818cf8",
 };
 
-const DEFAULT_OUTLINE = [
- { heading: "Problem", notes: "State the core challenge", wordCount: 120 },
- { heading: "Solution", notes: "Explain how we solve it", wordCount: 200 },
- { heading: "Proof", notes: "Data, quotes, and visuals", wordCount: 180 },
- { heading: "CTA", notes: "Single primary CTA", wordCount: 80 },
-];
+const intentColors = {
+  informational:  { bg: "#0c1a2e", border: "#1e3a5f", text: "#60a5fa", label: "Informational" },
+  commercial:     { bg: "#1e1b4b", border: "#4338ca", text: "#a78bfa", label: "Commercial" },
+  transactional:  { bg: "#052e16", border: "#166534", text: "#4ade80", label: "Transactional" },
+  navigational:   { bg: "#1c0a00", border: "#7c2d12", text: "#fb923c", label: "Navigational" },
+};
 
-const DEFAULT_CHANNELS = [
- { channel: "Blog", status: "ready", owner: "Content"},
- { channel: "Email", status: "in QA", owner: "Lifecycle"},
- { channel: "LinkedIn", status: "queued", owner: "Social"},
- { channel: "Ads", status: "pending", owner: "Growth"},
- { channel: "Partners", status: "draft", owner: "Alliances"},
- { channel: "Webinar", status: "ready", owner: "Events"},
-];
+function Section({ title, children, action }) {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.7px" }}>{title}</div>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
 
-const PROVIDERS = [
- { id: "gpt-4", name: "OpenAI GPT-4", latency: "1.2s", strength: "reasoning"},
- { id: "claude-3", name: "Claude 3", latency: "1.0s", strength: "context"},
- { id: "gemini-pro", name: "Gemini Pro", latency: "0.9s", strength: "multimodal"},
-];
+function CopyBtn({ text, small }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      style={{ background: "none", border: `1px solid ${C.borderBright}`, borderRadius: 5, padding: small ? "2px 7px" : "4px 10px", color: C.sub, fontSize: small ? 10 : 11, cursor: "pointer" }}
+    >{copied ? "Copied!" : "Copy"}</button>
+  );
+}
 
 export default function AIContentBriefGenerator() {
- const [topic, setTopic] = useState("AI content brief best practices");
- const [persona, setPersona] = useState("Demand Gen Manager");
- const [tone, setTone] = useState("Confident & concise");
- const [primaryKeyword, setPrimaryKeyword] = useState("ai content brief");
- const [secondaryKeywords, setSecondaryKeywords] = useState(["content brief template", "seo outline", "ai content planning"]);
- const [questions, setQuestions] = useState(["What is the buyer problem?", "Which proof points win?", "Which CTA converts?"]);
- const [outline, setOutline] = useState(DEFAULT_OUTLINE);
- const [wordCount, setWordCount] = useState(1200);
- const [cta, setCta] = useState("Book a demo");
- const [status, setStatus] = useState("In Review");
- const [approvals, setApprovals] = useState({ owner: "Content Lead", reviewer: "Legal", due: "2026-02-20"});
- const [channels, setChannels] = useState(DEFAULT_CHANNELS);
- const [tasks, setTasks] = useState([
- { id: 1, title: "Add customer quote", status: "Open"},
- { id: 2, title: "Insert product screenshot", status: "In Progress"},
- { id: 3, title: "Legal review for claims", status: "Pending"},
- ]);
- const [activities, setActivities] = useState([
- { id: "act-1", text: "Brief created with governance defaults", ts: "10:02"},
- { id: "act-2", text: "SEO score recalculated", ts: "10:06"},
- { id: "act-3", text: "Distribution plan updated", ts: "10:12"},
- ]);
- const [note, setNote] = useState("");
- const [outlineDraft, setOutlineDraft] = useState(JSON.stringify(DEFAULT_OUTLINE, null, 2));
- const fileInputRef = useRef();
- 
- // Modal state
- const [showBriefModal, setShowBriefModal] = useState(false);
- const [showTaskModal, setShowTaskModal] = useState(false);
- const [showProviderModal, setShowProviderModal] = useState(false);
- 
- // Filter and search state
- const [searchQuery, setSearchQuery] = useState("");
- const [filterChannel, setFilterChannel] = useState("all");
- const [sortField, setSortField] = useState("channel");
- const [sortDirection, setSortDirection] = useState("asc");
- 
- // New brief form state
- const [newBriefTopic, setNewBriefTopic] = useState("");
- const [newBriefAudience, setNewBriefAudience] = useState("");
- const [newBriefGoal, setNewBriefGoal] = useState("");
- 
- // New task form state
- const [newTaskTitle, setNewTaskTitle] = useState("");
- const [newTaskAssignee, setNewTaskAssignee] = useState("");
- const [newTaskPriority, setNewTaskPriority] = useState("medium");
- 
- // Advanced features state
- const [complianceResults, setComplianceResults] = useState([
- { check: "PII Detection", status: "passed", details: "No PII found"},
- { check: "Claims Verification", status: "warning", details: "2 citations needed"},
- { check: "Tone Analysis", status: "passed", details: "On-brand tone"},
- { check: "Accessibility", status: "passed", details: "WCAG 2.1 AA compliant"},
- ]);
- 
- const [performanceData, setPerformanceData] = useState([
- { metric: "Page Views", current: 12400, previous: 9800, change: 26.5 },
- { metric: "Engagement Rate", current: 42, previous: 38, change: 10.5 },
- { metric: "Conversion Rate", current: 8.4, previous: 7.2, change: 16.7 },
- { metric: "Avg. Time on Page", current: 245, previous: 220, change: 11.4 },
- ]);
- 
- const [seoMetrics, setSeoMetrics] = useState({
- keywordDensity: 1.8,
- readabilityScore: 68,
- internalLinks: 6,
- externalLinks: 4,
- imageAltTags: 8,
- metaDescription: "Optimized (156 chars)",
- h1Count: 1,
- h2Count: 5,
- });
- 
- const [distributionSchedule, setDistributionSchedule] = useState([
- { date: "2026-02-18", channel: "Blog", time: "10:00 AM", status: "scheduled"},
- { date: "2026-02-19", channel: "Email", time: "08:00 AM", status: "scheduled"},
- { date: "2026-02-20", channel: "LinkedIn", time: "12:00 PM", status: "draft"},
- { date: "2026-02-21", channel: "Twitter", time: "03:00 PM", status: "draft"},
- ]);
+  const [keyword, setKeyword]   = useState("");
+  const [audience, setAudience] = useState("");
+  const [tone, setTone]         = useState("Professional");
 
- const seoScore = useMemo(() => 82 + Math.round(Math.random() * 6), [topic, primaryKeyword]);
- const readinessScore = useMemo(() => {
- const ready = channels.filter((c) => c.status === "ready").length;
- return Math.round((ready / Math.max(channels.length, 1)) * 100);
- }, [channels]);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [brief, setBrief]       = useState(null);
+  const [selectedTitle, setSelectedTitle] = useState(0);
+  const [selectedMeta,  setSelectedMeta]  = useState(0);
+  const [outline, setOutline]   = useState([]);
 
- const handleImport = (evt) => {
- const file = evt.target.files?.[0];
- if (!file) return;
- const reader = new FileReader();
- reader.onload = (e) => {
- try {
- const parsed = JSON.parse(e.target.result);
- setOutline(parsed);
- setOutlineDraft(JSON.stringify(parsed, null, 2));
- } catch (_) {
- setNote("Invalid outline JSON");
- }
- };
- reader.readAsText(file);
- };
+  const generate = useCallback(async () => {
+    if (!keyword.trim()) return;
+    setLoading(true); setError(""); setBrief(null);
+    try {
+      const res  = await apiFetch(`${API}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: keyword.trim(), audience, tone }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Generation failed");
+      setBrief(data.brief);
+      setOutline(data.brief.outline || []);
+      setSelectedTitle(0);
+      setSelectedMeta(0);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [keyword, audience, tone]);
 
- const handleExport = () => {
- const blob = new Blob([JSON.stringify(outline, null, 2)], { type: "application/json"});
- const url = URL.createObjectURL(blob);
- const anchor = document.createElement("a");
- anchor.href = url;
- anchor.download = "brief-outline.json";
- anchor.click();
- URL.revokeObjectURL(url);
- };
+  const updateSection = (id, field, val) =>
+    setOutline(prev => prev.map(s => s.id === id ? { ...s, [field]: val } : s));
 
- const updateChannelStatus = (channelName, next) => {
- setChannels((prev) => prev.map((c) => (c.channel === channelName ? { ...c, status: next } : c)));
- };
+  const addSection = (afterId) => {
+    const idx = outline.findIndex(s => s.id === afterId);
+    const newSec = { id: `s-${Date.now()}`, tag: "H2", text: "New section", direction: "", wordCount: 200, keywordsToInclude: [] };
+    const next = [...outline];
+    next.splice(idx + 1, 0, newSec);
+    setOutline(next);
+  };
 
- const saveVersion = () => {
- setActivities((prev) => [{ id: `act-${Date.now()}`, text: "Version saved", ts: "now"}, ...prev].slice(0, 8));
- setStatus("Ready for approval");
- };
+  const removeSection = (id) => setOutline(prev => prev.filter(s => s.id !== id));
 
- const addTask = () => {
- setTasks((prev) => [{ id: Date.now(), title: "New compliance review", status: "Open"}, ...prev]);
- };
+  const exportBrief = () => {
+    if (!brief) return;
+    const t = brief.titles?.[selectedTitle]?.text || keyword;
+    const m = brief.metaDescriptions?.[selectedMeta]?.text || "";
+    const kws = [brief.primaryKeyword, ...(brief.secondaryKeywords || [])].join(", ");
+    const outlineText = outline.map(s => `${s.tag}: ${s.text}\n  -> ${s.direction || ""}${s.wordCount ? ` (${s.wordCount} words)` : ""}`).join("\n");
+    const faqs = (brief.faqQuestions || []).map((q, i) => `${i + 1}. ${q}`).join("\n");
+    const text = `CONTENT BRIEF: ${keyword.toUpperCase()}\n${"=".repeat(60)}\n\nTITLE: ${t}\nMETA: ${m}\n\nSEARCH INTENT: ${brief.searchIntent} - ${brief.searchIntentExplain}\nWORD COUNT TARGET: ${brief.estimatedWordCount}\nTONE: ${tone}\nAUDIENCE: ${audience || "General"}\n\nKEYWORDS: ${kws}\n\nOUTLINE:\n${outlineText}\n\nFAQ:\n${faqs}\n\nCTA: ${brief.callToAction || ""}\n\nGenerated by AURA`;
+    const blob = new Blob([text], { type: "text/plain" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `brief-${keyword.replace(/\s+/g, "-")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
- const updateOutlineDraft = (value) => {
- setOutlineDraft(value);
- try {
- const parsed = JSON.parse(value);
- if (Array.isArray(parsed)) setOutline(parsed);
- } catch (_) {
- // ignore to allow typing
- }
- };
+  const fullBriefText = brief ? [
+    `Title: ${brief.titles?.[selectedTitle]?.text || keyword}`,
+    `Meta: ${brief.metaDescriptions?.[selectedMeta]?.text || ""}`,
+    `Keywords: ${[brief.primaryKeyword, ...(brief.secondaryKeywords || [])].join(", ")}`,
+    `Outline:\n${outline.map(s => `${s.tag}: ${s.text} - ${s.direction || ""}`).join("\n")}`,
+  ].join("\n") : "";
 
- const outlineGrade = useMemo(() => {
- const completeness = Math.min(100, outline.length * 15 + 30);
- const depth = Math.min(100, Math.round(outline.reduce((acc, s) => acc + (s.wordCount || 0), 0) / 15));
- const score = Math.round(completeness * 0.5 + depth * 0.5);
- return { score, grade: score >= 90 ? "A": score >= 80 ? "B": "C"};
- }, [outline]);
- 
- // Handler functions
- const handleCreateBrief = () => {
- if (!newBriefTopic.trim()) return;
- setTopic(newBriefTopic);
- setPersona(newBriefAudience);
- setActivities((prev) => [
- { id: `act-${Date.now()}`, text: `Created brief: "${newBriefTopic}"`, ts: "now"},
- ...prev
- ].slice(0, 8));
- setShowBriefModal(false);
- setNewBriefTopic("");
- setNewBriefAudience("");
- setNewBriefGoal("");
- };
- 
- const handleCreateTask = () => {
- if (!newTaskTitle.trim()) return;
- setTasks((prev) => [
- { id: Date.now(), title: newTaskTitle, status: "Open", assignee: newTaskAssignee, priority: newTaskPriority },
- ...prev
- ]);
- setActivities((prev) => [
- { id: `act-${Date.now()}`, text: `Task created: "${newTaskTitle}"`, ts: "now"},
- ...prev
- ].slice(0, 8));
- setShowTaskModal(false);
- setNewTaskTitle("");
- setNewTaskAssignee("");
- setNewTaskPriority("medium");
- };
- 
- const handleRunCompliance = () => {
- setComplianceResults((prev) => prev.map(check => ({
- ...check,
- status: Math.random() > 0.3 ? "passed": "warning"})));
- setActivities((prev) => [
- { id: `act-${Date.now()}`, text: "Compliance check executed", ts: "now"},
- ...prev
- ].slice(0, 8));
- };
- 
- const handleToggleSort = (field) => {
- if (sortField === field) {
- setSortDirection(sortDirection === "asc"? "desc": "asc");
- } else {
- setSortField(field);
- setSortDirection("asc");
- }
- };
- 
- const filteredChannels = useMemo(() => {
- let filtered = channels;
- if (filterChannel !== "all") {
- filtered = filtered.filter(ch => ch.status === filterChannel);
- }
- if (searchQuery) {
- filtered = filtered.filter(ch => 
- ch.channel.toLowerCase().includes(searchQuery.toLowerCase()) ||
- ch.owner.toLowerCase().includes(searchQuery.toLowerCase())
- );
- }
- return filtered.sort((a, b) => {
- const aVal = a[sortField];
- const bVal = b[sortField];
- const compare = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
- return sortDirection === "asc"? compare : -compare;
- });
- }, [channels, filterChannel, searchQuery, sortField, sortDirection]);
- 
- const handleSchedulePublication = (channel, date, time) => {
- setDistributionSchedule((prev) => [
- ...prev.filter(s => s.channel !== channel),
- { date, channel, time, status: "scheduled"}
- ]);
- setActivities((prev) => [
- { id: `act-${Date.now()}`, text: `Scheduled ${channel} for ${date} ${time}`, ts: "now"},
- ...prev
- ].slice(0, 8));
- };
- 
- const getPerformanceChangeIcon = (change) => {
- if (change > 0) return "";
- if (change < 0) return "";
- return "";
- };
- 
- const getComplianceIcon = (status) => {
- if (status === "passed") return "";
- if (status === "warning") return "";
- return "";
- };
+  const intentStyle = brief ? (intentColors[brief.searchIntent?.toLowerCase?.()] || intentColors.informational) : null;
 
- return (
- <div className="brief-shell">
- <div className="brief-header">
- <div className="brief-title">
- <h2>AI Content Brief Generator</h2>
- <div className="brief-subline">Research Outline SEO Distribution Governance Performance</div>
- </div>
- <div className="brief-actions">
- <BackButton />
- <button className="brief-btn"onClick={handleExport}>Export outline</button>
- <button className="brief-btn"onClick={() => fileInputRef.current?.click()}>Import outline</button>
- <button className="brief-btn primary"onClick={saveVersion}>Save version</button>
- </div>
- <div className="brief-badges">
- <span className="brief-pill">Status: {status}</span>
- <span className="brief-pill success">SEO: {seoScore}</span>
- <span className="brief-pill warning">Readiness: {readinessScore}%</span>
- <span className="brief-pill">Outline grade: {outlineGrade.grade}</span>
- </div>
- </div>
+  return (
+    <div style={{ background: C.bg, minHeight: "100vh", color: C.text, fontFamily: "system-ui, sans-serif", paddingBottom: 60 }}>
 
- <div className="brief-tabs">
- {Object.entries(TAB_GROUPS).map(([group, items]) => (
- <div key={group} className="brief-tab-group">
- <h4>{group.toUpperCase()}</h4>
- <div className="brief-tab-list">
- {items.map((item) => (
- <div key={item} className="brief-tab-chip">
- <span>{item}</span>
- <span></span>
- </div>
- ))}
- </div>
- </div>
- ))}
- </div>
+      {/* Header */}
+      <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "18px 28px" }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: C.text, marginBottom: 2 }}>Content Brief Generator</div>
+        <div style={{ fontSize: 13, color: C.sub }}>Enter a keyword to generate a full SEO content brief — titles, meta, outline, keywords, FAQs and more</div>
+      </div>
 
- <div className="brief-grid two-column">
- <div className="brief-card">
- <h3>Research & Strategy</h3>
- <div className="brief-inputs">
- <label>
- Topic
- <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic"/>
- </label>
- <label>
- Persona
- <input value={persona} onChange={(e) => setPersona(e.target.value)} />
- </label>
- <label>
- Tone
- <input value={tone} onChange={(e) => setTone(e.target.value)} />
- </label>
- <label>
- Primary keyword
- <input value={primaryKeyword} onChange={(e) => setPrimaryKeyword(e.target.value)} />
- </label>
- <label>
- Secondary keywords
- <input value={secondaryKeywords.join(", ")} onChange={(e) => setSecondaryKeywords(e.target.value.split(",").map((s) => s.trim()).filter(Boolean))} />
- </label>
- <label>
- Target word count
- <input type="number"value={wordCount} onChange={(e) => setWordCount(Number(e.target.value))} />
- </label>
- </div>
- <div className="brief-list">
- {questions.map((q, idx) => (
- <div key={idx} className="brief-list-item">
- <strong>Discovery</strong>
- <span>{q}</span>
- </div>
- ))}
- </div>
- </div>
+      <div style={{ padding: "24px 28px" }}>
 
- <div className="brief-card">
- <h3>Outline & Structure</h3>
- <div className="brief-meta-row">
- <span className="brief-tag">Sections: {outline.length}</span>
- <span className="brief-tag">Words: {outline.reduce((acc, s) => acc + (s.wordCount || 0), 0)}</span>
- <span className="brief-tag">CTA: {cta}</span>
- </div>
- <textarea
- className="brief-inputs"style={{ gridColumn: "1/-1", minHeight: 180 }}
- value={outlineDraft}
- onChange={(e) => updateOutlineDraft(e.target.value)}
- />
- <div className="brief-metrics">
- <div className="metric-pill"><span>Completeness</span>{outlineGrade.score}%</div>
- <div className="metric-pill"><span>Grade</span>{outlineGrade.grade}</div>
- <div className="metric-pill"><span>CTA</span>{cta}</div>
- </div>
- </div>
+        {/* Input Panel */}
+        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 24px", marginBottom: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TARGET KEYWORD *</label>
+              <input
+                value={keyword}
+                onChange={e => setKeyword(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && generate()}
+                placeholder="e.g. best running shoes for beginners"
+                style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 14, boxSizing: "border-box", outline: "none" }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TARGET AUDIENCE</label>
+              <input
+                value={audience}
+                onChange={e => setAudience(e.target.value)}
+                placeholder="e.g. beginner runners"
+                style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, boxSizing: "border-box", outline: "none" }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TONE</label>
+              <select
+                value={tone}
+                onChange={e => setTone(e.target.value)}
+                style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, boxSizing: "border-box" }}
+              >
+                {["Professional", "Conversational", "Friendly", "Authoritative", "Inspiring", "Educational", "Persuasive"].map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button
+              onClick={generate}
+              disabled={loading || !keyword.trim()}
+              style={{ background: loading ? "#4f46e5" : "#6366f1", border: "none", borderRadius: 9, padding: "11px 28px", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading || !keyword.trim() ? "default" : "pointer", opacity: !keyword.trim() ? 0.5 : 1 }}
+            >
+              {loading ? "Generating..." : "Generate Brief  2 cr"}
+            </button>
+            {brief && <span style={{ fontSize: 12, color: C.green }}>Brief ready for "{brief.keyword}"</span>}
+            {error && <span style={{ fontSize: 12, color: "#f87171" }}>{error}</span>}
+          </div>
+        </div>
 
- <div className="brief-card">
- <h3>SEO Brief</h3>
- <div className="brief-metrics">
- <div className="metric-pill"><span>Score</span>{seoScore}</div>
- <div className="metric-pill"><span>Schema</span>Article</div>
- <div className="metric-pill"><span>Links</span>6</div>
- </div>
- <div className="brief-list">
- <div className="brief-list-item"><strong>Keywords</strong><span>{primaryKeyword}</span></div>
- <div className="brief-list-item"><strong>Secondary</strong><span>{secondaryKeywords.join("· ")}</span></div>
- <div className="brief-list-item"><strong>Questions</strong><span>{questions.slice(0, 2).join("· ")}</span></div>
- </div>
- </div>
+        {/* Loading */}
+        {loading && (
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 14, color: C.sub, marginBottom: 6 }}>Analysing search intent, keywords and competitor structure...</div>
+            <div style={{ fontSize: 12, color: C.dim }}>Building your full content brief — titles, meta descriptions, outline, FAQ and more</div>
+          </div>
+        )}
 
- <div className="brief-card">
- <h3>Distribution & Readiness</h3>
- <div className="brief-status-grid">
- {channels.map((ch) => (
- <div key={ch.channel} className="brief-status-card">
- <div className="brief-meta-row"style={{ justifyContent: "space-between"}}>
- <strong>{ch.channel}</strong>
- <span className="brief-tag">{ch.owner}</span>
- </div>
- <div className="brief-tag">Status: {ch.status}</div>
- <div className="brief-progress"><span style={{ width: ch.status === "ready"? "100%": ch.status === "in QA"? "65%": "35%"}} /></div>
- <div className="brief-activity">Activate </div>
- </div>
- ))}
- </div>
- <div className="brief-actions"style={{ marginTop: 10 }}>
- <button className="brief-btn"onClick={() => updateChannelStatus("Email", "ready")}>Mark Email ready</button>
- <button className="brief-btn"onClick={() => updateChannelStatus("Ads", "in QA")}>Move Ads to QA</button>
- </div>
- </div>
+        {/* Results */}
+        {brief && !loading && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
 
- <div className="brief-card">
- <h3>Collaboration</h3>
- <div className="brief-meta-row">
- <span className="brief-tag">Owner: {approvals.owner}</span>
- <span className="brief-tag">Reviewer: {approvals.reviewer}</span>
- <span className="brief-tag">Due: {approvals.due}</span>
- </div>
- <div className="brief-list">
- {tasks.map((task) => (
- <div key={task.id} className="brief-list-item">
- <strong>{task.title}</strong>
- <span>Status: {task.status}</span>
- </div>
- ))}
- </div>
- <div className="cta-row">
- <button className="brief-btn"onClick={addTask}>Add task</button>
- <button className="brief-btn"onClick={() => setStatus("Approved")}>Mark approved</button>
- </div>
- </div>
+            {/* LEFT */}
+            <div>
 
- <div className="brief-card">
- <h3>Governance</h3>
- <div className="brief-list">
- <div className="brief-list-item"><strong>PII</strong><span>Blocked</span></div>
- <div className="brief-list-item"><strong>Claims</strong><span>Needs 2 citations</span></div>
- <div className="brief-list-item"><strong>Tone</strong><span>On-brand</span></div>
- </div>
- <div className="brief-actions"style={{ marginTop: 10 }}>
- <button className="brief-btn"onClick={() => setApprovals({ ...approvals, reviewer: "Compliance"})}>Send to compliance</button>
- <button className="brief-btn"onClick={() => setNote("Audit logged")}>Log audit</button>
- </div>
- </div>
+              {/* Intent + stats row */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 20px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <span style={{ background: intentStyle.bg, border: `1px solid ${intentStyle.border}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: intentStyle.text }}>{intentStyle.label}</span>
+                <span style={{ fontSize: 13, color: C.sub, flex: 1 }}>{brief.searchIntentExplain}</span>
+                <span style={{ fontSize: 12, color: C.sub, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 12px" }}>~{brief.estimatedWordCount} words</span>
+                <span style={{ fontSize: 12, color: C.sub, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 12px" }}>{brief.readingLevel}</span>
+              </div>
 
- <div className="brief-card">
- <h3>Performance</h3>
- <div className="brief-metrics">
- <div className="metric-pill"><span>Views</span>12.4k</div>
- <div className="metric-pill"><span>Engagement</span>42%</div>
- <div className="metric-pill"><span>Conversion</span>8.4%</div>
- <div className="metric-pill"><span>Forecast (30d)</span>+25%</div>
- </div>
- <div className="brief-activity">Next forecast runs after distribution reaches 80% readiness.</div>
- </div>
+              {/* Titles */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
+                <Section title="Title Suggestions (pick one)" action={<CopyBtn text={(brief.titles||[]).map((t,i)=>`${i+1}. ${t.text}`).join("\n")} small />}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {(brief.titles || []).map((t, i) => (
+                      <div key={i} onClick={() => setSelectedTitle(i)} style={{ background: selectedTitle===i ? "#1e1b4b" : C.bg, border: `1px solid ${selectedTitle===i ? "#4338ca" : C.border}`, borderRadius: 9, padding: "12px 16px", cursor: "pointer" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: selectedTitle===i ? "#818cf8" : C.dim, background: selectedTitle===i ? "#312e81" : C.card, border: `1px solid ${selectedTitle===i ? "#4338ca" : C.border}`, borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 2 }}>
+                            {selectedTitle===i ? "SELECTED" : `OPTION ${i+1}`}
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 14, color: C.text, fontWeight: 600, marginBottom: 4 }}>{t.text}</div>
+                            <div style={{ fontSize: 11, color: C.dim }}>{t.reason}</div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: t.score>=85 ? C.green : t.score>=75 ? C.yellow : C.sub }}>{t.score}</span>
+                            <CopyBtn text={t.text} small />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              </div>
 
- <div className="brief-card">
- <h3>AI Orchestration</h3>
- <div className="brief-list">
- {PROVIDERS.map((p) => (
- <div key={p.id} className="brief-list-item">
- <strong>{p.name}</strong>
- <span>Latency: {p.latency} · Strength: {p.strength}</span>
- </div>
- ))}
- </div>
- <div className="cta-row">
- <button className="brief-btn primary"onClick={() => setActivities((prev) => [{ id: `act-${Date.now()}`, text: "AI route selected", ts: "now"}, ...prev])}>Route with best quality</button>
- <button className="brief-btn"onClick={() => setActivities((prev) => [{ id: `act-${Date.now()}`, text: "Ensemble run queued", ts: "now"}, ...prev])}>Ensemble</button>
- </div>
- </div>
+              {/* Meta */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
+                <Section title="Meta Description (pick one)">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {(brief.metaDescriptions || []).map((m, i) => (
+                      <div key={i} onClick={() => setSelectedMeta(i)} style={{ background: selectedMeta===i ? "#0c1a2e" : C.bg, border: `1px solid ${selectedMeta===i ? "#1e3a5f" : C.border}`, borderRadius: 9, padding: "12px 16px", cursor: "pointer" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: selectedMeta===i ? "#60a5fa" : C.dim, background: selectedMeta===i ? "#0c1a2e" : C.card, border: `1px solid ${selectedMeta===i ? "#1e3a5f" : C.border}`, borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 2 }}>
+                            {selectedMeta===i ? "SELECTED" : `OPTION ${i+1}`}
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, color: C.text, marginBottom: 4 }}>{m.text}</div>
+                            <div style={{ fontSize: 11, color: m.charCount>160 ? "#f87171" : m.charCount>=150 ? C.green : C.dim }}>{m.charCount} chars {m.charCount>160 ? "- too long" : m.charCount>=150 ? "- ideal" : ""}</div>
+                          </div>
+                          <CopyBtn text={m.text} small />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              </div>
 
- <div className="brief-card">
- <h3>Activity & Notes</h3>
- <div className="brief-list">
- {activities.map((a) => (
- <div key={a.id} className="brief-list-item">
- <strong>{a.text}</strong>
- <span>{a.ts}</span>
- </div>
- ))}
- </div>
- <textarea
- className="brief-inputs"style={{ gridColumn: "1/-1", minHeight: 90, marginTop: 10 }}
- placeholder="Add a note"value={note}
- onChange={(e) => setNote(e.target.value)}
- />
- <div className="brief-actions"style={{ marginTop: 10 }}>
- <button className="brief-btn"onClick={() => setNote("")}>Clear</button>
- <button className="brief-btn"onClick={() => setActivities((prev) => [{ id: `act-${Date.now()}`, text: note || "New note added", ts: "now"}, ...prev])}>Log note</button>
- </div>
- </div>
- </div>
+              {/* Keywords */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
+                <Section title="Target Keywords">
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>PRIMARY</div>
+                    <span style={{ background: "#1a0f2e", border: "1px solid #7c3aed", borderRadius: 6, padding: "5px 14px", fontSize: 13, fontWeight: 700, color: "#a78bfa" }}>{brief.primaryKeyword}</span>
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>SECONDARY</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {(brief.secondaryKeywords || []).map((k, i) => (
+                        <span key={i} style={{ background: C.bg, border: `1px solid ${C.borderBright}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, color: C.sub }}>{k}</span>
+                      ))}
+                    </div>
+                  </div>
+                  {(brief.lsiKeywords || []).length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>SEMANTIC / LSI</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {brief.lsiKeywords.map((k, i) => (
+                          <span key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, color: C.dim }}>{k}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Section>
+              </div>
 
- {/* Advanced Data Tables Section */}
- <div className="brief-card"style={{ gridColumn: "1/-1", marginTop: 16 }}>
- <h3>Compliance Dashboard</h3>
- <div className="brief-actions"style={{ marginBottom: 12 }}>
- <button className="brief-btn"onClick={handleRunCompliance}>Run Compliance Check</button>
- <button className="brief-btn secondary">Generate Report</button>
- </div>
- <table className="brief-data-table">
- <thead>
- <tr>
- <th>Check Type</th>
- <th>Status</th>
- <th>Details</th>
- <th>Actions</th>
- </tr>
- </thead>
- <tbody>
- {complianceResults.map((result, idx) => (
- <tr key={idx}>
- <td><strong>{result.check}</strong></td>
- <td>
- <span className={`badge ${result.status === "passed"? "success": "warning"}`}>
- {getComplianceIcon(result.status)} {result.status}
- </span>
- </td>
- <td>{result.details}</td>
- <td>
- <button className="brief-btn small">Review</button>
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
+              {/* Outline */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px" }}>
+                <Section title={`Content Outline (${outline.length} sections)`} action={
+                  <button onClick={() => addSection(outline[outline.length-1]?.id)} style={{ background:"none", border:`1px solid ${C.borderBright}`, borderRadius:5, padding:"3px 10px", color:C.sub, fontSize:11, cursor:"pointer" }}>+ Add Section</button>
+                }>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {outline.map((sec) => (
+                      <div key={sec.id} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: sec.direction ? 6 : 0 }}>
+                          <select
+                            value={sec.tag}
+                            onChange={e => updateSection(sec.id, "tag", e.target.value)}
+                            style={{ background: sec.tag==="H1" ? "#1a0f2e" : sec.tag==="H2" ? "#0c1a2e" : C.card, border: `1px solid ${sec.tag==="H1" ? "#7c3aed" : sec.tag==="H2" ? "#1e3a5f" : C.border}`, borderRadius: 5, padding: "3px 6px", color: sec.tag==="H1" ? "#a78bfa" : sec.tag==="H2" ? "#60a5fa" : C.sub, fontSize: 11, fontWeight: 700, flexShrink: 0 }}
+                          >
+                            {["H1","H2","H3","H4"].map(t => <option key={t}>{t}</option>)}
+                          </select>
+                          <input
+                            value={sec.text}
+                            onChange={e => updateSection(sec.id, "text", e.target.value)}
+                            style={{ flex: 1, background: "none", border: "none", color: C.text, fontSize: 13, fontWeight: sec.tag==="H1" ? 700 : sec.tag==="H2" ? 600 : 400, outline: "none", padding: 0 }}
+                          />
+                          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                            {sec.wordCount > 0 && <span style={{ fontSize: 10, color: C.dim }}>{sec.wordCount}w</span>}
+                            <button onClick={() => addSection(sec.id)} style={{ background:"none", border:"none", color:C.dim, fontSize:16, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>+</button>
+                            <button onClick={() => removeSection(sec.id)} style={{ background:"none", border:"none", color:C.dim, fontSize:12, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>x</button>
+                          </div>
+                        </div>
+                        {sec.direction && (
+                          <div style={{ display:"flex", gap:6, paddingLeft:36 }}>
+                            <span style={{ fontSize:10, color:C.yellow, flexShrink:0, marginTop:2 }}>-&gt;</span>
+                            <input value={sec.direction} onChange={e => updateSection(sec.id, "direction", e.target.value)} style={{ flex:1, background:"none", border:"none", color:C.dim, fontSize:11, outline:"none", padding:0 }} placeholder="Content direction..." />
+                          </div>
+                        )}
+                        {(sec.keywordsToInclude||[]).length > 0 && (
+                          <div style={{ paddingLeft:36, marginTop:4, display:"flex", flexWrap:"wrap", gap:4 }}>
+                            {sec.keywordsToInclude.map((k,ki) => (
+                              <span key={ki} style={{ fontSize:10, color:"#818cf8", background:"#1e1b4b", border:"1px solid #4338ca", borderRadius:4, padding:"1px 6px" }}>{k}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              </div>
 
- {/* Performance Analytics Section */}
- <div className="brief-card"style={{ gridColumn: "1/-1", marginTop: 16 }}>
- <h3>Performance Analytics</h3>
- <table className="brief-data-table">
- <thead>
- <tr>
- <th onClick={() => handleToggleSort("metric")} className="sortable">Metric</th>
- <th onClick={() => handleToggleSort("current")} className="sortable">Current</th>
- <th>Previous</th>
- <th>Change</th>
- <th>Trend</th>
- </tr>
- </thead>
- <tbody>
- {performanceData.map((data, idx) => (
- <tr key={idx}>
- <td><strong>{data.metric}</strong></td>
- <td>{data.current.toLocaleString()}</td>
- <td>{data.previous.toLocaleString()}</td>
- <td className={data.change > 0 ? "success": "danger"}>
- {data.change > 0 ? "+": ""}{data.change}%
- </td>
- <td>{getPerformanceChangeIcon(data.change)}</td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
+            </div>
 
- {/* SEO Metrics Section */}
- <div className="brief-card"style={{ gridColumn: "1/-1", marginTop: 16 }}>
- <h3>SEO Detailed Metrics</h3>
- <div className="brief-grid">
- <div className="brief-card">
- <h4>Keyword Analysis</h4>
- <div className="brief-list">
- <div className="brief-list-item">
- <strong>Density</strong>
- <span>{seoMetrics.keywordDensity}% (Target: 1.5-2.5%)</span>
- </div>
- <div className="brief-list-item">
- <strong>Readability</strong>
- <span>{seoMetrics.readabilityScore}/100 (Flesch Reading Ease)</span>
- </div>
- </div>
- </div>
- <div className="brief-card">
- <h4>Link Profile</h4>
- <div className="brief-list">
- <div className="brief-list-item">
- <strong>Internal Links</strong>
- <span>{seoMetrics.internalLinks} (Recommended: 5-8)</span>
- </div>
- <div className="brief-list-item">
- <strong>External Links</strong>
- <span>{seoMetrics.externalLinks} (Recommended: 3-5)</span>
- </div>
- </div>
- </div>
- <div className="brief-card">
- <h4>Content Structure</h4>
- <div className="brief-list">
- <div className="brief-list-item">
- <strong>H1 Tags</strong>
- <span>{seoMetrics.h1Count} (Must be exactly 1)</span>
- </div>
- <div className="brief-list-item">
- <strong>H2 Tags</strong>
- <span>{seoMetrics.h2Count} (Recommended: 4-7)</span>
- </div>
- </div>
- </div>
- <div className="brief-card">
- <h4>Media Optimization</h4>
- <div className="brief-list">
- <div className="brief-list-item">
- <strong>Image Alt Tags</strong>
- <span>{seoMetrics.imageAltTags} images optimized</span>
- </div>
- <div className="brief-list-item">
- <strong>Meta Description</strong>
- <span className="badge success">{seoMetrics.metaDescription}</span>
- </div>
- </div>
- </div>
- </div>
- </div>
+            {/* RIGHT sidebar */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
- {/* Distribution Schedule Section */}
- <div className="brief-card"style={{ gridColumn: "1/-1", marginTop: 16 }}>
- <h3>Distribution Schedule</h3>
- <div className="brief-search-bar"style={{ marginBottom: 12 }}>
- <input 
- type="text"placeholder="Search channels..."value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- />
- </div>
- <div className="brief-filter-group"style={{ marginBottom: 12 }}>
- <button 
- className={`brief-btn small ${filterChannel === "all"? "primary": ""}`}
- onClick={() => setFilterChannel("all")}
- >
- All
- </button>
- <button 
- className={`brief-btn small ${filterChannel === "scheduled"? "primary": ""}`}
- onClick={() => setFilterChannel("scheduled")}
- >
- Scheduled
- </button>
- <button 
- className={`brief-btn small ${filterChannel === "draft"? "primary": ""}`}
- onClick={() => setFilterChannel("draft")}
- >
- Draft
- </button>
- </div>
- <table className="brief-data-table">
- <thead>
- <tr>
- <th>Date</th>
- <th>Channel</th>
- <th>Time</th>
- <th>Status</th>
- <th>Actions</th>
- </tr>
- </thead>
- <tbody>
- {distributionSchedule.map((schedule, idx) => (
- <tr key={idx}>
- <td>{schedule.date}</td>
- <td><strong>{schedule.channel}</strong></td>
- <td>{schedule.time}</td>
- <td>
- <span className={`badge ${schedule.status === "scheduled"? "success": "warning"}`}>
- {schedule.status}
- </span>
- </td>
- <td>
- <button className="brief-btn small">Edit</button>
- <button className="brief-btn small danger"style={{ marginLeft: 6 }}>Cancel</button>
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
+              {/* Actions */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", marginBottom: 12 }}>ACTIONS</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button onClick={exportBrief} style={{ padding:"9px 0", borderRadius:8, background:"#6366f1", border:"none", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>Export Brief (.txt)</button>
+                  <div style={{ padding:"3px 0" }}><CopyBtn text={fullBriefText} /></div>
+                </div>
+              </div>
 
- {/* Filtered Channels Table */}
- <div className="brief-card"style={{ gridColumn: "1/-1", marginTop: 16 }}>
- <h3>Channel Management</h3>
- <table className="brief-data-table">
- <thead>
- <tr>
- <th 
- onClick={() => handleToggleSort("channel")} 
- className={`sortable ${sortField === "channel"? `sorted-${sortDirection}` : ""}`}
- >
- Channel
- </th>
- <th 
- onClick={() => handleToggleSort("status")} 
- className={`sortable ${sortField === "status"? `sorted-${sortDirection}` : ""}`}
- >
- Status
- </th>
- <th 
- onClick={() => handleToggleSort("owner")} 
- className={`sortable ${sortField === "owner"? `sorted-${sortDirection}` : ""}`}
- >
- Owner
- </th>
- <th>Actions</th>
- </tr>
- </thead>
- <tbody>
- {filteredChannels.map((channel) => (
- <tr key={channel.channel}>
- <td><strong>{channel.channel}</strong></td>
- <td>
- <span className={`badge ${channel.status === "ready"? "success": channel.status === "in QA"? "warning": "info"}`}>
- {channel.status}
- </span>
- </td>
- <td>{channel.owner}</td>
- <td>
- <button 
- className="brief-btn small success"onClick={() => updateChannelStatus(channel.channel, "ready")}
- >
- Approve
- </button>
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
+              {/* Content Goals */}
+              {(brief.contentGoals||[]).length > 0 && (
+                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>CONTENT GOALS</div>
+                  {brief.contentGoals.map((g,i) => (
+                    <div key={i} style={{ display:"flex", gap:8, marginBottom:6 }}>
+                      <span style={{ color:C.green, flexShrink:0 }}>+</span>
+                      <span style={{ fontSize:12, color:C.sub }}>{g}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
- {/* Create Brief Modal */}
- {showBriefModal && (
- <div className="brief-modal-overlay"onClick={() => setShowBriefModal(false)}>
- <div className="brief-modal-container"onClick={(e) => e.stopPropagation()}>
- <div className="brief-modal-header">
- <h3>Create New Brief</h3>
- <button className="brief-modal-close"onClick={() => setShowBriefModal(false)}>×</button>
- </div>
- <div className="brief-modal-body">
- <div className="brief-form-row">
- <div className="brief-form-group">
- <label>
- Topic <span className="required">*</span>
- </label>
- <input 
- type="text"value={newBriefTopic}
- onChange={(e) => setNewBriefTopic(e.target.value)}
- placeholder="Enter content topic..."/>
- <span className="help-text">A clear, focused topic for your content</span>
- </div>
- </div>
- <div className="brief-form-row two-col">
- <div className="brief-form-group">
- <label>Target Audience</label>
- <input 
- type="text"value={newBriefAudience}
- onChange={(e) => setNewBriefAudience(e.target.value)}
- placeholder="e.g., Marketing Directors"/>
- </div>
- <div className="brief-form-group">
- <label>Content Goal</label>
- <select 
- value={newBriefGoal}
- onChange={(e) => setNewBriefGoal(e.target.value)}
- >
- <option value="">Select goal...</option>
- <option value="educate">Educate</option>
- <option value="convert">Convert</option>
- <option value="engage">Engage</option>
- <option value="retain">Retain</option>
- </select>
- </div>
- </div>
- <div className="brief-form-row">
- <div className="brief-form-group">
- <label>Brief Description</label>
- <textarea 
- value={note}
- onChange={(e) => setNote(e.target.value)}
- placeholder="Describe the content strategy..."/>
- </div>
- </div>
- </div>
- <div className="brief-modal-footer">
- <button className="brief-btn ghost"onClick={() => setShowBriefModal(false)}>
- Cancel
- </button>
- <button className="brief-btn primary"onClick={handleCreateBrief}>
- Create Brief
- </button>
- </div>
- </div>
- </div>
- )}
+              {/* FAQ */}
+              {(brief.faqQuestions||[]).length > 0 && (
+                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>FAQ / PEOPLE ALSO ASK</div>
+                  {brief.faqQuestions.map((q,i) => (
+                    <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:7, padding:"8px 12px", fontSize:12, color:C.sub, marginBottom:6 }}>{q}</div>
+                  ))}
+                </div>
+              )}
 
- {/* Create Task Modal */}
- {showTaskModal && (
- <div className="brief-modal-overlay"onClick={() => setShowTaskModal(false)}>
- <div className="brief-modal-container"onClick={(e) => e.stopPropagation()}>
- <div className="brief-modal-header">
- <h3>Create New Task</h3>
- <button className="brief-modal-close"onClick={() => setShowTaskModal(false)}>×</button>
- </div>
- <div className="brief-modal-body">
- <div className="brief-form-row">
- <div className="brief-form-group">
- <label>Task Title <span className="required">*</span></label>
- <input 
- type="text"value={newTaskTitle}
- onChange={(e) => setNewTaskTitle(e.target.value)}
- placeholder="Enter task description..."/>
- </div>
- </div>
- <div className="brief-form-row two-col">
- <div className="brief-form-group">
- <label>Assignee</label>
- <input 
- type="text"value={newTaskAssignee}
- onChange={(e) => setNewTaskAssignee(e.target.value)}
- placeholder="Assign to..."/>
- </div>
- <div className="brief-form-group">
- <label>Priority</label>
- <select 
- value={newTaskPriority}
- onChange={(e) => setNewTaskPriority(e.target.value)}
- >
- <option value="low">Low</option>
- <option value="medium">Medium</option>
- <option value="high">High</option>
- <option value="urgent">Urgent</option>
- </select>
- </div>
- </div>
- </div>
- <div className="brief-modal-footer">
- <button className="brief-btn ghost"onClick={() => setShowTaskModal(false)}>
- Cancel
- </button>
- <button className="brief-btn primary"onClick={handleCreateTask}>
- Create Task
- </button>
- </div>
- </div>
- </div>
- )}
+              {/* Competitor Gaps */}
+              {(brief.competitorTopics||[]).length > 0 && (
+                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>COMPETITOR GAPS</div>
+                  {brief.competitorTopics.map((c,i) => (
+                    <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:7, padding:"8px 12px", marginBottom:6 }}>
+                      <div style={{ fontSize:12, color:C.text, fontWeight:600, marginBottom:2 }}>{c.topic}</div>
+                      <div style={{ fontSize:11, color:C.green }}>{c.gap}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
- {/* Provider Analytics Modal */}
- {showProviderModal && (
- <div className="brief-modal-overlay"onClick={() => setShowProviderModal(false)}>
- <div className="brief-modal-container"onClick={(e) => e.stopPropagation()}>
- <div className="brief-modal-header">
- <h3>AI Provider Analytics</h3>
- <button className="brief-modal-close"onClick={() => setShowProviderModal(false)}>×</button>
- </div>
- <div className="brief-modal-body">
- <table className="brief-data-table">
- <thead>
- <tr>
- <th>Provider</th>
- <th>Latency</th>
- <th>Cost (per 1K)</th>
- <th>Reliability</th>
- <th>Quality Score</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td><strong>GPT-4</strong></td>
- <td>1.2s</td>
- <td>$0.03</td>
- <td><span className="badge success">99.8%</span></td>
- <td><span className="badge success">95/100</span></td>
- </tr>
- <tr>
- <td><strong>Claude 3</strong></td>
- <td>1.0s</td>
- <td>$0.015</td>
- <td><span className="badge success">99.5%</span></td>
- <td><span className="badge success">93/100</span></td>
- </tr>
- <tr>
- <td><strong>Gemini Pro</strong></td>
- <td>0.9s</td>
- <td>$0.001</td>
- <td><span className="badge warning">98.2%</span></td>
- <td><span className="badge info">88/100</span></td>
- </tr>
- </tbody>
- </table>
- <div className="brief-alert info"style={{ marginTop: 16 }}>
- <span className="icon"></span>
- <div>
- <strong>Recommendation:</strong>Use GPT-4 for critical content requiring highest reasoning quality. 
- Claude 3 offers best balance of quality and cost. Gemini Pro is ideal for high-volume, cost-sensitive tasks.
- </div>
- </div>
- </div>
- <div className="brief-modal-footer">
- <button className="brief-btn ghost"onClick={() => setShowProviderModal(false)}>
- Close
- </button>
- <button className="brief-btn primary">
- Update Provider Settings
- </button>
- </div>
- </div>
- </div>
- )}
+              {/* CTA */}
+              {brief.callToAction && (
+                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:8 }}>SUGGESTED CTA</div>
+                  <div style={{ fontSize:13, color:C.yellow, fontWeight:600 }}>"{brief.callToAction}"</div>
+                </div>
+              )}
 
- {/* Floating Action Buttons */}
- <div style={{ position: "fixed", bottom: 24, right: 24, display: "flex", gap: 12, flexDirection: "column"}}>
- <button 
- className="brief-btn primary"onClick={() => setShowBriefModal(true)}
- style={{ borderRadius: "50%", width: 56, height: 56, fontSize: 24 }}
- >
- +
- </button>
- <button 
- className="brief-btn secondary"onClick={() => setShowTaskModal(true)}
- style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 20 }}
- >
- 
- </button>
- <button 
- className="brief-btn"onClick={() => setShowProviderModal(true)}
- style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 18 }}
- >
- 
- </button>
- </div>
+              {/* Internal Links */}
+              {(brief.internalLinkSuggestions||[]).length > 0 && (
+                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>INTERNAL LINK IDEAS</div>
+                  {brief.internalLinkSuggestions.map((l,i) => (
+                    <div key={i} style={{ fontSize:12, color:C.blue, marginBottom:4 }}>-- {l}</div>
+                  ))}
+                </div>
+              )}
 
- <input type="file"accept="application/json"ref={fileInputRef} style={{ display: "none"}} onChange={handleImport} />
- </div>
- );
+              {/* Key Takeaways */}
+              {(brief.keyTakeaways||[]).length > 0 && (
+                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>KEY TAKEAWAYS</div>
+                  {brief.keyTakeaways.map((t,i) => (
+                    <div key={i} style={{ display:"flex", gap:8, marginBottom:6 }}>
+                      <span style={{ color:"#818cf8", flexShrink:0 }}>*</span>
+                      <span style={{ fontSize:12, color:C.sub }}>{t}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!brief && !loading && !error && (
+          <div style={{ textAlign:"center", padding:"60px 20px", color:C.dim }}>
+            <div style={{ fontSize:40, marginBottom:16 }}>*</div>
+            <div style={{ fontSize:18, fontWeight:700, color:C.sub, marginBottom:8 }}>Enter a keyword to get started</div>
+            <div style={{ fontSize:14, maxWidth:480, margin:"0 auto", lineHeight:1.6 }}>
+              Generate a full SEO content brief with title options, meta descriptions, keyword targets,
+              content outline, FAQ questions, competitor gaps and more in seconds.
+            </div>
+            <div style={{ marginTop:28, display:"flex", justifyContent:"center", gap:24, flexWrap:"wrap" }}>
+              {["Keyword-based brief generation","Search intent detection","Customisable outline & structure","Title and meta description suggestions","Target keyword sets","FAQ / People Also Ask","Competitor gap analysis","Export to .txt or copy"].map((f,i) => (
+                <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:9, padding:"10px 18px", fontSize:12, color:C.sub }}>+ {f}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
 }
