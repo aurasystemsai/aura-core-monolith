@@ -276,7 +276,7 @@ showToast("Scan complete — " + ((result.high || 0) + (result.medium || 0) + (r
 showToast(data.error || "Scan failed", "error");
 }
 } catch (e) {
-showToast("Scan failed: " + e.message, "error");
+    setShowScanModal(false);
 } finally {
 clearInterval(countdown);
 setScanningInProgress(false);
