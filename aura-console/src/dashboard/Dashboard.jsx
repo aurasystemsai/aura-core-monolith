@@ -228,7 +228,7 @@ setPositionTracking({ visibility, keywords: tracked.slice(0, 5), top3, top10, to
 
 const fetchSiteAudit = async () => {
 try {
-const res = await apiFetchJSON("/api/seo-crawler/last-results").catch(() => ({}));
+const res = await apiFetchJSON("/api/tools/seo-site-crawler/last-results").catch(() => ({}));
 if (res?.pagesScanned) {
 const health = Math.max(0, Math.round(100 - (res.high || 0) * 3 - (res.medium || 0) * 1.5 - (res.low || 0) * 0.5));
 setSiteAudit({ health, errors: res.high || 0, warnings: res.medium || 0, crawledPages: res.pagesScanned, lastUpdated: res.scannedAt || null, crawlResults: res });
@@ -257,19 +257,21 @@ const countdown = setInterval(() => setScanRemainingTime(r => Math.max(0, r - 1)
 try {
 const shopDomain = shop?.domain || localStorage.getItem("shopDomain");
 if (!shopDomain) { showToast("No shop domain found", "error"); return; }
-const res = await apiFetch("/api/seo-crawler/crawl", {
+const siteUrl = shopDomain.startsWith("http") ? shopDomain : `https://${shopDomain}`;
+const res = await apiFetch("/api/tools/seo-site-crawler/crawl", {
 method: "POST",
 headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ shopDomain }),
+body: JSON.stringify({ site: siteUrl }),
 });
 clearInterval(countdown);
 setScanRemainingTime(0);
 const data = await res.json();
 if (data.ok) {
-const health = Math.max(0, Math.round(100 - (data.high || 0) * 3 - (data.medium || 0) * 1.5 - (data.low || 0) * 0.5));
-setSiteAudit({ health, errors: data.high || 0, warnings: data.medium || 0, crawledPages: data.pagesScanned, lastUpdated: new Date().toLocaleDateString(), crawlResults: data });
+const result = data.result || data;
+const health = Math.max(0, Math.round(100 - (result.high || 0) * 3 - (result.medium || 0) * 1.5 - (result.low || 0) * 0.5));
+setSiteAudit({ health, errors: result.high || 0, warnings: result.medium || 0, crawledPages: result.pagesScanned, lastUpdated: new Date().toLocaleDateString(), crawlResults: result });
 setLastScanTime(new Date().toLocaleTimeString());
-showToast("Scan complete — " + ((data.high || 0) + (data.medium || 0) + (data.low || 0)) + " issues found");
+showToast("Scan complete — " + ((result.high || 0) + (result.medium || 0) + (result.low || 0)) + " issues found");
 } else {
 showToast(data.error || "Scan failed", "error");
 }

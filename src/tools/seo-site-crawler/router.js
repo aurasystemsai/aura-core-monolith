@@ -120,6 +120,13 @@ router.post("/import", (req, res) => {
   }
 });
 
+// ── Last results (most recent crawl) ────────────────────────────────────────
+router.get("/last-results", (req, res) => {
+  const last = crawlHistory[0];
+  if (!last) return res.json({ ok: false, error: "No crawl history yet" });
+  res.json({ ok: true, ...last.result, scannedAt: last.createdAt, site: last.site });
+});
+
 // ── Health check ─────────────────────────────────────────────────────────────
 router.get("/health", (req, res) => {
   res.json({ ok: true, status: "SEO Site Crawler API running" });
