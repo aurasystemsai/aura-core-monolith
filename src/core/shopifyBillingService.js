@@ -312,12 +312,12 @@ class ShopifyBillingService {
     if (!token) throw new Error('Shop not connected. Please reconnect your Shopify store.');
 
     const mutation = `
-      mutation CreateOneTimeCharge($name: String!, $price: MoneyInput!, $returnUrl: URL!) {
+      mutation CreateOneTimeCharge($name: String!, $price: MoneyInput!, $returnUrl: URL!, $test: Boolean!) {
         appPurchaseOneTimeCreate(
           name: $name
           price: $price
           returnUrl: $returnUrl
-          test: true
+          test: $test
         ) {
           appPurchaseOneTime {
             id
@@ -338,7 +338,8 @@ class ShopifyBillingService {
     const variables = {
       name: `AURA Credit Top-Up: ${pack.label}`,
       returnUrl,
-      price: { amount: pack.price, currencyCode: 'USD' }
+      price: { amount: pack.price, currencyCode: 'USD' },
+      test: process.env.NODE_ENV !== 'production' || process.env.SHOPIFY_TEST_CHARGES === 'true',
     };
 
     try {
