@@ -385,7 +385,39 @@ const Credits = ({ plan = 'free' }) => {
         >
           {purchasing ? 'Processing\u2026' : selectedPack ? `Buy ${CREDIT_PACKS.find(p => p.id === selectedPack)?.label}` : 'Select a pack'}
         </button>
-      </div>
+        {devMode && (
+          <div style={{ marginTop: 12, padding: '10px 14px', background: '#1a1a0a', border: '1px dashed #eab308', borderRadius: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#eab308', marginBottom: 6 }}>DEV MODE — Bypass Shopify payment</div>
+            <button
+              style={{ ...S.btn, background: '#78350f', marginTop: 0, ...((!selectedPack || purchasing) ? S.btnDis : {}) }}
+              disabled={!selectedPack || purchasing}
+              onClick={async () => {
+                if (!selectedPack) return;
+                const pack = CREDIT_PACKS.find(p => p.id === selectedPack);
+                if (!pack) return;
+                setPurchasing(true);
+                setError('');
+                try {
+                  const res = await apiFetchJSON('/api/billing/dev-topup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credits: pack.credits, packId: pack.id }),
+                  });
+                  if (res.ok) {
+                    setSuccess(`[DEV] ${pack.credits} test credits added instantly!`);
+                    setBalance(b => (b || 0) + pack.credits);
+                    setTopupCredits(t => t + pack.credits);
+                  } else {
+                    setError(res.error || 'Dev topup failed');
+                  }
+                } catch (e) { setError(e.message); }
+                setPurchasing(false);
+              }}
+            >
+              {purchasing ? 'Adding…' : selectedPack ? `[DEV] Add ${CREDIT_PACKS.find(p => p.id === selectedPack)?.label} instantly` : 'Select a pack first'}
+            </button>
+          </div>
+        )}      </div>
 
       {/* Credit costs table */}
       <div style={S.card}>
