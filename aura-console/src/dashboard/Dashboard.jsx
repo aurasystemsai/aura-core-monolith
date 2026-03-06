@@ -257,11 +257,10 @@ const countdown = setInterval(() => setScanRemainingTime(r => Math.max(0, r - 1)
 try {
 const shopDomain = shop?.domain || localStorage.getItem("shopDomain");
 if (!shopDomain) { showToast("No shop domain found", "error"); return; }
-const siteUrl = shopDomain.startsWith("http") ? shopDomain : `https://${shopDomain}`;
 const res = await apiFetch("/api/tools/seo-site-crawler/crawl", {
 method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ site: siteUrl }),
+headers: { "Content-Type": "application/json", "x-shopify-shop-domain": shopDomain },
+body: JSON.stringify({ shopDomain }),
 });
 clearInterval(countdown);
 setScanRemainingTime(0);
