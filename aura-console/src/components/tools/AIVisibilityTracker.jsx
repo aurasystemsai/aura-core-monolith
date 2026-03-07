@@ -4,6 +4,7 @@ import { apiFetch } from "../../api";
 const API = "/api/ai-visibility-tracker";
 
 const TABS = [
+ "Overview",
  "Citability Score",
  "Prompt Testing",
  "AI Share of Voice",
@@ -55,6 +56,206 @@ function ScoreCircle({ score, label }) {
  </div>
  </div>
  {label && <div style={{ fontSize: "11px", color: "#71717a", marginTop: "4px"}}>{label}</div>}
+ </div>
+ );
+}
+
+/* Tab: Overview */
+function OverviewTab({ onNavigate }) {
+ const [brand, setBrand] = useState("");
+ const [domain, setDomain] = useState("");
+ const [result, setResult] = useState(null);
+ const [loading, setLoading] = useState(false);
+ const [err, setErr] = useState("");
+ const [showHowItWorks, setShowHowItWorks] = useState(false);
+
+ const run = useCallback(async () => {
+ if (!brand && !domain) return;
+ setLoading(true); setErr(""); setResult(null);
+ try {
+ const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand, domain }) });
+ if (!d.ok) throw new Error(d.error);
+ setResult(d);
+ } catch (e) { setErr(e.message); } finally { setLoading(false); }
+ }, [brand, domain]);
+
+ const PLATFORMS = [
+ { key: "chatgpt",    label: "ChatGPT",     color: "#22d3ee" },
+ { key: "aiOverview", label: "AI Overview",  color: "#4ade80" },
+ { key: "aiMode",     label: "AI Mode",      color: "#34d399" },
+ { key: "gemini",     label: "Gemini",       color: "#f59e0b" },
+ ];
+
+ const HOW_IT_WORKS = [
+ { q: "What's AI Visibility?", a: "A benchmark score (0–100) showing how often a brand appears in AI-generated answers. The score reflects both the number of topics where the brand is mentioned and how consistently it appears within those topics compared to other brands." },
+ { q: "How can I get more mentions?", a: "Check the Topic Opportunities in the Prompt Coverage tab. It highlights topics and prompts that trigger answers mentioning competitors but not your brand. Publish content on those topics or get mentioned on the cited sources." },
+ { q: "How is the score calculated?", a: "AURA analyses AI-generated responses from ChatGPT, Google AI Overviews, AI Mode, and Gemini — checking how often your brand or domain appears compared to others on the same prompts." },
+ { q: "How do I track a specific prompt?", a: "Use the Prompt Testing tab to run brand vs competitor tests against specific queries, or Prompt Coverage to map all prompts in your niche." },
+ { q: "What are Sources?", a: "Pages that AI models cite. These are often UGC platforms (Reddit, Quora), competitor sites, or niche media. The Seeding Plan tab helps you target the right sources to get your brand mentioned." },
+ ];
+
+ const score = result?.score ?? 0;
+ const scoreColor = score >= 80 ? "#22c55e" : score >= 50 ? "#f59e0b" : score >= 20 ? "#f97316" : "#a855f7";
+ const scoreLabel = score >= 80 ? "High" : score >= 50 ? "Medium" : score >= 20 ? "Low" : "Not tracked";
+
+ const QUICK_ACTIONS = [
+ { icon: "★", label: "Citability Score", desc: "Score a page for AI citation likelihood", tab: 1 },
+ { icon: "◎", label: "Prompt Testing",   desc: "Test brand visibility in AI answers",    tab: 2 },
+ { icon: "◈", label: "Share of Voice",   desc: "Compare vs competitors across prompts",  tab: 3 },
+ { icon: "⬡", label: "Seeding Plan",     desc: "Where to post to grow AI mentions",      tab: 4 },
+ { icon: "◑", label: "Prompt Coverage",  desc: "Map all AI prompts in your niche",       tab: 7 },
+ { icon: "⬢", label: "GEO Optimizer",   desc: "Rewrite content for AI citation",        tab: 6 },
+ ];
+
+ // Build trend chart polylines from result data if available
+ const trendPoints = (arr) => {
+ if (!arr || arr.length < 2) return "0,90 50,90 100,90 150,90 200,90 240,90";
+ const max = Math.max(...arr, 1);
+ const xs = [0, 48, 96, 144, 192, 240];
+ return arr.slice(-6).map((v, i) => `${xs[i]},${90 - Math.round((v / max) * 80)}`).join(" ");
+ };
+
+ const trendTotal    = result?.trend?.total    ?? [0,0,0,0,0,0];
+ const trendChatgpt  = result?.trend?.chatgpt  ?? [0,0,0,0,0,0];
+ const trendOverview = result?.trend?.aiOverview ?? [0,0,0,0,0,0];
+ const trendGemini   = result?.trend?.gemini   ?? [0,0,0,0,0,0];
+
+ const maxMentions = result ? Math.max(result.chatgpt || 0, result.aiOverview || 0, result.aiMode || 0, result.gemini || 0, 1) : 1;
+
+ return (
+ <div>
+ {/* Input bar */}
+ <div style={{ ...S.card, display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <label style={S.label}>Brand name</label>
+ <input style={{ ...S.input, marginBottom: 0 }} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Gymshark" />
+ </div>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <label style={S.label}>Domain (optional)</label>
+ <input style={{ ...S.input, marginBottom: 0 }} value={domain} onChange={e => setDomain(e.target.value)} placeholder="e.g. gymshark.com" />
+ </div>
+ <button style={{ ...S.btn(), whiteSpace: "nowrap", marginRight: 0 }} onClick={run} disabled={loading}>
+ {loading ? "Analysing…" : "Run AI Visibility Overview (3 credits)"}
+ </button>
+ </div>
+
+ {err && <div style={S.error}>{err}</div>}
+
+ {/* Main content — shown with real data or as empty-state blueprint */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
+
+ {/* Left: Score + platform breakdown */}
+ <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+ <div style={S.card}>
+ {/* Conic score ring */}
+ <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
+ <div style={{ width: 140, height: 140, borderRadius: "50%", background: `conic-gradient(${scoreColor} ${score * 3.6}deg, #27272a 0deg)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+ <div style={{ width: 110, height: 110, borderRadius: "50%", background: "#18181b", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+ <span style={{ fontSize: 36, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{score}</span>
+ <span style={{ fontSize: 11, color: "#71717a" }}>/100</span>
+ </div>
+ </div>
+ <span style={{ fontSize: 16, fontWeight: 700, color: scoreColor, marginTop: 10 }}>{scoreLabel}</span>
+ <span style={{ fontSize: 12, color: "#71717a", marginTop: 4 }}>AI Visibility Score</span>
+ </div>
+
+ {/* Stats row */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "14px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 16, textAlign: "center" }}>
+ {[
+ { label: "Monthly Audience", value: result?.monthlyAudience ? (result.monthlyAudience >= 1e6 ? `${(result.monthlyAudience/1e6).toFixed(1)}M` : result.monthlyAudience >= 1e3 ? `${(result.monthlyAudience/1e3).toFixed(1)}K` : result.monthlyAudience) : "—" },
+ { label: "Mentions",          value: result?.mentions ?? 0 },
+ { label: "Cited Pages",       value: result?.citedPages ?? 0 },
+ ].map(s => (
+ <div key={s.label}>
+ <div style={{ fontSize: 22, fontWeight: 900, color: "#fafafa" }}>{s.value}</div>
+ <div style={{ fontSize: 10, color: "#71717a", marginTop: 3 }}>{s.label}</div>
+ </div>
+ ))}
+ </div>
+
+ {/* Platform breakdown */}
+ <p style={{ ...S.sectionTitle, marginBottom: 10 }}>Platform Mentions</p>
+ {PLATFORMS.map(p => {
+ const val = result?.[p.key] ?? 0;
+ return (
+ <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #1c1c1f" }}>
+ <div style={{ width: 9, height: 9, borderRadius: "50%", background: p.color, flexShrink: 0 }} />
+ <span style={{ color: "#d4d4d8", fontSize: 13, flex: 1 }}>{p.label}</span>
+ <div style={{ width: 80, height: 6, background: "#27272a", borderRadius: 3, overflow: "hidden" }}>
+ <div style={{ width: `${Math.min((val / maxMentions) * 100, 100)}%`, height: "100%", background: p.color, borderRadius: 3 }} />
+ </div>
+ <span style={{ color: p.color, fontSize: 13, fontWeight: 700, minWidth: 32, textAlign: "right" }}>{val}</span>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+
+ {/* Right: Trend chart + quick actions */}
+ <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+ <div style={S.card}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+ <p style={{ ...S.sectionTitle, margin: 0 }}>Visibility Trend · last 6 months</p>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+ {[["#a855f7","Total"],["#22d3ee","ChatGPT"],["#4ade80","AI Overview"],["#f59e0b","Gemini"]].map(([color, lbl]) => (
+ <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#71717a" }}>
+ <div style={{ width: 18, height: 2, background: color, borderRadius: 1 }} />{lbl}
+ </div>
+ ))}
+ </div>
+ </div>
+ <svg width="100%" height="130" viewBox="0 0 240 100" preserveAspectRatio="none" style={{ display: "block" }}>
+ <line x1="0" y1="25" x2="240" y2="25" stroke="#27272a" strokeWidth="0.5" />
+ <line x1="0" y1="50" x2="240" y2="50" stroke="#27272a" strokeWidth="0.5" />
+ <line x1="0" y1="75" x2="240" y2="75" stroke="#27272a" strokeWidth="0.5" />
+ <polyline points={trendPoints(trendTotal)}    fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points={trendPoints(trendChatgpt)}  fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points={trendPoints(trendOverview)} fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points={trendPoints(trendGemini)}   fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ </svg>
+ {result?.trendInsight && (
+ <div style={{ ...S.infoBox, marginTop: 10 }}>{result.trendInsight}</div>
+ )}
+ </div>
+
+ {/* Quick Actions */}
+ <div style={S.card}>
+ <p style={S.sectionTitle}>Analysis Tools</p>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+ {QUICK_ACTIONS.map(qa => (
+ <button key={qa.tab} onClick={() => onNavigate(qa.tab)}
+ style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", textAlign: "left", cursor: "pointer", display: "flex", flexDirection: "column", gap: 4, transition: "border-color 0.15s" }}
+ onMouseEnter={e => e.currentTarget.style.borderColor = "#7c3aed"}
+ onMouseLeave={e => e.currentTarget.style.borderColor = "#27272a"}
+ >
+ <span style={{ fontSize: 18 }}>{qa.icon}</span>
+ <span style={{ fontSize: 12, fontWeight: 700, color: "#fafafa" }}>{qa.label}</span>
+ <span style={{ fontSize: 11, color: "#71717a" }}>{qa.desc}</span>
+ </button>
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+
+ {/* How it works */}
+ <div style={S.card}>
+ <button onClick={() => setShowHowItWorks(p => !p)}
+ style={{ background: "none", border: "none", width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", padding: 0 }}>
+ <span style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>ⓘ How it works</span>
+ <span style={{ color: "#52525b", fontSize: 18 }}>{showHowItWorks ? "−" : "+"}</span>
+ </button>
+ {showHowItWorks && (
+ <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+ {HOW_IT_WORKS.map((item, i) => (
+ <div key={i}>
+ <div style={{ fontSize: 13, fontWeight: 700, color: "#c4b5fd", marginBottom: 4 }}>{item.q}</div>
+ <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.6 }}>{item.a}</div>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
  </div>
  );
 }
@@ -828,6 +1029,7 @@ export default function AIVisibilityTracker() {
  const [tab, setTab] = useState(0);
 
  const tabComponents = [
+ <OverviewTab onNavigate={setTab} />,
  <CitabilityTab />,
  <PromptTestTab />,
  <SoVTab />,
