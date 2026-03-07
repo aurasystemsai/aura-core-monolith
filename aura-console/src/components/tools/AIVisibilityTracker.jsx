@@ -78,12 +78,11 @@ function OverviewTab({ onNavigate }) {
  const [whatsNextSlide, setWhatsNextSlide] = useState(0);
 
  const run = useCallback(async () => {
- if (!brand && !domain) return;
- setLoading(true); setErr(""); setResult(null);
- try {
- const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand, domain }) });
- if (!d.ok) throw new Error(d.error);
- setResult(d);
+  if (!brand.trim() && !domain.trim()) { setErr("Enter a brand name or domain first."); return; }
+  setLoading(true); setErr(""); setResult(null);
+  try {
+    const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), domain: domain.trim() }) });
+    if (!d.ok) throw new Error(d.error || d.message || "Unknown error — check OpenAI key");
  } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, domain]);
 

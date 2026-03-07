@@ -887,74 +887,76 @@ router.post('/overview', async (req, res) => {
     if (!brand && !domain) return res.status(400).json({ ok: false, error: 'brand or domain required' });
 
     const openai = getOpenAI();
-    const prompt = `You are an AI visibility analysis engine. Analyse the brand "${brand || domain}" and return a comprehensive AI Visibility Overview.
+    const brandName = (brand || domain).trim();
 
-Return ONLY valid JSON (no markdown) with this exact structure:
+    const completion = await openai.chat.completions.create({
+      model,
+      response_format: { type: 'json_object' },
+      temperature: 0.3,
+      max_tokens: 4000,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an AI visibility analysis engine. Always respond with valid JSON only — no prose, no markdown fences.',
+        },
+        {
+          role: 'user',
+          content: `Analyse the brand "${brandName}" and return an AI Visibility Overview as JSON with EXACTLY these fields:
+
 {
-  "score": <integer 0-100; 0 if brand is unknown or very small>,
-  "mentions": <estimated total AI mentions per month>,
-  "citedPages": <estimated number of pages cited by AI>,
-  "monthlyAudience": <estimated monthly audience reached via AI, integer>,
-  "chatgpt": <estimated monthly mentions in ChatGPT>,
-  "aiOverview": <estimated monthly mentions in Google AI Overview>,
-  "aiMode": <estimated monthly mentions in Google AI Mode>,
-  "gemini": <estimated monthly mentions in Gemini>,
+  "score": integer 0-100 (realistic brand AI visibility — large/famous brand = 60-90, niche/small = 5-30, unknown = 2-10),
+  "mentions": integer (estimated total monthly AI mentions across all platforms),
+  "citedPages": integer (estimated pages cited by AI),
+  "monthlyAudience": integer (estimated monthly audience reached via AI answers),
+  "chatgpt": integer (monthly ChatGPT mentions),
+  "aiOverview": integer (monthly Google AI Overview mentions),
+  "aiMode": integer (monthly Google AI Mode mentions),
+  "gemini": integer (monthly Gemini mentions),
   "trend": {
-    "total":      [<6 ints, oldest to newest, indexed monthly>],
-    "chatgpt":    [<6 ints>],
-    "aiOverview": [<6 ints>],
-    "gemini":     [<6 ints>]
+    "total": [int,int,int,int,int,int],
+    "chatgpt": [int,int,int,int,int,int],
+    "aiOverview": [int,int,int,int,int,int],
+    "gemini": [int,int,int,int,int,int]
   },
-  "trendInsight": "<one sentence insight about the trend>",
+  "trendInsight": "one sentence insight about visibility trend over the last 6 months",
   "performingTopics": [
     {
-      "topic": "<topic name>",
-      "visibility": <int 0-100>,
-      "mentions": <int>,
-      "aiVolume": <int>,
-      "sparkline": "<SVG polyline points string e.g. 0,18 10,14 20,10 30,8 40,4>",
-      "intent": ["informational","commercial","navigational"],
+      "topic": "topic name",
+      "visibility": integer 0-100,
+      "mentions": integer,
+      "aiVolume": integer,
+      "sparkline": "0,18 10,14 20,10 30,8 40,4",
+      "intent": ["informational"],
       "prompts": [
-        {
-          "prompt": "<actual prompt text>",
-          "response": "<first 150 chars of a realistic AI response>",
-          "source": "chatgpt",
-          "mentioned": <true|false>,
-          "brands": <int>,
-          "sources": <int>
-        }
+        { "prompt": "actual user query text", "response": "first 120 chars of realistic AI response mentioning the brand", "source": "chatgpt", "mentioned": true, "brands": 3, "sources": 8 },
+        { "prompt": "second user query text", "response": "first 120 chars of another realistic AI response", "source": "google", "mentioned": true, "brands": 5, "sources": 12 }
       ]
     }
   ],
   "topicOpportunities": [
-    {
-      "topic": "<topic where brand is NOT mentioned but competitors are>",
-      "visibility": <int>,
-      "aiVolume": <int>
-    }
+    { "topic": "topic name where brand is absent but competitors dominate", "visibility": integer, "aiVolume": integer }
   ]
 }
 
 Rules:
-- Return 5-8 performing topics with 2-3 prompts each
-- Return 4-6 topic opportunities
-- All numbers should be realistic for the brand's size/niche
-- If brand is very obscure or unknown, score should be 5-15 with low numbers`;
-
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.4,
-      max_tokens: 2500,
+- Return exactly 4 performing topics, each with exactly 2 prompts
+- Return exactly 4 topic opportunities
+- All numbers must be realistic for the brand size/niche
+- trend arrays must each contain exactly 6 integers (oldest to newest, monthly)
+- sparkline must be a valid SVG polyline points string with 5 x,y pairs like "0,18 10,14 20,10 30,8 40,4"`,
+        },
+      ],
     });
 
-    const raw = completion.choices[0].message.content.trim()
-      .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
-
     let data;
-    try { data = JSON.parse(raw); }
-    catch { return res.status(500).json({ ok: false, error: 'AI returned invalid JSON', raw }); }
+    try {
+      data = JSON.parse(completion.choices[0].message.content);
+    } catch (parseErr) {
+      return res.status(500).json({ ok: false, error: `JSON parse failed: ${parseErr.message}` });
+    }
 
+    if (req.deductCredits) req.deductCredits({ model });
+    db.recordEvent({ type: 'overview', brand: brandName });
     res.json({ ok: true, ...data });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
