@@ -46,7 +46,25 @@ module.exports = async function verifyShopifySession(req, res, next) {
     req.path.startsWith('/product-seo') ||
     req.path.startsWith('/blog-seo') ||
     req.path.startsWith('/image-alt-media-seo') ||
-    req.path.startsWith('/tools/seo-site-crawler')
+    req.path.startsWith('/tools/seo-site-crawler') ||
+    req.path.startsWith('/ai-visibility-tracker') ||
+    req.path.startsWith('/rank-tracker') ||
+    req.path.startsWith('/seo') ||
+    req.path.startsWith('/keyword-research-suite') ||
+    req.path.startsWith('/rank-visibility-tracker') ||
+    req.path.startsWith('/on-page-seo-engine') ||
+    req.path.startsWith('/technical-seo-auditor') ||
+    req.path.startsWith('/schema-rich-results-engine') ||
+    req.path.startsWith('/content-scoring-optimization') ||
+    req.path.startsWith('/link-intersect-outreach') ||
+    req.path.startsWith('/internal-link-optimizer') ||
+    req.path.startsWith('/ai-content-brief-generator') ||
+    req.path.startsWith('/weekly-blog-content-engine') ||
+    req.path.startsWith('/blog-draft-engine') ||
+    req.path.startsWith('/abandoned-checkout-winback') ||
+    req.path.startsWith('/review-ugc-engine') ||
+    req.path.startsWith('/ai-content-image-gen') ||
+    req.path.startsWith('/email-automation-builder')
   )) {
     return next();
   }
