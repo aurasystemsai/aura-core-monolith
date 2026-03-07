@@ -149,25 +149,42 @@ function LoadingOverviewSkeleton() {
 }
 
 /* Tab: Overview */
+const OVERVIEW_KEY = "aura_overview_cache";
+function loadCache() {
+  try { return JSON.parse(localStorage.getItem(OVERVIEW_KEY) || "null"); } catch { return null; }
+}
+function saveCache(brand, domain, data) {
+  try { localStorage.setItem(OVERVIEW_KEY, JSON.stringify({ brand, domain, data })); } catch {}
+}
+function clearCache() {
+  try { localStorage.removeItem(OVERVIEW_KEY); } catch {}
+}
+
 function OverviewTab({ onNavigate }) {
- const [brand, setBrand] = useState("");
- const [domain, setDomain] = useState("");
- const [result, setResult] = useState(null);
+ const _cache = loadCache();
+ const [brand, setBrand] = useState(_cache?.brand ?? "");
+ const [domain, setDomain] = useState(_cache?.domain ?? "");
+ const [result, setResult] = useState(_cache?.data ?? null);
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
  const [showHowItWorks, setShowHowItWorks] = useState(false);
  const [topicsTab, setTopicsTab] = useState(0);
  const [expandedTopic, setExpandedTopic] = useState(null);
- const [responseModal, setResponseModal] = useState(null); // { prompt, response, source, mentioned, brands, sources }
+ const [responseModal, setResponseModal] = useState(null);
  const [whatsNextSlide, setWhatsNextSlide] = useState(0);
+
+ // Clear cached result when the user edits the brand or domain fields
+ const handleBrandChange = (v) => { setBrand(v); if (result) { setResult(null); clearCache(); } };
+ const handleDomainChange = (v) => { setDomain(v); if (result) { setResult(null); clearCache(); } };
 
  const run = useCallback(async () => {
   if (!brand.trim() && !domain.trim()) { setErr("Enter a brand name or domain first."); return; }
-  setLoading(true); setErr(""); setResult(null);
+  setLoading(true); setErr(""); setResult(null); clearCache();
   try {
     const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), domain: domain.trim() }) });
     if (!d.ok) throw new Error(d.error || d.message || `Server error ${d.status}`);
     setResult(d);
+    saveCache(brand.trim(), domain.trim(), d);
   } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, domain]);
 
@@ -250,11 +267,11 @@ function OverviewTab({ onNavigate }) {
  <div style={{ ...S.card, display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
  <div style={{ flex: 1, minWidth: 180 }}>
  <label style={S.label}>Brand name</label>
- <input style={{ ...S.input, marginBottom: 0 }} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Gymshark" />
+ <input style={{ ...S.input, marginBottom: 0 }} value={brand} onChange={e => handleBrandChange(e.target.value)} placeholder="e.g. Gymshark" />
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
  <label style={S.label}>Domain (optional)</label>
- <input style={{ ...S.input, marginBottom: 0 }} value={domain} onChange={e => setDomain(e.target.value)} placeholder="e.g. gymshark.com" />
+ <input style={{ ...S.input, marginBottom: 0 }} value={domain} onChange={e => handleDomainChange(e.target.value)} placeholder="e.g. gymshark.com" />
  </div>
  <button style={{ ...S.btn(), whiteSpace: "nowrap", marginRight: 0 }} onClick={run} disabled={loading}>
  {loading ? "Analysing…" : "Run AI Visibility Overview (3 credits)"}
