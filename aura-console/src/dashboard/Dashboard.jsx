@@ -463,28 +463,90 @@ style={{ background: copilotLoading ? "#3f3f46" : "#6366f1", border: "none", bor
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
 
 {/* AI Visibility */}
-<Widget title="AI Search" info="How visible your brand is across AI search tools"
+<Widget title="AI Visibility" info="How visible your brand is across AI search tools"
 action={<span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>}>
-<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
-<MetricPill label="AI Visibility" value={aiVisibility.score} color="#a855f7" />
-<MetricPill label="Mentions" value={aiVisibility.mentions} color="#6366f1" />
-<MetricPill label="Cited Pages" value={aiVisibility.citedPages} color="#22d3ee" />
+
+{/* Top: score circle + trend chart */}
+<div style={{ display: "flex", gap: 16, marginBottom: 14, alignItems: "flex-start" }}>
+
+  {/* Conic score circle */}
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+    <div style={{ width: 88, height: 88, borderRadius: "50%", background: `conic-gradient(#a855f7 ${aiVisibility.score * 3.6}deg, #27272a 0deg)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 68, height: 68, borderRadius: "50%", background: "#18181b", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: 20, fontWeight: 900, color: "#a855f7", lineHeight: 1 }}>{aiVisibility.score}</span>
+        <span style={{ fontSize: 9, color: "#71717a" }}>/100</span>
+      </div>
+    </div>
+    <span style={{ fontSize: 11, fontWeight: 700, color: aiVisibility.score >= 80 ? "#22c55e" : aiVisibility.score >= 50 ? "#f59e0b" : "#a855f7", marginTop: 6 }}>
+      {aiVisibility.score >= 80 ? "High" : aiVisibility.score >= 50 ? "Medium" : aiVisibility.score >= 20 ? "Low" : "Not tracked"}
+    </span>
+    <span style={{ fontSize: 10, color: "#52525b", marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>
+      {aiVisibility.score === 0 ? "Run analysis\nto score" : "AI Visibility"}
+    </span>
+  </div>
+
+  {/* Mini trend chart */}
+  <div style={{ flex: 1, minWidth: 0 }}>
+    <div style={{ fontSize: 10, color: "#52525b", marginBottom: 6 }}>Visibility trend · last 6 months</div>
+    <svg width="100%" height="72" viewBox="0 0 220 72" preserveAspectRatio="none" style={{ display: "block" }}>
+      <line x1="0" y1="18" x2="220" y2="18" stroke="#27272a" strokeWidth="0.5" />
+      <line x1="0" y1="36" x2="220" y2="36" stroke="#27272a" strokeWidth="0.5" />
+      <line x1="0" y1="54" x2="220" y2="54" stroke="#27272a" strokeWidth="0.5" />
+      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#a855f7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+      {[["#a855f7", "Total"], ["#22d3ee", "ChatGPT"], ["#4ade80", "AI Overview"], ["#f59e0b", "Gemini"]].map(([color, lbl]) => (
+        <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "#71717a" }}>
+          <div style={{ width: 14, height: 2, background: color, borderRadius: 1 }} />{lbl}
+        </div>
+      ))}
+    </div>
+  </div>
 </div>
-<div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-{[
-{ icon: "🤖", label: "ChatGPT", val: aiVisibility.chatgpt },
-{ icon: "🔍", label: "AI Overview", val: aiVisibility.aiOverview },
-{ icon: "🇬", label: "AI Mode", val: aiVisibility.aiMode },
-{ icon: "♊", label: "Gemini", val: aiVisibility.gemini },
-].map(row => (
-<div key={row.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #27272a" }}>
-<span style={{ fontSize: 16, width: 22, textAlign: "center" }}>{row.icon}</span>
-<span style={{ color: "#fafafa", fontSize: 14, flex: 1 }}>{row.label}</span>
-<span style={{ color: "#6366f1", fontSize: 14, fontWeight: 700, minWidth: 30, textAlign: "right" }}>{row.val}</span>
-<span style={{ color: "#71717a", fontSize: 13, minWidth: 30, textAlign: "right" }}>{row.val}</span>
+
+{/* Stats row */}
+<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "12px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 12, textAlign: "center" }}>
+  {[
+    { label: "Monthly Audience", value: "—" },
+    { label: "Mentions",         value: aiVisibility.mentions },
+    { label: "Cited Pages",      value: aiVisibility.citedPages },
+  ].map(s => (
+    <div key={s.label}>
+      <div style={{ fontSize: 20, fontWeight: 900, color: "#fafafa" }}>{s.value}</div>
+      <div style={{ fontSize: 10, color: "#71717a", marginTop: 2 }}>{s.label}</div>
+    </div>
+  ))}
 </div>
-))}
+
+{/* Platform breakdown */}
+<div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 14 }}>
+  {[
+    { dot: "#22d3ee", label: "ChatGPT",     val: aiVisibility.chatgpt },
+    { dot: "#4ade80", label: "AI Overview", val: aiVisibility.aiOverview },
+    { dot: "#34d399", label: "AI Mode",     val: aiVisibility.aiMode },
+    { dot: "#f59e0b", label: "Gemini",      val: aiVisibility.gemini },
+  ].map(row => (
+    <div key={row.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid #1c1c1f" }}>
+      <div style={{ width: 8, height: 8, borderRadius: "50%", background: row.dot, flexShrink: 0 }} />
+      <span style={{ color: "#d4d4d8", fontSize: 13, flex: 1 }}>{row.label}</span>
+      <div style={{ width: 64, height: 5, background: "#27272a", borderRadius: 3, overflow: "hidden" }}>
+        <div style={{ width: `${Math.min((row.val / 100) * 100, 100)}%`, height: "100%", background: row.dot, borderRadius: 3 }} />
+      </div>
+      <span style={{ color: row.dot, fontSize: 13, fontWeight: 700, minWidth: 24, textAlign: "right" }}>{row.val}</span>
+    </div>
+  ))}
 </div>
+
+{/* CTA */}
+<button
+  onClick={() => setActiveSection && setActiveSection("ai-visibility-tracker")}
+  style={{ width: "100%", background: "#2e1065", border: "1px solid #6d28d9", borderRadius: 8, padding: "9px 0", color: "#c4b5fd", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+  Analyze AI Visibility →
+</button>
+
 </Widget>
 
 {/* SEO Overview */}
