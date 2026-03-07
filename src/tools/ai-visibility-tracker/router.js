@@ -875,4 +875,90 @@ router.get('/health', (req, res) => {
   res.json({ ok: true, tool: 'ai-visibility-tracker', ts: new Date().toISOString() });
 });
 
+/* ======================================================================
+   FEATURE: AI Visibility Overview
+   POST /api/ai-visibility-tracker/overview
+   Full brand AI visibility dashboard — score, platform breakdown, topics,
+   performing topics with prompts, topic opportunities, trend data.
+   ====================================================================== */
+router.post('/overview', async (req, res) => {
+  try {
+    const { brand, domain, model = 'gpt-4o-mini' } = req.body || {};
+    if (!brand && !domain) return res.status(400).json({ ok: false, error: 'brand or domain required' });
+
+    const openai = getOpenAI();
+    const prompt = `You are an AI visibility analysis engine. Analyse the brand "${brand || domain}" and return a comprehensive AI Visibility Overview.
+
+Return ONLY valid JSON (no markdown) with this exact structure:
+{
+  "score": <integer 0-100; 0 if brand is unknown or very small>,
+  "mentions": <estimated total AI mentions per month>,
+  "citedPages": <estimated number of pages cited by AI>,
+  "monthlyAudience": <estimated monthly audience reached via AI, integer>,
+  "chatgpt": <estimated monthly mentions in ChatGPT>,
+  "aiOverview": <estimated monthly mentions in Google AI Overview>,
+  "aiMode": <estimated monthly mentions in Google AI Mode>,
+  "gemini": <estimated monthly mentions in Gemini>,
+  "trend": {
+    "total":      [<6 ints, oldest to newest, indexed monthly>],
+    "chatgpt":    [<6 ints>],
+    "aiOverview": [<6 ints>],
+    "gemini":     [<6 ints>]
+  },
+  "trendInsight": "<one sentence insight about the trend>",
+  "performingTopics": [
+    {
+      "topic": "<topic name>",
+      "visibility": <int 0-100>,
+      "mentions": <int>,
+      "aiVolume": <int>,
+      "sparkline": "<SVG polyline points string e.g. 0,18 10,14 20,10 30,8 40,4>",
+      "intent": ["informational","commercial","navigational"],
+      "prompts": [
+        {
+          "prompt": "<actual prompt text>",
+          "response": "<first 150 chars of a realistic AI response>",
+          "source": "chatgpt",
+          "mentioned": <true|false>,
+          "brands": <int>,
+          "sources": <int>
+        }
+      ]
+    }
+  ],
+  "topicOpportunities": [
+    {
+      "topic": "<topic where brand is NOT mentioned but competitors are>",
+      "visibility": <int>,
+      "aiVolume": <int>
+    }
+  ]
+}
+
+Rules:
+- Return 5-8 performing topics with 2-3 prompts each
+- Return 4-6 topic opportunities
+- All numbers should be realistic for the brand's size/niche
+- If brand is very obscure or unknown, score should be 5-15 with low numbers`;
+
+    const completion = await openai.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      max_tokens: 2500,
+    });
+
+    const raw = completion.choices[0].message.content.trim()
+      .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { return res.status(500).json({ ok: false, error: 'AI returned invalid JSON', raw }); }
+
+    res.json({ ok: true, ...data });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

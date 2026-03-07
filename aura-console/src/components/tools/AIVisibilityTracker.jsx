@@ -68,6 +68,8 @@ function OverviewTab({ onNavigate }) {
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
  const [showHowItWorks, setShowHowItWorks] = useState(false);
+ const [topicsTab, setTopicsTab] = useState(0);
+ const [expandedTopic, setExpandedTopic] = useState(null);
 
  const run = useCallback(async () => {
  if (!brand && !domain) return;
@@ -235,6 +237,161 @@ function OverviewTab({ onNavigate }) {
  ))}
  </div>
  </div>
+ </div>
+ </div>
+
+ {/* What's Next */}
+ <div style={{ ...S.card, background: "linear-gradient(135deg, #1e1b4b 0%, #18181b 100%)", border: "1px solid #4c1d95", marginBottom: 16 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+ <span style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>What's Next?</span>
+ </div>
+ <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+ {[
+ {
+ icon: "≡",
+ title: "Find hot topics for your brand",
+ desc: "Discover high-potential topics where your brand is missing. Create content that puts you back in the conversation and boost your AI Visibility.",
+ cta: "Uncover topic opportunities",
+ tab: 7,
+ },
+ {
+ icon: "⊞",
+ title: "Explore competitor strategies",
+ desc: "See which topics competitors dominate and where they publish. Use these insights to create content and grow visibility in AI-generated answers.",
+ cta: "Find competitor gaps",
+ tab: 3,
+ },
+ {
+ icon: "⊙",
+ title: "Optimize your domain for AI",
+ desc: "Make sure AI bots can crawl your domain and use your content. If crawlers can't access it, your site won't appear in AI answers.",
+ cta: "Check your domain's AI Health",
+ tab: 9,
+ },
+ ].map((card, i) => (
+ <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "16px 16px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+ <span style={{ fontSize: 20, color: "#a855f7" }}>{card.icon}</span>
+ <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa" }}>{card.title}</span>
+ <span style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6, flex: 1 }}>{card.desc}</span>
+ <button onClick={() => onNavigate(card.tab)}
+ style={{ background: "none", border: "none", color: "#a855f7", fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0, textAlign: "left" }}>
+ {card.cta} →
+ </button>
+ </div>
+ ))}
+ </div>
+ </div>
+
+ {/* Topics & Sources */}
+ <div style={{ ...S.card, padding: 0, overflow: "hidden", marginBottom: 16 }}>
+ <div style={{ padding: "16px 20px 0", borderBottom: "1px solid #27272a" }}>
+ <p style={{ ...S.sectionTitle, marginBottom: 14 }}>Topics &amp; Sources</p>
+ <div style={{ display: "flex", gap: 0, overflowX: "auto" }}>
+ {[
+ { label: "Your Performing Topics", count: result?.performingTopics?.length ?? 0 },
+ { label: "Topic Opportunities", count: result?.topicOpportunities?.length ?? 0 },
+ { label: "Cited Sources", count: result?.citedSources?.length ?? 0 },
+ { label: "Source Opportunities", count: result?.sourceOpportunities?.length ?? 0 },
+ { label: "Cited Pages", count: result?.citedPages ?? 0 },
+ ].map((t, i) => (
+ <button key={i} onClick={() => setTopicsTab(i)}
+ style={{ background: "none", border: "none", borderBottom: topicsTab === i ? "2px solid #a855f7" : "2px solid transparent", padding: "8px 18px", fontSize: 13, fontWeight: topicsTab === i ? 700 : 400, color: topicsTab === i ? "#fafafa" : "#71717a", cursor: "pointer", whiteSpace: "nowrap", display: "flex", gap: 6, alignItems: "center" }}>
+ {t.label}
+ {t.count > 0 && <span style={{ background: "#27272a", borderRadius: 10, padding: "1px 7px", fontSize: 11, color: "#a1a1aa" }}>{t.count}</span>}
+ </button>
+ ))}
+ </div>
+ </div>
+
+ {/* Table */}
+ <div style={{ padding: "0 0 4px" }}>
+ {/* Header */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 100px 80px 120px 90px", gap: 0, padding: "10px 20px", borderBottom: "1px solid #27272a", background: "#111113" }}>
+ {["Topic", "Visibility", "Your Mentions", "", "AI Volume", "Intent"].map((h, i) => (
+ <span key={i} style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }}>{h}</span>
+ ))}
+ </div>
+
+ {/* Rows */}
+ {topicsTab === 0 && result?.performingTopics?.length > 0 ? (
+ result.performingTopics.map((topic, ti) => (
+ <div key={ti}>
+ <div
+ onClick={() => setExpandedTopic(expandedTopic === ti ? null : ti)}
+ style={{ display: "grid", gridTemplateColumns: "1fr 90px 100px 80px 120px 90px", gap: 0, padding: "12px 20px", borderBottom: "1px solid #1c1c1f", cursor: "pointer", alignItems: "center" }}
+ onMouseEnter={e => e.currentTarget.style.background = "#0f0f12"}
+ onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+ >
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <span style={{ color: expandedTopic === ti ? "#a855f7" : "#71717a", fontSize: 12 }}>{expandedTopic === ti ? "▾" : "▸"}</span>
+ <span style={{ fontSize: 13, color: "#fafafa" }}>{topic.topic}</span>
+ </div>
+ <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa", textAlign: "center" }}>{topic.visibility}</span>
+ <span style={{ fontSize: 13, color: "#a1a1aa", textAlign: "center" }}>{topic.mentions}</span>
+ <div style={{ display: "flex", justifyContent: "center" }}>
+ <svg width="40" height="20" viewBox="0 0 40 20">
+ <polyline points={topic.sparkline || "0,18 10,14 20,10 30,8 40,4"} fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ </svg>
+ </div>
+ <span style={{ fontSize: 13, color: "#a1a1aa", textAlign: "center" }}>{topic.aiVolume?.toLocaleString()}</span>
+ <div style={{ display: "flex", justifyContent: "center" }}>
+ <div style={{ display: "flex", gap: 1 }}>
+ {(topic.intent || []).map((seg, si) => (
+ <div key={si} style={{ width: 14, height: 6, borderRadius: 2, background: ["#22d3ee","#a855f7","#4ade80","#f59e0b"][si % 4] }} />
+ ))}
+ </div>
+ </div>
+ </div>
+
+ {/* Expanded prompts */}
+ {expandedTopic === ti && topic.prompts?.length > 0 && (
+ <div style={{ background: "#0a0a0d", borderBottom: "1px solid #27272a" }}>
+ {/* Sub-header */}
+ <div style={{ display: "grid", gridTemplateColumns: "1.5fr 2fr 100px 60px 60px 80px", gap: 0, padding: "8px 36px", borderBottom: "1px solid #1c1c1f" }}>
+ {["Prompt", "AI Response", "Your Brand", "Brands", "Sources", ""].map((h, i) => (
+ <span key={i} style={{ fontSize: 11, color: "#52525b", fontWeight: 600 }}>{h}</span>
+ ))}
+ </div>
+ {topic.prompts.map((p, pi) => (
+ <div key={pi} style={{ display: "grid", gridTemplateColumns: "1.5fr 2fr 100px 60px 60px 80px", gap: 0, padding: "12px 36px", borderBottom: "1px solid #111113", alignItems: "flex-start" }}>
+ <span style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.5 }}>{p.prompt}</span>
+ <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>
+ <span style={{ color: "#52525b", marginRight: 4 }}>{p.source === "chatgpt" ? "⊕" : "G"}</span>
+ {p.response?.slice(0, 120)}{p.response?.length > 120 ? "…" : ""}
+ {p.response?.length > 120 && <div><button style={{ background: "none", border: "none", color: "#a855f7", fontSize: 11, cursor: "pointer", padding: "4px 0 0" }}>View full response</button></div>}
+ </div>
+ <span style={{ fontSize: 12, fontWeight: 600, color: p.mentioned ? "#86efac" : "#fca5a5", textAlign: "center" }}>{p.mentioned ? "Mentioned" : "Not mentioned"}</span>
+ <span style={{ fontSize: 12, color: "#a1a1aa", textAlign: "center" }}>{p.brands}</span>
+ <span style={{ fontSize: 12, color: "#60a5fa", textAlign: "center" }}>{p.sources}</span>
+ <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
+ <button title="Copy prompt" style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⎘</button>
+ <button title="Track prompt" onClick={() => onNavigate(2)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⊙</button>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ ))
+ ) : topicsTab === 1 && result?.topicOpportunities?.length > 0 ? (
+ result.topicOpportunities.map((topic, ti) => (
+ <div key={ti} style={{ display: "grid", gridTemplateColumns: "1fr 90px 100px 80px 120px 90px", gap: 0, padding: "12px 20px", borderBottom: "1px solid #1c1c1f", alignItems: "center" }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", display: "inline-block" }} />
+ <span style={{ fontSize: 13, color: "#fafafa" }}>{topic.topic}</span>
+ </div>
+ <span style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", textAlign: "center" }}>{topic.visibility}</span>
+ <span style={{ fontSize: 13, color: "#fca5a5", textAlign: "center" }}>0</span>
+ <div />
+ <span style={{ fontSize: 13, color: "#a1a1aa", textAlign: "center" }}>{topic.aiVolume?.toLocaleString()}</span>
+ <div />
+ </div>
+ ))
+ ) : (
+ <div style={{ padding: "40px 20px", textAlign: "center", color: "#52525b", fontSize: 13 }}>
+ {result ? `No ${["performing topics","topic opportunities","cited sources","source opportunities","cited pages"][topicsTab]} found.` : "Run an overview analysis above to populate this section."}
+ </div>
+ )}
  </div>
  </div>
 
