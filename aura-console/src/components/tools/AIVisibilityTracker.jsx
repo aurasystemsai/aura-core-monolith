@@ -5,6 +5,20 @@ const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
   ...opts,
   headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
 });
+// Direct fetch helper for endpoints where the apiFetch/apiFetchJSON double-buffering
+// could silently consume the response body before we read it. Always returns parsed JSON.
+async function directPost(url, body) {
+  const token = (typeof localStorage !== 'undefined') && (localStorage.getItem('accessToken') || localStorage.getItem('shopToken'));
+  const shop = (typeof localStorage !== 'undefined') && (localStorage.getItem('auraShop'));
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (shop) headers['x-shopify-shop-domain'] = shop;
+  const resp = await fetch(url, { method: 'POST', credentials: 'include', headers, body: JSON.stringify(body) });
+  let data;
+  try { data = await resp.json(); } catch { throw new Error(`Server returned non-JSON (HTTP ${resp.status})`); }
+  if (!data.ok) throw new Error(data.error || data.message || `API error ${resp.status}`);
+  return data;
+}
 
 const API = "/api/ai-visibility-tracker";
 
@@ -164,9 +178,9 @@ function OverviewTab({ onNavigate }) {
   if (!brand.trim() && !domain.trim()) { setErr("Enter a brand name or domain first."); return; }
   setLoading(true); setErr(""); setResult(null);
   try {
-    const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), domain: domain.trim() }) });
-    if (!d.ok) throw new Error(d.error || d.message || "Unknown error — check OpenAI key");
- } catch (e) { setErr(e.message); } finally { setLoading(false); }
+    const d = await directPost(`${API}/overview`, { brand: brand.trim(), domain: domain.trim() });
+    setResult(d);
+  } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, domain]);
 
  const PLATFORMS = [
