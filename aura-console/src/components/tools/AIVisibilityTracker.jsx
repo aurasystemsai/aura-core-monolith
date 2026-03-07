@@ -1,5 +1,10 @@
 ﻿import React, { useState, useCallback } from "react";
-import { apiFetch } from "../../api";
+import { apiFetchJSON as _apiFetchJSON } from "../../api";
+// Wrapper: auto-parses JSON body and injects Content-Type on every call
+const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
+  ...opts,
+  headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+});
 
 const API = "/api/ai-visibility-tracker";
 
