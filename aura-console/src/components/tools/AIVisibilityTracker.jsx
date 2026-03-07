@@ -70,6 +70,7 @@ function OverviewTab({ onNavigate }) {
  const [showHowItWorks, setShowHowItWorks] = useState(false);
  const [topicsTab, setTopicsTab] = useState(0);
  const [expandedTopic, setExpandedTopic] = useState(null);
+ const [whatsNextSlide, setWhatsNextSlide] = useState(0);
 
  const run = useCallback(async () => {
  if (!brand && !domain) return;
@@ -240,47 +241,51 @@ function OverviewTab({ onNavigate }) {
  </div>
  </div>
 
- {/* What's Next */}
+ {/* What's Next — 8-card carousel, 3 visible at a time */}
+ {(() => {
+ const WHATS_NEXT_CARDS = [
+ { icon: "≡", title: "Find hot topics for your brand", desc: "Discover high-potential topics where your brand is missing. Create content that puts you back in the conversation and boost your AI Visibility.", cta: "Uncover topic opportunities", tab: 7 },
+ { icon: "⊞", title: "Explore competitor strategies", desc: "See which topics competitors dominate and where they publish. Use these insights to create content and grow visibility in AI-generated answers.", cta: "Find competitor gaps", tab: 3 },
+ { icon: "⊙", title: "Optimize your domain for AI", desc: "Make sure AI bots can crawl your domain and use your content. If crawlers can't access it, your site won't appear in AI answers.", cta: "Check your domain's AI Health", tab: 9 },
+ { icon: "⌾", title: "Find sources where you should be published", desc: "Identify UGC and media platforms where your brand is absent. Publish there to expand reach and strengthen your AI visibility.", cta: "Uncover source opportunities", tab: 4 },
+ { icon: "◈", title: "Get everything to rank for your topic", desc: "Choose a topic you want to rank for and use Prompt Research to uncover insights, requirements, and opportunities — all in one place.", cta: "Explore your topic", tab: 2 },
+ { icon: "✦", title: "See how AI perceives your brand", desc: "Review your brand's performance across perception, sentiment, and narrative drivers to strengthen your business strategy.", cta: "Explore your brand performance", tab: 3 },
+ { icon: "≋", title: "Strengthen your local presence", desc: "ChatGPT, Gemini, and Perplexity read many sources. Fix local listing issues to increase your chances of being featured in their answers.", cta: "Fix issues to boost AI Visibility", tab: 9 },
+ { icon: "◎", title: "See how LLMs use your domain", desc: "Check which pages already work for LLMs, and where you need to review content to strengthen it.", cta: "Check Cited Pages", tab: 10 },
+ ];
+ const maxSlide = WHATS_NEXT_CARDS.length - 3;
+ const visible = WHATS_NEXT_CARDS.slice(whatsNextSlide, whatsNextSlide + 3);
+ return (
  <div style={{ ...S.card, background: "linear-gradient(135deg, #1e1b4b 0%, #18181b 100%)", border: "1px solid #4c1d95", marginBottom: 16 }}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
  <span style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>What's Next?</span>
+ <button style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 13 }} onClick={() => setWhatsNextSlide(0)}>Close ×</button>
  </div>
- <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
- {[
- {
- icon: "≡",
- title: "Find hot topics for your brand",
- desc: "Discover high-potential topics where your brand is missing. Create content that puts you back in the conversation and boost your AI Visibility.",
- cta: "Uncover topic opportunities",
- tab: 7,
- },
- {
- icon: "⊞",
- title: "Explore competitor strategies",
- desc: "See which topics competitors dominate and where they publish. Use these insights to create content and grow visibility in AI-generated answers.",
- cta: "Find competitor gaps",
- tab: 3,
- },
- {
- icon: "⊙",
- title: "Optimize your domain for AI",
- desc: "Make sure AI bots can crawl your domain and use your content. If crawlers can't access it, your site won't appear in AI answers.",
- cta: "Check your domain's AI Health",
- tab: 9,
- },
- ].map((card, i) => (
- <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "16px 16px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+ <div style={{ display: "flex", alignItems: "stretch", gap: 8 }}>
+ <button onClick={() => setWhatsNextSlide(s => Math.max(0, s - 1))} disabled={whatsNextSlide === 0}
+ style={{ background: "none", border: "1px solid #27272a", borderRadius: 6, padding: "0 10px", color: whatsNextSlide === 0 ? "#3f3f46" : "#a1a1aa", cursor: whatsNextSlide === 0 ? "default" : "pointer", fontSize: 18, flexShrink: 0 }}>‹</button>
+ <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, flex: 1 }}>
+ {visible.map((card, i) => (
+ <div key={whatsNextSlide + i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "16px 16px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
  <span style={{ fontSize: 20, color: "#a855f7" }}>{card.icon}</span>
  <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa" }}>{card.title}</span>
  <span style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6, flex: 1 }}>{card.desc}</span>
- <button onClick={() => onNavigate(card.tab)}
- style={{ background: "none", border: "none", color: "#a855f7", fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0, textAlign: "left" }}>
- {card.cta} →
- </button>
+ <button onClick={() => onNavigate(card.tab)} style={{ background: "none", border: "none", color: "#a855f7", fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0, textAlign: "left" }}>{card.cta} →</button>
  </div>
  ))}
  </div>
+ <button onClick={() => setWhatsNextSlide(s => Math.min(maxSlide, s + 1))} disabled={whatsNextSlide >= maxSlide}
+ style={{ background: "none", border: "1px solid #27272a", borderRadius: 6, padding: "0 10px", color: whatsNextSlide >= maxSlide ? "#3f3f46" : "#a1a1aa", cursor: whatsNextSlide >= maxSlide ? "default" : "pointer", fontSize: 18, flexShrink: 0 }}>›</button>
  </div>
+ <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 12 }}>
+ {Array.from({ length: maxSlide + 1 }).map((_, i) => (
+ <div key={i} onClick={() => setWhatsNextSlide(i)}
+ style={{ width: i === whatsNextSlide ? 18 : 6, height: 6, borderRadius: 3, background: i === whatsNextSlide ? "#a855f7" : "#27272a", cursor: "pointer", transition: "width 0.2s" }} />
+ ))}
+ </div>
+ </div>
+ );
+ })()}
 
  {/* Topics & Sources */}
  <div style={{ ...S.card, padding: 0, overflow: "hidden", marginBottom: 16 }}>
