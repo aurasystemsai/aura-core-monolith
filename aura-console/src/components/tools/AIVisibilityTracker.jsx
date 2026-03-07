@@ -65,6 +65,89 @@ function ScoreCircle({ score, label }) {
  );
 }
 
+/* Loading skeleton shown while /overview AI call is in flight */
+const SHIMMER_CSS = `
+@keyframes ait-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+@keyframes ait-spin {
+  to { transform: rotate(360deg); }
+}
+.ait-skel {
+  background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+  background-size: 400px 100%;
+  animation: ait-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}`;
+
+function LoadingOverviewSkeleton() {
+  return (
+    <>
+      <style>{SHIMMER_CSS}</style>
+      <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "18px 20px", marginBottom: 16, display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ width: 22, height: 22, border: "2px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#fafafa", marginBottom: 4 }}>Analysing brand visibility across AI platforms…</div>
+          <div style={{ fontSize: 12, color: "#71717a" }}>Querying ChatGPT, Google AI Overview, AI Mode &amp; Gemini — this takes 15–30 seconds</div>
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20, gap: 10 }}>
+              <div className="ait-skel" style={{ width: 140, height: 140, borderRadius: "50%" }} />
+              <div className="ait-skel" style={{ width: 80, height: 14 }} />
+              <div className="ait-skel" style={{ width: 120, height: 11 }} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "14px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 16 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                  <div className="ait-skel" style={{ width: 44, height: 20 }} />
+                  <div className="ait-skel" style={{ width: 64, height: 10 }} />
+                </div>
+              ))}
+            </div>
+            <div className="ait-skel" style={{ width: 120, height: 12, marginBottom: 10 }} />
+            {[0,1,2,3].map(i => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #1c1c1f" }}>
+                <div className="ait-skel" style={{ width: 9, height: 9, borderRadius: "50%" }} />
+                <div className="ait-skel" style={{ flex: 1, height: 12 }} />
+                <div className="ait-skel" style={{ width: 80, height: 6, borderRadius: 3 }} />
+                <div className="ait-skel" style={{ width: 32, height: 12 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div className="ait-skel" style={{ width: 200, height: 14 }} />
+              <div style={{ display: "flex", gap: 8 }}>
+                {[0,1,2,3].map(i => <div key={i} className="ait-skel" style={{ width: 56, height: 11 }} />)}
+              </div>
+            </div>
+            <div className="ait-skel" style={{ width: "100%", height: 130, borderRadius: 8 }} />
+            <div className="ait-skel" style={{ width: "75%", height: 11, marginTop: 10 }} />
+          </div>
+          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
+            <div className="ait-skel" style={{ width: 120, height: 13, marginBottom: 14 }} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {[0,1,2,3,4,5].map(i => (
+                <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div className="ait-skel" style={{ width: 24, height: 18 }} />
+                  <div className="ait-skel" style={{ width: "80%", height: 12 }} />
+                  <div className="ait-skel" style={{ width: "60%", height: 11 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* Tab: Overview */
 function OverviewTab({ onNavigate }) {
  const [brand, setBrand] = useState("");
@@ -147,9 +230,10 @@ function OverviewTab({ onNavigate }) {
  </div>
 
  {err && <div style={S.error}>{err}</div>}
+ {loading && !result && <LoadingOverviewSkeleton />}
 
  {/* Main content — shown with real data or as empty-state blueprint */}
- <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
+ <div style={{ display: loading && !result ? "none" : "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
 
  {/* Left: Score + platform breakdown */}
  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
