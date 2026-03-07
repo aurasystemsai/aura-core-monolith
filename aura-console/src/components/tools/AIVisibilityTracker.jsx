@@ -158,7 +158,7 @@ function OverviewTab({ onNavigate }) {
  const [showHowItWorks, setShowHowItWorks] = useState(false);
  const [topicsTab, setTopicsTab] = useState(0);
  const [expandedTopic, setExpandedTopic] = useState(null);
- const [expandedResponse, setExpandedResponse] = useState(null);
+ const [responseModal, setResponseModal] = useState(null); // { prompt, response, source, mentioned, brands, sources }
  const [whatsNextSlide, setWhatsNextSlide] = useState(0);
 
  const run = useCallback(async () => {
@@ -216,6 +216,36 @@ function OverviewTab({ onNavigate }) {
 
  return (
  <div>
+ {/* Response modal */}
+ {responseModal && (
+ <div onClick={() => setResponseModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 14, padding: 28, maxWidth: 640, width: "100%", maxHeight: "80vh", overflowY: "auto", position: "relative" }}>
+ <button onClick={() => setResponseModal(null)} style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", color: "#71717a", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>×</button>
+ <div style={{ fontSize: 11, color: "#52525b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Prompt</div>
+ <div style={{ fontSize: 14, color: "#fafafa", fontWeight: 600, marginBottom: 20, lineHeight: 1.5 }}>{responseModal.prompt}</div>
+ <div style={{ fontSize: 11, color: "#52525b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>AI Response</div>
+ <div style={{ fontSize: 13, color: "#d4d4d8", lineHeight: 1.8, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", marginBottom: 20 }}>
+ <span style={{ color: "#52525b", marginRight: 6 }}>{responseModal.source === "chatgpt" ? "⊕" : "G"}</span>
+ {responseModal.response || "No response recorded."}
+ </div>
+ <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+ <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: "#71717a" }}>Your brand:</span>
+ <span style={{ fontSize: 12, fontWeight: 700, color: responseModal.mentioned ? "#86efac" : "#fca5a5" }}>{responseModal.mentioned ? "Mentioned" : "Not mentioned"}</span>
+ </div>
+ <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: "#71717a" }}>Competing brands:</span>
+ <span style={{ fontSize: 12, fontWeight: 700, color: "#fafafa" }}>{responseModal.brands}</span>
+ </div>
+ <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: "#71717a" }}>Sources cited:</span>
+ <span style={{ fontSize: 12, fontWeight: 700, color: "#60a5fa" }}>{responseModal.sources}</span>
+ </div>
+ </div>
+ <button onClick={e => { e.stopPropagation(); navigator.clipboard?.writeText(responseModal.prompt); }} style={{ marginTop: 20, background: "#27272a", border: "none", borderRadius: 6, padding: "7px 14px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Copy prompt</button>
+ </div>
+ </div>
+ )}
  {/* Input bar */}
  <div style={{ ...S.card, display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
  <div style={{ flex: 1, minWidth: 180 }}>

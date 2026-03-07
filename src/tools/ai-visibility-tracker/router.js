@@ -928,8 +928,8 @@ router.post('/overview', async (req, res) => {
       "sparkline": "0,18 10,14 20,10 30,8 40,4",
       "intent": ["informational"],
       "prompts": [
-        { "prompt": "actual user query text", "response": "first 120 chars of realistic AI response mentioning the brand", "source": "chatgpt", "mentioned": true, "brands": 3, "sources": 8 },
-        { "prompt": "second user query text", "response": "first 120 chars of another realistic AI response", "source": "google", "mentioned": true, "brands": 5, "sources": 12 }
+        { "prompt": "actual user query text", "response": "2-4 sentence realistic AI response mentioning the brand naturally, as a real LLM would answer the question", "source": "chatgpt", "mentioned": true, "brands": 3, "sources": 8 },
+        { "prompt": "second user query text", "response": "2-4 sentence realistic AI response for this query", "source": "google", "mentioned": true, "brands": 5, "sources": 12 }
       ]
     }
   ],
