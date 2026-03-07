@@ -158,6 +158,7 @@ function OverviewTab({ onNavigate }) {
  const [showHowItWorks, setShowHowItWorks] = useState(false);
  const [topicsTab, setTopicsTab] = useState(0);
  const [expandedTopic, setExpandedTopic] = useState(null);
+ const [expandedResponse, setExpandedResponse] = useState(null);
  const [whatsNextSlide, setWhatsNextSlide] = useState(0);
 
  const run = useCallback(async () => {
@@ -451,8 +452,17 @@ function OverviewTab({ onNavigate }) {
  <span style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.5 }}>{p.prompt}</span>
  <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>
  <span style={{ color: "#52525b", marginRight: 4 }}>{p.source === "chatgpt" ? "⊕" : "G"}</span>
- {p.response?.slice(0, 120)}{p.response?.length > 120 ? "…" : ""}
- {p.response?.length > 120 && <div><button style={{ background: "none", border: "none", color: "#a855f7", fontSize: 11, cursor: "pointer", padding: "4px 0 0" }}>View full response</button></div>}
+ {expandedResponse === `${ti}-${pi}` ? p.response : (p.response?.slice(0, 120) + (p.response?.length > 120 ? "…" : ""))}
+ {p.response?.length > 120 && (
+ <div>
+ <button
+ onClick={() => setExpandedResponse(expandedResponse === `${ti}-${pi}` ? null : `${ti}-${pi}`)}
+ style={{ background: "none", border: "none", color: "#a855f7", fontSize: 11, cursor: "pointer", padding: "4px 0 0" }}
+ >
+ {expandedResponse === `${ti}-${pi}` ? "Show less" : "View full response"}
+ </button>
+ </div>
+ )}
  </div>
  <span style={{ fontSize: 12, fontWeight: 600, color: p.mentioned ? "#86efac" : "#fca5a5", textAlign: "center" }}>{p.mentioned ? "Mentioned" : "Not mentioned"}</span>
  <span style={{ fontSize: 12, color: "#a1a1aa", textAlign: "center" }}>{p.brands}</span>
