@@ -129,6 +129,7 @@ const [showScanModal, setShowScanModal] = useState(false);
 const [lastScanTime, setLastScanTime] = useState(null);
 const [scanRemainingTime, setScanRemainingTime] = useState(0);
 const [scanError, setScanError] = useState(null);
+const [showAiInfo, setShowAiInfo] = useState(false);
 
 const showToast = useCallback((message, type = "success") => {
 const id = Date.now();
@@ -464,7 +465,12 @@ style={{ background: copilotLoading ? "#3f3f46" : "#6366f1", border: "none", bor
 
 {/* AI Visibility */}
 <Widget title="AI Visibility" info="How visible your brand is across AI search tools"
-action={<span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>}>
+action={
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <button onClick={() => setShowAiInfo(p => !p)} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", color: "#a1a1aa", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>ⓘ How it works</button>
+    <span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>
+  </div>
+}>
 
 {/* Top: score circle + trend chart */}
 <div style={{ display: "flex", gap: 16, marginBottom: 14, alignItems: "flex-start" }}>
@@ -546,6 +552,43 @@ action={<span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontW
   style={{ width: "100%", background: "#2e1065", border: "1px solid #6d28d9", borderRadius: 8, padding: "9px 0", color: "#c4b5fd", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
   Analyze AI Visibility →
 </button>
+
+{/* How it works panel */}
+{showAiInfo && (
+  <div style={{ marginTop: 14, background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, padding: "18px 18px 14px", fontSize: 13, color: "#a1a1aa", lineHeight: 1.6 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      <span style={{ fontWeight: 700, color: "#fafafa", fontSize: 14 }}>How it works</span>
+      <button onClick={() => setShowAiInfo(false)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+    </div>
+    {[
+      {
+        q: "What's AI Visibility?",
+        a: "A benchmark score (0–100) showing how often a brand appears in AI-generated answers. The score reflects both the number of topics where the brand is mentioned and how consistently it appears within those topics compared to other brands."
+      },
+      {
+        q: "How can I get more mentions?",
+        a: "Check the Topic Opportunities in the AI Visibility Tracker. It highlights topics and prompts that trigger answers mentioning competitors but not your brand. Publish content on those topics or get mentioned on the cited sources."
+      },
+      {
+        q: "How is the score calculated?",
+        a: "AURA analyses AI-generated responses from ChatGPT, Google AI Overviews, AI Mode, and Gemini — checking how often your brand or domain appears compared to others on the same prompts."
+      },
+      {
+        q: "How do I track a specific prompt?",
+        a: "Set up prompt tracking in the AI Visibility Tracker tool. You can add custom prompts and monitor whether your brand is mentioned in the response."
+      },
+      {
+        q: "What are Sources?",
+        a: "Sources are domains cited by an LLM in its response. For UGC platforms (Reddit, Quora) engage in those communities. For competitor sources, create your own content on those topics. For media sources, reach out for collaboration."
+      },
+    ].map(({ q, a }) => (
+      <div key={q} style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 700, color: "#c4b5fd", fontSize: 13, marginBottom: 4 }}>▸ {q}</div>
+        <div style={{ color: "#a1a1aa", fontSize: 12, lineHeight: 1.6 }}>{a}</div>
+      </div>
+    ))}
+  </div>
+)}
 
 </Widget>
 
