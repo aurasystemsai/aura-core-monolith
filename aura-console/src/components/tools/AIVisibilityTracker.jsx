@@ -497,26 +497,22 @@ function OverviewTab({ onNavigate }) {
  {topic.prompts.map((p, pi) => (
  <div key={pi} style={{ display: "grid", gridTemplateColumns: "1.5fr 2fr 100px 60px 60px 80px", gap: 0, padding: "12px 36px", borderBottom: "1px solid #111113", alignItems: "flex-start" }}>
  <span style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.5 }}>{p.prompt}</span>
- <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>
+ <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.6 }}>
  <span style={{ color: "#52525b", marginRight: 4 }}>{p.source === "chatgpt" ? "⊕" : "G"}</span>
- {expandedResponse === `${ti}-${pi}` ? p.response : (p.response?.slice(0, 120) + (p.response?.length > 120 ? "…" : ""))}
- {p.response?.length > 120 && (
- <div>
+ {p.response?.slice(0, 160)}{p.response?.length > 160 ? "…" : ""}
  <button
- onClick={() => setExpandedResponse(expandedResponse === `${ti}-${pi}` ? null : `${ti}-${pi}`)}
- style={{ background: "none", border: "none", color: "#a855f7", fontSize: 11, cursor: "pointer", padding: "4px 0 0" }}
+ onClick={() => setResponseModal(p)}
+ style={{ display: "block", background: "none", border: "none", color: "#a855f7", fontSize: 11, cursor: "pointer", padding: "3px 0 0", textDecoration: "underline" }}
  >
- {expandedResponse === `${ti}-${pi}` ? "Show less" : "View full response"}
+ View full response
  </button>
- </div>
- )}
  </div>
  <span style={{ fontSize: 12, fontWeight: 600, color: p.mentioned ? "#86efac" : "#fca5a5", textAlign: "center" }}>{p.mentioned ? "Mentioned" : "Not mentioned"}</span>
  <span style={{ fontSize: 12, color: "#a1a1aa", textAlign: "center" }}>{p.brands}</span>
  <span style={{ fontSize: 12, color: "#60a5fa", textAlign: "center" }}>{p.sources}</span>
  <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
- <button title="Copy prompt" style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⎘</button>
- <button title="Track prompt" onClick={() => onNavigate(2)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⊙</button>
+ <button title="Copy prompt" onClick={() => navigator.clipboard?.writeText(p.prompt)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⎘</button>
+ <button title="Test this prompt" onClick={() => onNavigate(2)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⊙</button>
  </div>
  </div>
  ))}
