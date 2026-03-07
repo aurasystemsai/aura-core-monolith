@@ -464,7 +464,7 @@ style={{ background: copilotLoading ? "#3f3f46" : "#6366f1", border: "none", bor
 
 {/* AI Visibility */}
 <Widget title="AI Search" info="How visible your brand is across AI search tools"
-action={<span onClick={() => setActiveSection && setActiveSection("ai-visibility-tracker")} style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, cursor: "pointer" }}>AI Search</span>}>
+action={<span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>}>
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
 <MetricPill label="AI Visibility" value={aiVisibility.score} color="#a855f7" />
 <MetricPill label="Mentions" value={aiVisibility.mentions} color="#6366f1" />
