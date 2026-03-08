@@ -823,6 +823,7 @@ function SeedingPlanTab() {
  const [generatingFor, setGeneratingFor] = useState(null); // platform name being generated
  const [shopCtx, setShopCtx] = useState(null); // { available, brand, niche, productCount, products }
  const [shopCtxLoading, setShopCtxLoading] = useState(true);
+ const [progress, setProgress] = useState(0); // 0-100 for animated progress bar
 
  // Auto-fetch Shopify store context on mount
  useEffect(() => {
@@ -846,15 +847,19 @@ function SeedingPlanTab() {
 
  const run = useCallback(async () => {
  if (!brand || !niche) return;
- setLoading(true); setErr(""); setResult(null);
+ setLoading(true); setErr(""); setResult(null); setProgress(0);
+ // Animate progress bar while waiting for AI
+ const tick = setInterval(() => setProgress(p => p < 85 ? p + Math.random() * 8 : p), 800);
  try {
  // Pass top product titles to AI for richer, product-specific content
  const productContext = shopCtx?.products?.slice(0, 6).map(p => p.title) || [];
  const d = await apiFetch(`${API}/seeding-plan`, { method: "POST", body: JSON.stringify({ brand, niche, targetPrompts: targetPrompts.split("\n").map(p => p.trim()).filter(Boolean), productContext }) });
  if (!d.ok) throw new Error(d.error);
+ setProgress(100);
+ setTimeout(() => setProgress(0), 600);
  setResult(d);
- } catch (e) { setErr(e.message); } finally { setLoading(false); }
- }, [brand, niche, targetPrompts]);
+ } catch (e) { setErr(e.message); setProgress(0); } finally { clearInterval(tick); setLoading(false); }
+ }, [brand, niche, targetPrompts, shopCtx]);
 
  const generateContent = useCallback(async (platform) => {
  setGeneratingFor(platform.platform);
@@ -933,7 +938,23 @@ function SeedingPlanTab() {
  ) : null}
  <label style={S.label}>Target prompts you want to appear in (one per line)</label>
  <textarea style={{ ...S.textarea, minHeight: "60px"}} value={targetPrompts} onChange={e => setTargetPrompts(e.target.value)} placeholder="best yoga mats for hot yoga"/>
- <button style={S.btn()} onClick={run} disabled={loading}>{loading ? "Generating plan": "Generate Seeding Plan (2 credits)"}</button>
+ <button style={S.btn()} onClick={run} disabled={loading}>{loading ? "Generating plan…" : "Generate Seeding Plan (2 credits)"}</button>
+ {loading && (
+ <div style={{ marginTop: 12 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#a1a1aa", marginBottom: 4 }}>
+ <span>Analysing platforms and building your plan…</span>
+ <span>{Math.round(progress)}%</span>
+ </div>
+ <div style={{ background: "#27272a", borderRadius: 4, height: 6, overflow: "hidden" }}>
+ <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg, #7c3aed, #a855f7)", borderRadius: 4, transition: "width 0.6s ease" }} />
+ </div>
+ <div style={{ marginTop: 8, fontSize: 11, color: "#71717a", display: "flex", gap: 6, flexWrap: "wrap" }}>
+ {["Researching platforms", "Mapping LLM influence", "Crafting strategy", "Building content pillars"].map((step, i) => (
+ <span key={i} style={{ background: progress > i * 22 ? "#4c1d95" : "#18181b", border: `1px solid ${progress > i * 22 ? "#7c3aed" : "#3f3f46"}`, borderRadius: 10, padding: "2px 8px", color: progress > i * 22 ? "#c4b5fd" : "#52525b", transition: "all 0.4s" }}>{step}</span>
+ ))}
+ </div>
+ </div>
+ )}
  </div>
  {err && <div style={S.error}>{err}</div>}
  {result && (

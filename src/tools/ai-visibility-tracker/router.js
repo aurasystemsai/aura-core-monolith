@@ -15,12 +15,6 @@ function getShopTokens() {
   return _shopTokens;
 }
 
-let _shopTokens;
-function getShopTokens() {
-  if (!_shopTokens) _shopTokens = require('../../core/shopTokens');
-  return _shopTokens;
-}
-
 let _openai;
 function getOpenAI() {
   if (!_openai) {
@@ -575,7 +569,7 @@ Respond as JSON:
 }`,
       }],
       response_format: { type: 'json_object' },
-      max_tokens: 1200,
+      max_tokens: 2000,
     });
 
     const plan = JSON.parse(resp.choices[0].message.content);
