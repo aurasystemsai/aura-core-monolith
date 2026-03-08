@@ -819,6 +819,8 @@ function SeedingPlanTab() {
  const [result, setResult] = useState(null);
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
+ const [contentModal, setContentModal] = useState(null); // { platform, title, content, tip, loading }
+ const [generatingFor, setGeneratingFor] = useState(null); // platform name being generated
 
  const run = useCallback(async () => {
  if (!brand || !niche) return;
@@ -830,8 +832,55 @@ function SeedingPlanTab() {
  } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, niche, targetPrompts]);
 
+ const generateContent = useCallback(async (platform) => {
+ setGeneratingFor(platform.platform);
+ setContentModal({ platform: platform.platform, loading: true });
+ try {
+ const d = await apiFetch(`${API}/generate-seeding-content`, { method: "POST", body: JSON.stringify({
+ platform: platform.platform,
+ brand,
+ niche,
+ strategy: platform.strategy,
+ contentType: platform.contentType,
+ subreddits: platform.subreddits || [],
+ targetPrompts: targetPrompts.split("\n").map(p => p.trim()).filter(Boolean),
+ }) });
+ if (!d.ok) throw new Error(d.error);
+ setContentModal({ platform: platform.platform, title: d.title, content: d.content, tip: d.tip, loading: false });
+ } catch (e) {
+ setContentModal({ platform: platform.platform, error: e.message, loading: false });
+ } finally { setGeneratingFor(null); }
+ }, [brand, niche, targetPrompts]);
+
  return (
  <div>
+ {/* Content modal */}
+ {contentModal && (
+ <div onClick={() => setContentModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 14, padding: 28, maxWidth: 640, width: "100%", maxHeight: "85vh", overflowY: "auto", position: "relative" }}>
+ <button onClick={() => setContentModal(null)} style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", color: "#71717a", fontSize: 20, cursor: "pointer" }}>×</button>
+ <div style={{ fontSize: 11, color: "#a855f7", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{contentModal.platform}</div>
+ {contentModal.loading ? (
+ <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "30px 0" }}>
+ <div style={{ width: 20, height: 20, border: "2px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
+ <span style={{ color: "#a1a1aa", fontSize: 13 }}>Writing content with AI…</span>
+ </div>
+ ) : contentModal.error ? (
+ <div style={{ color: "#fca5a5", fontSize: 13 }}>{contentModal.error}</div>
+ ) : (
+ <>
+ {contentModal.title && <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 16, lineHeight: 1.4 }}>{contentModal.title}</div>}
+ <div style={{ fontSize: 13, color: "#d4d4d8", lineHeight: 1.8, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", marginBottom: 16, whiteSpace: "pre-wrap" }}>{contentModal.content}</div>
+ {contentModal.tip && <div style={{ fontSize: 12, color: "#86efac", background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "8px 12px", marginBottom: 20 }}>💡 {contentModal.tip}</div>}
+ <div style={{ display: "flex", gap: 8 }}>
+ <button onClick={() => { navigator.clipboard?.writeText((contentModal.title ? contentModal.title + "\n\n" : "") + contentModal.content); }} style={{ background: "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy to clipboard</button>
+ <button onClick={() => generateContent({ platform: contentModal.platform, strategy: "", contentType: "", subreddits: [] })} style={{ background: "#27272a", border: "none", borderRadius: 6, padding: "8px 16px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Regenerate</button>
+ </div>
+ </>
+ )}
+ </div>
+ </div>
+ )}
  <div style={S.card}>
  <p style={S.sectionTitle}> LLM Seeding Plan</p>
  <div style={S.infoBox}>Get a strategic plan for WHERE to post and WHAT to publish to increase your brand's presence in AI model training data. Platforms like Reddit, Quora, and niche forums heavily influence LLM citations.</div>
@@ -862,9 +911,18 @@ function SeedingPlanTab() {
  <div key={i} style={S.card}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px"}}>
  <span style={{ fontSize: "14px", fontWeight: 600, color: "#fafafa"}}>{p.platform}</span>
- <div style={{ display: "flex", gap: "6px"}}>
+ <div style={{ display: "flex", gap: "6px", alignItems: "center"}}>
  <span style={S.badge(p.priority === "high"? "#7f1d1d": p.priority === "medium"? "#78350f": "#1e3a5f", p.priority === "high"? "#fca5a5": p.priority === "medium"? "#fde68a": "#93c5fd")}>{p.priority}</span>
  <span style={S.badge("#27272a", "#a1a1aa")}>{p.contentType}</span>
+ <button
+ onClick={() => generateContent(p)}
+ disabled={generatingFor === p.platform}
+ style={{ background: "#4c1d95", border: "1px solid #7c3aed", borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 700, color: generatingFor === p.platform ? "#a1a1aa" : "#c4b5fd", cursor: generatingFor === p.platform ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5 }}
+ >
+ {generatingFor === p.platform ? (
+ <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Writing…</>
+ ) : "✨ Write with AI"}
+ </button>
  </div>
  </div>
  <div style={{ fontSize: "12px", color: "#a1a1aa", marginBottom: "6px"}}>{p.strategy}</div>

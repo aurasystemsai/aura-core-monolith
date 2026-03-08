@@ -576,8 +576,49 @@ Respond as JSON:
 });
 
 /* ======================================================================
-   FEATURE 9: AI Term Presence Analysis
-   POST /api/ai-visibility-tracker/term-analysis
+   FEATURE: Generate Seeding Content
+   POST /api/ai-visibility-tracker/generate-seeding-content
+   Writes ready-to-post content for a specific platform & strategy
+   ====================================================================== */
+router.post('/generate-seeding-content', async (req, res) => {
+  try {
+    const { platform, brand, niche, strategy, contentType, subreddits = [], targetPrompts = [], model = 'gpt-4o-mini' } = req.body || {};
+    if (!platform || !brand) return res.status(400).json({ ok: false, error: 'platform and brand required' });
+
+    const openai = getOpenAI();
+    const subredditHint = subreddits.length ? ` Target subreddits: ${subreddits.join(', ')}.` : '';
+    const promptHint = targetPrompts.length ? ` The brand wants to appear in AI answers for: "${targetPrompts.slice(0,3).join('", "')}".` : '';
+
+    const platformInstructions = {
+      Reddit: `Write a genuine, helpful Reddit ${contentType || 'comment'} that subtly positions the brand without being spammy. Sound like a real community member. Include the brand as a natural recommendation, not an ad.${subredditHint}`,
+      Quora: `Write a detailed, authoritative Quora answer (400-600 words) that directly answers a relevant question while naturally mentioning the brand as a credible resource. Include a clear structure with paragraphs.`,
+      'GitHub Discussions': `Write a GitHub Discussions post that contributes to an open-source or technical conversation, referencing the brand's tools or approach as a practical example.`,
+      Medium: `Write an engaging Medium article introduction (300 words) for a story about a topic in the ${niche} space that features the brand's perspective or solution.`,
+      default: `Write a genuine, helpful post for ${platform} that naturally positions the brand as a credible resource in the ${niche} space. Content type: ${contentType || 'post'}.`,
+    };
+
+    const instruction = platformInstructions[platform] || platformInstructions.default;
+
+    const completion = await openai.chat.completions.create({
+      model,
+      response_format: { type: 'json_object' },
+      max_tokens: 900,
+      messages: [{
+        role: 'system',
+        content: 'You are an expert content writer specialising in GEO (Generative Engine Optimization) — creating authentic content that gets cited by AI models.',
+      }, {
+        role: 'user',
+        content: `Brand: "${brand}"\nNiche: ${niche}\nPlatform: ${platform}\nStrategy context: ${strategy || ''}${promptHint}\n\n${instruction}\n\nRespond as JSON:\n{\n  "title": "post/thread title (if applicable, else null)",\n  "content": "the full ready-to-post text",\n  "tip": "one sentence posting tip specific to this platform"\n}`,
+      }],
+    });
+
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, platform, ...data });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
    Find which terms AI models use for your topic and compare against your content
    ====================================================================== */
 router.post('/term-analysis', async (req, res) => {
