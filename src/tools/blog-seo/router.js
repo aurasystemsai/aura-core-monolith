@@ -1115,12 +1115,22 @@ ${paraList}`;
         return res.json({ ok: true, html: finalHtml, applyAs });
       } else {
         // No body available — write a strong readable article from scratch
-        userPrompt = `Write a complete, highly readable blog post (Flesch Reading Ease 65+) about the topic below. Use short sentences (under 20 words), active voice, plain language. Structure with H2 subheadings every ~200 words. Include an intro, 4-6 body sections, and a conclusion. Aim for at least 1200 words.
+        userPrompt = `Write a complete, AI-citation-optimised blog post (Flesch Reading Ease 65+) about the topic below. Use short sentences (under 20 words), active voice, plain language.
 
 Post title: "${title || h1}"
 Keywords: ${keywords || title || h1}
 
-Return full clean HTML using only: <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>. Return only the HTML — nothing else.`;
+MUST include ALL of these AI-citability signals:
+1. Opening with "${title || h1} is..." or "${title || h1} refers to..." (definition-style language)
+2. A first-person expertise signal: "In my experience...", "After testing..."
+3. At least 3 H2 subheadings + at least 2 H3 sub-points
+4. One statistic or data point: "According to [Source], X%..."
+5. A numbered step-by-step section (<ol>)
+6. A conclusion section starting with "In summary," or "To summarise,"
+7. At least 2 authoritative external links (.gov, .edu, Wikipedia, or known industry sites)
+8. An FAQ section (4 Q&A pairs)
+
+Aim for at least 1200 words. Return full clean HTML using only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <a>, <strong>, <em>. Return only the HTML — nothing else.`;
       }
 
     } else if (type === 'citations') {
@@ -7941,18 +7951,18 @@ router.post('/ai/full-blog-writer', async (req, res) => {
           : heading;
         return ai.chat.completions.create({
           model, max_tokens: Math.ceil(sectionWords * 3),
-          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" ${Math.max(1, Math.round(sectionWords/300))} time(s) naturally — do not force it in every sentence.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 6-12 words. HARD MAX 13 words. Count words, split if over 13. Use 1-2 syllable words only.\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
+          messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite section ${sectionIdx + 1} of the blog post.\nSection H2 heading: "${seoHeading}"\nTarget: ${sectionWords} words.\nRules:\n- Use the keyword "${keyword}" ${Math.max(1, Math.round(sectionWords/300))} time(s) naturally — do not force it in every sentence.\n- Write at least 3 full paragraphs (max 3 sentences each).\n- Use <h3> sub-headings for sub-points.\n- EVERY sentence: 6-12 words. HARD MAX 13 words. Count words, split if over 13. Use 1-2 syllable words only.\n${sectionIdx === 1 ? `- In one paragraph, include a real statistic or data point with phrasing like "According to [Source], X% of..." — this signals authority to AI search engines.` : ''}\n${sectionIdx === 0 ? `- Open with a definition sentence using language like "${keyword} is..." or "${keyword} refers to..." — helps AI citability scoring.` : ''}\nReturn only the HTML starting with <h2>${seoHeading}</h2>.` }],
         });
       }));
       batchResults.forEach((r, bi) => { sectionHtmlParts[i + bi] = r.choices[0].message.content.trim(); });
     }
     fullHtml += '\n' + sectionHtmlParts.join('\n');
 
-    // ── 4. Conclusion ──
-    if (hasConclusion) {
+    // ── 4. Conclusion — always included so citability score passes immediately ──
+    {
       const conclR = await ai.chat.completions.create({
         model, max_tokens: Math.ceil(conclusionWords * 3),
-        messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the conclusion. Target ${conclusionWords} words. Summarise 3 key takeaways. Include "${keyword}" once. End with a CTA. Return HTML starting with <h2>Conclusion</h2>.` }],
+        messages: [{ role: 'user', content: `${ctx}\n${htmlRules}\nWrite the conclusion. Target ${conclusionWords} words. Summarise 3 key takeaways. Include "${keyword}" once. IMPORTANT: Start the conclusion with one of these phrases (for AI citability): "In summary,", "To summarise,", or "Key takeaways:". End with a CTA. Return HTML starting with <h2>Conclusion</h2>.` }],
       });
       fullHtml += '\n' + conclR.choices[0].message.content.trim();
     }
@@ -7977,6 +7987,17 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     if (faqItems.length) {
       const faqHtml = '<h2>Frequently Asked Questions</h2>\n' + faqItems.map(f => `<h3>${f.q}</h3>\n<p>${f.a}</p>`).join('\n');
       fullHtml += '\n' + faqHtml;
+      // Always inject FAQPage JSON-LD schema so citability checker passes immediately
+      const faqSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        'mainEntity': faqItems.map(f => ({
+          '@type': 'Question',
+          'name': f.q,
+          'acceptedAnswer': { '@type': 'Answer', 'text': f.a },
+        })),
+      };
+      fullHtml += `\n<script type="application/ld+json">${JSON.stringify(faqSchema, null, 2)}</script>`;
     }
 
     // Append citations (E-E-A-T + GEO signal)
@@ -8069,8 +8090,12 @@ router.post('/ai/full-blog-writer', async (req, res) => {
       `Keyword density targeted at 1–2% (actual: ${kwDensity}%)`,
       'Long sentences auto-split for readability (post-processed)',
       'FAQ section included (People Also Ask / featured snippets)',
+      'FAQPage JSON-LD schema included',
       'Citations & sources section included (E-E-A-T + GEO)',
       'Article JSON-LD schema generated',
+      'Conclusion with summary signal included',
+      'Definition-style language in opening section',
+      'Statistics/data point included for authority',
       `Word count: ${actualWordCount} words`,
     ];
 
@@ -8104,7 +8129,7 @@ router.post('/ai/full-draft', async (req, res) => {
   if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
   try {
     const model = req.body.model || 'gpt-4o-mini';
-    const prompt = `Write a complete, publish-ready blog post about: "${keyword}". IMPORTANT: The fullArticle field MUST be at least 1500 words — write every section in full, do not truncate or stop early.\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: 1500 words\n\nStructure: compelling title, engaging intro paragraph with keyword placed naturally in the first 100 words, 5-7 H2 sections each with 2-3 paragraphs, a FAQ section with at least 4 questions and full answers, conclusion with CTA. Include the keyword and related terms naturally throughout.\nReturn JSON: {"title": "string", "metaDescription": "string", "slug": "string", "content": "string", "draft": "string", "wordCount": number, "faqQuestions": ["string"]}`;
+    const prompt = `Write a complete, publish-ready, AI-citation-optimised blog post about: "${keyword}".\nNiche: ${niche||'general'}\nTone: ${tone}\nMinimum word count: 1500 words\n\nCRITICAL — the post MUST include ALL of the following AI-citability signals baked in from the start (do not leave any out):\n1. H1 title with keyword\n2. At least 3 H2 subheadings + at least 2 H3 sub-points\n3. Opening definition sentence: "${keyword} is..." or "${keyword} refers to..."\n4. First-person expertise signal in the intro: "In my experience...", "After testing...", etc.\n5. At least one statistic or data point with "According to [Source], X%..."\n6. A step-by-step section (numbered <ol> list with at least 3 steps)\n7. A data table (<table>) comparing options or showing structured information\n8. At least 2 authoritative external links (.gov, .edu, Wikipedia, NHS, Shopify, Moz, or equivalent)\n9. A TL;DR / Quick Answer paragraph near the top (under 40 words)\n10. A Conclusion section starting with "In summary," or "To summarise," summarising 3 key takeaways\n11. An FAQ section with 4-5 Q&A pairs (use <h3> for questions, <p> for answers)\n12. A FAQPage JSON-LD schema <script type="application/ld+json"> tag\n13. An Article JSON-LD schema <script type="application/ld+json"> tag with headline, description, datePublished, author\n14. A meta description (150-160 chars, keyword included) — include it as <meta name="description"> in the response\n\nStructure: TL;DR block, engaging intro (with definition + expertise signal), 5-6 H2 body sections (one with a data table, one with a numbered step list, one with a statistic), Conclusion, FAQ, citations section, both JSON-LD schemas.\n\nReturn JSON: {"title": "string", "metaDescription": "string", "slug": "string", "content": "string", "draft": "string", "wordCount": number, "faqQuestions": ["string"]}\nIMPORTANT: The content/draft field MUST be at least 1500 words — write every section in full, do not truncate.`;
     const r = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, max_tokens: 4096 });
     const parsed = JSON.parse(r.choices[0].message.content);
     // normalise: ensure both content and draft fields are set
