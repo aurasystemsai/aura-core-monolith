@@ -916,59 +916,40 @@ function SeedingPlanTab() {
  <p style={S.sectionTitle}> LLM Seeding Plan</p>
  {/* How it works — mechanism explainer */}
  <div style={{ background: "#0f0f13", border: "1px solid #3f3f46", borderRadius: 10, padding: "16px", marginBottom: 14 }}>
- <div style={{ fontSize: 12, fontWeight: 700, color: "#a855f7", marginBottom: 4, letterSpacing: 0.5 }}>WHY THIS GETS YOU TRAFFIC & AI CITATIONS</div>
- <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>
- This works on <span style={{ color: "#fafafa", fontWeight: 600 }}>two levels at the same time</span> — immediate Google traffic from the posts themselves, and long-term AI citations as models train on your content.
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#a855f7", marginBottom: 12, letterSpacing: 0.5 }}>WHY THIS GETS YOU TRAFFIC & AI CITATIONS</div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+ {/* Track 1 */}
+ <div>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#93c5fd", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Track 1 — Google traffic (fast)</div>
+ {["You post a helpful comment or answer on Reddit / Quora", "Google indexes it within 24–48 hours", "Your post ranks for niche searches", "People searching click through to your store"].map((step, i) => (
+ <div key={i} style={{ display: "flex", gap: 8, marginBottom: 7, alignItems: "flex-start" }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: "#3f3f46", flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
+ <span style={{ fontSize: 11, color: "#a1a1aa", lineHeight: 1.5 }}>{step}</span>
  </div>
- {/* Pipeline diagram */}
- <div style={{ marginBottom: 14 }}>
- <div style={{ fontSize: 10, color: "#52525b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>The mechanism</div>
- <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
- {[
- { label: "You post helpful content\non Reddit / Quora", color: "#4c1d95", text: "#c4b5fd" },
- { label: "→", color: "transparent", text: "#52525b", arrow: true },
- { label: "Google indexes it\nwithin 24–48hrs", color: "#1e3a5f", text: "#93c5fd" },
- { label: "→", color: "transparent", text: "#52525b", arrow: true },
- { label: "Your post ranks for\nniche searches", color: "#1e3a5f", text: "#93c5fd" },
- { label: "→", color: "transparent", text: "#52525b", arrow: true },
- { label: "Direct clicks to\nyour store now", color: "#052e16", text: "#86efac" },
- ].map((step, i) => step.arrow ? (
- <span key={i} style={{ color: "#52525b", fontSize: 16, fontWeight: 300 }}>›</span>
- ) : (
- <div key={i} style={{ background: step.color, border: `1px solid ${step.text}33`, borderRadius: 7, padding: "7px 10px", fontSize: 10, color: step.text, fontWeight: 600, lineHeight: 1.5, whiteSpace: "pre", textAlign: "center" }}>{step.label}</div>
  ))}
  </div>
- <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", marginTop: 6 }}>
- {[
- { label: "Same posts get\nscraped by AI crawlers", color: "#4c1d95", text: "#c4b5fd" },
- { label: "→", color: "transparent", text: "#52525b", arrow: true },
- { label: "ChatGPT / Gemini\ntrain on your content", color: "#3b1d5f", text: "#d8b4fe" },
- { label: "→", color: "transparent", text: "#52525b", arrow: true },
- { label: "Someone asks AI about\nyour niche", color: "#3b1d5f", text: "#d8b4fe" },
- { label: "→", color: "transparent", text: "#52525b", arrow: true },
- { label: "AI recommends\nyour brand", color: "#052e16", text: "#86efac" },
- ].map((step, i) => step.arrow ? (
- <span key={i} style={{ color: "#52525b", fontSize: 16, fontWeight: 300 }}>›</span>
- ) : (
- <div key={i} style={{ background: step.color, border: `1px solid ${step.text}33`, borderRadius: 7, padding: "7px 10px", fontSize: 10, color: step.text, fontWeight: 600, lineHeight: 1.5, whiteSpace: "pre", textAlign: "center" }}>{step.label}</div>
+ {/* Track 2 */}
+ <div>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#c4b5fd", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Track 2 — AI citations (compounds)</div>
+ {["The same posts get scraped by AI training crawlers", "ChatGPT, Gemini, Perplexity train on your content", "A customer asks AI about your niche", "AI recommends your brand because it's seen it hundreds of times"].map((step, i) => (
+ <div key={i} style={{ display: "flex", gap: 8, marginBottom: 7, alignItems: "flex-start" }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: "#3f3f46", flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
+ <span style={{ fontSize: 11, color: "#a1a1aa", lineHeight: 1.5 }}>{step}</span>
+ </div>
  ))}
  </div>
  </div>
- {/* Realistic timelines */}
- <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+ <div style={{ borderTop: "1px solid #27272a", marginTop: 14, paddingTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
  {[
- { period: "Week 1–2", outcome: "Post goes live, Google indexes it. Early direct traffic if your niche query has search volume.", color: "#1e3a5f", text: "#93c5fd" },
- { period: "Month 1–3", outcome: "Posts rank on Google. Quora answers appear in search results. Measurable referral traffic begins.", color: "#78350f", text: "#fde68a" },
- { period: "Month 3–12", outcome: "AI crawlers have scraped your content. Your brand starts appearing in ChatGPT & Gemini responses for niche queries.", color: "#052e16", text: "#86efac" },
+ { period: "Week 1–2", outcome: "Google indexes your posts. Early traffic starts if there's search volume." },
+ { period: "Month 1–3", outcome: "Posts rank on Google. Quora answers appear in search results." },
+ { period: "Month 3–12", outcome: "AI models cite your brand in responses for your niche queries." },
  ].map((t, i) => (
- <div key={i} style={{ background: t.color + "55", border: `1px solid ${t.text}33`, borderRadius: 7, padding: "8px 10px" }}>
- <div style={{ fontSize: 10, fontWeight: 700, color: t.text, marginBottom: 4 }}>{t.period}</div>
- <div style={{ fontSize: 10, color: "#a1a1aa", lineHeight: 1.5 }}>{t.outcome}</div>
+ <div key={i}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>{t.period}</div>
+ <div style={{ fontSize: 10, color: "#52525b", lineHeight: 1.5 }}>{t.outcome}</div>
  </div>
  ))}
- </div>
- <div style={{ fontSize: 11, color: "#52525b", background: "#18181b", borderRadius: 6, padding: "7px 10px" }}>
- 💡 <span style={{ color: "#a1a1aa" }}>Reddit and Quora posts get indexed by Google the same day and can rank for years. Every post is both an SEO asset <em>and</em> AI training data. The AI citation effect compounds — the more you post, the more your brand gets associated with your niche in AI training data.</span>
  </div>
  </div>
  <div style={S.row}>
