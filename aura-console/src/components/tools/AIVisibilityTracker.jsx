@@ -914,7 +914,26 @@ function SeedingPlanTab() {
  )}
  <div style={S.card}>
  <p style={S.sectionTitle}> LLM Seeding Plan</p>
- <div style={S.infoBox}>Get a strategic plan for WHERE to post and WHAT to publish to increase your brand's presence in AI model training data. Platforms like Reddit, Quora, and niche forums heavily influence LLM citations.</div>
+ {/* How it works guide */}
+ <div style={{ background: "#0f0f13", border: "1px solid #3f3f46", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#a855f7", marginBottom: 10, letterSpacing: 0.5 }}>HOW THIS WORKS</div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+ {[
+ { icon: "✍️", title: "Post as a real person", desc: "Use a personal account, not your brand account. Reddit and forums penalise obvious brand promotion — authentic individual voices get upvoted and cited by AI." },
+ { icon: "🤖", title: "Why this gets you into AI answers", desc: "ChatGPT, Gemini and Perplexity train on Reddit, Quora, forums and publications. A well-placed helpful post mentioning your brand can get cited in AI responses for years." },
+ { icon: "🎯", title: "Subtle, not salesy", desc: "The goal is to be genuinely helpful first. Mention your brand as a natural recommendation, not a pitch. e.g. 'I've been using [Brand] and it solved this for me'." },
+ { icon: "📅", title: "Consistency beats virality", desc: "10 authentic posts per month across these platforms compounds over time. Build credibility as an individual expert, not a marketer." },
+ ].map((tip, i) => (
+ <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+ <span style={{ fontSize: 18, flexShrink: 0 }}>{tip.icon}</span>
+ <div>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>{tip.title}</div>
+ <div style={{ fontSize: 11, color: "#71717a", lineHeight: 1.6 }}>{tip.desc}</div>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
  <div style={S.row}>
  <div style={S.col}>
  <label style={S.label}>Brand name</label>
@@ -965,7 +984,15 @@ function SeedingPlanTab() {
  {result.quickWins.map((w, i) => <div key={i} style={{ fontSize: "12px", color: "#86efac", marginBottom: "6px"}}> {w}</div>)}
  </div>
  )}
- {result.platforms && result.platforms.map((p, i) => (
+ {result.platforms && result.platforms.map((p, i) => {
+ const POST_AS = {
+ Reddit: { account: "Personal Reddit account", tip: "Never post from a brand account — it gets flagged as spam. Create a personal account, build 2–3 weeks of normal activity, then start posting.", color: "#ff6314" },
+ Quora: { account: "Personal or founder account", tip: "Set up your Quora profile as the founder or an expert in your field. Add your brand in the bio, not in every answer.", color: "#a82400" },
+ Medium: { account: "Brand publication or personal", tip: "You can post directly as your brand on Medium. Set up a brand publication and publish under it for maximum credibility.", color: "#00ab6c" },
+ "GitHub Discussions": { account: "Your personal GitHub account", tip: "Contribute genuinely to open-source discussions. Mention your tool only when directly relevant to the conversation.", color: "#6e40c9" },
+ };
+ const guide = POST_AS[p.platform] || { account: "Personal account (not brand)", tip: "Engage authentically as an individual. Build credibility before mentioning your brand.", color: "#7c3aed" };
+ return (
  <div key={i} style={S.card}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px"}}>
  <span style={{ fontSize: "14px", fontWeight: 600, color: "#fafafa"}}>{p.platform}</span>
@@ -986,11 +1013,21 @@ function SeedingPlanTab() {
  <div style={{ fontSize: "12px", color: "#a1a1aa", marginBottom: "6px"}}>{p.strategy}</div>
  <div style={{ fontSize: "11px", color: "#c4b5fd"}}>Why it matters: {p.whyItMatters}</div>
  <div style={{ fontSize: "11px", color: "#71717a", marginTop: "4px"}}>Time to impact: {p.timeToImpact}</div>
+ {/* Post as guidance */}
+ <div style={{ marginTop: 10, padding: "8px 10px", background: "#0f0f13", border: `1px solid ${guide.color}33`, borderRadius: 7, display: "flex", gap: 8, alignItems: "flex-start" }}>
+ <span style={{ fontSize: 14, flexShrink: 0 }}>👤</span>
+ <div>
+ <span style={{ fontSize: 10, fontWeight: 700, color: guide.color, textTransform: "uppercase", letterSpacing: 0.5 }}>Post as: </span>
+ <span style={{ fontSize: 11, color: "#d4d4d8", fontWeight: 600 }}>{guide.account}</span>
+ <div style={{ fontSize: 11, color: "#71717a", marginTop: 2, lineHeight: 1.5 }}>{guide.tip}</div>
+ </div>
+ </div>
  {p.subreddits && p.subreddits.length > 0 && (
  <div style={{ marginTop: "6px"}}>{p.subreddits.map((s, j) => <span key={j} style={{ ...S.badge("#1e1b4b", "#a5b4fc"), marginRight: "4px"}}>{s}</span>)}</div>
  )}
  </div>
- ))}
+ );
+ })}
  {result.longTermStrategy && (
  <div style={{ ...S.card, borderColor: "#4c1d95"}}>
  <p style={S.sectionTitle}> Long-Term Strategy</p>
