@@ -48,7 +48,79 @@ router.post('/citability-score', async (req, res) => {
 
     if (!html) return res.status(502).json({ ok: false, error: `Could not fetch URL: ${fetchError}` });
 
+    // Detect Shopify password page — if so, try fetching via Admin API instead
+    const isPasswordPage = /enter.*store.*password|password.*required|protected.*with.*a.*password|login_form/i.test(html)
+      || html.length < 3000;
+
+    if (isPasswordPage) {
+      // Try to get the article via Admin API using stored shop token
+      try {
+        const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+        const hostname = parsedUrl.hostname; // e.g. aurasystemsai.myshopify.com or custom domain
+        const shopTokens = getShopTokens();
+        const allTokens = shopTokens.loadAll ? shopTokens.loadAll() : {};
+
+        // Match hostname against stored shops (myshopify.com or custom domain stored in token data)
+        let shop = null, token = null;
+        for (const [s, data] of Object.entries(allTokens)) {
+          if (hostname === s || hostname.includes(s.replace('.myshopify.com', ''))) {
+            shop = s; token = data?.token || data; break;
+          }
+        }
+        // Also try matching stored shop domain against the URL
+        if (!shop && Object.keys(allTokens).length === 1) {
+          shop = Object.keys(allTokens)[0];
+          token = Object.values(allTokens)[0]?.token || Object.values(allTokens)[0];
+        }
+
+        if (shop && token) {
+          // URL pattern: /blogs/{blog-handle}/{article-handle}
+          const match = parsedUrl.pathname.match(/^\/blogs\/([^/]+)\/([^/]+)/);
+          if (match) {
+            const [, blogHandle, articleHandle] = match;
+            const apiVersion = '2023-10';
+            const fetchFn = global.fetch || require('node-fetch');
+            const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+            // Get blog id from handle
+            const blogsRes = await fetchFn(`https://${shop}/admin/api/${apiVersion}/blogs.json?handle=${blogHandle}`, { headers });
+            const blogsJson = blogsRes.ok ? await blogsRes.json() : {};
+            const blog = (blogsJson.blogs || [])[0];
+
+            if (blog) {
+              const articlesRes = await fetchFn(
+                `https://${shop}/admin/api/${apiVersion}/articles.json?blog_id=${blog.id}&handle=${articleHandle}&status=published`,
+                { headers }
+              );
+              const articlesJson = articlesRes.ok ? await articlesRes.json() : {};
+              const article = (articlesJson.articles || [])[0];
+
+              if (article) {
+                // Build a rich HTML document from the article data so cheerio can analyze it
+                const metaDescContent = article.summary_html
+                  ? article.summary_html.replace(/<[^>]*>/g, '').slice(0, 200)
+                  : '';
+                html = `<!DOCTYPE html><html><head>
+                  <title>${article.title || ''}</title>
+                  <meta name="description" content="${metaDescContent}">
+                  ${article.body_html || ''}
+                </head><body>
+                  <h1>${article.title || ''}</h1>
+                  ${article.body_html || ''}
+                </body></html>`;
+              }
+            }
+          }
+        }
+      } catch (apiErr) {
+        console.warn('[citability] Admin API fallback failed:', apiErr.message);
+      }
+    }
+
     const $ = cheerio.load(html);
+
+    // Remove boilerplate elements so word count reflects actual content
+    $('nav, header, footer, script, style, noscript, [class*="cookie"], [class*="popup"], [id*="cookie"], [id*="popup"]').remove();
 
     // Structural signals
     const title = $('title').text().trim();
