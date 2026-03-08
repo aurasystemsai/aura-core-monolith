@@ -257,6 +257,213 @@ router.post('/citability-fix-plan', async (req, res) => {
 });
 
 /* ======================================================================
+   FEATURE: AI Citability Auto-Fix (Beginner Mode)
+   POST /api/ai-visibility-tracker/citability-auto-fix
+   Uses GPT to generate the fix content for a single failed signal, then
+   writes it directly back to the Shopify article/page via Admin API.
+   ====================================================================== */
+router.post('/citability-auto-fix', async (req, res) => {
+  try {
+    const { url, signalName, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url || !signalName) return res.status(400).json({ ok: false, error: 'url and signalName required' });
+
+    const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+    const hostname = parsedUrl.hostname;
+
+    // Resolve shop token
+    const shopTokens = getShopTokens();
+    const allTokens = shopTokens.loadAll ? shopTokens.loadAll() : {};
+    let shop = null, token = null;
+    for (const [s, data] of Object.entries(allTokens)) {
+      if (hostname === s || hostname.replace('www.','') === s.replace('www.','') ||
+          hostname.includes(s.replace('.myshopify.com',''))) {
+        shop = s; token = data?.token || data; break;
+      }
+    }
+    if (!shop && Object.keys(allTokens).length === 1) {
+      shop = Object.keys(allTokens)[0];
+      token = Object.values(allTokens)[0]?.token || Object.values(allTokens)[0];
+    }
+    if (!shop || !token) return res.status(400).json({ ok: false, error: 'No connected Shopify store found. Connect your store in Settings first.' });
+
+    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const fetchFn = global.fetch || require('node-fetch');
+    const apiHeaders = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+    // Fetch the resource
+    const blogMatch = parsedUrl.pathname.match(/^\/blogs\/([^/]+)\/([^/?#]+)/);
+    const productMatch = parsedUrl.pathname.match(/^\/products\/([^/?#]+)/);
+    const pageMatch = parsedUrl.pathname.match(/^\/pages\/([^/?#]+)/);
+
+    let resourceType = null, resourceId = null, blogId = null, currentBodyHtml = '', currentSummary = '', title = '', author = '';
+
+    if (blogMatch) {
+      const [, blogHandle, articleHandle] = blogMatch;
+      const blogsRes = await fetchFn(`https://${shop}/admin/api/${ver}/blogs.json?handle=${blogHandle}`, { headers: apiHeaders });
+      const blog = blogsRes.ok ? ((await blogsRes.json()).blogs || [])[0] : null;
+      if (!blog) return res.status(404).json({ ok: false, error: `Blog "${blogHandle}" not found` });
+      blogId = blog.id;
+      const artRes = await fetchFn(`https://${shop}/admin/api/${ver}/articles.json?blog_id=${blog.id}&handle=${articleHandle}`, { headers: apiHeaders });
+      const article = artRes.ok ? ((await artRes.json()).articles || [])[0] : null;
+      if (!article) return res.status(404).json({ ok: false, error: `Article not found` });
+      resourceType = 'article'; resourceId = article.id;
+      currentBodyHtml = article.body_html || ''; currentSummary = article.summary_html || '';
+      title = article.title || ''; author = article.author || '';
+    } else if (productMatch) {
+      const [, productHandle] = productMatch;
+      const pRes = await fetchFn(`https://${shop}/admin/api/${ver}/products.json?handle=${productHandle}`, { headers: apiHeaders });
+      const product = pRes.ok ? ((await pRes.json()).products || [])[0] : null;
+      if (!product) return res.status(404).json({ ok: false, error: `Product not found` });
+      resourceType = 'product'; resourceId = product.id;
+      currentBodyHtml = product.body_html || ''; title = product.title || '';
+    } else if (pageMatch) {
+      const [, pageHandle] = pageMatch;
+      const pgRes = await fetchFn(`https://${shop}/admin/api/${ver}/pages.json?handle=${pageHandle}`, { headers: apiHeaders });
+      const page = pgRes.ok ? ((await pgRes.json()).pages || [])[0] : null;
+      if (!page) return res.status(404).json({ ok: false, error: `Page not found` });
+      resourceType = 'page'; resourceId = page.id;
+      currentBodyHtml = page.body_html || ''; title = page.title || '';
+    } else {
+      return res.status(400).json({ ok: false, error: 'URL must point to a /blogs/..., /products/..., or /pages/... path' });
+    }
+
+    const openai = getOpenAI();
+
+    // Signal-specific prompts — what to generate and where to put it
+    const SIGNAL_PROMPTS = {
+      'Meta description present': {
+        field: 'summary',
+        prompt: `Write a compelling 150-160 character meta description for this page. Title: "${title}". Return ONLY the plain text summary, no quotes, no HTML.`,
+      },
+      'Article/BlogPosting schema': {
+        field: 'prepend',
+        prompt: `Generate a JSON-LD Article/BlogPosting schema script tag (including <script type="application/ld+json">...</script>) for a blog post titled "${title}" by author "${author || 'Author'}". Include @context, @type BlogPosting, headline, datePublished (today), author with @type Person. Use placeholder values where you don't have real data. Return ONLY the raw script HTML tag.`,
+      },
+      'FAQPage schema': {
+        field: 'append',
+        prompt: `Based on the following article content, generate 3-5 relevant FAQ questions and answers. Return BOTH:
+1. An HTML section: <section class="faq"><h2>Frequently Asked Questions</h2>...(dl with dt/dd pairs)</section>
+2. A JSON-LD script tag: <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[...]}</script>
+Return ONLY the raw HTML (section + script tag), no explanation.
+Article: ${currentBodyHtml.replace(/<[^>]+>/g,'').slice(0,1500)}`,
+      },
+      '≥3 H2 subheadings': {
+        field: 'rewrite_structure',
+        prompt: `The following article body lacks enough H2 subheadings. Insert at least 3 meaningful H2 headings at appropriate points in the content to break it into sections. Do NOT change the existing text — only add <h2>...</h2> tags. Return the COMPLETE updated body HTML.
+Current body:
+${currentBodyHtml.slice(0,3000)}`,
+      },
+      'H3 subheadings present': {
+        field: 'rewrite_structure',
+        prompt: `The following article body lacks H3 subheadings. Insert at least 2 meaningful H3 subheadings within existing sections. Do NOT change the existing text — only add <h3>...</h3> tags. Return the COMPLETE updated body HTML.
+Current body:
+${currentBodyHtml.slice(0,3000)}`,
+      },
+      'Tables or structured data': {
+        field: 'append',
+        prompt: `Based on the following article about "${title}", create ONE useful HTML comparison table or structured data table that would add value for readers. Return ONLY the raw <table> HTML with thead and tbody. 
+Article summary: ${currentBodyHtml.replace(/<[^>]+>/g,'').slice(0,800)}`,
+      },
+      'Statistics / data points': {
+        field: 'append',
+        prompt: `Based on the topic of this article titled "${title}", generate a short HTML paragraph (2-3 sentences) that includes 2-3 relevant statistics or data points with citations from well-known sources. Use format: "According to [Source], X% of...". Return ONLY the raw <p> HTML tag.`,
+      },
+      'Definition-style language': {
+        field: 'prepend',
+        prompt: `Write a short HTML paragraph that opens the article with a clear definition of the main subject ("${title}"). Use language like "X is defined as..." or "X refers to...". Return ONLY the raw <p> HTML tag.`,
+      },
+      'Step-by-step structure': {
+        field: 'append',
+        prompt: `Based on the article "${title}", create a short numbered step-by-step HTML section (3-5 steps) that guides the reader on the key process. Return ONLY raw HTML: <h2>Step-by-Step Guide</h2><ol><li>...</li>...</ol>.`,
+      },
+      'First-person expertise signals': {
+        field: 'append',
+        prompt: `Write a short first-person HTML paragraph (2-3 sentences) expressing personal expertise or experience related to "${title}". Use phrases like "I tested...", "I found...", "In my experience...". Return ONLY the raw <p> HTML tag.`,
+      },
+      'Sources/citations mentioned': {
+        field: 'append',
+        prompt: `Generate a "Sources & References" HTML section for an article about "${title}". Include 3 real, authoritative external links (Wikipedia, government sites, well-known publications). Format: <h2>Sources &amp; References</h2><ul><li><a href="..." target="_blank">...</a></li>...</ul>. Return ONLY the raw HTML.`,
+      },
+      'Summary/conclusion section': {
+        field: 'append',
+        prompt: `Write a conclusion section for an article titled "${title}". Return ONLY raw HTML: <h2>Conclusion</h2><p>...</p> (2-3 sentences summarising key takeaways, starting with "In summary," or "To summarise,").`,
+      },
+      'Direct-answer short paragraphs': {
+        field: 'prepend',
+        prompt: `Write a TL;DR / quick-answer section for an article titled "${title}". This should be 1-2 short answer paragraphs (under 40 words each) that directly answer what the article is about. Return ONLY raw HTML: <div class="tldr"><strong>Quick Answer:</strong><p>...</p></div>.`,
+      },
+      '≥2 authoritative external citations': {
+        field: 'append',
+        prompt: `Generate a "Further Reading" HTML section for an article about "${title}" with 3 authoritative external links to real websites (Wikipedia, .gov, .edu, well-known industry sites). Format: <h2>Further Reading</h2><ul><li><a href="..." target="_blank" rel="noopener">Anchor text</a> — one sentence description.</li></ul>. Return ONLY the raw HTML.`,
+      },
+      'Word count ≥600 words': {
+        field: 'append',
+        prompt: `The article "${title}" is too short. Write 2-3 additional informative HTML paragraphs (totalling ~200 words) that naturally extend the content with useful details, examples, or context. Return ONLY raw <p> HTML tags.`,
+      },
+    };
+
+    const config = SIGNAL_PROMPTS[signalName];
+    if (!config) return res.status(400).json({ ok: false, error: `Signal "${signalName}" cannot be auto-fixed. Please use Advanced mode for manual instructions.` });
+
+    // Generate the fix
+    const completion = await openai.chat.completions.create({
+      model,
+      max_tokens: 800,
+      messages: [
+        { role: 'system', content: 'You are an expert in SEO and structured content. You generate clean, minimal HTML snippets. Never add explanatory text — return only what was asked for.' },
+        { role: 'user', content: config.prompt },
+      ],
+    });
+
+    const generated = completion.choices[0].message.content.trim();
+    if (req.deductCredits) req.deductCredits({ model });
+
+    // Apply the fix
+    let newBodyHtml = currentBodyHtml;
+    let updatePayload = {};
+
+    if (config.field === 'summary') {
+      updatePayload = resourceType === 'article'
+        ? { article: { id: resourceId, summary_html: `<p>${generated}</p>` } }
+        : resourceType === 'page'
+          ? { page: { id: resourceId, metafields: [{ namespace: 'global', key: 'description_tag', value: generated, type: 'single_line_text_field' }] } }
+          : null;
+    } else if (config.field === 'append') {
+      newBodyHtml = currentBodyHtml + '\n' + generated;
+    } else if (config.field === 'prepend') {
+      newBodyHtml = generated + '\n' + currentBodyHtml;
+    } else if (config.field === 'rewrite_structure') {
+      newBodyHtml = generated;
+    }
+
+    if (!updatePayload && newBodyHtml !== currentBodyHtml) {
+      if (resourceType === 'article') updatePayload = { article: { id: resourceId, body_html: newBodyHtml } };
+      else if (resourceType === 'product') updatePayload = { product: { id: resourceId, body_html: newBodyHtml } };
+      else if (resourceType === 'page') updatePayload = { page: { id: resourceId, body_html: newBodyHtml } };
+    }
+
+    if (!updatePayload) return res.json({ ok: true, message: 'No changes needed — signal already passing.' });
+
+    // Write back to Shopify
+    const writeUrl = resourceType === 'article'
+      ? `https://${shop}/admin/api/${ver}/blogs/${blogId}/articles/${resourceId}.json`
+      : resourceType === 'product'
+        ? `https://${shop}/admin/api/${ver}/products/${resourceId}.json`
+        : `https://${shop}/admin/api/${ver}/pages/${resourceId}.json`;
+
+    const writeRes = await fetchFn(writeUrl, { method: 'PUT', headers: apiHeaders, body: JSON.stringify(updatePayload) });
+    if (!writeRes.ok) {
+      const errText = await writeRes.text();
+      return res.status(500).json({ ok: false, error: `Shopify API error: ${errText.slice(0,200)}` });
+    }
+
+    res.json({ ok: true, message: `✅ Fixed! The "${signalName}" issue has been resolved on your ${resourceType}.`, generated: generated.slice(0, 300) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* ======================================================================
    FEATURE 11: Robots.txt / AI Crawler Audit
    POST /api/ai-visibility-tracker/crawler-audit
    Checks if AI crawlers (GPTBot, PerplexityBot, ClaudeBot, etc.) are blocked

@@ -619,6 +619,8 @@ function CitabilityTab() {
  const [shopLoading, setShopLoading] = useState(true);
  const [pageFilter, setPageFilter] = useState("all"); // "all" | "blog" | "product"
  const [search, setSearch] = useState("");
+ const [fixMode, setFixMode] = useState("beginner"); // "beginner" | "advanced"
+ const [autoFixStates, setAutoFixStates] = useState({}); // { [signalName]: { loading, done, error, message } }
 
  // Load Shopify store pages on mount
  useEffect(() => {
@@ -638,7 +640,7 @@ function CitabilityTab() {
 
  const run = useCallback(async () => {
   if (!url.trim()) return;
-  setLoading(true); setErr(""); setResult(null); setFixPlan(null); setProgress(0);
+  setLoading(true); setErr(""); setResult(null); setFixPlan(null); setProgress(0); setAutoFixStates({});
   const tick = setInterval(() => setProgress(p => p < 80 ? p + Math.random() * 14 : p), 600);
   try {
    const d = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url }) });
@@ -647,6 +649,17 @@ function CitabilityTab() {
    setTimeout(() => setProgress(0), 400);
    setResult(d);
   } catch (e) { setErr(e.message); setProgress(0); } finally { clearInterval(tick); setLoading(false); }
+ }, [url]);
+
+ const autoFix = useCallback(async (signalName) => {
+  setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: true, done: false, error: null } }));
+  try {
+   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
+   if (!d.ok) throw new Error(d.error || "Fix failed");
+   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
+  } catch (e) {
+   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
+  }
  }, [url]);
 
  const getFixPlan = useCallback(async () => {
@@ -847,31 +860,58 @@ function CitabilityTab() {
      {/* Priority fixes */}
      {result.issues.length > 0 && (
       <div style={S.card}>
-       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 10 }}>
         <p style={{ ...S.sectionTitle, margin: 0 }}>🔧 Priority Fixes</p>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-         {fixErr && <span style={{ fontSize: 11, color: "#fca5a5" }}>{fixErr}</span>}
+        {/* Beginner / Advanced toggle */}
+        <div style={{ display: "flex", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, padding: 3, gap: 3 }}>
+         <button onClick={() => setFixMode("beginner")} style={{ background: fixMode === "beginner" ? "#4c1d95" : "transparent", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: fixMode === "beginner" ? "#c4b5fd" : "#71717a", cursor: "pointer" }}>👶 Beginner</button>
+         <button onClick={() => setFixMode("advanced")} style={{ background: fixMode === "advanced" ? "#292524" : "transparent", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: fixMode === "advanced" ? "#fbbf24" : "#71717a", cursor: "pointer" }}>⚙️ Advanced</button>
+        </div>
+       </div>
+       <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
+        {fixMode === "beginner"
+         ? "🪄 Beginner mode — click Fix for me and AURA will automatically update your store content."
+         : "⚙️ Advanced mode — generate a fix plan and apply the changes yourself."}
+       </div>
+       {fixMode === "advanced" && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+         {fixErr && <span style={{ fontSize: 11, color: "#fca5a5", marginRight: 8 }}>{fixErr}</span>}
          <button onClick={getFixPlan} disabled={fixLoading} style={{ background: fixPlan ? "#27272a" : "#4c1d95", border: `1px solid ${fixPlan ? "#3f3f46" : "#7c3aed"}`, borderRadius: 6, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: fixPlan ? "#a1a1aa" : "#c4b5fd", cursor: fixLoading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 6 }}>
           {fixLoading
            ? <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Generating…</>
            : fixPlan ? "✓ Fix Plan Ready" : "✨ Generate AI Fix Plan (1 credit)"}
          </button>
         </div>
-       </div>
-       <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
-        Sorted highest weight first — these fixes will give you the biggest score increase.
-       </div>
-       {(result.signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).map((sig, i) => (
+       )}
+       {(result.signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).map((sig, i) => {
+        const afs = autoFixStates[sig.name] || {};
+        return (
         <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 0", borderBottom: "1px solid #27272a" }}>
-         <div style={{ width: 26, height: 26, background: "#7f1d1d", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#fca5a5", flexShrink: 0, marginTop: 2 }}>#{i + 1}</div>
+         <div style={{ width: 26, height: 26, background: afs.done ? "#14532d" : "#7f1d1d", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: afs.done ? "#86efac" : "#fca5a5", flexShrink: 0, marginTop: 2 }}>{afs.done ? "✓" : `#${i + 1}`}</div>
          <div style={{ flex: 1 }}>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-           <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa" }}>{sig.name}</span>
+           <span style={{ fontSize: 13, fontWeight: 700, color: afs.done ? "#86efac" : "#fafafa" }}>{sig.name}</span>
            <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#a1a1aa", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 6px" }}>weight ×{sig.weight}</span>
            {sig.weight >= 7 && <span style={{ fontSize: 9, fontWeight: 700, color: "#fb923c", background: "#431407", borderRadius: 4, padding: "2px 6px" }}>HIGH IMPACT</span>}
           </div>
           <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>Detected: {sig.value}</div>
-          {fixPlan && fixPlan[sig.name] && (
+          {fixMode === "beginner" && (
+           <div>
+            {afs.done ? (
+             <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>{afs.message || "Fixed!"}</div>
+            ) : afs.error ? (
+             <div style={{ background: "#2d0000", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", fontSize: 11, color: "#fca5a5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>⚠️ {afs.error}</span>
+              <button onClick={() => autoFix(sig.name)} style={{ background: "#7f1d1d", border: "none", borderRadius: 4, padding: "3px 10px", fontSize: 10, color: "#fca5a5", cursor: "pointer" }}>Retry</button>
+             </div>
+            ) : (
+             <button onClick={() => autoFix(sig.name)} disabled={afs.loading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#4c1d95", border: "1px solid #7c3aed", borderRadius: 6, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: "#c4b5fd", cursor: afs.loading ? "default" : "pointer", opacity: afs.loading ? 0.7 : 1 }}>
+              {afs.loading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Fixing…</> : <>✨ Fix for me</>}
+             </button>
+            )}
+           </div>
+          )}
+          {fixMode === "advanced" && fixPlan && fixPlan[sig.name] && (
            <div style={{ background: "#0c0c10", border: "1px solid #4c1d95", borderRadius: 8, padding: "12px 14px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
              <span style={{ fontSize: 10, fontWeight: 700, color: "#a855f7", textTransform: "uppercase", letterSpacing: 0.6 }}>How to fix</span>
@@ -884,7 +924,8 @@ function CitabilityTab() {
           )}
          </div>
         </div>
-       ))}
+        );
+       })}
       </div>
      )}
 
