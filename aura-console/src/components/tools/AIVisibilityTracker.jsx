@@ -819,8 +819,9 @@ function SeedingPlanTab() {
  const [result, setResult] = useState(null);
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
- const [contentModal, setContentModal] = useState(null); // { platform, title, content, tip, loading }
- const [generatingFor, setGeneratingFor] = useState(null); // platform name being generated
+ const [contentModal, setContentModal] = useState(null); // { platform, title, content, tip, loading, subreddits }
+ const [generatingFor, setGeneratingFor] = useState(null);
+ const [copied, setCopied] = useState(false);
  const [shopCtx, setShopCtx] = useState(null); // { available, brand, niche, productCount, products }
  const [shopCtxLoading, setShopCtxLoading] = useState(true);
  const [progress, setProgress] = useState(0); // 0-100 for animated progress bar
@@ -877,7 +878,7 @@ function SeedingPlanTab() {
  productContext,
  }) });
  if (!d.ok) throw new Error(d.error);
- setContentModal({ platform: platform.platform, title: d.title, content: d.content, tip: d.tip, loading: false });
+ setContentModal({ platform: platform.platform, title: d.title, content: d.content, tip: d.tip, subreddits: platform.subreddits || [], loading: false });
  } catch (e) {
  setContentModal({ platform: platform.platform, error: e.message, loading: false });
  } finally { setGeneratingFor(null); }
@@ -887,9 +888,9 @@ function SeedingPlanTab() {
  <div>
  {/* Content modal */}
  {contentModal && (
- <div onClick={() => setContentModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+ <div onClick={() => { setContentModal(null); setCopied(false); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
  <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 14, padding: 28, maxWidth: 640, width: "100%", maxHeight: "85vh", overflowY: "auto", position: "relative" }}>
- <button onClick={() => setContentModal(null)} style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", color: "#71717a", fontSize: 20, cursor: "pointer" }}>×</button>
+ <button onClick={() => { setContentModal(null); setCopied(false); }} style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", color: "#71717a", fontSize: 20, cursor: "pointer" }}>×</button>
  <div style={{ fontSize: 11, color: "#a855f7", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{contentModal.platform}</div>
  {contentModal.loading ? (
  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "30px 0" }}>
@@ -902,10 +903,84 @@ function SeedingPlanTab() {
  <>
  {contentModal.title && <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 16, lineHeight: 1.4 }}>{contentModal.title}</div>}
  <div style={{ fontSize: 13, color: "#d4d4d8", lineHeight: 1.8, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", marginBottom: 16, whiteSpace: "pre-wrap" }}>{contentModal.content}</div>
- {contentModal.tip && <div style={{ fontSize: 12, color: "#86efac", background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "8px 12px", marginBottom: 20 }}>💡 {contentModal.tip}</div>}
+ {contentModal.tip && <div style={{ fontSize: 12, color: "#86efac", background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "8px 12px", marginBottom: 16 }}>💡 {contentModal.tip}</div>}
+ {/* Where & how to post */}
+ {(() => {
+ const platform = contentModal.platform;
+ const subs = contentModal.subreddits || [];
+ const GUIDES = {
+ Reddit: {
+ steps: [
+ subs.length ? `Go to one of these subreddits: ${subs.slice(0,3).join(', ')}` : "Find a relevant subreddit for your niche",
+ "Click 'Create Post' — choose 'Text' post type",
+ "Paste the title above, then the content below it",
+ "Do NOT post from a new account — build 1–2 weeks of normal activity first",
+ "Post in 2–3 different subreddits over a few days, reword each one",
+ ],
+ links: subs.length
+ ? subs.slice(0,3).map(s => ({ label: `Post to ${s}`, url: `https://www.reddit.com/${s}/submit?type=text` }))
+ : [{ label: "Find subreddits", url: "https://www.reddit.com/subreddits/search" }],
+ },
+ Quora: {
+ steps: [
+ "Go to Quora and search for a question related to your niche",
+ "Find a question with 1,000+ followers for maximum reach",
+ "Click 'Answer' — paste the content directly",
+ "Add 1–2 relevant topics/tags to the answer",
+ "Link to your store only in the last paragraph, not at the top",
+ ],
+ links: [{ label: "Answer a question on Quora", url: "https://www.quora.com/" }],
+ },
+ Medium: {
+ steps: [
+ "Go to Medium and click 'Write'",
+ "Paste the title then the article content",
+ "Add 3–5 relevant tags before publishing (e.g. your niche keywords)",
+ "Publish publicly — not behind Medium paywall",
+ "Share the published URL in your other platforms for backlinks",
+ ],
+ links: [{ label: "Write on Medium", url: "https://medium.com/new-story" }],
+ },
+ "GitHub Discussions": {
+ steps: [
+ "Find a relevant open-source repo or GitHub organisation in your space",
+ "Go to the 'Discussions' tab and find an appropriate category",
+ "Start a new discussion or reply to an existing thread",
+ "Keep it technical and genuinely helpful — mention your brand only as a practical example",
+ ],
+ links: [{ label: "Explore GitHub Discussions", url: "https://github.com/" }],
+ },
+ };
+ const guide = GUIDES[platform] || {
+ steps: ["Find the platform's community or forum section", "Create a new post or reply to an existing discussion", "Paste the content and mention your brand naturally"],
+ links: [],
+ };
+ return (
+ <div style={{ background: "#0f0f13", border: "1px solid #3f3f46", borderRadius: 8, padding: "14px 16px", marginBottom: 20 }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#a855f7", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>How to post this on {platform}</div>
+ {guide.steps.map((step, i) => (
+ <div key={i} style={{ display: "flex", gap: 10, marginBottom: 7, alignItems: "flex-start" }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: "#52525b", flexShrink: 0, marginTop: 2, minWidth: 14 }}>{i + 1}.</span>
+ <span style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.55 }}>{step}</span>
+ </div>
+ ))}
+ <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+ {guide.links.map((link, i) => (
+ <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+ style={{ background: "#18181b", border: "1px solid #7c3aed", borderRadius: 6, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#c4b5fd", textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
+ ↗ {link.label}
+ </a>
+ ))}
+ </div>
+ </div>
+ );
+ })()}
  <div style={{ display: "flex", gap: 8 }}>
- <button onClick={() => { navigator.clipboard?.writeText((contentModal.title ? contentModal.title + "\n\n" : "") + contentModal.content); }} style={{ background: "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy to clipboard</button>
- <button onClick={() => generateContent({ platform: contentModal.platform, strategy: "", contentType: "", subreddits: [] })} style={{ background: "#27272a", border: "none", borderRadius: 6, padding: "8px 16px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Regenerate</button>
+ <button onClick={() => {
+ navigator.clipboard?.writeText((contentModal.title ? contentModal.title + "\n\n" : "") + contentModal.content);
+ setCopied(true); setTimeout(() => setCopied(false), 2000);
+ }} style={{ background: copied ? "#166534" : "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}>{copied ? "✓ Copied!" : "Copy to clipboard"}</button>
+ <button onClick={() => generateContent({ platform: contentModal.platform, strategy: "", contentType: "", subreddits: contentModal.subreddits || [] })} style={{ background: "#27272a", border: "none", borderRadius: 6, padding: "8px 16px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Regenerate</button>
  </div>
  </>
  )}
