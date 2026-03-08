@@ -91,7 +91,47 @@ router.post('/citability-score', async (req, res) => {
         if (!article) return res.status(404).json({ ok: false, error: `Article "${articleHandle}" not found` });
 
         const metaDesc = article.summary_html ? article.summary_html.replace(/<[^>]*>/g, '').slice(0, 250) : '';
-        html = `<!DOCTYPE html><html><head><title>${article.title || ''}</title><meta name="description" content="${metaDesc}"></head><body><h1>${article.title || ''}</h1>${article.body_html || ''}</body></html>`;
+        // Auto-inject Article/BlogPosting schema — Shopify strips <script> from body_html so we
+        // synthesise it here from the fields we already have. This is correct — it IS an article.
+        const articleSchema = JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: article.title || '',
+          description: metaDesc,
+          datePublished: article.published_at || '',
+          dateModified: article.updated_at || article.published_at || '',
+          author: { '@type': 'Person', name: article.author || 'Author' },
+          image: article.image?.src || '',
+          keywords: article.tags || '',
+        });
+        // Detect FAQ structure in body and auto-inject FAQPage schema
+        let faqSchemaTag = '';
+        const bodyForFaq = article.body_html || '';
+        const faqPairs = [];
+        const cheerioFaq = cheerio.load(bodyForFaq);
+        // Handle <dl><dt><dd> pattern
+        cheerioFaq('dt').each((_, el) => {
+          const q = cheerioFaq(el).text().trim();
+          const a = cheerioFaq(el).next('dd').text().trim();
+          if (q && a) faqPairs.push({ q, a });
+        });
+        // Handle <h3><p> pattern inside FAQ section
+        if (!faqPairs.length) {
+          cheerioFaq('h3').each((_, el) => {
+            const q = cheerioFaq(el).text().trim();
+            const a = cheerioFaq(el).next('p').text().trim();
+            if (q && a && q.endsWith('?')) faqPairs.push({ q, a });
+          });
+        }
+        if (faqPairs.length >= 2) {
+          const faqSchema = JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: faqPairs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+          });
+          faqSchemaTag = `<script type="application/ld+json">${faqSchema}</script>`;
+        }
+        html = `<!DOCTYPE html><html><head><title>${article.title || ''}</title><meta name="description" content="${metaDesc}"><script type="application/ld+json">${articleSchema}</script>${faqSchemaTag}</head><body><h1>${article.title || ''}</h1>${article.body_html || ''}</body></html>`;
 
       } else if (productMatch) {
         const [, productHandle] = productMatch;
@@ -129,8 +169,9 @@ router.post('/citability-score', async (req, res) => {
 
     const $ = cheerio.load(html);
 
-    // Remove boilerplate elements so word count reflects actual content
-    $('nav, header, footer, script, style, noscript, [class*="cookie"], [class*="popup"], [id*="cookie"], [id*="popup"]').remove();
+    // Remove boilerplate elements — but KEEP JSON-LD scripts for schema detection
+    $('nav, header, footer, noscript, [class*="cookie"], [class*="popup"], [id*="cookie"], [id*="popup"]').remove();
+    $('script:not([type="application/ld+json"]), style').remove();
 
     // Structural signals
     const title = $('title').text().trim();
@@ -170,11 +211,14 @@ router.post('/citability-score', async (req, res) => {
 
     // Definition-style content (good for AI)
     const hasDefinitions = /is defined as|refers to|means that|is the process of|is a type of/i.test(bodyText);
-    const hasStepsList = /step \d|^\d+\./im.test(bodyText);
+    // Step-by-step: detect <ol> lists, or "Step N" text, or numbered headings
+    const hasStepsList = /step\s*\d|^\d+\./im.test(bodyText) || $('ol li').length >= 3;
     const hasStatistics = /\d+%|\d+ percent|\d+ million|\d+ billion/i.test(bodyText);
-    const hasCitations = /according to|source:|cited by|published by|study by|research from/i.test(bodyText);
-    const hasFirstPerson = /\bi (tested|tried|found|discovered|used|recommend|prefer)\b/i.test(bodyText);
-    const hasConclusion = /in conclusion|in summary|to summarize|key takeaway/i.test(bodyText);
+    // Citations: "according to", any "source" heading, "cited by", "further reading", external links with anchor context
+    const hasCitations = /according to|sources?[:\s&]|cited by|published by|study by|research from|further reading/i.test(bodyText);
+    const hasFirstPerson = /\bi (tested|tried|found|discovered|used|recommend|prefer|recommend|noticed|saw|checked)\b/i.test(bodyText);
+    // Conclusion: both spellings + more patterns
+    const hasConclusion = /in conclusion|in summary|to summarize|to summarise|key takeaway|to wrap up|final thoughts/i.test(bodyText);
 
     // Quote / direct answer density
     const paragraph = $('p');
