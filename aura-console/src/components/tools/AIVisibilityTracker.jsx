@@ -521,19 +521,49 @@ function OverviewTab({ onNavigate }) {
  </div>
  ))
  ) : topicsTab === 1 && result?.topicOpportunities?.length > 0 ? (
- result.topicOpportunities.map((topic, ti) => (
- <div key={ti} style={{ display: "grid", gridTemplateColumns: "1fr 90px 100px 80px 120px 90px", gap: 0, padding: "12px 20px", borderBottom: "1px solid #1c1c1f", alignItems: "center" }}>
+ <>
+ {/* Explanation banner */}
+ <div style={{ margin: "0 0 0 0", padding: "14px 20px", background: "linear-gradient(90deg,#1e1b4b,#18181b)", borderBottom: "1px solid #27272a", display: "flex", gap: 14, alignItems: "flex-start" }}>
+ <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>⚠</span>
+ <div>
+ <div style={{ fontSize: 13, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>Your brand is absent from these high-traffic AI topics</div>
+ <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.6 }}>Competitors are being mentioned here but you're not. Use the action buttons to start appearing — map the AI prompts, generate optimised content, or seed your brand on the sources AI cites most.</div>
+ </div>
+ </div>
+ {/* Header row */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 100px 260px", gap: 0, padding: "8px 20px", borderBottom: "1px solid #27272a" }}>
+ {["Topic", "AI Score", "Monthly AI Volume", "Actions"].map((h, i) => (
+ <span key={i} style={{ fontSize: 11, color: "#52525b", fontWeight: 600 }}>{h}</span>
+ ))}
+ </div>
+ {result.topicOpportunities.map((topic, ti) => (
+ <div key={ti} style={{ display: "grid", gridTemplateColumns: "1fr 80px 100px 260px", gap: 0, padding: "14px 20px", borderBottom: "1px solid #1c1c1f", alignItems: "center" }}>
  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
- <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", display: "inline-block" }} />
- <span style={{ fontSize: 13, color: "#fafafa" }}>{topic.topic}</span>
+ <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", flexShrink: 0 }} />
+ <div>
+ <div style={{ fontSize: 13, color: "#fafafa", fontWeight: 600 }}>{topic.topic}</div>
+ <div style={{ fontSize: 11, color: "#71717a", marginTop: 2 }}>Not mentioned — competitors rank here</div>
  </div>
- <span style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", textAlign: "center" }}>{topic.visibility}</span>
- <span style={{ fontSize: 13, color: "#fca5a5", textAlign: "center" }}>0</span>
- <div />
- <span style={{ fontSize: 13, color: "#a1a1aa", textAlign: "center" }}>{topic.aiVolume?.toLocaleString()}</span>
- <div />
  </div>
- ))
+ <span style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>{topic.visibility}</span>
+ <span style={{ fontSize: 13, color: "#a1a1aa" }}>{topic.aiVolume?.toLocaleString()}</span>
+ <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+ <button onClick={() => onNavigate(7)}
+ style={{ background: "#1e1b4b", border: "1px solid #4c1d95", borderRadius: 6, padding: "5px 10px", fontSize: 11, fontWeight: 600, color: "#c4b5fd", cursor: "pointer", whiteSpace: "nowrap" }}>
+ 🔍 Map AI prompts
+ </button>
+ <button onClick={() => onNavigate(6)}
+ style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "5px 10px", fontSize: 11, fontWeight: 600, color: "#86efac", cursor: "pointer", whiteSpace: "nowrap" }}>
+ ✏ Optimise content
+ </button>
+ <button onClick={() => onNavigate(4)}
+ style={{ background: "#1c1917", border: "1px solid #78350f", borderRadius: 6, padding: "5px 10px", fontSize: 11, fontWeight: 600, color: "#fcd34d", cursor: "pointer", whiteSpace: "nowrap" }}>
+ 🌱 Seed brand
+ </button>
+ </div>
+ </div>
+ ))}
+ </>
  ) : (
  <div style={{ padding: "40px 20px", textAlign: "center", color: "#52525b", fontSize: 13 }}>
  {result ? `No ${["performing topics","topic opportunities","cited sources","source opportunities","cited pages"][topicsTab]} found.` : "Run an overview analysis above to populate this section."}
