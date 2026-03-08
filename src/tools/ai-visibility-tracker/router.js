@@ -979,6 +979,31 @@ router.get('/history', (req, res) => {
   catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
+/* ======================================================================
+   FEATURE: Seeding Post History
+   GET  /api/ai-visibility-tracker/seeding-posts  — list all logged posts
+   POST /api/ai-visibility-tracker/seeding-posts  — log a new post
+   DELETE /api/ai-visibility-tracker/seeding-posts/:id — remove a record
+   ====================================================================== */
+router.get('/seeding-posts', (req, res) => {
+  try { res.json({ ok: true, posts: db.listSeedingPosts() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.post('/seeding-posts', (req, res) => {
+  try {
+    const { platform, title, contentSnippet, url, brand, niche } = req.body || {};
+    if (!platform) return res.status(400).json({ ok: false, error: 'platform required' });
+    const entry = db.saveSeedingPost({ platform, title, contentSnippet, url: url || null, brand, niche });
+    res.json({ ok: true, post: entry });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+router.delete('/seeding-posts/:id', (req, res) => {
+  try { db.deleteSeedingPost(req.params.id); res.json({ ok: true }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
 router.get('/analytics', (req, res) => {
   try { res.json({ ok: true, events: db.listEvents() }); }
   catch (err) { res.status(500).json({ ok: false, error: err.message }); }

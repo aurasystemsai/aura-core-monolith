@@ -74,6 +74,21 @@ const db = {
     (d.feedback = d.feedback || []).push(entry);
     writeDB(d); return entry;
   },
+
+  // Seeding post history
+  saveSeedingPost(data) {
+    const d = readDB();
+    const entry = { id: crypto.randomUUID(), postedAt: new Date().toISOString(), ...data };
+    (d.seedingPosts = d.seedingPosts || []).unshift(entry);
+    if (d.seedingPosts.length > 500) d.seedingPosts = d.seedingPosts.slice(0, 500);
+    writeDB(d); return entry;
+  },
+  listSeedingPosts(limit = 100) { return (readDB().seedingPosts || []).slice(0, limit); },
+  deleteSeedingPost(id) {
+    const d = readDB();
+    d.seedingPosts = (d.seedingPosts || []).filter(p => p.id !== id);
+    writeDB(d);
+  },
 };
 
 module.exports = db;

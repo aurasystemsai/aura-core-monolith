@@ -822,6 +822,18 @@ function SeedingPlanTab() {
  const [contentModal, setContentModal] = useState(null); // { platform, title, content, tip, loading, subreddits }
  const [generatingFor, setGeneratingFor] = useState(null);
  const [copied, setCopied] = useState(false);
+ const [postHistory, setPostHistory] = useState([]);
+ const [markingPosted, setMarkingPosted] = useState(false);
+ const [markedPosted, setMarkedPosted] = useState(false);
+
+ const loadHistory = useCallback(async () => {
+ try {
+ const d = await apiFetch(`${API}/seeding-posts`);
+ if (d.ok) setPostHistory(d.posts || []);
+ } catch {}
+ }, []);
+
+ useEffect(() => { loadHistory(); }, [loadHistory]);
  const [shopCtx, setShopCtx] = useState(null); // { available, brand, niche, productCount, products }
  const [shopCtxLoading, setShopCtxLoading] = useState(true);
  const [progress, setProgress] = useState(0); // 0-100 for animated progress bar
@@ -975,11 +987,29 @@ function SeedingPlanTab() {
  </div>
  );
  })()}
- <div style={{ display: "flex", gap: 8 }}>
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
  <button onClick={() => {
  navigator.clipboard?.writeText((contentModal.title ? contentModal.title + "\n\n" : "") + contentModal.content);
  setCopied(true); setTimeout(() => setCopied(false), 2000);
  }} style={{ background: copied ? "#166534" : "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}>{copied ? "✓ Copied!" : "Copy to clipboard"}</button>
+ <button onClick={async () => {
+ if (markingPosted) return;
+ setMarkingPosted(true);
+ try {
+ await apiFetch(`${API}/seeding-posts`, { method: "POST", body: JSON.stringify({
+ platform: contentModal.platform,
+ title: contentModal.title || null,
+ contentSnippet: (contentModal.content || "").slice(0, 200),
+ brand,
+ niche,
+ }) });
+ setMarkedPosted(true);
+ loadHistory();
+ setTimeout(() => setMarkedPosted(false), 3000);
+ } catch {} finally { setMarkingPosted(false); }
+ }} style={{ background: markedPosted ? "#052e16" : "#18181b", border: `1px solid ${markedPosted ? "#166534" : "#3f3f46"}`, borderRadius: 6, padding: "8px 16px", color: markedPosted ? "#86efac" : "#a1a1aa", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
+ {markingPosted ? "Saving…" : markedPosted ? "✓ Logged!" : "✓ Mark as Posted"}
+ </button>
  <button onClick={() => generateContent({ platform: contentModal.platform, strategy: "", contentType: "", subreddits: contentModal.subreddits || [] })} style={{ background: "#27272a", border: "none", borderRadius: 6, padding: "8px 16px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Regenerate</button>
  </div>
  </>
@@ -1135,6 +1165,49 @@ function SeedingPlanTab() {
  )}
  </div>
  )}
+ </div>
+ {/* Posting History */}
+ <div style={S.card}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+ <p style={{ ...S.sectionTitle, margin: 0 }}>📋 Posting History</p>
+ <span style={{ fontSize: 11, color: "#52525b" }}>{postHistory.length} post{postHistory.length !== 1 ? "s" : ""} logged</span>
+ </div>
+ {postHistory.length === 0 ? (
+ <div style={{ fontSize: 12, color: "#52525b", textAlign: "center", padding: "20px 0" }}>
+ No posts logged yet. Generate content and click "✓ Mark as Posted" to track your activity.
+ </div>
+ ) : (
+ <div>
+ {/* Summary row */}
+ <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+ {Object.entries(postHistory.reduce((acc, p) => { acc[p.platform] = (acc[p.platform] || 0) + 1; return acc; }, {})).map(([plat, count]) => (
+ <span key={plat} style={{ ...S.badge("#1e1b4b", "#a5b4fc"), fontSize: 11 }}>{plat}: {count}</span>
+ ))}
+ </div>
+ {postHistory.slice(0, 30).map((post) => (
+ <div key={post.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 0", borderBottom: "1px solid #27272a" }}>
+ <div style={{ flexShrink: 0, width: 36, height: 36, background: "#27272a", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
+ {post.platform === "Reddit" ? "🟠" : post.platform === "Quora" ? "🔴" : post.platform === "Medium" ? "🟢" : post.platform === "GitHub Discussions" ? "🟣" : "📝"}
+ </div>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3 }}>
+ <span style={{ fontSize: 12, fontWeight: 600, color: "#fafafa" }}>{post.platform}</span>
+ <span style={{ fontSize: 10, color: "#52525b" }}>{new Date(post.postedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+ <span style={{ fontSize: 10, color: "#3f3f46" }}>·</span>
+ <span style={{ fontSize: 10, color: "#52525b" }}>{new Date(post.postedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+ </div>
+ {post.title && <div style={{ fontSize: 12, color: "#d4d4d8", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.title}</div>}
+ {post.contentSnippet && <div style={{ fontSize: 11, color: "#71717a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.contentSnippet}…</div>}
+ </div>
+ <button onClick={async () => {
+ await apiFetch(`${API}/seeding-posts/${post.id}`, { method: "DELETE" });
+ loadHistory();
+ }} style={{ background: "none", border: "none", color: "#3f3f46", fontSize: 13, cursor: "pointer", flexShrink: 0, padding: 4 }} title="Remove">×</button>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
  </div>
  );
 }
