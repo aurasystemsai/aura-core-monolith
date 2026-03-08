@@ -667,6 +667,19 @@ function CitabilityTab() {
   }
  }, [url, triggerFreeRecheck]);
 
+ const getFixPlan = useCallback(async () => {
+  if (!result) return;
+  setFixLoading(true); setFixErr(""); setFixPlan(null);
+  try {
+   const d = await apiFetch(`${API}/citability-fix-plan`, { method: "POST", body: JSON.stringify({
+    url: result.url, score: result.score, grade: result.grade,
+    issues: result.issues, strengths: result.strengths, signals: result.signals,
+   }) });
+   if (!d.ok) throw new Error(d.error);
+   setFixPlan(d.fixes);
+  } catch (e) { setFixErr(e.message); } finally { setFixLoading(false); }
+ }, [result]);
+
  // Shared recheck helper — fires 1.5s after last fix (debounced)
  const triggerFreeRecheck = useCallback(() => {
   if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
@@ -687,7 +700,7 @@ function CitabilityTab() {
  const getAdvSub = (name) => advancedSubMode[name] || "ai";
  const setAdvSub = (name, mode) => setAdvancedSubMode(prev => ({ ...prev, [name]: mode }));
 
- // Advanced mode: generate preview without writing to Shopify
+ // Advanced mode: generate AI preview without writing to Shopify (dry run)
  const previewFix = useCallback(async (signalName) => {
   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: true, content: null, editedContent: null, applyDone: false, error: null } }));
   try {
@@ -699,7 +712,7 @@ function CitabilityTab() {
   }
  }, [url]);
 
- // Advanced mode: apply caller-edited content to Shopify
+ // Advanced mode: apply caller-provided (possibly edited) content to Shopify
  const applyFix = useCallback(async (signalName, editedContent) => {
   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: true, error: null } }));
   try {
@@ -711,19 +724,6 @@ function CitabilityTab() {
    setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, error: e.message } }));
   }
  }, [url, triggerFreeRecheck]);
-
- const getFixPlan = useCallback(async () => {
-  if (!result) return;
-  setFixLoading(true); setFixErr(""); setFixPlan(null);
-  try {
-   const d = await apiFetch(`${API}/citability-fix-plan`, { method: "POST", body: JSON.stringify({
-    url: result.url, score: result.score, grade: result.grade,
-    issues: result.issues, strengths: result.strengths, signals: result.signals,
-   }) });
-   if (!d.ok) throw new Error(d.error);
-   setFixPlan(d.fixes);
-  } catch (e) { setFixErr(e.message); } finally { setFixLoading(false); }
- }, [result]);
 
  const copyFix = (key, text) => {
   navigator.clipboard.writeText(text).then(() => {
