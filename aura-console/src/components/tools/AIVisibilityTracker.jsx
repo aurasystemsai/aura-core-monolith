@@ -615,6 +615,20 @@ function CitabilityTab() {
  const [fixErr, setFixErr] = useState("");
  const [history, setHistory] = useState([]);
  const [copiedFix, setCopiedFix] = useState(null);
+ const [shopCtx, setShopCtx] = useState(null);
+ const [shopLoading, setShopLoading] = useState(true);
+ const [pageFilter, setPageFilter] = useState("all"); // "all" | "blog" | "product"
+ const [search, setSearch] = useState("");
+
+ // Load Shopify store pages on mount
+ useEffect(() => {
+  let cancelled = false;
+  apiFetch(`${API}/shopify-context`).then(d => {
+   if (cancelled) return;
+   if (d.ok && d.available) setShopCtx(d);
+  }).catch(() => {}).finally(() => { if (!cancelled) setShopLoading(false); });
+  return () => { cancelled = true; };
+ }, []);
 
  useEffect(() => {
   apiFetch(`${API}/history`).then(d => {
@@ -666,6 +680,18 @@ function CitabilityTab() {
    : "Very Unlikely to be Cited"
   : "";
 
+ // Build the combined page list from store context
+ const allPages = shopCtx ? [
+  ...(shopCtx.articles || []).map(a => ({ ...a, type: "blog" })),
+  ...(shopCtx.productPages || []).map(p => ({ ...p, type: "product", blogTitle: "Products" })),
+ ] : [];
+ const filtered = allPages.filter(p => {
+  if (pageFilter === "blog" && p.type !== "blog") return false;
+  if (pageFilter === "product" && p.type !== "product") return false;
+  if (search && !p.title.toLowerCase().includes(search.toLowerCase())) return false;
+  return true;
+ });
+
  return (
   <div>
    {/* Input card */}
@@ -675,12 +701,48 @@ function CitabilityTab() {
      Scores your page across <strong>16 signals</strong> that ChatGPT, Perplexity, and Google AI Overviews use when deciding what to cite.
      Pages with structured facts, schema markup, and authoritative citations are cited <strong>62% more often</strong>.
     </div>
-    <label style={S.label}>Page URL to analyze</label>
+
+    {/* Store page picker */}
+    {shopLoading && (
+     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, fontSize: 12, color: "#71717a" }}>
+      <div style={{ width: 12, height: 12, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />
+      Loading your store pages…
+     </div>
+    )}
+    {shopCtx && (
+     <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+       <span style={{ fontSize: 11, background: "#14532d", border: "1px solid #166534", borderRadius: 6, padding: "3px 10px", color: "#86efac" }}>✓ {shopCtx.brand}</span>
+       <span style={{ fontSize: 11, color: "#71717a" }}>{shopCtx.articleCount || 0} blog posts · {shopCtx.productCount || 0} products</span>
+       <div style={{ flex: 1 }} />
+       {/* Filter pills */}
+       {["all", "blog", "product"].map(f => (
+        <button key={f} onClick={() => setPageFilter(f)} style={{ background: pageFilter === f ? "#4c1d95" : "#18181b", border: `1px solid ${pageFilter === f ? "#7c3aed" : "#3f3f46"}`, borderRadius: 6, padding: "3px 10px", fontSize: 11, color: pageFilter === f ? "#c4b5fd" : "#71717a", cursor: "pointer", textTransform: "capitalize" }}>{f === "all" ? "All pages" : f === "blog" ? "Blog posts" : "Products"}</button>
+       ))}
+       <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#fafafa", width: 120, outline: "none" }} />
+      </div>
+      <div style={{ maxHeight: 220, overflowY: "auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+       {filtered.length === 0 && <div style={{ fontSize: 11, color: "#52525b", padding: "8px 0", gridColumn: "span 2" }}>No pages found{search ? ` matching "${search}"` : ""}.</div>}
+       {filtered.map((p, i) => (
+        <button key={i} onClick={() => { setUrl(p.url); setResult(null); setFixPlan(null); }}
+         style={{ display: "flex", gap: 8, alignItems: "center", background: url === p.url ? "#1e1b4b" : "#09090b", border: `1px solid ${url === p.url ? "#7c3aed" : "#27272a"}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer", textAlign: "left" }}>
+         <span style={{ fontSize: 14, flexShrink: 0 }}>{p.type === "blog" ? "📝" : "🛍️"}</span>
+         <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: url === p.url ? "#c4b5fd" : "#d4d4d8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
+          <div style={{ fontSize: 9, color: "#52525b", marginTop: 1 }}>{p.blogTitle || "Product"}{p.publishedAt ? ` · ${new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}</div>
+         </div>
+        </button>
+       ))}
+      </div>
+     </div>
+    )}
+
+    <label style={S.label}>{shopCtx ? "Selected URL (or paste any URL)" : "Page URL to analyze"}</label>
     <div style={{ display: "flex", gap: 8 }}>
      <input style={{ ...S.input, flex: 1, margin: 0 }} value={url} onChange={e => setUrl(e.target.value)}
       onKeyDown={e => e.key === "Enter" && run()}
       placeholder="https://yourstore.com/blogs/news/post-title" />
-     <button style={{ ...S.btn(), margin: 0, whiteSpace: "nowrap" }} onClick={run} disabled={loading}>
+     <button style={{ ...S.btn(), margin: 0, whiteSpace: "nowrap" }} onClick={run} disabled={loading || !url.trim()}>
       {loading ? "Analyzing…" : "Analyze (1 credit)"}
      </button>
     </div>

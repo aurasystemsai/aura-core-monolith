@@ -688,15 +688,46 @@ router.get('/shopify-context', async (req, res) => {
     const fetchFn = global.fetch || require('node-fetch');
     const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json', 'Accept': 'application/json' };
 
-    const [shopRes, productsRes, collectionsRes] = await Promise.all([
+    const [shopRes, productsRes, collectionsRes, blogsRes] = await Promise.all([
       fetchFn(`https://${shop}/admin/api/${apiVersion}/shop.json`, { headers }),
       fetchFn(`https://${shop}/admin/api/${apiVersion}/products.json?limit=20&fields=title,product_type,tags,vendor`, { headers }),
       fetchFn(`https://${shop}/admin/api/${apiVersion}/custom_collections.json?limit=20&fields=title`, { headers }),
+      fetchFn(`https://${shop}/admin/api/${apiVersion}/blogs.json?fields=id,title,handle`, { headers }),
     ]);
 
     const shopData = shopRes.ok ? (await shopRes.json()).shop : null;
     const productsData = productsRes.ok ? (await productsRes.json()).products || [] : [];
     const collectionsData = collectionsRes.ok ? (await collectionsRes.json()).custom_collections || [] : [];
+    const blogsData = blogsRes.ok ? (await blogsRes.json()).blogs || [] : [];
+
+    // Fetch articles for each blog (up to 3 blogs, 20 articles each)
+    const articlesByBlog = await Promise.all(
+      blogsData.slice(0, 3).map(async blog => {
+        try {
+          const r = await fetchFn(
+            `https://${shop}/admin/api/${apiVersion}/articles.json?blog_id=${blog.id}&limit=30&published_status=published&fields=id,title,handle,published_at`,
+            { headers }
+          );
+          if (!r.ok) return [];
+          const { articles = [] } = await r.json();
+          const storeDomain = shopData?.domain || shop;
+          return articles.map(a => ({
+            title: a.title,
+            url: `https://${storeDomain}/blogs/${blog.handle}/${a.handle}`,
+            blogTitle: blog.title,
+            publishedAt: a.published_at,
+          }));
+        } catch { return []; }
+      })
+    );
+    const allArticles = articlesByBlog.flat().sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
+    // Also build product page URLs
+    const productPages = productsData.slice(0, 20).map(p => ({
+      title: p.title,
+      url: `https://${shopData?.domain || shop}/products/${p.handle || p.title.toLowerCase().replace(/\s+/g, '-')}`,
+      type: 'product',
+    }));
 
     const productTypes = [...new Set(productsData.map(p => p.product_type).filter(Boolean))];
     const allTags = productsData.flatMap(p => (p.tags || '').split(',').map(t => t.trim()).filter(Boolean));
@@ -716,9 +747,13 @@ router.get('/shopify-context', async (req, res) => {
       domain: shopData?.domain || shop,
       niche,
       productCount: productsData.length,
+      articleCount: allArticles.length,
       products: productsData.slice(0, 10).map(p => ({ title: p.title, type: p.product_type, tags: p.tags })),
       collections: collectionsData.slice(0, 8).map(c => c.title),
       topTags,
+      articles: allArticles.slice(0, 50),
+      productPages: productPages.slice(0, 20),
+      blogs: blogsData.map(b => b.title),
     });
   } catch (err) {
     console.error('[AI Visibility] shopify-context error:', err);
