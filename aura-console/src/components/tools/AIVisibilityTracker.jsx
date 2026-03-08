@@ -609,61 +609,255 @@ function CitabilityTab() {
  const [result, setResult] = useState(null);
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
+ const [progress, setProgress] = useState(0);
+ const [fixPlan, setFixPlan] = useState(null);
+ const [fixLoading, setFixLoading] = useState(false);
+ const [fixErr, setFixErr] = useState("");
+ const [history, setHistory] = useState([]);
+ const [copiedFix, setCopiedFix] = useState(null);
+
+ useEffect(() => {
+  apiFetch(`${API}/history`).then(d => {
+   if (d.ok) setHistory((d.citations || []).filter(c => c.type === "citability").slice(0, 5));
+  }).catch(() => {});
+ }, [result]);
 
  const run = useCallback(async () => {
- if (!url.trim()) return;
- setLoading(true); setErr(""); setResult(null);
- try {
- const d = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url }) });
- if (!d.ok) throw new Error(d.error);
- setResult(d);
- } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  if (!url.trim()) return;
+  setLoading(true); setErr(""); setResult(null); setFixPlan(null); setProgress(0);
+  const tick = setInterval(() => setProgress(p => p < 80 ? p + Math.random() * 14 : p), 600);
+  try {
+   const d = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url }) });
+   if (!d.ok) throw new Error(d.error);
+   setProgress(100);
+   setTimeout(() => setProgress(0), 400);
+   setResult(d);
+  } catch (e) { setErr(e.message); setProgress(0); } finally { clearInterval(tick); setLoading(false); }
  }, [url]);
 
+ const getFixPlan = useCallback(async () => {
+  if (!result) return;
+  setFixLoading(true); setFixErr(""); setFixPlan(null);
+  try {
+   const d = await apiFetch(`${API}/citability-fix-plan`, { method: "POST", body: JSON.stringify({
+    url: result.url, score: result.score, grade: result.grade,
+    issues: result.issues, strengths: result.strengths, signals: result.signals,
+   }) });
+   if (!d.ok) throw new Error(d.error);
+   setFixPlan(d.fixes);
+  } catch (e) { setFixErr(e.message); } finally { setFixLoading(false); }
+ }, [result]);
+
+ const copyFix = (key, text) => {
+  navigator.clipboard.writeText(text).then(() => {
+   setCopiedFix(key);
+   setTimeout(() => setCopiedFix(null), 2000);
+  });
+ };
+
+ const scoreColor = result
+  ? result.score >= 70 ? "#22c55e" : result.score >= 50 ? "#f59e0b" : "#ef4444"
+  : "#7c3aed";
+ const scoreLabel = result
+  ? result.score >= 80 ? "Highly Citable"
+   : result.score >= 65 ? "Good"
+   : result.score >= 50 ? "Needs Work"
+   : result.score >= 35 ? "Poor"
+   : "Very Unlikely to be Cited"
+  : "";
+
  return (
- <div>
- <div style={S.card}>
- <p style={S.sectionTitle}> AI-Citability Score</p>
- <div style={S.infoBox}>Analyzes a page and scores how likely it is to be cited by ChatGPT, Perplexity, and Google AI Overviews based on 16 structural and content signals. Cited pages cover 62% more facts than non-cited ones (Surfer 2026).</div>
- <label style={S.label}>Page URL to analyze</label>
- <input style={S.input} value={url} onChange={e => setUrl(e.target.value)} placeholder="https://yourstore.com/blogs/news/post-title"/>
- <button style={S.btn()} onClick={run} disabled={loading}>{loading ? "Analyzing": "Analyze AI Citability (1 credit)"}</button>
- </div>
- {err && <div style={S.error}>{err}</div>}
- {result && (
- <div style={S.card}>
- <div style={{ ...S.row, alignItems: "center", marginBottom: "16px"}}>
- <ScoreCircle score={result.score} label="Citability"/>
- <div style={{ flex: 1 }}>
- <div style={{ fontSize: "20px", fontWeight: 700, color: result.score >= 70 ? "#22c55e": result.score >= 50 ? "#f59e0b": "#ef4444"}}>
- Grade: {result.grade}
- </div>
- <div style={{ fontSize: "12px", color: "#a1a1aa", marginTop: "4px"}}>
- {result.wordCount} words · {result.h2Count} H2s · {result.h3Count} H3s · {result.externalLinks} external links
- </div>
- <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap"}}>
- <span style={S.badge(result.hasArticleSchema ? "#166534": "#7f1d1d", result.hasArticleSchema ? "#86efac": "#fca5a5")}>
- {result.hasArticleSchema ? "": ""} Article Schema
- </span>
- <span style={S.badge(result.hasFaqSchema ? "#166534": "#27272a", result.hasFaqSchema ? "#86efac": "#a1a1aa")}>
- {result.hasFaqSchema ? "": ""} FAQ Schema
- </span>
- </div>
- </div>
- </div>
- <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px"}}>
- <div>
- <p style={{ fontSize: "12px", fontWeight: 600, color: "#22c55e", marginBottom: "8px"}}> Passed ({result.strengths.length})</p>
- {result.strengths.map((s, i) => <div key={i} style={{ fontSize: "11px", color: "#86efac", marginBottom: "4px"}}> {s}</div>)}
- </div>
- <div>
- <p style={{ fontSize: "12px", fontWeight: 600, color: "#ef4444", marginBottom: "8px"}}> Failed ({result.issues.length})</p>
- {result.issues.map((s, i) => <div key={i} style={{ fontSize: "11px", color: "#fca5a5", marginBottom: "4px"}}> {s.signal}</div>)}
- </div>
- </div>
- </div>
- )}
- </div>
+  <div>
+   {/* Input card */}
+   <div style={S.card}>
+    <p style={S.sectionTitle}>🎯 AI-Citability Score</p>
+    <div style={S.infoBox}>
+     Scores your page across <strong>16 signals</strong> that ChatGPT, Perplexity, and Google AI Overviews use when deciding what to cite.
+     Pages with structured facts, schema markup, and authoritative citations are cited <strong>62% more often</strong>.
+    </div>
+    <label style={S.label}>Page URL to analyze</label>
+    <div style={{ display: "flex", gap: 8 }}>
+     <input style={{ ...S.input, flex: 1, margin: 0 }} value={url} onChange={e => setUrl(e.target.value)}
+      onKeyDown={e => e.key === "Enter" && run()}
+      placeholder="https://yourstore.com/blogs/news/post-title" />
+     <button style={{ ...S.btn(), margin: 0, whiteSpace: "nowrap" }} onClick={run} disabled={loading}>
+      {loading ? "Analyzing…" : "Analyze (1 credit)"}
+     </button>
+    </div>
+    {loading && (
+     <div style={{ marginTop: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#a1a1aa", marginBottom: 4 }}>
+       <span>Fetching page and scoring 16 signals…</span>
+       <span>{Math.round(progress)}%</span>
+      </div>
+      <div style={{ background: "#27272a", borderRadius: 4, height: 5, overflow: "hidden" }}>
+       <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#7c3aed,#a855f7)", transition: "width 0.5s ease" }} />
+      </div>
+      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+       {["Fetching page", "Parsing structure", "Scoring signals", "Calculating grade"].map((s, i) => (
+        <span key={i} style={{ fontSize: 10, background: progress > i * 22 ? "#4c1d95" : "#18181b", border: `1px solid ${progress > i * 22 ? "#7c3aed" : "#3f3f46"}`, borderRadius: 10, padding: "2px 8px", color: progress > i * 22 ? "#c4b5fd" : "#52525b", transition: "all 0.3s" }}>{s}</span>
+       ))}
+      </div>
+     </div>
+    )}
+   </div>
+
+   {err && <div style={S.error}>{err}</div>}
+
+   {result && (
+    <div>
+     {/* Score hero */}
+     <div style={{ ...S.card, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+      {/* Circle */}
+      <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+       <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="46" fill="none" stroke="#27272a" strokeWidth="10" />
+        <circle cx="55" cy="55" r="46" fill="none" stroke={scoreColor} strokeWidth="10"
+         strokeDasharray={`${2 * Math.PI * 46}`}
+         strokeDashoffset={`${2 * Math.PI * 46 * (1 - result.score / 100)}`}
+         strokeLinecap="round"
+         transform="rotate(-90 55 55)"
+         style={{ transition: "stroke-dashoffset 1s ease" }} />
+        <text x="55" y="50" textAnchor="middle" fill={scoreColor} fontSize="22" fontWeight="700">{result.score}</text>
+        <text x="55" y="66" textAnchor="middle" fill="#71717a" fontSize="11">/100</text>
+       </svg>
+       <span style={{ fontSize: 22, fontWeight: 800, color: scoreColor }}>Grade: {result.grade}</span>
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 200 }}>
+       <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>{scoreLabel}</div>
+       <div style={{ fontSize: 11, color: "#71717a", lineHeight: 1.7, marginBottom: 12 }}>
+        {result.score >= 70
+         ? "This page is structurally ready to be cited by AI. Small improvements can push you into the A zone."
+         : result.score >= 50
+          ? "AI models will sometimes cite this page, but key signals are missing. Fix the high-weight issues below."
+          : "This page is unlikely to appear in AI-generated answers. Significant structural changes are needed."}
+       </div>
+       {/* Passing bar */}
+       <div style={{ fontSize: 10, color: "#52525b", marginBottom: 4 }}>{result.strengths.length} of {result.signals?.length || 16} signals passing</div>
+       <div style={{ background: "#27272a", borderRadius: 4, height: 6, overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ width: `${result.score}%`, height: "100%", background: `linear-gradient(90deg,${scoreColor}88,${scoreColor})`, transition: "width 1s ease" }} />
+       </div>
+       {/* Quick stat pills */}
+       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {[
+         { label: "Words", value: result.wordCount, ok: result.wordCount >= 600 },
+         { label: "H2s", value: result.h2Count, ok: result.h2Count >= 3 },
+         { label: "H3s", value: result.h3Count, ok: result.h3Count >= 2 },
+         { label: "Ext. Links", value: result.externalLinks, ok: result.externalLinks >= 2 },
+         { label: "Tables", value: result.tableCount, ok: result.tableCount > 0 },
+         { label: "Article Schema", value: result.hasArticleSchema ? "✓" : "✗", ok: result.hasArticleSchema },
+         { label: "FAQ Schema", value: result.hasFaqSchema ? "✓" : "✗", ok: result.hasFaqSchema },
+        ].map((stat, i) => (
+         <div key={i} style={{ background: "#09090b", border: `1px solid ${stat.ok ? "#166534" : "#3f3f46"}`, borderRadius: 8, padding: "8px 10px", textAlign: "center", minWidth: 60 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: stat.ok ? "#22c55e" : "#f59e0b" }}>{stat.value}</div>
+          <div style={{ fontSize: 9, color: "#71717a", marginTop: 2 }}>{stat.label}</div>
+         </div>
+        ))}
+       </div>
+      </div>
+     </div>
+
+     {/* Signal breakdown */}
+     <div style={S.card}>
+      <p style={S.sectionTitle}>📋 Signal Breakdown</p>
+      <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
+       All 16 signals sorted by impact weight. <strong style={{ color: "#fde68a" }}>⚠ High-weight failures</strong> hurt your score the most — fix those first.
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+       {(result.signals || []).sort((a, b) => {
+        if (a.pass !== b.pass) return a.pass ? 1 : -1;
+        return b.weight - a.weight;
+       }).map((sig, i) => (
+        <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 10px", background: "#09090b", border: `1px solid ${sig.pass ? "#166534" : sig.weight >= 7 ? "#7c2d12" : "#7f1d1d"}`, borderRadius: 8, opacity: sig.pass ? 0.85 : 1 }}>
+         <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1, color: sig.pass ? "#22c55e" : "#ef4444" }}>{sig.pass ? "✓" : "✗"}</span>
+         <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: sig.pass ? "#86efac" : "#fca5a5", marginBottom: 2 }}>{sig.name}</div>
+          <div style={{ fontSize: 10, color: "#71717a" }}>{sig.value}</div>
+         </div>
+         <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#52525b", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 5px", flexShrink: 0 }}>×{sig.weight}</span>
+        </div>
+       ))}
+      </div>
+     </div>
+
+     {/* Priority fixes */}
+     {result.issues.length > 0 && (
+      <div style={S.card}>
+       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+        <p style={{ ...S.sectionTitle, margin: 0 }}>🔧 Priority Fixes</p>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+         {fixErr && <span style={{ fontSize: 11, color: "#fca5a5" }}>{fixErr}</span>}
+         <button onClick={getFixPlan} disabled={fixLoading} style={{ background: fixPlan ? "#27272a" : "#4c1d95", border: `1px solid ${fixPlan ? "#3f3f46" : "#7c3aed"}`, borderRadius: 6, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: fixPlan ? "#a1a1aa" : "#c4b5fd", cursor: fixLoading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          {fixLoading
+           ? <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Generating…</>
+           : fixPlan ? "✓ Fix Plan Ready" : "✨ Generate AI Fix Plan (1 credit)"}
+         </button>
+        </div>
+       </div>
+       <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
+        Sorted highest weight first — these fixes will give you the biggest score increase.
+       </div>
+       {(result.signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).map((sig, i) => (
+        <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 0", borderBottom: "1px solid #27272a" }}>
+         <div style={{ width: 26, height: 26, background: "#7f1d1d", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#fca5a5", flexShrink: 0, marginTop: 2 }}>#{i + 1}</div>
+         <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+           <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa" }}>{sig.name}</span>
+           <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#a1a1aa", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 6px" }}>weight ×{sig.weight}</span>
+           {sig.weight >= 7 && <span style={{ fontSize: 9, fontWeight: 700, color: "#fb923c", background: "#431407", borderRadius: 4, padding: "2px 6px" }}>HIGH IMPACT</span>}
+          </div>
+          <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>Detected: {sig.value}</div>
+          {fixPlan && fixPlan[sig.name] && (
+           <div style={{ background: "#0c0c10", border: "1px solid #4c1d95", borderRadius: 8, padding: "12px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+             <span style={{ fontSize: 10, fontWeight: 700, color: "#a855f7", textTransform: "uppercase", letterSpacing: 0.6 }}>How to fix</span>
+             <button onClick={() => copyFix(sig.name, fixPlan[sig.name])} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === sig.name ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>
+              {copiedFix === sig.name ? "✓ Copied" : "Copy"}
+             </button>
+            </div>
+            <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{fixPlan[sig.name]}</div>
+           </div>
+          )}
+         </div>
+        </div>
+       ))}
+      </div>
+     )}
+
+     {/* Strengths */}
+     {result.strengths.length > 0 && (
+      <div style={S.card}>
+       <p style={S.sectionTitle}>✅ What's Already Working</p>
+       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {result.strengths.map((s, i) => (
+         <span key={i} style={{ fontSize: 11, background: "#14532d", border: "1px solid #166534", borderRadius: 6, padding: "4px 10px", color: "#86efac" }}>✓ {s}</span>
+        ))}
+       </div>
+      </div>
+     )}
+
+     {/* Recent scans */}
+     {history.length > 0 && (
+      <div style={S.card}>
+       <p style={S.sectionTitle}>🕐 Recent Scans</p>
+       {history.map((h, i) => (
+        <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderBottom: i < history.length - 1 ? "1px solid #27272a" : "none" }}>
+         <span style={{ fontSize: 17, fontWeight: 700, color: h.score >= 70 ? "#22c55e" : h.score >= 50 ? "#f59e0b" : "#ef4444", minWidth: 36 }}>{h.score}</span>
+         <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, color: "#d4d4d8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.url}</div>
+          <div style={{ fontSize: 10, color: "#52525b", marginTop: 2 }}>{new Date(h.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+         </div>
+         <span style={{ fontSize: 12, fontWeight: 700, color: h.grade === "A+" || h.grade === "A" ? "#22c55e" : h.grade === "B" ? "#f59e0b" : "#ef4444", minWidth: 24 }}>{h.grade}</span>
+         <button onClick={() => { setUrl(h.url); }} style={{ background: "#27272a", border: "none", borderRadius: 5, padding: "4px 10px", fontSize: 10, color: "#a1a1aa", cursor: "pointer" }}>Re-scan</button>
+        </div>
+       ))}
+      </div>
+     )}
+    </div>
+   )}
+  </div>
  );
 }
 

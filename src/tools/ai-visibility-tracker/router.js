@@ -138,6 +138,43 @@ router.post('/citability-score', async (req, res) => {
 });
 
 /* ======================================================================
+   FEATURE: AI Citability Fix Plan
+   POST /api/ai-visibility-tracker/citability-fix-plan
+   Takes the failed signals and returns specific actionable fixes with
+   code examples for each one, sorted by weight (highest priority first).
+   ====================================================================== */
+router.post('/citability-fix-plan', async (req, res) => {
+  try {
+    const { url, score, grade, signals = [], model = 'gpt-4o-mini' } = req.body || {};
+    const failedSignals = (signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).slice(0, 8);
+    if (!failedSignals.length) return res.json({ ok: true, fixes: {} });
+
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
+      model,
+      response_format: { type: 'json_object' },
+      max_tokens: 1600,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert in Generative Engine Optimization (GEO) — making web pages more likely to be cited by ChatGPT, Perplexity, and Google AI Overviews. You give concrete, specific, copy-paste-ready advice.',
+        },
+        {
+          role: 'user',
+          content: `URL: ${url || 'unknown'}\nCurrent score: ${score}/100 (Grade ${grade})\n\nThe following signals FAILED on this page. For EACH one, provide a specific 2-4 sentence actionable fix. Include exact HTML, JSON-LD schema snippets, or example sentences where relevant.\n\nFailed signals:\n${failedSignals.map(s => `- "${s.name}" (weight: ${s.weight}) — detected: ${s.value}`).join('\n')}\n\nRespond as JSON where each key is the EXACT signal name and the value is the actionable fix text with any code examples inline.\n{\n  "Signal name here": "Specific fix instructions with example..."\n}`,
+        },
+      ],
+    });
+
+    const fixes = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, fixes });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* ======================================================================
    FEATURE 11: Robots.txt / AI Crawler Audit
    POST /api/ai-visibility-tracker/crawler-audit
    Checks if AI crawlers (GPTBot, PerplexityBot, ClaudeBot, etc.) are blocked
