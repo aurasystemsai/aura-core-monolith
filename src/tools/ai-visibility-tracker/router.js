@@ -210,7 +210,7 @@ router.post('/citability-score', async (req, res) => {
     }).length;
 
     // Definition-style content (good for AI)
-    const hasDefinitions = /is defined as|refers to|means that|is the process of|is a type of/i.test(bodyText);
+    const hasDefinitions = /is defined as|refers to|means that|is the process of|is a type of|is known as|can be described as|is used to|is considered|is essentially|is simply|is broadly defined|which means|defined as/i.test(bodyText);
     // Step-by-step: detect <ol> lists, or "Step N" text, or numbered headings
     const hasStepsList = /step\s*\d|^\d+\./im.test(bodyText) || $('ol li').length >= 3;
     const hasStatistics = /\d+%|\d+ percent|\d+ million|\d+ billion/i.test(bodyText);
@@ -416,7 +416,7 @@ Article summary: ${currentBodyHtml.replace(/<[^>]+>/g,'').slice(0,800)}`,
       },
       'Definition-style language': {
         field: 'prepend',
-        prompt: `Write a short HTML paragraph that opens the article with a clear definition of the main subject ("${title}"). Use language like "X is defined as..." or "X refers to...". Return ONLY the raw <p> HTML tag.`,
+        prompt: `Write a short HTML paragraph (1-2 sentences) that opens an article about "${title}" with a clear, encyclopaedia-style definition. You MUST use one of these exact phrases in the sentence: "is defined as", "refers to", "is known as", "can be described as", or "means that". Example: "${title} is defined as...". Return ONLY the raw <p> HTML tag, no explanation.`,
       },
       'Step-by-step structure': {
         field: 'append',
