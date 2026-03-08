@@ -372,6 +372,7 @@ router.post('/citability-auto-fix', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'URL must point to a /blogs/..., /products/..., or /pages/... path' });
     }
 
+    const { dryRun = false, content: providedContent = null } = req.body || {};
     const openai = getOpenAI();
 
     // Signal-specific prompts — what to generate and where to put it
@@ -450,18 +451,27 @@ Article summary: ${currentBodyHtml.replace(/<[^>]+>/g,'').slice(0,800)}`,
     const config = SIGNAL_PROMPTS[signalName];
     if (!config) return res.status(400).json({ ok: false, error: `Signal "${signalName}" cannot be auto-fixed. Please use Advanced mode for manual instructions.` });
 
-    // Generate the fix
-    const completion = await openai.chat.completions.create({
-      model,
-      max_tokens: 800,
-      messages: [
-        { role: 'system', content: 'You are an expert in SEO and structured content. You generate clean, minimal HTML snippets. Never add explanatory text — return only what was asked for.' },
-        { role: 'user', content: config.prompt },
-      ],
-    });
+    // Generate the fix (or use caller-provided content for Advanced "Apply" step)
+    let generated;
+    if (providedContent) {
+      generated = providedContent;
+    } else {
+      const completion = await openai.chat.completions.create({
+        model,
+        max_tokens: 800,
+        messages: [
+          { role: 'system', content: 'You are an expert in SEO and structured content. You generate clean, minimal HTML snippets. Never add explanatory text — return only what was asked for.' },
+          { role: 'user', content: config.prompt },
+        ],
+      });
+      generated = completion.choices[0].message.content.trim();
+      if (req.deductCredits) req.deductCredits({ model });
+    }
 
-    const generated = completion.choices[0].message.content.trim();
-    if (req.deductCredits) req.deductCredits({ model });
+    // dryRun: return generated preview without writing to Shopify (Advanced "Preview" step)
+    if (dryRun) {
+      return res.json({ ok: true, preview: generated, field: config.field });
+    }
 
     // Apply the fix
     let newBodyHtml = currentBodyHtml;

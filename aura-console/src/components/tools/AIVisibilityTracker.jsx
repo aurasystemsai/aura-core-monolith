@@ -623,6 +623,8 @@ function CitabilityTab() {
  const [autoFixStates, setAutoFixStates] = useState({}); // { [signalName]: { loading, done, error, message } }
  const [recheckLoading, setRecheckLoading] = useState(false);
  const recheckTimerRef = useRef(null);
+ const [advancedDrafts, setAdvancedDrafts] = useState({}); // { [signalName]: { previewLoading, content, editedContent, applyLoading, applyDone, error } }
+ const [advancedSubMode, setAdvancedSubMode] = useState({}); // { [signalName]: "ai" | "instructions" | "manual" }
 
  // Load Shopify store pages on mount
  useEffect(() => {
@@ -659,19 +661,56 @@ function CitabilityTab() {
    const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
    if (!d.ok) throw new Error(d.error || "Fix failed");
    setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
-   // Debounced free re-check: waits 1.5s so rapid consecutive fixes batch into one recheck
-   if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
-   recheckTimerRef.current = setTimeout(async () => {
-    setRecheckLoading(true);
-    try {
-     const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
-     if (r.ok) { setResult(r); setAutoFixStates({}); }
-    } catch (_) { /* silent — don't interrupt UX */ } finally { setRecheckLoading(false); }
-   }, 1500);
+   triggerFreeRecheck();
   } catch (e) {
    setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
   }
+ }, [url, triggerFreeRecheck]);
+
+ // Shared recheck helper — fires 1.5s after last fix (debounced)
+ const triggerFreeRecheck = useCallback(() => {
+  if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
+  recheckTimerRef.current = setTimeout(async () => {
+   setRecheckLoading(true);
+   try {
+    const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
+    if (r.ok) { setResult(r); setAutoFixStates({}); setAdvancedDrafts({}); }
+   } catch (_) {}
+   finally { setRecheckLoading(false); }
+  }, 1500);
  }, [url]);
+
+ const ensureFixPlan = useCallback(() => {
+  if (!fixPlan && !fixLoading) getFixPlan();
+ }, [fixPlan, fixLoading, getFixPlan]);
+
+ const getAdvSub = (name) => advancedSubMode[name] || "ai";
+ const setAdvSub = (name, mode) => setAdvancedSubMode(prev => ({ ...prev, [name]: mode }));
+
+ // Advanced mode: generate preview without writing to Shopify
+ const previewFix = useCallback(async (signalName) => {
+  setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: true, content: null, editedContent: null, applyDone: false, error: null } }));
+  try {
+   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName, dryRun: true }) });
+   if (!d.ok) throw new Error(d.error || "Preview failed");
+   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: false, content: d.preview, editedContent: d.preview, applyDone: false, error: null } }));
+  } catch (e) {
+   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: false, content: null, editedContent: null, applyDone: false, error: e.message } }));
+  }
+ }, [url]);
+
+ // Advanced mode: apply caller-edited content to Shopify
+ const applyFix = useCallback(async (signalName, editedContent) => {
+  setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: true, error: null } }));
+  try {
+   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName, content: editedContent }) });
+   if (!d.ok) throw new Error(d.error || "Apply failed");
+   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, applyDone: true } }));
+   triggerFreeRecheck();
+  } catch (e) {
+   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, error: e.message } }));
+  }
+ }, [url, triggerFreeRecheck]);
 
  const getFixPlan = useCallback(async () => {
   if (!result) return;
@@ -890,18 +929,8 @@ function CitabilityTab() {
        <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
         {fixMode === "beginner"
          ? "🪄 Beginner mode — click Fix for me and AURA will automatically update your store content."
-         : "⚙️ Advanced mode — generate a fix plan and apply the changes yourself."}
+         : "⚙️ Advanced mode — choose how to fix each signal: let AI draft the HTML, read step-by-step instructions, or write your own HTML and push it live."}
        </div>
-       {fixMode === "advanced" && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
-         {fixErr && <span style={{ fontSize: 11, color: "#fca5a5", marginRight: 8 }}>{fixErr}</span>}
-         <button onClick={getFixPlan} disabled={fixLoading} style={{ background: fixPlan ? "#27272a" : "#4c1d95", border: `1px solid ${fixPlan ? "#3f3f46" : "#7c3aed"}`, borderRadius: 6, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: fixPlan ? "#a1a1aa" : "#c4b5fd", cursor: fixLoading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          {fixLoading
-           ? <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Generating…</>
-           : fixPlan ? "✓ Fix Plan Ready" : "✨ Generate AI Fix Plan (1 credit)"}
-         </button>
-        </div>
-       )}
        {(result.signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).map((sig, i) => {
         const afs = autoFixStates[sig.name] || {};
         return (
@@ -930,17 +959,113 @@ function CitabilityTab() {
             )}
            </div>
           )}
-          {fixMode === "advanced" && fixPlan && fixPlan[sig.name] && (
-           <div style={{ background: "#0c0c10", border: "1px solid #4c1d95", borderRadius: 8, padding: "12px 14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-             <span style={{ fontSize: 10, fontWeight: 700, color: "#a855f7", textTransform: "uppercase", letterSpacing: 0.6 }}>How to fix</span>
-             <button onClick={() => copyFix(sig.name, fixPlan[sig.name])} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === sig.name ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>
-              {copiedFix === sig.name ? "✓ Copied" : "Copy"}
-             </button>
+          {fixMode === "advanced" && (() => {
+           const sub = getAdvSub(sig.name);
+           const ads = advancedDrafts[sig.name] || {};
+           const tabBtn = (id, label) => (
+            <button key={id} onClick={() => { setAdvSub(sig.name, id); if (id === "instructions") ensureFixPlan(); }} style={{ flex: 1, background: sub === id ? (id === "ai" ? "#1e1b4b" : id === "instructions" ? "#1c1917" : "#0f172a") : "transparent", border: `1px solid ${sub === id ? (id === "ai" ? "#4338ca" : id === "instructions" ? "#a16207" : "#0f766e") : "#27272a"}`, borderRadius: 6, padding: "5px 0", fontSize: 10, fontWeight: 700, color: sub === id ? (id === "ai" ? "#818cf8" : id === "instructions" ? "#fbbf24" : "#2dd4bf") : "#52525b", cursor: "pointer" }}>{label}</button>
+           );
+           return (
+            <div style={{ marginTop: 4 }}>
+             {/* Tab row */}
+             <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+              {tabBtn("ai", "🤖 AI Draft")}
+              {tabBtn("instructions", "📋 Instructions")}
+              {tabBtn("manual", "✍️ Write HTML")}
+             </div>
+
+             {/* AI Draft tab */}
+             {sub === "ai" && (
+              <div>
+               {ads.applyDone ? (
+                <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>✅ Applied to Shopify!</div>
+               ) : ads.content != null ? (
+                <div>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.6 }}>AI-generated HTML — edit before applying</span>
+                  <div style={{ display: "flex", gap: 6 }}>
+                   <button onClick={() => { copyFix(`${sig.name}-draft`, ads.editedContent || ads.content); }} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === `${sig.name}-draft` ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>{copiedFix === `${sig.name}-draft` ? "✓ Copied" : "Copy"}</button>
+                   <button onClick={() => previewFix(sig.name)} disabled={ads.previewLoading} style={{ background: "#1c1917", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: "#a1a1aa", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                    {ads.previewLoading ? <><div style={{ width: 8, height: 8, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</> : "↺ Regenerate"}
+                   </button>
+                  </div>
+                 </div>
+                 <textarea
+                  value={ads.editedContent ?? ads.content}
+                  onChange={e => setAdvancedDrafts(prev => ({ ...prev, [sig.name]: { ...prev[sig.name], editedContent: e.target.value } }))}
+                  rows={6}
+                  style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#d4d4d8", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }}
+                 />
+                 {ads.error && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>⚠️ {ads.error}</div>}
+                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                  <button onClick={() => applyFix(sig.name, ads.editedContent ?? ads.content)} disabled={ads.applyLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#818cf8", cursor: ads.applyLoading ? "default" : "pointer", opacity: ads.applyLoading ? 0.7 : 1 }}>
+                   {ads.applyLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Applying…</> : <>🚀 Apply to Shopify</>}
+                  </button>
+                 </div>
+                </div>
+               ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+                 {ads.error && <div style={{ fontSize: 11, color: "#fca5a5" }}>⚠️ {ads.error}</div>}
+                 <div style={{ fontSize: 11, color: "#52525b", marginBottom: 2 }}>AI will generate the exact HTML for this fix. You can edit it before it goes live.</div>
+                 <button onClick={() => previewFix(sig.name)} disabled={ads.previewLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#818cf8", cursor: ads.previewLoading ? "default" : "pointer" }}>
+                  {ads.previewLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating draft…</> : <>✨ Generate AI Draft</>}
+                 </button>
+                </div>
+               )}
+              </div>
+             )}
+
+             {/* Instructions tab */}
+             {sub === "instructions" && (
+              <div style={{ background: "#0c0c10", border: "1px solid #78350f", borderRadius: 8, padding: "12px 14px" }}>
+               {fixLoading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#71717a" }}><div style={{ width: 10, height: 10, border: "1.5px solid #f59e0b", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Loading instructions…</div>
+               ) : fixPlan && fixPlan[sig.name] ? (
+                <>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: 0.6 }}>How to fix manually</span>
+                  <button onClick={() => copyFix(sig.name, fixPlan[sig.name])} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === sig.name ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>{copiedFix === sig.name ? "✓ Copied" : "Copy"}</button>
+                 </div>
+                 <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{fixPlan[sig.name]}</div>
+                </>
+               ) : (
+                <div style={{ fontSize: 11, color: "#71717a" }}>{fixErr || "Click to load step-by-step instructions for this signal."}</div>
+               )}
+              </div>
+             )}
+
+             {/* Manual HTML tab */}
+             {sub === "manual" && (() => {
+              const mads = ads;
+              const manualDone = mads.applyDone && !mads.content; // applied from manual path
+              return (
+               <div>
+                <div style={{ fontSize: 11, color: "#52525b", marginBottom: 8 }}>Write or paste your own HTML. AURA will push it directly to Shopify.</div>
+                {mads.applyDone ? (
+                 <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>✅ Applied to Shopify!</div>
+                ) : (
+                 <>
+                  <textarea
+                   value={mads.editedContent ?? ""}
+                   onChange={e => setAdvancedDrafts(prev => ({ ...prev, [sig.name]: { ...(prev[sig.name] || {}), content: prev[sig.name]?.content ?? null, editedContent: e.target.value, applyDone: false } }))}
+                   rows={6}
+                   placeholder={`<h2>Example heading</h2>\n<p>Your custom HTML here...</p>`}
+                   style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#d4d4d8", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }}
+                  />
+                  {mads.error && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>⚠️ {mads.error}</div>}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                   <button onClick={() => applyFix(sig.name, mads.editedContent || "")} disabled={mads.applyLoading || !mads.editedContent?.trim()} style={{ display: "flex", alignItems: "center", gap: 6, background: "#0f172a", border: "1px solid #0f766e", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#2dd4bf", cursor: (mads.applyLoading || !mads.editedContent?.trim()) ? "default" : "pointer", opacity: (mads.applyLoading || !mads.editedContent?.trim()) ? 0.5 : 1 }}>
+                    {mads.applyLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #2dd4bf", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Applying…</> : <>🚀 Apply to Shopify</>}
+                   </button>
+                  </div>
+                 </>
+                )}
+               </div>
+              );
+             })()}
             </div>
-            <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{fixPlan[sig.name]}</div>
-           </div>
-          )}
+           );
+          })()}
          </div>
         </div>
         );
