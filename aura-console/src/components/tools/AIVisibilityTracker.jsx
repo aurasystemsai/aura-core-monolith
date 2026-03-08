@@ -1165,7 +1165,6 @@ function SeedingPlanTab() {
  )}
  </div>
  )}
- </div>
  {/* Posting History */}
  <div style={S.card}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
