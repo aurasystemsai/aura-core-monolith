@@ -420,7 +420,7 @@ Article summary: ${currentBodyHtml.replace(/<[^>]+>/g,'').slice(0,800)}`,
 
     // Apply the fix
     let newBodyHtml = currentBodyHtml;
-    let updatePayload = {};
+    let updatePayload = null;
 
     if (config.field === 'summary') {
       updatePayload = resourceType === 'article'
