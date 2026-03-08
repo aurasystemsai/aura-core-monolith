@@ -642,6 +642,19 @@ function CitabilityTab() {
   }).catch(() => {});
  }, [result]);
 
+ // Declared first — used by autoFix and applyFix dependency arrays below
+ const triggerFreeRecheck = useCallback(() => {
+  if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
+  recheckTimerRef.current = setTimeout(async () => {
+   setRecheckLoading(true);
+   try {
+    const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
+    if (r.ok) { setResult(r); setAutoFixStates({}); setAdvancedDrafts({}); }
+   } catch (_) {}
+   finally { setRecheckLoading(false); }
+  }, 1500);
+ }, [url]);
+
  const run = useCallback(async () => {
   if (!url.trim()) return;
   setLoading(true); setErr(""); setResult(null); setFixPlan(null); setProgress(0); setAutoFixStates({});
@@ -654,18 +667,6 @@ function CitabilityTab() {
    setResult(d);
   } catch (e) { setErr(e.message); setProgress(0); } finally { clearInterval(tick); setLoading(false); }
  }, [url]);
-
- const autoFix = useCallback(async (signalName) => {
-  setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: true, done: false, error: null } }));
-  try {
-   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
-   if (!d.ok) throw new Error(d.error || "Fix failed");
-   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
-   triggerFreeRecheck();
-  } catch (e) {
-   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
-  }
- }, [url, triggerFreeRecheck]);
 
  const getFixPlan = useCallback(async () => {
   if (!result) return;
@@ -680,18 +681,17 @@ function CitabilityTab() {
   } catch (e) { setFixErr(e.message); } finally { setFixLoading(false); }
  }, [result]);
 
- // Shared recheck helper — fires 1.5s after last fix (debounced)
- const triggerFreeRecheck = useCallback(() => {
-  if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
-  recheckTimerRef.current = setTimeout(async () => {
-   setRecheckLoading(true);
-   try {
-    const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
-    if (r.ok) { setResult(r); setAutoFixStates({}); setAdvancedDrafts({}); }
-   } catch (_) {}
-   finally { setRecheckLoading(false); }
-  }, 1500);
- }, [url]);
+ const autoFix = useCallback(async (signalName) => {
+  setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: true, done: false, error: null } }));
+  try {
+   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
+   if (!d.ok) throw new Error(d.error || "Fix failed");
+   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
+   triggerFreeRecheck();
+  } catch (e) {
+   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
+  }
+ }, [url, triggerFreeRecheck]);
 
  const ensureFixPlan = useCallback(() => {
   if (!fixPlan && !fixLoading) getFixPlan();
