@@ -256,7 +256,8 @@ router.post('/citability-score', async (req, res) => {
     const result = { url, score, grade, wordCount, h2Count: h2s.length, h3Count: h3s.length, externalLinks, tableCount, olCount, hasArticleSchema, hasFaqSchema, signals, issues, strengths };
     db.saveAudit({ type: 'citability', url, score, grade });
     db.recordEvent({ type: 'citability-score', url, score });
-    if (req.deductCredits) req.deductCredits({ model });
+    // Skip credit deduction for free re-checks (post-fix verification)
+    if (req.deductCredits && !req.body?.free) req.deductCredits({ model });
     res.json({ ok: true, ...result });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -481,9 +482,13 @@ Article summary: ${currentBodyHtml.replace(/<[^>]+>/g,'').slice(0,800)}`,
     }
 
     if (!updatePayload && newBodyHtml !== currentBodyHtml) {
-      if (resourceType === 'article') updatePayload = { article: { id: resourceId, body_html: newBodyHtml } };
-      else if (resourceType === 'product') updatePayload = { product: { id: resourceId, body_html: newBodyHtml } };
+      // Always publish the article when saving fixes (published_at ensures it goes live)
+      if (resourceType === 'article') updatePayload = { article: { id: resourceId, body_html: newBodyHtml, published_at: new Date().toISOString() } };
+      else if (resourceType === 'product') updatePayload = { product: { id: resourceId, body_html: newBodyHtml, published: true } };
       else if (resourceType === 'page') updatePayload = { page: { id: resourceId, body_html: newBodyHtml } };
+    } else if (updatePayload?.article) {
+      // Also publish when updating summary/other article fields
+      updatePayload.article.published_at = new Date().toISOString();
     }
 
     if (!updatePayload) return res.json({ ok: true, message: 'No changes needed — signal already passing.' });

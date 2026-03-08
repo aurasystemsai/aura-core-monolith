@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from "react";
+﻿import React, { useState, useCallback, useEffect, useRef } from "react";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
 // Wrapper: auto-parses JSON body and injects Content-Type on every call
 const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
@@ -621,6 +621,8 @@ function CitabilityTab() {
  const [search, setSearch] = useState("");
  const [fixMode, setFixMode] = useState("beginner"); // "beginner" | "advanced"
  const [autoFixStates, setAutoFixStates] = useState({}); // { [signalName]: { loading, done, error, message } }
+ const [recheckLoading, setRecheckLoading] = useState(false);
+ const recheckTimerRef = useRef(null);
 
  // Load Shopify store pages on mount
  useEffect(() => {
@@ -657,6 +659,15 @@ function CitabilityTab() {
    const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
    if (!d.ok) throw new Error(d.error || "Fix failed");
    setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
+   // Debounced free re-check: waits 1.5s so rapid consecutive fixes batch into one recheck
+   if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
+   recheckTimerRef.current = setTimeout(async () => {
+    setRecheckLoading(true);
+    try {
+     const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
+     if (r.ok) { setResult(r); setAutoFixStates({}); }
+    } catch (_) { /* silent — don't interrupt UX */ } finally { setRecheckLoading(false); }
+   }, 1500);
   } catch (e) {
    setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
   }
@@ -856,6 +867,14 @@ function CitabilityTab() {
        ))}
       </div>
      </div>
+
+     {/* Recheck banner — appears after an auto-fix while score is being refreshed */}
+     {recheckLoading && (
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 10, padding: "10px 14px", marginBottom: 8 }}>
+       <div style={{ width: 14, height: 14, border: "2px solid #6366f1", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
+       <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>🔄 Re-checking your score for free…</span>
+      </div>
+     )}
 
      {/* Priority fixes */}
      {result.issues.length > 0 && (
