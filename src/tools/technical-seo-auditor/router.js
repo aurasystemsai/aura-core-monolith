@@ -266,14 +266,15 @@ router.post('/crawl-audit', async (req, res) => {
 
     const fetchMod = (await import('node-fetch')).default;
     const cheerio = require('cheerio');
+    const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
 
-    // Fetch the page
-    let html = '', status = 0, finalUrl = fullUrl;
+    // Fetch the page — Admin API for Shopify store pages, HTTP for external
+    let html = '', status = 200, finalUrl = fullUrl;
     try {
-      const r = await fetchMod(fullUrl, { headers: { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' }, timeout: 15000, redirect: 'follow' });
-      status = r.status;
-      finalUrl = r.url;
-      html = await r.text();
+      const fetched = await fetchForAnalysis(fullUrl, req);
+      html = fetched.html || '';
+      finalUrl = fetched.responseUrl || fullUrl;
+      if (!fetched.fromAdminApi && !html) throw new Error('Empty response');
     } catch (e) {
       return res.status(502).json({ ok: false, error: `Could not fetch URL: ${e.message}` });
     }
@@ -370,10 +371,11 @@ router.post('/image-audit', async (req, res) => {
     const fullUrl = url.startsWith('http') ? url : `https://${url}`;
     const fetchMod = (await import('node-fetch')).default;
     const cheerio = require('cheerio');
+    const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
 
-    const r = await fetchMod(fullUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 15000 });
-    if (!r.ok) return res.status(502).json({ ok: false, error: `HTTP ${r.status}` });
-    const html = await r.text();
+    const fetched = await fetchForAnalysis(fullUrl, req);
+    if (!fetched.html) return res.status(502).json({ ok: false, error: 'Could not fetch page content' });
+    const html = fetched.html;
     const $ = cheerio.load(html);
 
     const images = [];
@@ -442,10 +444,11 @@ router.post('/schema-validate', async (req, res) => {
     const fullUrl = url.startsWith('http') ? url : `https://${url}`;
     const fetchMod = (await import('node-fetch')).default;
     const cheerio = require('cheerio');
+    const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
 
-    const r = await fetchMod(fullUrl, { headers: { 'User-Agent': 'Googlebot/2.1' }, timeout: 15000 });
-    if (!r.ok) return res.status(502).json({ ok: false, error: `HTTP ${r.status}` });
-    const html = await r.text();
+    const fetched = await fetchForAnalysis(fullUrl, req);
+    if (!fetched.html) return res.status(502).json({ ok: false, error: 'Could not fetch page content' });
+    const html = fetched.html;
     const $ = cheerio.load(html);
 
     const schemas = [];
@@ -633,13 +636,11 @@ router.post('/mobile-check', async (req, res) => {
     const fullUrl = url.startsWith('http') ? url : `https://${url}`;
     const fetchMod = (await import('node-fetch')).default;
     const cheerio = require('cheerio');
+    const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
 
-    const r = await fetchMod(fullUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' },
-      timeout: 15000,
-    });
-    if (!r.ok) return res.status(502).json({ ok: false, error: `HTTP ${r.status}` });
-    const html = await r.text();
+    const fetched = await fetchForAnalysis(fullUrl, req);
+    if (!fetched.html) return res.status(502).json({ ok: false, error: 'Could not fetch page content' });
+    const html = fetched.html;
     const $ = cheerio.load(html);
 
     // Mobile checks

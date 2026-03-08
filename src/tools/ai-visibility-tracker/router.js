@@ -43,78 +43,88 @@ router.post('/citability-score', async (req, res) => {
     const { url, model = 'gpt-4o-mini' } = req.body || {};
     if (!url) return res.status(400).json({ ok: false, error: 'url required' });
 
-    let html = '', fetchError = null;
-    try { ({ html } = await fetchHTML(url)); } catch (e) { fetchError = e.message; }
+    const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+    const hostname = parsedUrl.hostname;
 
-    if (!html) return res.status(502).json({ ok: false, error: `Could not fetch URL: ${fetchError}` });
-
-    // Detect Shopify password page — if so, try fetching via Admin API instead
-    const isPasswordPage = /enter.*store.*password|password.*required|protected.*with.*a.*password|login_form/i.test(html)
-      || html.length < 3000;
-
-    if (isPasswordPage) {
-      // Try to get the article via Admin API using stored shop token
-      try {
-        const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
-        const hostname = parsedUrl.hostname; // e.g. aurasystemsai.myshopify.com or custom domain
-        const shopTokens = getShopTokens();
-        const allTokens = shopTokens.loadAll ? shopTokens.loadAll() : {};
-
-        // Match hostname against stored shops (myshopify.com or custom domain stored in token data)
-        let shop = null, token = null;
-        for (const [s, data] of Object.entries(allTokens)) {
-          if (hostname === s || hostname.includes(s.replace('.myshopify.com', ''))) {
-            shop = s; token = data?.token || data; break;
-          }
-        }
-        // Also try matching stored shop domain against the URL
-        if (!shop && Object.keys(allTokens).length === 1) {
-          shop = Object.keys(allTokens)[0];
-          token = Object.values(allTokens)[0]?.token || Object.values(allTokens)[0];
-        }
-
-        if (shop && token) {
-          // URL pattern: /blogs/{blog-handle}/{article-handle}
-          const match = parsedUrl.pathname.match(/^\/blogs\/([^/]+)\/([^/]+)/);
-          if (match) {
-            const [, blogHandle, articleHandle] = match;
-            const apiVersion = '2023-10';
-            const fetchFn = global.fetch || require('node-fetch');
-            const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
-
-            // Get blog id from handle
-            const blogsRes = await fetchFn(`https://${shop}/admin/api/${apiVersion}/blogs.json?handle=${blogHandle}`, { headers });
-            const blogsJson = blogsRes.ok ? await blogsRes.json() : {};
-            const blog = (blogsJson.blogs || [])[0];
-
-            if (blog) {
-              const articlesRes = await fetchFn(
-                `https://${shop}/admin/api/${apiVersion}/articles.json?blog_id=${blog.id}&handle=${articleHandle}&status=published`,
-                { headers }
-              );
-              const articlesJson = articlesRes.ok ? await articlesRes.json() : {};
-              const article = (articlesJson.articles || [])[0];
-
-              if (article) {
-                // Build a rich HTML document from the article data so cheerio can analyze it
-                const metaDescContent = article.summary_html
-                  ? article.summary_html.replace(/<[^>]*>/g, '').slice(0, 200)
-                  : '';
-                html = `<!DOCTYPE html><html><head>
-                  <title>${article.title || ''}</title>
-                  <meta name="description" content="${metaDescContent}">
-                  ${article.body_html || ''}
-                </head><body>
-                  <h1>${article.title || ''}</h1>
-                  ${article.body_html || ''}
-                </body></html>`;
-              }
-            }
-          }
-        }
-      } catch (apiErr) {
-        console.warn('[citability] Admin API fallback failed:', apiErr.message);
+    // --- Resolve connected shop token for this URL ---
+    const shopTokens = getShopTokens();
+    const allTokens = shopTokens.loadAll ? shopTokens.loadAll() : {};
+    let shop = null, token = null;
+    for (const [s, data] of Object.entries(allTokens)) {
+      if (hostname === s || hostname.replace('www.', '') === s.replace('www.', '') ||
+          hostname.includes(s.replace('.myshopify.com', ''))) {
+        shop = s; token = data?.token || data; break;
       }
+    }
+    // Single-store fallback — if only one store connected, always use it
+    if (!shop && Object.keys(allTokens).length === 1) {
+      shop = Object.keys(allTokens)[0];
+      token = Object.values(allTokens)[0]?.token || Object.values(allTokens)[0];
+    }
+
+    let html = '';
+
+    if (shop && token) {
+      // ── SHOPIFY ADMIN API PATH — never hits the public web ──────────────
+      const apiVersion = '2023-10';
+      const fetchFn = global.fetch || require('node-fetch');
+      const apiHeaders = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+      const blogArticleMatch = parsedUrl.pathname.match(/^\/blogs\/([^/]+)\/([^/?#]+)/);
+      const productMatch = parsedUrl.pathname.match(/^\/products\/([^/?#]+)/);
+      const pageMatch = parsedUrl.pathname.match(/^\/pages\/([^/?#]+)/);
+
+      if (blogArticleMatch) {
+        const [, blogHandle, articleHandle] = blogArticleMatch;
+        const blogsRes = await fetchFn(
+          `https://${shop}/admin/api/${apiVersion}/blogs.json?handle=${blogHandle}`,
+          { headers: apiHeaders }
+        );
+        const blog = blogsRes.ok ? ((await blogsRes.json()).blogs || [])[0] : null;
+        if (!blog) return res.status(404).json({ ok: false, error: `Blog "${blogHandle}" not found in your store` });
+
+        const articlesRes = await fetchFn(
+          `https://${shop}/admin/api/${apiVersion}/articles.json?blog_id=${blog.id}&handle=${articleHandle}`,
+          { headers: apiHeaders }
+        );
+        const article = articlesRes.ok ? ((await articlesRes.json()).articles || [])[0] : null;
+        if (!article) return res.status(404).json({ ok: false, error: `Article "${articleHandle}" not found` });
+
+        const metaDesc = article.summary_html ? article.summary_html.replace(/<[^>]*>/g, '').slice(0, 250) : '';
+        html = `<!DOCTYPE html><html><head><title>${article.title || ''}</title><meta name="description" content="${metaDesc}"></head><body><h1>${article.title || ''}</h1>${article.body_html || ''}</body></html>`;
+
+      } else if (productMatch) {
+        const [, productHandle] = productMatch;
+        const productRes = await fetchFn(
+          `https://${shop}/admin/api/${apiVersion}/products.json?handle=${productHandle}&fields=title,body_html,product_type,tags`,
+          { headers: apiHeaders }
+        );
+        const product = productRes.ok ? ((await productRes.json()).products || [])[0] : null;
+        if (!product) return res.status(404).json({ ok: false, error: `Product "${productHandle}" not found` });
+
+        html = `<!DOCTYPE html><html><head><title>${product.title || ''}</title></head><body><h1>${product.title || ''}</h1>${product.body_html || ''}</body></html>`;
+
+      } else if (pageMatch) {
+        const [, pageHandle] = pageMatch;
+        const pageRes = await fetchFn(
+          `https://${shop}/admin/api/${apiVersion}/pages.json?handle=${pageHandle}&fields=title,body_html,meta_description`,
+          { headers: apiHeaders }
+        );
+        const page = pageRes.ok ? ((await pageRes.json()).pages || [])[0] : null;
+        if (!page) return res.status(404).json({ ok: false, error: `Page "${pageHandle}" not found` });
+
+        const metaDesc = page.meta_description || '';
+        html = `<!DOCTYPE html><html><head><title>${page.title || ''}</title><meta name="description" content="${metaDesc}"></head><body><h1>${page.title || ''}</h1>${page.body_html || ''}</body></html>`;
+
+      } else {
+        return res.status(400).json({ ok: false, error: 'URL must be a /blogs/..., /products/..., or /pages/... path from your store' });
+      }
+
+    } else {
+      // ── EXTERNAL URL — public web fetch ─────────────────────────────────
+      let fetchError = null;
+      try { ({ html } = await fetchHTML(url)); } catch (e) { fetchError = e.message; }
+      if (!html) return res.status(502).json({ ok: false, error: `Could not fetch URL: ${fetchError}` });
     }
 
     const $ = cheerio.load(html);
@@ -845,9 +855,10 @@ router.post('/term-analysis', async (req, res) => {
     let pageContent = '';
     if (url) {
       try {
-        const { html } = await fetchHTML(url);
-        const $ = cheerio.load(html);
-        pageContent = $('body').text().replace(/\s+/g, ' ').slice(0, 2000);
+        const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
+        const fetched = await fetchForAnalysis(url.startsWith('http') ? url : `https://${url}`, req);
+        const $ = cheerio.load(fetched.html || '');
+        pageContent = $('article, main, .content, body').first().text().replace(/\s+/g, ' ').slice(0, 2000);
       } catch {}
     }
 
@@ -911,8 +922,9 @@ router.post('/geo-optimize', async (req, res) => {
     let pageText = content || '';
     if (url && !content) {
       try {
-        const { html } = await fetchHTML(url);
-        const $ = cheerio.load(html);
+        const { fetchForAnalysis } = require('../../core/shopifyContentFetcher');
+        const fetched = await fetchForAnalysis(url.startsWith('http') ? url : `https://${url}`, req);
+        const $ = cheerio.load(fetched.html || '');
         pageText = $('article, main, .content, body').first().text().replace(/\s+/g, ' ').slice(0, 3000);
       } catch {}
     }
