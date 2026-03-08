@@ -9,6 +9,18 @@ const cheerio = require('cheerio');
 const db = require('./db');
 const router = express.Router();
 
+let _shopTokens;
+function getShopTokens() {
+  if (!_shopTokens) _shopTokens = require('../../core/shopTokens');
+  return _shopTokens;
+}
+
+let _shopTokens;
+function getShopTokens() {
+  if (!_shopTokens) _shopTokens = require('../../core/shopTokens');
+  return _shopTokens;
+}
+
 let _openai;
 function getOpenAI() {
   if (!_openai) {
@@ -516,10 +528,11 @@ Respond as JSON:
    ====================================================================== */
 router.post('/seeding-plan', async (req, res) => {
   try {
-    const { brand, niche, targetPrompts = [], currentContent = '', model = 'gpt-4o-mini' } = req.body || {};
+    const { brand, niche, targetPrompts = [], currentContent = '', productContext = [], model = 'gpt-4o-mini' } = req.body || {};
     if (!brand || !niche) return res.status(400).json({ ok: false, error: 'brand and niche required' });
 
     const openai = getOpenAI();
+    const productLine = productContext.length ? `\nTop products: ${productContext.slice(0, 8).join(', ')}` : '';
     const resp = await openai.chat.completions.create({
       model,
       messages: [{
@@ -528,7 +541,7 @@ router.post('/seeding-plan', async (req, res) => {
 
 Brand: ${brand}
 Niche: ${niche}
-Target prompts they want to appear in: ${targetPrompts.length > 0 ? targetPrompts.join(', ') : 'general niche queries'}
+Target prompts they want to appear in: ${targetPrompts.length > 0 ? targetPrompts.join(', ') : 'general niche queries'}${productLine}
 Current content: ${currentContent || 'Not specified'}
 
 Generate a comprehensive LLM Seeding Plan — specific platforms and types of content that, if executed well, would increase the probability that this brand appears in AI-generated responses:
@@ -582,12 +595,13 @@ Respond as JSON:
    ====================================================================== */
 router.post('/generate-seeding-content', async (req, res) => {
   try {
-    const { platform, brand, niche, strategy, contentType, subreddits = [], targetPrompts = [], model = 'gpt-4o-mini' } = req.body || {};
+    const { platform, brand, niche, strategy, contentType, subreddits = [], targetPrompts = [], productContext = [], model = 'gpt-4o-mini' } = req.body || {};
     if (!platform || !brand) return res.status(400).json({ ok: false, error: 'platform and brand required' });
 
     const openai = getOpenAI();
     const subredditHint = subreddits.length ? ` Target subreddits: ${subreddits.join(', ')}.` : '';
     const promptHint = targetPrompts.length ? ` The brand wants to appear in AI answers for: "${targetPrompts.slice(0,3).join('", "')}".` : '';
+    const productHint = productContext.length ? `\nTop products: ${productContext.slice(0,6).join(', ')}.` : '';
 
     const platformInstructions = {
       Reddit: `Write a genuine, helpful Reddit ${contentType || 'comment'} that subtly positions the brand without being spammy. Sound like a real community member. Include the brand as a natural recommendation, not an ad.${subredditHint}`,
@@ -608,7 +622,7 @@ router.post('/generate-seeding-content', async (req, res) => {
         content: 'You are an expert content writer specialising in GEO (Generative Engine Optimization) — creating authentic content that gets cited by AI models.',
       }, {
         role: 'user',
-        content: `Brand: "${brand}"\nNiche: ${niche}\nPlatform: ${platform}\nStrategy context: ${strategy || ''}${promptHint}\n\n${instruction}\n\nRespond as JSON:\n{\n  "title": "post/thread title (if applicable, else null)",\n  "content": "the full ready-to-post text",\n  "tip": "one sentence posting tip specific to this platform"\n}`,
+        content: `Brand: "${brand}"\nNiche: ${niche}\nPlatform: ${platform}\nStrategy context: ${strategy || ''}${promptHint}${productHint}\n\n${instruction}\n\nRespond as JSON:\n{\n  "title": "post/thread title (if applicable, else null)",\n  "content": "the full ready-to-post text",\n  "tip": "one sentence posting tip specific to this platform"\n}`,
       }],
     });
 
@@ -619,6 +633,70 @@ router.post('/generate-seeding-content', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+
+/* ======================================================================
+   FEATURE: Shopify Context
+   GET /api/ai-visibility-tracker/shopify-context
+   Returns shop name, domain, top products & collections to pre-fill Seeding Plan
+   ====================================================================== */
+router.get('/shopify-context', async (req, res) => {
+  try {
+    const shopTokens = getShopTokens();
+    const allTokens = shopTokens.loadAll ? shopTokens.loadAll() : {};
+    let shop = req.headers['x-shopify-shop-domain'] || (req.session && req.session.shop) || process.env.SHOPIFY_STORE_URL;
+    if (!shop && Object.keys(allTokens).length === 1) shop = Object.keys(allTokens)[0];
+
+    let token = (shop ? shopTokens.getToken(shop) : null) || (req.session && req.session.shopifyToken);
+    if (!token && Object.keys(allTokens).length === 1) token = Object.values(allTokens)[0]?.token || null;
+
+    if (!shop || !token) {
+      return res.json({ ok: true, available: false, reason: 'No Shopify connection found' });
+    }
+
+    const apiVersion = '2023-10';
+    const fetchFn = global.fetch || require('node-fetch');
+    const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json', 'Accept': 'application/json' };
+
+    const [shopRes, productsRes, collectionsRes] = await Promise.all([
+      fetchFn(`https://${shop}/admin/api/${apiVersion}/shop.json`, { headers }),
+      fetchFn(`https://${shop}/admin/api/${apiVersion}/products.json?limit=20&fields=title,product_type,tags,vendor`, { headers }),
+      fetchFn(`https://${shop}/admin/api/${apiVersion}/custom_collections.json?limit=20&fields=title`, { headers }),
+    ]);
+
+    const shopData = shopRes.ok ? (await shopRes.json()).shop : null;
+    const productsData = productsRes.ok ? (await productsRes.json()).products || [] : [];
+    const collectionsData = collectionsRes.ok ? (await collectionsRes.json()).custom_collections || [] : [];
+
+    const productTypes = [...new Set(productsData.map(p => p.product_type).filter(Boolean))];
+    const allTags = productsData.flatMap(p => (p.tags || '').split(',').map(t => t.trim()).filter(Boolean));
+    const tagFreq = {};
+    allTags.forEach(t => { tagFreq[t] = (tagFreq[t] || 0) + 1; });
+    const topTags = Object.entries(tagFreq).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t]) => t);
+
+    let niche = '';
+    if (productTypes.length) niche = productTypes.slice(0, 2).join(', ');
+    else if (collectionsData.length) niche = collectionsData.slice(0, 2).map(c => c.title).join(', ');
+    else if (topTags.length) niche = topTags.slice(0, 2).join(', ');
+
+    res.json({
+      ok: true,
+      available: true,
+      brand: shopData?.name || shop.replace('.myshopify.com', ''),
+      domain: shopData?.domain || shop,
+      niche,
+      productCount: productsData.length,
+      products: productsData.slice(0, 10).map(p => ({ title: p.title, type: p.product_type, tags: p.tags })),
+      collections: collectionsData.slice(0, 8).map(c => c.title),
+      topTags,
+    });
+  } catch (err) {
+    console.error('[AI Visibility] shopify-context error:', err);
+    res.json({ ok: true, available: false, reason: err.message });
+  }
+});
+
+/* ======================================================================
+   FEATURE: Term Analysis
    Find which terms AI models use for your topic and compare against your content
    ====================================================================== */
 router.post('/term-analysis', async (req, res) => {

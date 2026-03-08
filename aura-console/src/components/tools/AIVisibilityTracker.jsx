@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+﻿import React, { useState, useCallback, useEffect } from "react";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
 // Wrapper: auto-parses JSON body and injects Content-Type on every call
 const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
@@ -821,12 +821,36 @@ function SeedingPlanTab() {
  const [err, setErr] = useState("");
  const [contentModal, setContentModal] = useState(null); // { platform, title, content, tip, loading }
  const [generatingFor, setGeneratingFor] = useState(null); // platform name being generated
+ const [shopCtx, setShopCtx] = useState(null); // { available, brand, niche, productCount, products }
+ const [shopCtxLoading, setShopCtxLoading] = useState(true);
+
+ // Auto-fetch Shopify store context on mount
+ useEffect(() => {
+ let cancelled = false;
+ async function loadShopify() {
+ try {
+ const d = await apiFetch(`${API}/shopify-context`);
+ if (cancelled) return;
+ if (d.ok && d.available) {
+ setShopCtx(d);
+ // Only pre-fill if fields are still empty
+ if (!brand) setBrand(d.brand || "");
+ if (!niche) setNiche(d.niche || "");
+ }
+ } catch {}
+ finally { if (!cancelled) setShopCtxLoading(false); }
+ }
+ loadShopify();
+ return () => { cancelled = true; };
+ }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
  const run = useCallback(async () => {
  if (!brand || !niche) return;
  setLoading(true); setErr(""); setResult(null);
  try {
- const d = await apiFetch(`${API}/seeding-plan`, { method: "POST", body: JSON.stringify({ brand, niche, targetPrompts: targetPrompts.split("\n").map(p => p.trim()).filter(Boolean) }) });
+ // Pass top product titles to AI for richer, product-specific content
+ const productContext = shopCtx?.products?.slice(0, 6).map(p => p.title) || [];
+ const d = await apiFetch(`${API}/seeding-plan`, { method: "POST", body: JSON.stringify({ brand, niche, targetPrompts: targetPrompts.split("\n").map(p => p.trim()).filter(Boolean), productContext }) });
  if (!d.ok) throw new Error(d.error);
  setResult(d);
  } catch (e) { setErr(e.message); } finally { setLoading(false); }
@@ -836,6 +860,7 @@ function SeedingPlanTab() {
  setGeneratingFor(platform.platform);
  setContentModal({ platform: platform.platform, loading: true });
  try {
+ const productContext = shopCtx?.products?.slice(0, 6).map(p => p.title) || [];
  const d = await apiFetch(`${API}/generate-seeding-content`, { method: "POST", body: JSON.stringify({
  platform: platform.platform,
  brand,
@@ -844,13 +869,14 @@ function SeedingPlanTab() {
  contentType: platform.contentType,
  subreddits: platform.subreddits || [],
  targetPrompts: targetPrompts.split("\n").map(p => p.trim()).filter(Boolean),
+ productContext,
  }) });
  if (!d.ok) throw new Error(d.error);
  setContentModal({ platform: platform.platform, title: d.title, content: d.content, tip: d.tip, loading: false });
  } catch (e) {
  setContentModal({ platform: platform.platform, error: e.message, loading: false });
  } finally { setGeneratingFor(null); }
- }, [brand, niche, targetPrompts]);
+ }, [brand, niche, targetPrompts, shopCtx]);
 
  return (
  <div>
@@ -894,6 +920,17 @@ function SeedingPlanTab() {
  <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco-friendly yoga equipment"/>
  </div>
  </div>
+ {/* Shopify store context badge */}
+ {shopCtxLoading ? (
+ <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>⟳ Loading your store data…</div>
+ ) : shopCtx?.available ? (
+ <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "7px 12px", background: "#052e16", border: "1px solid #166534", borderRadius: 8, fontSize: 11 }}>
+ <span style={{ color: "#86efac", fontWeight: 700 }}>✓ Loaded from your Shopify store</span>
+ <span style={{ color: "#4ade80" }}>{shopCtx.productCount} product{shopCtx.productCount !== 1 ? "s" : ""}</span>
+ {shopCtx.collections?.length > 0 && <span style={{ color: "#4ade80" }}>· {shopCtx.collections.slice(0,3).join(", ")}</span>}
+ <span style={{ color: "#166534", marginLeft: "auto" }}>Fields pre-filled — edit anytime</span>
+ </div>
+ ) : null}
  <label style={S.label}>Target prompts you want to appear in (one per line)</label>
  <textarea style={{ ...S.textarea, minHeight: "60px"}} value={targetPrompts} onChange={e => setTargetPrompts(e.target.value)} placeholder="best yoga mats for hot yoga"/>
  <button style={S.btn()} onClick={run} disabled={loading}>{loading ? "Generating plan": "Generate Seeding Plan (2 credits)"}</button>
