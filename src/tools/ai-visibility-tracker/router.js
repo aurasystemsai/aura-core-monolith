@@ -748,7 +748,7 @@ Also output a separate "instructions" field explaining where to place this file 
 /* ======================================================================
    FEATURE 1 & 5: AI Visibility Check (Simulated prompt testing)
    POST /api/ai-visibility-tracker/prompt-test
-   Simulate how AI models respond to prompts related to your brand
+   Simulate how ChatGPT, Perplexity, and Google AI respond per prompt
    ====================================================================== */
 router.post('/prompt-test', async (req, res) => {
   try {
@@ -761,28 +761,50 @@ router.post('/prompt-test', async (req, res) => {
     const openai = getOpenAI();
     const brandName = brand || domain;
 
+    // Platform citation bias (based on real research data)
+    const platformBias = {
+      chatgpt:    'Wikipedia, Forbes, established media, authoritative encyclopedic sources',
+      perplexity: 'Reddit, community forums, peer reviews, Yelp, G2, TripAdvisor',
+      googleai:   'Reddit, YouTube, LinkedIn, Quora, balanced social-professional mix',
+    };
+
     const results = [];
-    for (const prompt of prompts.slice(0, 5)) { // max 5 prompts per call
-      const testPrompt = `Imagine you are a helpful AI assistant (like ChatGPT or Perplexity). A user asks: "${prompt}"
+    for (const prompt of prompts.slice(0, 5)) {
+      const testPrompt = `You are simulating how three major AI platforms (ChatGPT, Perplexity, Google AI Overviews) would respond to a user query and whether they would cite a specific brand.
 
-Given this question, would the brand "${brandName}" likely be mentioned in a well-researched AI response?
+USER QUERY: "${prompt}"
+BRAND BEING EVALUATED: "${brandName}"
+COMPETITORS: ${competitors.length > 0 ? competitors.join(', ') : 'not specified'}
 
-Analyze this from the perspective of an AI model that:
-1. Has been trained on web data
-2. Prioritises brands with strong content authority, clear expertise signals, and high citation rates in web content
-3. Tends to cite brands mentioned on authoritative third-party sources (review sites, news, forums, Wikipedia)
+Platform citation tendencies (based on real research):
+- ChatGPT: favours ${platformBias.chatgpt}
+- Perplexity: favours ${platformBias.perplexity}  
+- Google AI Overviews: favours ${platformBias.googleai}
 
-Competitors in this space: ${competitors.length > 0 ? competitors.join(', ') : 'not specified'}
+For each platform, evaluate whether "${brandName}" would realistically appear in a well-researched AI answer for this query. Consider:
+1. Brand authority and web presence
+2. Whether the brand's content matches what each platform prioritises
+3. Competitor strength
 
-Respond as JSON:
+Also evaluate the overall brand SENTIMENT if mentioned (how positively AI would describe the brand).
+
+Return ONLY valid JSON:
 {
   "prompt": "${prompt}",
-  "likelyCited": true or false,
-  "confidenceScore": 0-100,
-  "reasoning": "2-3 sentence explanation",
+  "overallScore": 0-100,
+  "platforms": {
+    "chatgpt":    { "cited": true/false, "confidence": 0-100, "reasoning": "1 sentence", "narrative": "how ChatGPT would actually describe/mention the brand in 1 sentence if cited" },
+    "perplexity": { "cited": true/false, "confidence": 0-100, "reasoning": "1 sentence", "narrative": "how Perplexity would describe the brand" },
+    "googleai":   { "cited": true/false, "confidence": 0-100, "reasoning": "1 sentence", "narrative": "how Google AI Overviews would describe the brand" }
+  },
+  "sentiment": "positive" | "neutral" | "negative",
+  "sentimentReason": "Why the brand is described this way across AI platforms",
+  "brandNarrative": "Overall 1-2 sentence summary of how AI models collectively portray ${brandName} for this query",
   "competitorsThatWouldBeCited": ["brand1", "brand2"],
-  "gapAnalysis": "What ${brandName} needs to do to appear in AI answers for this prompt",
-  "suggestedContent": "Type of content that would improve AI citation probability for this prompt"
+  "competitorEdge": "In 1 sentence, why competitors rank higher for this prompt",
+  "gapAnalysis": "The single most important missing signal that prevents ${brandName} from being cited",
+  "contentAction": "Specific content piece to create (e.g. 'Write a comparison article titled X targeting Y audience')",
+  "sourceRecommendations": ["Where to get featured to boost visibility (e.g. 'Get reviewed on Reddit r/snowboarding')", "second recommendation"]
 }`;
 
       try {
@@ -790,32 +812,66 @@ Respond as JSON:
           model,
           messages: [{ role: 'user', content: testPrompt }],
           response_format: { type: 'json_object' },
-          max_tokens: 500,
+          max_tokens: 700,
         });
         const parsed = JSON.parse(resp.choices[0].message.content);
         results.push({ ...parsed, prompt });
       } catch (e) {
-        results.push({ prompt, likelyCited: false, confidenceScore: 0, error: e.message });
+        results.push({ prompt, overallScore: 0, platforms: {}, sentiment: 'neutral', error: e.message });
       }
     }
 
-    const avgScore = Math.round(results.reduce((s, r) => s + (r.confidenceScore || 0), 0) / results.length);
-    const citedCount = results.filter(r => r.likelyCited).length;
+    const avgScore = Math.round(results.reduce((s, r) => s + (r.overallScore || 0), 0) / results.length);
+    const citedCount = results.filter(r =>
+      r.platforms && (r.platforms.chatgpt?.cited || r.platforms.perplexity?.cited || r.platforms.googleai?.cited)
+    ).length;
 
-    // Save to DB
-    const promptRecord = {
-      brand: brandName,
-      prompts,
-      results,
-      avgScore,
-      citedCount,
-      ts: new Date().toISOString(),
-    };
+    const promptRecord = { brand: brandName, prompts, results, avgScore, citedCount, ts: new Date().toISOString() };
     db.saveCitation(promptRecord);
     db.recordEvent({ type: 'prompt-test', brand: brandName, promptCount: prompts.length });
     if (req.deductCredits) req.deductCredits({ model });
 
     res.json({ ok: true, brand: brandName, avgScore, citedCount, total: results.length, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* ======================================================================
+   FEATURE: AI Prompt Suggestions
+   POST /api/ai-visibility-tracker/prompt-suggestions
+   Given a brand + niche, suggest the 10 most likely AI search queries
+   that real users ask about this product category.
+   ====================================================================== */
+router.post('/prompt-suggestions', async (req, res) => {
+  try {
+    const { brand, niche, model = 'gpt-4o-mini' } = req.body || {};
+    if (!brand) return res.status(400).json({ ok: false, error: 'brand required' });
+
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
+      model,
+      response_format: { type: 'json_object' },
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `Generate the 10 most realistic prompts that real users type into ChatGPT, Perplexity, and Google AI when searching for products or information in the "${niche || brand}" category. These should be natural, conversational queries that someone shopping or researching would actually ask.
+
+Brand: "${brand}"
+Niche/Category: "${niche || 'general ecommerce'}"
+
+Return ONLY JSON:
+{
+  "suggestions": [
+    { "prompt": "...", "intent": "informational|commercial|comparison|review", "aiPlatform": "chatgpt|perplexity|google" }
+  ]
+}`
+      }],
+    });
+
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, suggestions: data.suggestions || [] });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

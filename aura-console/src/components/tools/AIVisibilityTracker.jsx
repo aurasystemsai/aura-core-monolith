@@ -1111,68 +1111,264 @@ function CitabilityTab() {
 /* Tab: Prompt Testing */
 function PromptTestTab() {
  const [brand, setBrand] = useState("");
+ const [niche, setNiche] = useState("");
  const [promptsText, setPromptsText] = useState("");
  const [competitors, setCompetitors] = useState("");
  const [result, setResult] = useState(null);
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
+ const [expanded, setExpanded] = useState({});
+ const [suggestions, setSuggestions] = useState([]);
+ const [suggestLoading, setSuggestLoading] = useState(false);
+ const [suggestErr, setSuggestErr] = useState("");
+
+ const toggleExpand = (i) => setExpanded(p => ({ ...p, [i]: !p[i] }));
 
  const run = useCallback(async () => {
- const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
- if (!brand || prompts.length === 0) return;
- setLoading(true); setErr(""); setResult(null);
- try {
- const d = await apiFetch(`${API}/prompt-test`, { method: "POST", body: JSON.stringify({ brand, prompts, competitors: competitors.split(",").map(c => c.trim()).filter(Boolean) }) });
- if (!d.ok) throw new Error(d.error);
- setResult(d);
- } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
+  if (!brand || prompts.length === 0) return;
+  setLoading(true); setErr(""); setResult(null); setExpanded({});
+  try {
+   const d = await apiFetch(`${API}/prompt-test`, { method: "POST", body: JSON.stringify({ brand, prompts, competitors: competitors.split(",").map(c => c.trim()).filter(Boolean) }) });
+   if (!d.ok) throw new Error(d.error);
+   setResult(d);
+   // Auto-expand first result
+   setExpanded({ 0: true });
+  } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, promptsText, competitors]);
 
+ const getSuggestions = useCallback(async () => {
+  if (!brand) return;
+  setSuggestLoading(true); setSuggestErr(""); setSuggestions([]);
+  try {
+   const d = await apiFetch(`${API}/prompt-suggestions`, { method: "POST", body: JSON.stringify({ brand, niche }) });
+   if (!d.ok) throw new Error(d.error);
+   setSuggestions(d.suggestions || []);
+  } catch (e) { setSuggestErr(e.message); } finally { setSuggestLoading(false); }
+ }, [brand, niche]);
+
+ const addPrompt = (p) => {
+  const existing = promptsText.trim().split("\n").map(l => l.trim()).filter(Boolean);
+  if (!existing.includes(p)) setPromptsText(existing.concat(p).join("\n"));
+ };
+
+ const sentimentColor = (s) => s === "positive" ? { bg: "#052e16", border: "#166534", text: "#86efac" } : s === "negative" ? { bg: "#2d0000", border: "#7f1d1d", text: "#fca5a5" } : { bg: "#1c1917", border: "#57534e", text: "#d6d3d1" };
+ const platformMeta = {
+  chatgpt:    { label: "ChatGPT",   color: "#10b981", bg: "#052e16", border: "#065f46", icon: "🤖" },
+  perplexity: { label: "Perplexity", color: "#818cf8", bg: "#1e1b4b", border: "#3730a3", icon: "🔍" },
+  googleai:   { label: "Google AI",  color: "#f59e0b", bg: "#1c1100", border: "#92400e", icon: "✦" },
+ };
+ const intentColor = (i) => i === "commercial" ? "#fbbf24" : i === "comparison" ? "#818cf8" : i === "review" ? "#34d399" : "#71717a";
+
+ const avgByPlatform = (platform) => {
+  if (!result?.results) return 0;
+  const vals = result.results.map(r => r.platforms?.[platform]?.confidence || 0);
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+ };
+
  return (
- <div>
- <div style={S.card}>
- <p style={S.sectionTitle}> AI Prompt Visibility Test</p>
- <div style={S.infoBox}>Simulate how AI models (ChatGPT, Perplexity, Gemini) respond to prompts in your niche and whether your brand would be cited. Up to 5 prompts per test.</div>
- <div style={S.row}>
- <div style={S.col}>
- <label style={S.label}>Your brand name or domain</label>
- <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Acme Store / acmestore.com"/>
- </div>
- <div style={S.col}>
- <label style={S.label}>Competitors (comma-separated)</label>
- <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Competitor A, Competitor B"/>
- </div>
- </div>
- <label style={S.label}>Prompts to test (one per line, max 5)</label>
- <textarea style={S.textarea} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best eco-friendly yoga mats\nhow to choose a yoga mat for beginners\ntop yoga mat brands 2026"} />
- <button style={S.btn()} onClick={run} disabled={loading}>{loading ? "Testing": "Test Prompt Visibility (2 credits)"}</button>
- </div>
- {err && <div style={S.error}>{err}</div>}
- {result && (
- <div style={S.card}>
- <div style={{ ...S.row, alignItems: "center", marginBottom: "16px"}}>
- <ScoreCircle score={result.avgScore} label="Avg Confidence"/>
- <div style={{ flex: 1 }}>
- <div style={{ fontSize: "14px", fontWeight: 600, color: "#fafafa"}}>{result.citedCount}/{result.total} prompts brand likely cited</div>
- <div style={{ fontSize: "12px", color: "#a1a1aa", marginTop: "4px"}}>Average AI citation confidence: {result.avgScore}/100</div>
- </div>
- </div>
- {result.results.map((r, i) => (
- <div key={i} style={{ ...S.passCard(r.likelyCited), flexDirection: "column", alignItems: "flex-start"}}>
- <div style={{ display: "flex", justifyContent: "space-between", width: "100%"}}>
- <span style={{ fontSize: "12px", fontWeight: 600, color: "#fafafa"}}>"{r.prompt}"</span>
- <span style={S.badge(r.likelyCited ? "#166534": "#7f1d1d", r.likelyCited ? "#86efac": "#fca5a5")}>{r.likelyCited ? "Likely Cited": "Not Cited"} {r.confidenceScore}%</span>
- </div>
- <div style={{ fontSize: "11px", color: "#a1a1aa", marginTop: "6px"}}>{r.reasoning}</div>
- {r.gapAnalysis && <div style={{ fontSize: "11px", color: "#c4b5fd", marginTop: "4px"}}> {r.gapAnalysis}</div>}
- {r.competitorsThatWouldBeCited?.length > 0 && (
- <div style={{ fontSize: "11px", color: "#71717a", marginTop: "4px"}}>Competitors cited: {r.competitorsThatWouldBeCited.join(", ")}</div>
- )}
- </div>
- ))}
- </div>
- )}
- </div>
+  <div>
+   {/* Config card */}
+   <div style={S.card}>
+    <p style={S.sectionTitle}>🔍 AI Prompt Visibility Test</p>
+    <div style={S.infoBox}>Simulate how <strong>ChatGPT, Perplexity, and Google AI Overviews</strong> respond to real user prompts — and whether your brand would be cited. Based on actual platform citation research.</div>
+
+    <div style={S.row}>
+     <div style={S.col}>
+      <label style={S.label}>Your brand name</label>
+      <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Snowboard Co." />
+     </div>
+     <div style={S.col}>
+      <label style={S.label}>Product niche / category</label>
+      <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. beginner snowboards" />
+     </div>
+    </div>
+    <div style={S.row}>
+     <div style={{ flex: 1 }}>
+      <label style={S.label}>Competitors (comma-separated, optional)</label>
+      <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Burton, Capita, Lib Tech" />
+     </div>
+    </div>
+
+    {/* Prompt suggestions */}
+    <div style={{ marginBottom: 14 }}>
+     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+      <label style={S.label}>Prompts to test (one per line, max 5)</label>
+      <button onClick={getSuggestions} disabled={suggestLoading || !brand} style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: suggestLoading ? "#52525b" : "#a78bfa", cursor: (!brand || suggestLoading) ? "default" : "pointer" }}>
+       {suggestLoading ? <><div style={{ width: 8, height: 8, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</> : "✨ AI Suggest Prompts"}
+      </button>
+     </div>
+     <textarea style={{ ...S.textarea, minHeight: 90 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best snowboards for beginners\ntop snowboard brands 2026\nhow to choose a beginner snowboard"} />
+     {suggestErr && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>{suggestErr}</div>}
+     {suggestions.length > 0 && (
+      <div style={{ marginTop: 8 }}>
+       <div style={{ fontSize: 10, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 6 }}>Click to add to your test:</div>
+       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {suggestions.map((s, i) => {
+         const alreadyAdded = promptsText.trim().split("\n").map(l => l.trim()).includes(s.prompt);
+         return (
+          <button key={i} onClick={() => addPrompt(s.prompt)} disabled={alreadyAdded} style={{ display: "flex", alignItems: "center", gap: 5, background: alreadyAdded ? "#18181b" : "#09090b", border: `1px solid ${intentColor(s.intent)}`, borderRadius: 6, padding: "4px 10px", fontSize: 10, color: alreadyAdded ? "#52525b" : "#d4d4d8", cursor: alreadyAdded ? "default" : "pointer" }}>
+           <span style={{ color: intentColor(s.intent), fontSize: 8, fontWeight: 700, textTransform: "uppercase" }}>{s.intent}</span>
+           {s.prompt}
+           {alreadyAdded ? " ✓" : " +"}
+          </button>
+         );
+        })}
+       </div>
+      </div>
+     )}
+    </div>
+
+    <button style={S.btn()} onClick={run} disabled={loading || !brand || !promptsText.trim()}>
+     {loading ? <><div style={{ width: 12, height: 12, border: "2px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", display: "inline-block", marginRight: 6 }} />Simulating AI responses…</> : "🚀 Test Prompt Visibility (2 credits)"}
+    </button>
+   </div>
+
+   {err && <div style={S.error}>{err}</div>}
+
+   {result && (
+    <div>
+     {/* Summary bar */}
+     <div style={{ ...S.card, background: "#0f0f12" }}>
+      <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+       <ScoreCircle score={result.avgScore} label="AI Visibility" />
+       <div style={{ flex: 1, minWidth: 160 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>{result.brand}</div>
+        <div style={{ fontSize: 12, color: "#a1a1aa" }}>Cited in <strong style={{ color: result.citedCount > 0 ? "#22c55e" : "#ef4444" }}>{result.citedCount}/{result.total}</strong> prompts across AI platforms</div>
+       </div>
+       {/* Per-platform mini scores */}
+       <div style={{ display: "flex", gap: 10 }}>
+        {["chatgpt", "perplexity", "googleai"].map(p => {
+         const pm = platformMeta[p];
+         const score = avgByPlatform(p);
+         return (
+          <div key={p} style={{ background: pm.bg, border: `1px solid ${pm.border}`, borderRadius: 8, padding: "8px 12px", textAlign: "center", minWidth: 72 }}>
+           <div style={{ fontSize: 14, marginBottom: 2 }}>{pm.icon}</div>
+           <div style={{ fontSize: 16, fontWeight: 700, color: pm.color }}>{score}%</div>
+           <div style={{ fontSize: 9, color: "#71717a", fontWeight: 600 }}>{pm.label}</div>
+          </div>
+         );
+        })}
+       </div>
+      </div>
+     </div>
+
+     {/* Per-prompt cards */}
+     {result.results.map((r, i) => {
+      const isOpen = expanded[i];
+      const platforms = r.platforms || {};
+      const anyPlatformCited = Object.values(platforms).some(p => p?.cited);
+      const sc = sentimentColor(r.sentiment);
+      return (
+       <div key={i} style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+        {/* Header row — always visible */}
+        <div onClick={() => toggleExpand(i)} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", cursor: "pointer", background: isOpen ? "#0f0f12" : "transparent" }}>
+         <div style={{ width: 28, height: 28, borderRadius: 6, background: anyPlatformCited ? "#052e16" : "#2d0000", border: `1px solid ${anyPlatformCited ? "#166534" : "#7f1d1d"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: anyPlatformCited ? "#86efac" : "#fca5a5", flexShrink: 0 }}>#{i + 1}</div>
+         <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#fafafa", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{r.prompt}"</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+           {["chatgpt", "perplexity", "googleai"].map(p => {
+            const pm = platformMeta[p];
+            const pd = platforms[p];
+            if (!pd) return null;
+            return (
+             <span key={p} style={{ fontSize: 9, fontWeight: 700, color: pd.cited ? pm.color : "#52525b", background: pd.cited ? pm.bg : "#18181b", border: `1px solid ${pd.cited ? pm.border : "#27272a"}`, borderRadius: 4, padding: "2px 6px" }}>
+              {pm.icon} {pm.label} {pd.confidence}%
+             </span>
+            );
+           })}
+           {r.sentiment && <span style={{ fontSize: 9, fontWeight: 700, color: sc.text, background: sc.bg, border: `1px solid ${sc.border}`, borderRadius: 4, padding: "2px 6px", textTransform: "uppercase" }}>{r.sentiment}</span>}
+          </div>
+         </div>
+         <div style={{ fontSize: 18, fontWeight: 700, color: anyPlatformCited ? "#22c55e" : "#ef4444", minWidth: 44, textAlign: "right" }}>{r.overallScore || 0}%</div>
+         <div style={{ fontSize: 12, color: "#52525b", flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</div>
+        </div>
+
+        {/* Expanded detail */}
+        {isOpen && (
+         <div style={{ padding: "0 16px 16px", borderTop: "1px solid #18181b" }}>
+
+          {/* Platform breakdown */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 14, marginBottom: 14 }}>
+           {["chatgpt", "perplexity", "googleai"].map(p => {
+            const pm = platformMeta[p];
+            const pd = platforms[p];
+            if (!pd) return <div key={p} />;
+            return (
+             <div key={p} style={{ background: pd.cited ? pm.bg : "#09090b", border: `1px solid ${pd.cited ? pm.border : "#27272a"}`, borderRadius: 8, padding: "10px 12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+               <span style={{ fontSize: 11, fontWeight: 700, color: pm.color }}>{pm.icon} {pm.label}</span>
+               <span style={{ fontSize: 10, fontWeight: 700, color: pd.cited ? pm.color : "#52525b", background: pd.cited ? pm.bg : "#18181b", border: `1px solid ${pd.cited ? pm.border : "#27272a"}`, borderRadius: 4, padding: "1px 6px" }}>{pd.cited ? "✓ Cited" : "✗ Not cited"}</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: pm.color, marginBottom: 4 }}>{pd.confidence}%</div>
+              <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5, marginBottom: pd.narrative ? 6 : 0 }}>{pd.reasoning}</div>
+              {pd.narrative && pd.cited && (
+               <div style={{ fontSize: 10, color: "#d4d4d8", background: "#0c0c10", border: `1px solid ${pm.border}`, borderRadius: 6, padding: "6px 8px", fontStyle: "italic", lineHeight: 1.5 }}>"{pd.narrative}"</div>
+              )}
+             </div>
+            );
+           })}
+          </div>
+
+          {/* Brand narrative + sentiment */}
+          {r.brandNarrative && (
+           <div style={{ background: sc.bg, border: `1px solid ${sc.border}`, borderRadius: 8, padding: "10px 14px", marginBottom: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: sc.text, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>Brand Narrative — {r.sentiment}</div>
+            <div style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.6 }}>{r.brandNarrative}</div>
+            {r.sentimentReason && <div style={{ fontSize: 11, color: "#71717a", marginTop: 4 }}>{r.sentimentReason}</div>}
+           </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+           {/* Gap analysis */}
+           {r.gapAnalysis && (
+            <div style={{ background: "#0c0c10", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 12px" }}>
+             <div style={{ fontSize: 10, fontWeight: 700, color: "#fca5a5", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>⚠ Primary Gap</div>
+             <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.6 }}>{r.gapAnalysis}</div>
+            </div>
+           )}
+           {/* Competitor edge */}
+           {r.competitorEdge && (
+            <div style={{ background: "#0c0c10", border: "1px solid #78350f", borderRadius: 8, padding: "10px 12px" }}>
+             <div style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>🏆 Why Competitors Win</div>
+             <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.6 }}>{r.competitorEdge}</div>
+             {r.competitorsThatWouldBeCited?.length > 0 && (
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 6 }}>
+               {r.competitorsThatWouldBeCited.map((c, j) => (
+                <span key={j} style={{ fontSize: 9, background: "#431407", border: "1px solid #78350f", borderRadius: 4, padding: "2px 6px", color: "#fb923c" }}>{c}</span>
+               ))}
+              </div>
+             )}
+            </div>
+           )}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+           {/* Content action */}
+           {r.contentAction && (
+            <div style={{ background: "#0c0c10", border: "1px solid #4338ca", borderRadius: 8, padding: "10px 12px" }}>
+             <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>📝 Content to Create</div>
+             <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.6 }}>{r.contentAction}</div>
+            </div>
+           )}
+           {/* Source recommendations */}
+           {r.sourceRecommendations?.length > 0 && (
+            <div style={{ background: "#0c0c10", border: "1px solid #065f46", borderRadius: 8, padding: "10px 12px" }}>
+             <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>🌐 Where to Get Featured</div>
+             {r.sourceRecommendations.map((s, j) => (
+              <div key={j} style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.6, paddingLeft: 8, borderLeft: "2px solid #065f46", marginBottom: 4 }}>→ {s}</div>
+             ))}
+            </div>
+           )}
+          </div>
+         </div>
+        )}
+       </div>
+      );
+     })}
+    </div>
+   )}
+  </div>
  );
 }
 
