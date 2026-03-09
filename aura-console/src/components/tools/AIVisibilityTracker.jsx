@@ -1519,71 +1519,266 @@ function SoVTab() {
  const [result, setResult] = useState(null);
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
+ const [expanded, setExpanded] = useState({});
 
  const run = useCallback(async () => {
- const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
- const comps = competitors.split(",").map(c => c.trim()).filter(Boolean);
- if (!brand || prompts.length === 0 || comps.length === 0) return;
- setLoading(true); setErr(""); setResult(null);
- try {
- const d = await apiFetch(`${API}/ai-sov`, { method: "POST", body: JSON.stringify({ brand, competitors: comps, prompts }) });
- if (!d.ok) throw new Error(d.error);
- setResult(d);
- } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
+  const comps = competitors.split(",").map(c => c.trim()).filter(Boolean);
+  if (!brand || prompts.length === 0 || comps.length === 0) return;
+  setLoading(true); setErr(""); setResult(null); setExpanded({});
+  try {
+   const d = await apiFetch(`${API}/ai-sov`, { method: "POST", body: JSON.stringify({ brand, competitors: comps, prompts }) });
+   if (!d.ok) throw new Error(d.error);
+   setResult(d);
+   setExpanded({ 0: true });
+  } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, competitors, promptsText]);
 
+ const freqMeta = (f) => {
+  const m = { always: { color: "#22c55e", bg: "#052e16", border: "#166534" }, often: { color: "#86efac", bg: "#052e16", border: "#15803d" }, sometimes: { color: "#fbbf24", bg: "#1c1100", border: "#92400e" }, rarely: { color: "#f97316", bg: "#1c0700", border: "#7c2d12" }, never: { color: "#ef4444", bg: "#2d0000", border: "#7f1d1d" } };
+  return m[f] || m.rarely;
+ };
+
+ // Assign a unique color to each brand position
+ const brandColors = ["#a78bfa", "#10b981", "#f59e0b", "#f472b6", "#38bdf8"];
+
+ const toBrandColor = (brandName) => {
+  if (!result) return "#a78bfa";
+  if (brandName === result.brand) return "#a78bfa"; // always purple for "you"
+  const idx = (result.sovScores || []).filter(s => !s.isYou).findIndex(s => s.brand === brandName);
+  return brandColors[1 + idx] || "#71717a";
+ };
+
  return (
- <div>
- <div style={S.card}>
- <p style={S.sectionTitle}> AI Share of Voice</p>
- <div style={S.infoBox}>Compare your brand's AI citation probability against competitors across key prompts. See exactly who AI models prefer and why.</div>
- <div style={S.row}>
- <div style={S.col}>
- <label style={S.label}>Your brand</label>
- <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Your Brand"/>
- </div>
- <div style={S.col}>
- <label style={S.label}>Competitors (2-4, comma-separated)</label>
- <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Competitor A, Competitor B, Competitor C"/>
- </div>
- </div>
- <label style={S.label}>Target prompts (one per line, max 3)</label>
- <textarea style={S.textarea} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best yoga mats for beginners\ntop rated eco yoga mats\nhow to pick a yoga mat"} />
- <button style={S.btn()} onClick={run} disabled={loading}>{loading ? "Analyzing": "Analyze AI Share of Voice (3 credits)"}</button>
- </div>
- {err && <div style={S.error}>{err}</div>}
- {result && (
- <div style={S.card}>
- <div style={{ ...S.row, alignItems: "center", marginBottom: "20px"}}>
- <ScoreCircle score={result.yourSoV} label={`${result.brand} SoV`} />
- <div>
- <div style={{ fontSize: "16px", fontWeight: 700, color: "#fafafa"}}>Rank #{result.yourRank} of {result.totalBrands} brands</div>
- <div style={{ fontSize: "12px", color: "#a1a1aa"}}>Your AI Share of Voice: {result.yourSoV}%</div>
- </div>
- </div>
- <p style={{ fontSize: "12px", fontWeight: 600, color: "#a1a1aa", marginBottom: "10px"}}>Brand Comparison</p>
- {result.sovScores.map((s, i) => (
- <div key={i} style={{ marginBottom: "8px"}}>
- <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px"}}>
- <span style={{ fontSize: "12px", color: s.isYou ? "#c4b5fd": "#fafafa", fontWeight: s.isYou ? 700 : 400 }}>
- {s.isYou ? "": ""}{s.brand}
- </span>
- <span style={{ fontSize: "12px", color: "#a1a1aa"}}>{s.avgCitationProbability}%</span>
- </div>
- <div style={{ background: "#27272a", borderRadius: "3px", height: "6px"}}>
- <div style={{ background: s.isYou ? "#7c3aed": "#52525b", height: "6px", borderRadius: "3px", width: `${s.avgCitationProbability}%`, transition: "width 0.5s"}} />
- </div>
- </div>
- ))}
- {result.promptResults.map((pr, i) => pr.insight && (
- <div key={i} style={{ ...S.infoBox, marginTop: "12px"}}>
- <span style={{ fontSize: "11px", fontWeight: 600 }}>"{pr.prompt}"</span>
- <span style={{ fontSize: "11px"}}>{pr.insight}</span>
- </div>
- ))}
- </div>
- )}
- </div>
+  <div>
+   {/* ── Setup card ── */}
+   <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 3 }} />
+    <div style={{ padding: "20px" }}>
+     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+      <div>
+       <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>AI Share of Voice</div>
+       <div style={{ fontSize: 11, color: "#71717a" }}>Who does AI cite most? Map the citation battlefield across prompts and see exactly why competitors beat you — or don't</div>
+      </div>
+      <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 12px", textAlign: "center" }}>
+       <div style={{ fontSize: 20 }}>⚔</div>
+       <div style={{ fontSize: 8, color: "#71717a", fontWeight: 700, marginTop: 2, textTransform: "uppercase" }}>Battle Mode</div>
+      </div>
+     </div>
+
+     {/* Context info */}
+     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 18 }}>
+      {[
+       { icon: "🥧", label: "SoV Formula", desc: "Your avg citation ÷ total market × 100" },
+       { icon: "📊", label: "ESOV Signal", desc: "If your SoV > market share → growth mode" },
+       { icon: "🤖", label: "Across all AI", desc: "ChatGPT, Perplexity & Google AI combined" },
+      ].map((t, i) => (
+       <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px" }}>
+        <div style={{ fontSize: 12, marginBottom: 4 }}>{t.icon}</div>
+        <div style={{ fontSize: 9, fontWeight: 700, color: "#d4d4d8", marginBottom: 2 }}>{t.label}</div>
+        <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5 }}>{t.desc}</div>
+       </div>
+      ))}
+     </div>
+
+     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+      <div>
+       <label style={S.label}>Your brand <span style={{ color: "#ef4444" }}>*</span></label>
+       <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Your Brand" />
+      </div>
+      <div>
+       <label style={S.label}>Competitors (2–4, comma-separated) <span style={{ color: "#ef4444" }}>*</span></label>
+       <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Competitor A, Competitor B, Competitor C" />
+      </div>
+     </div>
+     <div style={{ marginBottom: 18 }}>
+      <label style={S.label}>Target prompts (one per line, max 3) <span style={{ color: "#ef4444" }}>*</span></label>
+      <textarea style={{ ...S.textarea, fontFamily: "monospace", fontSize: 11 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best yoga mats for beginners\ntop rated eco yoga mats\nhow to pick a yoga mat"} />
+     </div>
+
+     <button onClick={run} disabled={loading || !brand || !competitors || !promptsText.trim()}
+      style={{ width: "100%", padding: "12px 20px", background: loading ? "#18181b" : "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", border: "none", borderRadius: 8, color: loading ? "#52525b" : "#fff", fontSize: 13, fontWeight: 700, cursor: (loading || !brand || !competitors || !promptsText.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: (!brand || !competitors || !promptsText.trim()) ? 0.5 : 1 }}>
+      {loading
+       ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#c084fc", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Analysing AI citation landscape…</>
+       : <><span style={{ fontSize: 16 }}>⚔</span> Analyze AI Share of Voice <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>3 credits</span></>}
+     </button>
+    </div>
+   </div>
+
+   {err && <div style={S.error}>{err}</div>}
+
+   {result && (() => {
+    const sorted = [...(result.sovScores || [])].sort((a, b) => b.avgCitationProbability - a.avgCitationProbability);
+    const you = sorted.find(s => s.isYou);
+    const leader = sorted[0];
+    const totalCitations = sorted.reduce((s, x) => s + x.avgCitationProbability, 0);
+
+    return (
+     <div>
+      {/* ── Hero scorecard ── */}
+      <div style={{ ...S.card, background: "linear-gradient(135deg,#0a0a0f,#100818)", padding: 0, overflow: "hidden" }}>
+       <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 2 }} />
+       <div style={{ padding: "20px" }}>
+        <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap", marginBottom: 20 }}>
+         {/* SoV donut */}
+         <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
+          <svg width="100" height="100" style={{ transform: "rotate(-90deg)" }}>
+           <circle cx="50" cy="50" r="42" fill="none" stroke="#1a1a1a" strokeWidth="10" />
+           {/* competitor arcs */}
+           {(() => {
+            let offset = 0;
+            const circ = 2 * Math.PI * 42;
+            return sorted.map((s, i) => {
+             const pct = totalCitations > 0 ? s.avgCitationProbability / totalCitations : 0;
+             const dash = pct * circ;
+             const el = <circle key={i} cx="50" cy="50" r="42" fill="none" stroke={toBrandColor(s.brand)} strokeWidth="10" strokeDasharray={`${dash} ${circ - dash}`} strokeDashoffset={-offset} strokeLinecap="butt" />;
+             offset += dash;
+             return el;
+            });
+           })()}
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+           <div style={{ fontSize: 22, fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{result.yourSoV}%</div>
+           <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>YOUR SoV</div>
+          </div>
+         </div>
+
+         <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 17, fontWeight: 800, color: "#fafafa", marginBottom: 4 }}>{result.brand}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+           <span style={{ fontSize: 11, fontWeight: 700, background: "#1e1b4b", border: "1px solid #4338ca", color: "#a78bfa", borderRadius: 6, padding: "3px 10px" }}>
+            Rank #{result.yourRank} of {result.totalBrands}
+           </span>
+           <span style={{ fontSize: 11, fontWeight: 700, background: result.yourSoV > 100 / result.totalBrands ? "#052e16" : "#2d0000", border: `1px solid ${result.yourSoV > 100 / result.totalBrands ? "#166534" : "#7f1d1d"}`, color: result.yourSoV > 100 / result.totalBrands ? "#86efac" : "#fca5a5", borderRadius: 6, padding: "3px 10px" }}>
+            {result.yourSoV > 100 / result.totalBrands ? "✓ Above avg SoV" : "⚠ Below avg SoV"}
+           </span>
+           {you && leader && !you.isYou && (
+            <span style={{ fontSize: 11, fontWeight: 700, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 6, padding: "3px 10px" }}>
+             -{leader.avgCitationProbability - you.avgCitationProbability}pts behind {leader.brand}
+            </span>
+           )}
+          </div>
+          {/* Colour legend */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+           {sorted.map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+             <div style={{ width: 8, height: 8, borderRadius: "50%", background: toBrandColor(s.brand), flexShrink: 0 }} />
+             <span style={{ fontSize: 9, color: s.isYou ? "#a78bfa" : "#71717a", fontWeight: s.isYou ? 700 : 400 }}>{s.isYou ? `${s.brand} (you)` : s.brand}</span>
+            </div>
+           ))}
+          </div>
+         </div>
+        </div>
+
+        {/* Ranked bar leaderboard */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+         {sorted.map((s, i) => {
+          const pct = s.avgCitationProbability;
+          const bc = toBrandColor(s.brand);
+          return (
+           <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <div style={{ width: 18, height: 18, borderRadius: 5, background: "#09090b", border: `1px solid ${i === 0 ? "#92400e" : "#27272a"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: i === 0 ? "#fbbf24" : "#52525b", flexShrink: 0 }}>{i + 1}</div>
+            <div style={{ width: 100, fontSize: 11, fontWeight: s.isYou ? 700 : 400, color: s.isYou ? "#a78bfa" : "#d4d4d8", flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.brand}{s.isYou ? " ★" : ""}</div>
+            <div style={{ flex: 1, height: 8, background: "#18181b", borderRadius: 4, overflow: "hidden" }}>
+             <div style={{ height: "100%", width: `${pct}%`, background: s.isYou ? "linear-gradient(90deg,#7c3aed,#a78bfa)" : bc, borderRadius: 4, transition: "width 0.8s" }} />
+            </div>
+            <div style={{ width: 36, textAlign: "right", fontSize: 12, fontWeight: 700, color: bc, flexShrink: 0 }}>{pct}%</div>
+            <div style={{ width: 50, textAlign: "right", fontSize: 9, color: "#52525b", flexShrink: 0 }}>{totalCitations > 0 ? Math.round(pct / totalCitations * 100) : 0}% SoV</div>
+           </div>
+          );
+         })}
+        </div>
+       </div>
+      </div>
+
+      {/* ── Per-prompt battle cards ── */}
+      {(result.promptResults || []).map((pr, i) => {
+       const isOpen = expanded[i];
+       const winner = pr.winnerBrand;
+       const youWin = winner === result.brand;
+       const yourBrandData = (pr.brands || []).find(b => b.brand === result.brand);
+
+       return (
+        <div key={i} style={{ ...S.card, padding: 0, overflow: "hidden", borderLeft: `3px solid ${youWin ? "#7c3aed" : "#be185d"}` }}>
+         {/* Header */}
+         <div onClick={() => setExpanded(p => ({ ...p, [i]: !p[i] }))} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", cursor: "pointer", background: isOpen ? "#0c0c10" : "transparent" }}>
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: youWin ? "#1e1b4b" : "#2d0000", border: `1px solid ${youWin ? "#4338ca" : "#7f1d1d"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: youWin ? "#a78bfa" : "#fca5a5", flexShrink: 0 }}>P{i + 1}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+           <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>"{pr.prompt}"</div>
+           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: youWin ? "#a78bfa" : "#fbbf24", background: youWin ? "#1e1b4b" : "#1c1100", border: `1px solid ${youWin ? "#4338ca" : "#92400e"}`, borderRadius: 4, padding: "2px 7px" }}>
+             {youWin ? "🏆 You Win" : `🏆 ${winner} wins`}
+            </span>
+            {yourBrandData && (
+             <span style={{ fontSize: 9, color: "#a78bfa" }}>Your citation: <strong>{yourBrandData.citationProbability}%</strong></span>
+            )}
+           </div>
+          </div>
+          <div style={{ fontSize: 11, color: "#3f3f46" }}>{isOpen ? "▲" : "▼"}</div>
+         </div>
+
+         {/* Expanded */}
+         {isOpen && (
+          <div style={{ borderTop: "1px solid #18181b", padding: "14px 16px 18px" }}>
+
+           {/* Brand battle columns */}
+           <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min((pr.brands || []).length, 5)}, 1fr)`, gap: 8, marginBottom: 14 }}>
+            {(pr.brands || []).map((b, j) => {
+             const bc = toBrandColor(b.brand);
+             const isWinner = b.brand === winner;
+             const isYou = b.brand === result.brand;
+             const fm = freqMeta(b.mentionFrequency);
+             return (
+              <div key={j} style={{ background: "#09090b", border: `1px solid ${isWinner ? bc : "#27272a"}`, borderRadius: 10, overflow: "hidden" }}>
+               <div style={{ height: 2, background: isWinner ? bc : "#27272a" }} />
+               <div style={{ padding: "10px 10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                 <span style={{ fontSize: 10, fontWeight: 700, color: bc, lineHeight: 1.3 }}>{b.brand}{isYou ? " ★" : ""}</span>
+                 {isWinner && <span style={{ fontSize: 8, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 3, padding: "1px 5px", fontWeight: 700 }}>WINNER</span>}
+                </div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: bc, lineHeight: 1, marginBottom: 4 }}>{b.citationProbability}%</div>
+                <ConfidenceBar value={b.citationProbability} color={bc} />
+                <span style={{ fontSize: 8, fontWeight: 700, color: fm.color, background: fm.bg, border: `1px solid ${fm.border}`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase" }}>{b.mentionFrequency}</span>
+                {b.reason && <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5, marginTop: 6 }}>{b.reason}</div>}
+                {b.contentStrengths && (
+                 <div style={{ marginTop: 6, padding: "4px 7px", background: "#070707", border: "1px solid #065f46", borderRadius: 5 }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, color: "#34d399", marginBottom: 2, textTransform: "uppercase" }}>✓ Strength</div>
+                  <div style={{ fontSize: 9, color: "#d4d4d8", lineHeight: 1.5 }}>{b.contentStrengths}</div>
+                 </div>
+                )}
+                {b.contentWeaknesses && (
+                 <div style={{ marginTop: 5, padding: "4px 7px", background: "#070707", border: "1px solid #7f1d1d", borderRadius: 5 }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, color: "#fca5a5", marginBottom: 2, textTransform: "uppercase" }}>⚠ Weakness</div>
+                  <div style={{ fontSize: 9, color: "#d4d4d8", lineHeight: 1.5 }}>{b.contentWeaknesses}</div>
+                 </div>
+                )}
+               </div>
+              </div>
+             );
+            })}
+           </div>
+
+           {/* Strategic insight */}
+           {pr.insight && (
+            <div style={{ background: "linear-gradient(135deg,#1e1b4b,#0f0d24)", border: "1px solid #3730a3", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+             <div style={{ fontSize: 9, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>💡 Strategic Insight</div>
+             <div style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.7 }}>{pr.insight}</div>
+            </div>
+           )}
+
+           {/* Action funnels */}
+           <div style={{ background: "linear-gradient(135deg,#09090b,#0c0c14)", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px" }}>
+            <ActionFunnelButtons prompt={pr.prompt} contentAction={null} gapAnalysis={null} />
+           </div>
+          </div>
+         )}
+        </div>
+       );
+      })}
+     </div>
+    );
+   })()}
+  </div>
  );
 }
 
