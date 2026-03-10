@@ -1,5 +1,4 @@
 ﻿import React, { useState, useRef, useCallback, useEffect } from "react";
-import { ScoreRing, scoreColor as mozScoreColor, ErrorBox, EmptyState, Spinner as MozSpinner } from "../MozUI";
 import { apiFetch, apiFetchJSON } from "../../api";
 import { useCreditError } from "../../globalCreditError";
 import { useCredits, ACTION_COSTS } from "../../hooks/useCredits";
@@ -2026,7 +2025,9 @@ export default function BlogSEO() {
  {/* post info row */}
  <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap", marginBottom: shown.length ? 12 : 0 }}>
  {score !== null && (
- <ScoreRing score={score} label="" size={52} />
+ <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:52, height:52, borderRadius:"50%", border:`2px solid ${scoreColor}`, color:scoreColor, fontWeight:800, fontSize:18, flexShrink:0 }}>
+ {score}
+ </div>
  )}
  <div style={{ flex:1, minWidth:0 }}>
  <div style={{ fontSize:13, fontWeight:700, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
@@ -2718,93 +2719,158 @@ export default function BlogSEO() {
  ════════════════════════════ */}
  {section === "Write" && (
  <>
- {/* Sub-nav */}
- <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
- {[["outline", "Blog Outline"], ["intro", "Write Intro"], ["titles", "Title Ideas"], ["draft", "Full Draft"], ["brief", "Content Brief"]].map(([key, label]) => (
- <button key={key} style={{ ...S.btn(), padding: "7px 16px", background: writeSub === key ? C.indigo : C.muted, color: writeSub === key ? "#fff" : "#d4d4d8" }} onClick={() => setWriteSub(key)}>{label}</button>
+ {/* Sub-nav — styled tabs */}
+ <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
+ {[
+ ["outline", "📝 Blog Outline"],
+ ["intro", "✍️ Write Intro"],
+ ["titles", "💡 Title Ideas"],
+ ["draft", "📄 Full Draft"],
+ ["brief", "📋 Content Brief"],
+ ].map(([key, label]) => (
+ <button key={key} onClick={() => setWriteSub(key)} style={{
+ padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 600,
+ cursor: "pointer", border: writeSub === key ? "none" : `1px solid ${C.border}`,
+ background: writeSub === key ? C.indigo : "transparent",
+ color: writeSub === key ? "#fff" : C.sub,
+ transition: "all .15s",
+ }}>{label}</button>
  ))}
  </div>
 
+ {/* Shop keyword chips — shown for all sub-tabs */}
+ {genShopSuggestions.length > 0 && (
+ <div style={{ marginBottom: 16 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>From your shop — click to add:</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {genShopSuggestions.map((kw, i) => (
+ <button key={i} onClick={() => {
+ if (writeSub === "outline") setOutlineKw(kw);
+ else if (writeSub === "intro") setIntroKw(kw);
+ else if (writeSub === "titles") setTitleKw(kw);
+ else if (writeSub === "draft") setDraftKw(kw);
+ else if (writeSub === "brief") setBriefTopic(kw);
+ }} style={{ background: "#27272a", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", fontSize: 12, color: "#d4d4d8", cursor: "pointer" }}>{kw}</button>
+ ))}
+ </div>
+ </div>
+ )}
+
  {/* Blog Outline */}
  {writeSub === "outline" && (
- <div style={S.card}>
- <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>AI Blog Outline Generator</div>
- <div style={S.row}>
- <input style={S.input} placeholder="Topic or keyword (e.g. best running shoes for beginners)" value={outlineKw} onChange={e => setOutlineKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runOutline()} />
- <input style={{ ...S.input, maxWidth: 200 }} placeholder="Target audience" value={outlineAud} onChange={e => setOutlineAud(e.target.value)} />
- <button style={S.btn("primary")} onClick={runOutline} disabled={outlineLoading || !outlineKw.trim()}>
- {outlineLoading ? <><span style={S.spinner} /> Generating...</> : "Generate Outline"}
- </button>
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Blog Outline Generator</div>
+ <div style={{ fontSize: 13, color: C.dim }}>AI builds a structured outline with H2/H3 sections, key points and suggested word counts.</div>
  </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Topic or keyword</div>
+ <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+ <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={outlineKw} onChange={e => setOutlineKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runOutline()} />
+ <input style={{ ...S.input, flex: "0 0 auto", width: 190 }} placeholder="Target audience" value={outlineAud} onChange={e => setOutlineAud(e.target.value)} />
+ </div>
+ <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runOutline} disabled={outlineLoading || !outlineKw.trim()}>
+ {outlineLoading ? <><span style={S.spinner} /> Generating outline...</> : "✨ Generate Outline"}
+ </button>
  {outlineResult && (
- <div style={{ marginTop: 14, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "14px 16px" }}>
+ <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
  <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{outlineResult.outline || JSON.stringify(outlineResult, null, 2)}</div>
  <button style={{ ...S.btn(), marginTop: 10, fontSize: 12 }} onClick={() => navigator.clipboard?.writeText(outlineResult.outline || "")}>Copy</button>
  </div>
  )}
- {!outlineResult && !outlineLoading && <div style={{ ...S.empty, padding: "24px 0 4px" }}>Enter a topic to generate a structured blog outline.</div>}
+ {!outlineResult && !outlineLoading && <div style={{ textAlign: "center", padding: "20px 0 4px", color: C.dim, fontSize: 13 }}>Enter a topic to generate a structured blog outline.</div>}
+ </div>
  </div>
  )}
 
  {/* Write Intro */}
  {writeSub === "intro" && (
- <div style={S.card}>
- <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>AI Intro Paragraph Generator</div>
- <div style={S.row}>
- <input style={S.input} placeholder="Blog topic or keyword" value={introKw} onChange={e => setIntroKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntro()} />
- <select style={{ ...S.input, flex: "0 0 auto", width: 180 }} value={introStyle} onChange={e => setIntroStyle(e.target.value)}>
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Intro Paragraph Generator</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Write a compelling opening paragraph that hooks readers and sets the tone for your post.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
+ <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+ <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={introKw} onChange={e => setIntroKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntro()} />
+ <div style={{ flex: "0 0 auto" }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Writing style</div>
+ <select style={{ ...S.input, width: 180, flex: "unset" }} value={introStyle} onChange={e => setIntroStyle(e.target.value)}>
  {["conversational", "professional", "storytelling", "direct"].map(s => <option key={s} value={s}>{s}</option>)}
  </select>
- <button style={S.btn("primary")} onClick={runIntro} disabled={introLoading || !introKw.trim()}>
- {introLoading ? <><span style={S.spinner} /> Writing...</> : "Write Intro"}
- </button>
  </div>
+ </div>
+ <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runIntro} disabled={introLoading || !introKw.trim()}>
+ {introLoading ? <><span style={S.spinner} /> Writing intro...</> : "✨ Write Intro"}
+ </button>
  {introResult && (
- <div style={{ marginTop: 14, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "14px 16px" }}>
+ <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
  <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{introResult.intro || introResult.text || JSON.stringify(introResult)}</div>
  <button style={{ ...S.btn(), marginTop: 10, fontSize: 12 }} onClick={() => navigator.clipboard?.writeText(introResult.intro || introResult.text || "")}>Copy</button>
  </div>
  )}
  </div>
+ </div>
  )}
 
  {/* Title Ideas */}
  {writeSub === "titles" && (
- <div style={S.card}>
- <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>AI Title Ideas</div>
- <div style={S.row}>
- <input style={S.input} placeholder="Keyword or topic" value={titleKw} onChange={e => setTitleKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runTitleIdeas()} />
- <button style={S.btn("primary")} onClick={runTitleIdeas} disabled={titleLoading || !titleKw.trim()}>
- {titleLoading ? <><span style={S.spinner} /> Generating...</> : "Get Title Ideas"}
- </button>
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Title Ideas</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Get 10 click-worthy title variations optimised for SEO and social sharing.</div>
  </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Keyword or topic</div>
+ <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+ <input style={{ ...S.input, flex: 1 }} placeholder="e.g. winter skincare routine" value={titleKw} onChange={e => setTitleKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runTitleIdeas()} />
+ </div>
+ <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runTitleIdeas} disabled={titleLoading || !titleKw.trim()}>
+ {titleLoading ? <><span style={S.spinner} /> Generating titles...</> : "✨ Get Title Ideas"}
+ </button>
  {titleResult && (
- <div style={{ marginTop: 14 }}>
+ <div style={{ marginTop: 16 }}>
  {(titleResult.titles || titleResult.ideas || []).map((t, i) => (
  <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
  <span style={{ fontSize: 13, color: C.text }}>{typeof t === "string" ? t : t.title || t.text}</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(typeof t === "string" ? t : t.title || t.text || "")}>Copy</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", flexShrink: 0 }} onClick={() => navigator.clipboard?.writeText(typeof t === "string" ? t : t.title || t.text || "")}>Copy</button>
  </div>
  ))}
  </div>
  )}
  </div>
+ </div>
  )}
 
  {/* Full Draft */}
  {writeSub === "draft" && (
- <div style={S.card}>
- <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Full Blog Post Draft (3 credits)</div>
- <div style={{ fontSize: 12, color: C.dim, marginBottom: 12 }}>AI generates a complete 1,500+ word blog post ready to publish.</div>
- <div style={S.row}>
- <input style={S.input} placeholder="Blog topic or keyword" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runDraft()} />
- <button style={S.btn("primary")} onClick={runDraft} disabled={draftLoading || !draftKw.trim()}>
- {draftLoading ? <><span style={S.spinner} /> Writing full post...</> : "Generate Draft"}
- </button>
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Full Blog Post Draft</div>
+ <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#1e1b4b", color: "#a5b4fc" }}>3 credits</span>
  </div>
+ <div style={{ fontSize: 13, color: C.dim }}>AI generates a complete 1,500+ word blog post ready to publish.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
+ <input style={{ ...S.input, width: "100%", marginBottom: 12, boxSizing: "border-box" }} placeholder="e.g. how to choose the right snowboard for beginners" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runDraft()} />
+ <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "12px 14px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>AI web research</div>
+ <div style={{ fontSize: 12, color: C.dim }}>We'll search Google/Wikipedia for up-to-date content</div>
+ </div>
+ <div onClick={() => setGenAiResearch(v => !v)} style={{ width: 40, height: 22, borderRadius: 999, background: genAiResearch ? C.indigo : C.muted, cursor: "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+ <div style={{ position: "absolute", top: 3, left: genAiResearch ? 20 : 3, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left .2s" }} />
+ </div>
+ </div>
+ <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runDraft} disabled={draftLoading || !draftKw.trim()}>
+ {draftLoading ? <><span style={S.spinner} /> Writing full post...</> : "✨ Generate Draft"}
+ </button>
  {draftErr && <div style={{ ...S.err, marginTop: 10 }}>{draftErr}</div>}
  {draftResult && (
- <div style={{ marginTop: 14 }}>
+ <div style={{ marginTop: 16 }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
  <button style={S.btn()} onClick={() => navigator.clipboard?.writeText(draftResult.content || draftResult.draft || "")}>Copy All</button>
  </div>
@@ -2814,25 +2880,37 @@ export default function BlogSEO() {
  </div>
  )}
  </div>
+ </div>
  )}
 
  {/* Content Brief */}
  {writeSub === "brief" && (
- <div style={S.card}>
- <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Content Brief Generator</div>
- <div style={S.row}>
- <input style={S.input} placeholder="Blog topic" value={briefTopic} onChange={e => setBriefTopic(e.target.value)} />
- <input style={{ ...S.input, maxWidth: 260 }} placeholder="Primary keyword" value={briefPrimary} onChange={e => setBriefPrimary(e.target.value)} />
- <button style={S.btn("primary")} onClick={runBrief} disabled={briefLoading || !briefTopic.trim()}>
- {briefLoading ? <><span style={S.spinner} /> Generating...</> : "Generate Brief"}
- </button>
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>Content Brief Generator</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Build a full editorial brief — target keywords, structure, tone, word count and competitor insights.</div>
  </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 200 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Blog topic</div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. winter skincare tips for dry skin" value={briefTopic} onChange={e => setBriefTopic(e.target.value)} />
+ </div>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Primary keyword</div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. winter skincare routine" value={briefPrimary} onChange={e => setBriefPrimary(e.target.value)} />
+ </div>
+ </div>
+ <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runBrief} disabled={briefLoading || !briefTopic.trim()}>
+ {briefLoading ? <><span style={S.spinner} /> Generating brief...</> : "✨ Generate Brief"}
+ </button>
  {briefErr && <div style={{ ...S.err, marginTop: 10 }}>{briefErr}</div>}
  {briefResult && (
- <div style={{ marginTop: 14, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "14px 16px", fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+ <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px", fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
  {typeof briefResult === "string" ? briefResult : JSON.stringify(briefResult, null, 2)}
  </div>
  )}
+ </div>
  </div>
  )}
  </>
