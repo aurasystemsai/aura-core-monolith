@@ -31,6 +31,7 @@ const seoSiteCrawler = require("../tools/seo-site-crawler");
 const internalLinkOptimizer = require("../tools/internal-link-optimizer");
 const aiContentImageGen = require("../tools/ai-content-image-gen");
 const aiVisibilityTracker = require("../tools/ai-visibility-tracker");
+const linkIntersectOutreach = require("../tools/link-intersect-outreach");
 
 // ==============  Email & Lifecycle  ==============
 const emailAutomationBuilder = require("../tools/email-automation-builder");
@@ -87,7 +88,7 @@ const allTools = [
   productSeo, blogSeo, blogDraftEngine, weeklyBlogContentEngine,
   onPageSeoEngine, technicalSeoAuditor, schemaRichResultsEngine,
   imageAltMediaSeo, rankVisibilityTracker, seoSiteCrawler,
-  internalLinkOptimizer, aiContentImageGen, aiVisibilityTracker,
+  internalLinkOptimizer, aiContentImageGen, aiVisibilityTracker, linkIntersectOutreach,
 
   // Email & Lifecycle
   emailAutomationBuilder, abandonedCheckoutWinback, returnsRmaAutomation,

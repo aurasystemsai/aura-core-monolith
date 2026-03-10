@@ -1,283 +1,725 @@
-﻿import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { apiFetchJSON as _apiFetchJSON } from "../../api";
 
-// Flagship: import additional hooks and components
-import { FiDownload, FiUpload, FiBarChart2, FiBell, FiSettings, FiHelpCircle } from "react-icons/fi";
+const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
+  ...opts,
+  headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+});
 
-function FeedbackModal({ open, onClose, onSubmit }) {
- const [feedback, setFeedback] = useState("");
- if (!open) return null;
- return (
- <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"}}>
- <div style={{ background: "#3f3f46", borderRadius: 12, padding: 32, minWidth: 340, color: '#fafafa'}}>
- <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
- <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..."/>
- <div style={{ display: "flex", gap: 12 }}>
- <button onClick={() => onSubmit(feedback)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer"}}>Submit</button>
- <button onClick={onClose} style={{ background: "#fafafa", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer"}}>Cancel</button>
- </div>
- </div>
- </div>
- );
+const API = "/api/link-intersect-outreach";
+
+const S = {
+  wrap: { background: "#09090b", color: "#fafafa", minHeight: "100vh", fontFamily: "inherit", paddingBottom: 60 },
+  header: { padding: "20px 24px 0", borderBottom: "1px solid #18181b" },
+  title: { fontSize: 22, fontWeight: 800, color: "#fafafa", margin: 0 },
+  subtitle: { fontSize: 13, color: "#71717a", marginTop: 4 },
+  tabsRow: { display: "flex", gap: 0, overflowX: "auto", paddingTop: 12 },
+  tab: (active) => ({
+    padding: "10px 16px", cursor: "pointer", border: "none", background: "none",
+    color: active ? "#a78bfa" : "#71717a", fontWeight: active ? 700 : 500,
+    borderBottom: `2px solid ${active ? "#a78bfa" : "transparent"}`,
+    fontSize: 13, whiteSpace: "nowrap", transition: "color 0.15s",
+  }),
+  body: { padding: "20px 24px" },
+  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "16px 18px", marginBottom: 12 },
+  label: { fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 5, display: "block" },
+  input: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 7, color: "#fafafa", padding: "9px 12px", fontSize: 13, outline: "none", boxSizing: "border-box" },
+  btn: (c = "#7c3aed") => ({ padding: "9px 20px", background: c, border: "none", borderRadius: 7, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }),
+  error: { background: "#2d0011", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", color: "#fca5a5", fontSize: 13, marginBottom: 12 },
+  badge: (c) => ({ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, background: c + "22", color: c, border: `1px solid ${c}55` }),
+  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
+  grid3: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 },
+  codeRow: { display: "flex", alignItems: "center", gap: 8, background: "#09090b", borderRadius: 6, padding: "7px 12px", marginBottom: 6 },
+  emailBox: { background: "#09090b", borderRadius: 6, padding: "10px 12px", fontSize: 13, color: "#fafafa", whiteSpace: "pre-wrap", lineHeight: 1.6 },
+};
+
+const PC = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
+const EC = { high: "#f59e0b", medium: "#38bdf8", low: "#a78bfa" };
+
+function CopyBtn({ text }) {
+  const [c, setC] = useState(false);
+  return (
+    <button style={{ padding: "3px 9px", background: "#27272a", border: "1px solid #3f3f46", borderRadius: 5, color: c ? "#22c55e" : "#a1a1aa", cursor: "pointer", fontSize: 11, flexShrink: 0 }}
+      onClick={() => { navigator.clipboard && navigator.clipboard.writeText(text); setC(true); setTimeout(() => setC(false), 1500); }}>
+      {c ? "\u2713" : "Copy"}
+    </button>
+  );
 }
 
-// End of LinkIntersectOutreach component
+function Spin() {
+  return <span style={{ display: "inline-block", width: 14, height: 14, border: "2px solid #3f3f46", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "lio-spin 0.7s linear infinite" }} />;
+}
+
+function RunBtn({ onClick, disabled, loading, color, label, credits }) {
+  return (
+    <button onClick={onClick} disabled={disabled || loading} style={{ ...S.btn(color || "#7c3aed"), opacity: disabled ? 0.5 : 1 }}>
+      {loading ? <><Spin />{" "}{label.replace(/^[^a-zA-Z]*/, "")}\u2026</> : label}
+      <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 7px" }}>{credits} credit{credits > 1 ? "s" : ""}</span>
+    </button>
+  );
+}
+
+// Link Gap
+function LinkGapTab() {
+  const [domain, setDomain] = useState("");
+  const [competitors, setCompetitors] = useState("");
+  const [niche, setNiche] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    const comps = competitors.split(",").map(s => s.trim()).filter(Boolean);
+    if (!domain || !comps.length) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const d = await apiFetch(`${API}/link-gap`, { method: "POST", body: JSON.stringify({ yourDomain: domain, competitors: comps, niche }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [domain, competitors, niche]);
+  const lga = result && result.linkGapAnalysis;
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid3}>
+          <div><label style={S.label}>Your Domain</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /></div>
+          <div><label style={S.label}>Competitors (comma-separated)</label><input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="comp1.com, comp2.com" /></div>
+          <div><label style={S.label}>Niche (optional)</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga mats" /></div>
+        </div>
+        <RunBtn onClick={run} disabled={!domain || !competitors} loading={loading} color="#7c3aed" label="\uD83D\uDD0D Find Link Gaps" credits={1} />
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && lga && (
+        <div>
+          <div style={{ ...S.card, background: "linear-gradient(135deg,#0a0a0f,#130c1e)" }}>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: "#71717a", fontWeight: 600 }}>ESTIMATED DOMAIN GAP</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: "#ef4444", marginTop: 4 }}>{lga.estimatedDomainGap || "\u2014"}</div>
+                <div style={{ fontSize: 12, color: "#71717a", marginTop: 4 }}>referring domains behind competitors</div>
+              </div>
+              {result.monthlyLinkPlan && (
+                <div style={{ background: "#27272a", borderRadius: 8, padding: "12px 16px", minWidth: 200 }}>
+                  <div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, marginBottom: 6 }}>MONTHLY TARGET</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#22c55e" }}>{result.monthlyLinkPlan.target}</div>
+                  {(result.monthlyLinkPlan.tactics || []).map((t, i) => <div key={i} style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>\u2022 {t}</div>)}
+                </div>
+              )}
+            </div>
+          </div>
+          {lga.typeGaps && lga.typeGaps.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDD73\uFE0F Link Type Gaps</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{lga.typeGaps.map((g, i) => <span key={i} style={S.badge("#f59e0b")}>{g}</span>)}</div>
+            </div>
+          )}
+          {lga.topOpportunities && lga.topOpportunities.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83C\uDFAF Top Opportunities</div>
+              {lga.topOpportunities.map((o, i) => (
+                <div key={i} style={{ background: "#09090b", borderRadius: 7, padding: "10px 14px", marginBottom: 8 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4, alignItems: "center" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, flex: 1 }}>{o.siteType}</span>
+                    <span style={S.badge(PC[o.priority && o.priority.toLowerCase()] || "#71717a")}>{o.priority || "medium"} priority</span>
+                    <span style={S.badge("#52525b")}>{o.domainAuthorityEstimate}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#a1a1aa" }}>{o.howToGet}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {result.intersectTargets && result.intersectTargets.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>\u2B50 Intersect Targets <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}> — link to multiple competitors, easiest to convince</span></div>
+              {result.intersectTargets.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a78bfa", padding: "4px 0", borderBottom: "1px solid #27272a" }}>\u2192 {t}</div>)}
+            </div>
+          )}
+          {result.quickWinTactics && result.quickWinTactics.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\u26A1 Quick Win Tactics</div>
+              {result.quickWinTactics.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>\u2713 {t}</div>)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Unlinked Mentions
+function UnlinkedMentionsTab() {
+  const [brand, setBrand] = useState("");
+  const [domain, setDomain] = useState("");
+  const [competitors, setCompetitors] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    if (!brand) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const comps = competitors.split(",").map(s => s.trim()).filter(Boolean);
+      const d = await apiFetch(`${API}/unlinked-mentions`, { method: "POST", body: JSON.stringify({ brand, domain, competitors: comps }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [brand, domain, competitors]);
+  const strat = result && result.brandMentionStrategy;
+  const email = result && result.outreachEmailTemplate;
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid3}>
+          <div><label style={S.label}>Brand Name</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Your Brand" /></div>
+          <div><label style={S.label}>Your Domain</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /></div>
+          <div><label style={S.label}>Competitors (optional)</label><input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="comp1.com, comp2.com" /></div>
+        </div>
+        <RunBtn onClick={run} disabled={!brand} loading={loading} color="#059669" label="\uD83C\uDFF7\uFE0F Find Unlinked Mentions" credits={1} />
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && (
+        <div>
+          {strat && strat.searchQueries && strat.searchQueries.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83D\uDD0D Search Queries to Find Mentions</div>
+              {strat.searchQueries.map((q, i) => <div key={i} style={S.codeRow}><code style={{ fontSize: 12, color: "#38bdf8", flex: 1 }}>{q}</code><CopyBtn text={q} /></div>)}
+            </div>
+          )}
+          <div style={S.grid2}>
+            {strat && strat.platforms && strat.platforms.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDCCD Platforms to Monitor</div>
+                {strat.platforms.map((p, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {p}</div>)}
+              </div>
+            )}
+            {strat && strat.automationTips && strat.automationTips.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\u26A1 Set Up Alerts</div>
+                {strat.automationTips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {t}</div>)}
+              </div>
+            )}
+          </div>
+          {email && (
+            <div style={{ ...S.card, border: "1px solid #064e3b" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#34d399", marginBottom: 12 }}>\uD83D\uDCE7 Outreach Email Template</div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={S.label}>SUBJECT</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "7px 12px", fontSize: 13 }}>{email.subject}</div>
+                  <CopyBtn text={email.subject} />
+                </div>
+              </div>
+              <div style={S.label}>BODY</div>
+              <div style={S.emailBox}>{email.body}</div>
+              <div style={{ textAlign: "right", marginTop: 6 }}><CopyBtn text={email.body} /></div>
+              {email.followUpSubject && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={S.label}>FOLLOW-UP SUBJECT</div>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                    <div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "7px 12px", fontSize: 13 }}>{email.followUpSubject}</div>
+                    <CopyBtn text={email.followUpSubject} />
+                  </div>
+                  <div style={S.emailBox}>{email.followUpBody}</div>
+                  <div style={{ textAlign: "right", marginTop: 6 }}><CopyBtn text={email.followUpBody || ""} /></div>
+                </div>
+              )}
+            </div>
+          )}
+          <div style={S.grid2}>
+            {result.estimatedMonthlyMentions && (
+              <div style={{ ...S.card, textAlign: "center" }}>
+                <div style={{ fontSize: 11, color: "#71717a" }}>EST. MONTHLY MENTIONS</div>
+                <div style={{ fontSize: 26, fontWeight: 800, color: "#a78bfa", marginTop: 4 }}>{result.estimatedMonthlyMentions}</div>
+              </div>
+            )}
+            {result.conversionRate && (
+              <div style={{ ...S.card, textAlign: "center" }}>
+                <div style={{ fontSize: 11, color: "#71717a" }}>TYPICAL CONVERSION RATE</div>
+                <div style={{ fontSize: 26, fontWeight: 800, color: "#38bdf8", marginTop: 4 }}>{result.conversionRate}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Outreach Sequences
+function OutreachSequencesTab() {
+  const [targetSite, setTargetSite] = useState("");
+  const [yourSite, setYourSite] = useState("");
+  const [yourContent, setYourContent] = useState("");
+  const [angle, setAngle] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    if (!targetSite || !yourSite) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const d = await apiFetch(`${API}/citation-outreach`, { method: "POST", body: JSON.stringify({ targetSite, yourSite, yourContent, angle }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [targetSite, yourSite, yourContent, angle]);
+  const stepColors = ["#4f46e5", "#7c3aed", "#9d174d", "#374151"];
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid2}>
+          <div><label style={S.label}>Target Site (to get a link from)</label><input style={S.input} value={targetSite} onChange={e => setTargetSite(e.target.value)} placeholder="industrysite.com" /></div>
+          <div><label style={S.label}>Your Site</label><input style={S.input} value={yourSite} onChange={e => setYourSite(e.target.value)} placeholder="yourstore.com" /></div>
+          <div><label style={S.label}>Content to get cited (optional)</label><input style={S.input} value={yourContent} onChange={e => setYourContent(e.target.value)} placeholder="Ultimate guide to eco yoga mats" /></div>
+          <div><label style={S.label}>Unique angle (optional)</label><input style={S.input} value={angle} onChange={e => setAngle(e.target.value)} placeholder="Their article has an outdated stat we updated" /></div>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <RunBtn onClick={run} disabled={!targetSite || !yourSite} loading={loading} color="#4f46e5" label="\uD83D\uDCE7 Generate Outreach Sequence" credits={2} />
+        </div>
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && (
+        <div>
+          {(result.outreachSequence || []).map((step, i) => (
+            <div key={i} style={{ ...S.card, borderLeft: `3px solid ${stepColors[i] || "#3f3f46"}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                <span style={{ background: stepColors[i], color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{step.step}</span>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{step.type}</span>
+                <span style={S.badge("#38bdf8")}>Send: {step.sendTiming}</span>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <div style={S.label}>SUBJECT</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "7px 12px", fontSize: 13 }}>{step.subject}</div>
+                  <CopyBtn text={step.subject} />
+                </div>
+              </div>
+              <div style={S.label}>BODY</div>
+              <div style={S.emailBox}>{step.body}</div>
+              <div style={{ textAlign: "right", marginTop: 6 }}><CopyBtn text={step.body} /></div>
+            </div>
+          ))}
+          {result.subjectLineVariants && result.subjectLineVariants.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83E\uDDEA Subject Line A/B Variants</div>
+              {result.subjectLineVariants.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: "#a1a1aa", flex: 1 }}>{s}</span>
+                  <CopyBtn text={s} />
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={S.grid2}>
+            {result.valuePropositions && result.valuePropositions.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDC8E Value Props to Mention</div>
+                {result.valuePropositions.map((v, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {v}</div>)}
+              </div>
+            )}
+            {result.doNotDo && result.doNotDo.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>\u274C Avoid These Mistakes</div>
+                {result.doNotDo.map((d, i) => <div key={i} style={{ fontSize: 13, color: "#fca5a5", padding: "3px 0" }}>\u2022 {d}</div>)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// PR Stories
+function PRStoriesTab() {
+  const [brand, setBrand] = useState("");
+  const [niche, setNiche] = useState("");
+  const [products, setProducts] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    if (!brand || !niche) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const d = await apiFetch(`${API}/pr-stories`, { method: "POST", body: JSON.stringify({ brand, niche, products: products.split(",").map(p => p.trim()).filter(Boolean) }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [brand, niche, products]);
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid3}>
+          <div><label style={S.label}>Brand Name</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Your Brand" /></div>
+          <div><label style={S.label}>Niche</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
+          <div><label style={S.label}>Products (comma-separated, optional)</label><input style={S.input} value={products} onChange={e => setProducts(e.target.value)} placeholder="yoga mats, blocks, straps" /></div>
+        </div>
+        <RunBtn onClick={run} disabled={!brand || !niche} loading={loading} color="#db2777" label="\uD83D\uDCF0 Find PR Story Angles" credits={2} />
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && (
+        <div>
+          {(result.prStoryAngles || []).map((a, i) => (
+            <div key={i} style={S.card}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginBottom: 8 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, flex: 1 }}>{a.headline}</div>
+                <span style={S.badge(PC[a.linkPotential && a.linkPotential.toLowerCase()] || "#71717a")}>Link: {a.linkPotential}</span>
+                <span style={S.badge(EC[a.effortToCreate && a.effortToCreate.toLowerCase()] || "#71717a")}>Effort: {a.effortToCreate}</span>
+              </div>
+              <span style={{ ...S.badge("#7c3aed"), marginBottom: 8, display: "inline-block" }}>{a.angle}</span>
+              <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.5, marginBottom: 6 }}>{a.pitch}</div>
+              {a.dataNeeded && <div style={{ fontSize: 12, color: "#71717a" }}>\uD83D\uDCCA Data needed: {a.dataNeeded}</div>}
+              {a.targetPublications && a.targetPublications.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={S.label}>TARGET PUBLICATIONS</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {a.targetPublications.map((p, j) => <span key={j} style={S.badge("#38bdf8")}>{p}</span>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          <div style={S.grid2}>
+            {result.dataStudyIdeas && result.dataStudyIdeas.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDD2C Cheap Data Study Ideas</div>
+                {result.dataStudyIdeas.map((d, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {d}</div>)}
+              </div>
+            )}
+            {result.journalistSearchQueries && result.journalistSearchQueries.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDC26 Find Journalists</div>
+                {result.journalistSearchQueries.map((q, i) => (
+                  <div key={i} style={{ display: "flex", gap: 6, marginBottom: 5 }}>
+                    <code style={{ fontSize: 12, color: "#38bdf8", flex: 1 }}>{q}</code>
+                    <CopyBtn text={q} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {result.pressReleaseOutline && (
+            <div style={{ ...S.card, border: "1px solid #1c3d5a" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#38bdf8", marginBottom: 8 }}>\uD83D\uDCC4 Press Release Outline</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{result.pressReleaseOutline}</div>
+              <div style={{ textAlign: "right", marginTop: 8 }}><CopyBtn text={result.pressReleaseOutline} /></div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Guest Posts
+function GuestPostTab() {
+  const [niche, setNiche] = useState("");
+  const [expertise, setExpertise] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    if (!niche) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const d = await apiFetch(`${API}/guest-post-finder`, { method: "POST", body: JSON.stringify({ niche, yourExpertise: expertise }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [niche, expertise]);
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid2}>
+          <div><label style={S.label}>Your Niche</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
+          <div><label style={S.label}>Your Expertise (optional)</label><input style={S.input} value={expertise} onChange={e => setExpertise(e.target.value)} placeholder="sustainable living and mindfulness" /></div>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <RunBtn onClick={run} disabled={!niche} loading={loading} color="#0891b2" label="\uD83D\uDCDD Find Guest Post Opportunities" credits={1} />
+        </div>
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && (
+        <div>
+          {result.searchQueries && result.searchQueries.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83D\uDD0D Google Search Queries to Find Sites</div>
+              {result.searchQueries.map((q, i) => <div key={i} style={S.codeRow}><code style={{ fontSize: 12, color: "#38bdf8", flex: 1 }}>{q}</code><CopyBtn text={q} /></div>)}
+            </div>
+          )}
+          {result.pitchTemplate && (
+            <div style={{ ...S.card, border: "1px solid #1e3a5f" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#38bdf8", marginBottom: 12 }}>\uD83D\uDCE7 Guest Post Pitch Template</div>
+              <div style={{ marginBottom: 8 }}>
+                <div style={S.label}>SUBJECT</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "7px 12px", fontSize: 13 }}>{result.pitchTemplate.subject}</div>
+                  <CopyBtn text={result.pitchTemplate.subject} />
+                </div>
+              </div>
+              <div style={S.label}>BODY</div>
+              <div style={S.emailBox}>{result.pitchTemplate.body}</div>
+              <div style={{ textAlign: "right", marginTop: 6 }}><CopyBtn text={result.pitchTemplate.body} /></div>
+              {result.pitchTemplate.topicIdeas && result.pitchTemplate.topicIdeas.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={S.label}>TOPIC IDEAS TO PITCH</div>
+                  {result.pitchTemplate.topicIdeas.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a78bfa", padding: "3px 0" }}>\uD83D\uDCA1 {t}</div>)}
+                </div>
+              )}
+            </div>
+          )}
+          <div style={S.grid2}>
+            {result.evaluationCriteria && result.evaluationCriteria.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\u2705 How to Evaluate Sites</div>
+                {result.evaluationCriteria.map((c, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {c}</div>)}
+              </div>
+            )}
+            {result.commonMistakes && result.commonMistakes.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>\u274C Common Mistakes</div>
+                {result.commonMistakes.map((m, i) => <div key={i} style={{ fontSize: 13, color: "#fca5a5", padding: "3px 0" }}>\u2022 {m}</div>)}
+              </div>
+            )}
+          </div>
+          {result.linkBuildingByProxy && result.linkBuildingByProxy.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83E\uDD1D Build Relationships First</div>
+              {result.linkBuildingByProxy.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {t}</div>)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Communities
+function CommunitiesTab() {
+  const [niche, setNiche] = useState("");
+  const [brand, setBrand] = useState("");
+  const [keywords, setKeywords] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    if (!niche) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const d = await apiFetch(`${API}/community-monitor`, { method: "POST", body: JSON.stringify({ niche, brand, keywords: keywords.split(",").map(k => k.trim()).filter(Boolean) }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [niche, brand, keywords]);
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid3}>
+          <div><label style={S.label}>Niche</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
+          <div><label style={S.label}>Brand Name (optional)</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Your Brand" /></div>
+          <div><label style={S.label}>Keywords (comma-separated, optional)</label><input style={S.input} value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="sustainable yoga, eco mat" /></div>
+        </div>
+        <RunBtn onClick={run} disabled={!niche} loading={loading} color="#7c3aed" label="\uD83D\uDCAC Find Communities" credits={1} />
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && (
+        <div>
+          {result.subreddits && result.subreddits.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83E\uDD16 Subreddits to Target</div>
+              {result.subreddits.map((s, i) => (
+                <div key={i} style={{ background: "#09090b", borderRadius: 7, padding: "10px 12px", marginBottom: 7 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4, alignItems: "center" }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#ff6314" }}>{s.name}</span>
+                    <span style={S.badge("#71717a")}>{s.estimatedSize}</span>
+                    <span style={S.badge(s.engagement === "high" ? "#22c55e" : s.engagement === "medium" ? "#f59e0b" : "#ef4444")}>{s.engagement} engagement</span>
+                    {s.linkFriendly && <span style={S.badge("#38bdf8")}>\uD83D\uDD17 link-friendly</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#a1a1aa" }}>{s.strategy}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {result.otherCommunities && result.otherCommunities.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83C\uDF10 Other Communities</div>
+              {result.otherCommunities.map((c, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid #27272a", alignItems: "flex-start" }}>
+                  <span style={S.badge("#a78bfa")}>{c.platform}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{c.community}</div>
+                    <div style={{ fontSize: 12, color: "#a1a1aa" }}>{c.opportunity}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={S.grid2}>
+            {result.monitoringKeywords && result.monitoringKeywords.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDC41 Keywords to Monitor</div>
+                {result.monitoringKeywords.map((k, i) => (
+                  <div key={i} style={{ display: "flex", gap: 6, marginBottom: 5 }}>
+                    <code style={{ fontSize: 12, color: "#38bdf8", flex: 1 }}>{k}</code>
+                    <CopyBtn text={k} />
+                  </div>
+                ))}
+              </div>
+            )}
+            {result.valueAddApproach && result.valueAddApproach.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDC8E Add Value First</div>
+                {result.valueAddApproach.map((v, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {v}</div>)}
+              </div>
+            )}
+          </div>
+          {result.redditSearchUrls && result.redditSearchUrls.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDD17 Reddit Search URLs to Bookmark</div>
+              {result.redditSearchUrls.map((u, i) => (
+                <div key={i} style={S.codeRow}><code style={{ fontSize: 11, color: "#38bdf8", flex: 1, wordBreak: "break-all" }}>{u}</code><CopyBtn text={u} /></div>
+              ))}
+            </div>
+          )}
+          {result.contentThatPerformsWell && result.contentThatPerformsWell.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\uD83D\uDCC8 Content That Gets Upvoted</div>
+              {result.contentThatPerformsWell.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {t}</div>)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Broken Links
+function BrokenLinksTab() {
+  const [niche, setNiche] = useState("");
+  const [domain, setDomain] = useState("");
+  const [content, setContent] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const run = useCallback(async () => {
+    if (!niche) return;
+    setLoading(true); setErr(""); setResult(null);
+    try {
+      const d = await apiFetch(`${API}/broken-link-prospect`, { method: "POST", body: JSON.stringify({ niche, yourDomain: domain, existingContent: content.split(",").map(c => c.trim()).filter(Boolean) }) });
+      if (!d.ok) throw new Error(d.error);
+      setResult(d);
+    } catch (e) { setErr(e.message); } finally { setLoading(false); }
+  }, [niche, domain, content]);
+  return (
+    <div>
+      <div style={S.card}>
+        <div style={S.grid3}>
+          <div><label style={S.label}>Niche</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
+          <div><label style={S.label}>Your Domain (optional)</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /></div>
+          <div><label style={S.label}>Your Content (comma-separated)</label><input style={S.input} value={content} onChange={e => setContent(e.target.value)} placeholder="guide to eco mats, yoga for beginners" /></div>
+        </div>
+        <RunBtn onClick={run} disabled={!niche} loading={loading} color="#b45309" label="\uD83D\uDD27 Find Broken Link Opportunities" credits={1} />
+      </div>
+      {err && <div style={S.error}>{err}</div>}
+      {result && (
+        <div>
+          {result.prospectingSearchQueries && result.prospectingSearchQueries.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83D\uDD0D Prospecting Search Queries</div>
+              {result.prospectingSearchQueries.map((q, i) => <div key={i} style={S.codeRow}><code style={{ fontSize: 12, color: "#38bdf8", flex: 1 }}>{q}</code><CopyBtn text={q} /></div>)}
+            </div>
+          )}
+          {result.outreachTemplate && (
+            <div style={{ ...S.card, border: "1px solid #451a03" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", marginBottom: 12 }}>\uD83D\uDCE7 Broken Link Outreach Template</div>
+              <div style={{ marginBottom: 8 }}>
+                <div style={S.label}>SUBJECT</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "7px 12px", fontSize: 13 }}>{result.outreachTemplate.subject}</div>
+                  <CopyBtn text={result.outreachTemplate.subject} />
+                </div>
+              </div>
+              <div style={S.label}>BODY</div>
+              <div style={S.emailBox}>{result.outreachTemplate.body}</div>
+              <div style={{ textAlign: "right", marginTop: 6 }}><CopyBtn text={result.outreachTemplate.body} /></div>
+              {result.outreachTemplate.keyElements && result.outreachTemplate.keyElements.length > 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <div style={S.label}>KEY ELEMENTS THAT CONVERT</div>
+                  {result.outreachTemplate.keyElements.map((e, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa", padding: "2px 0" }}>\u2713 {e}</div>)}
+                </div>
+              )}
+            </div>
+          )}
+          {result.toolsToUse && result.toolsToUse.length > 0 && (
+            <div style={S.card}>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>\uD83D\uDEE0\uFE0F Tools to Use</div>
+              {result.toolsToUse.map((t, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, minWidth: 160 }}>{t.tool}</span>
+                  <span style={{ fontSize: 12, color: "#a1a1aa", flex: 1 }}>{t.purpose}</span>
+                  <span style={S.badge(t.free ? "#22c55e" : "#ef4444")}>{t.free ? "Free" : "Paid"}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={S.grid2}>
+            {result.contentToCreate && result.contentToCreate.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\u270D\uFE0F Content to Create as Replacement</div>
+                {result.contentToCreate.map((c, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {c}</div>)}
+              </div>
+            )}
+            {result.scalingTips && result.scalingTips.length > 0 && (
+              <div style={S.card}>
+                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>\u26A1 Scaling Tips</div>
+                {result.scalingTips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "3px 0" }}>\u2022 {t}</div>)}
+              </div>
+            )}
+          </div>
+          {result.estimatedSuccessRate && (
+            <div style={{ ...S.card, textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#71717a" }}>TYPICAL CONVERSION RATE</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: "#22c55e", marginTop: 4 }}>{result.estimatedSuccessRate}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TABS = [
+  { id: "link-gap",     label: "\uD83D\uDD0D Link Gap",           component: LinkGapTab },
+  { id: "unlinked",    label: "\uD83C\uDFF7\uFE0F Unlinked Mentions",  component: UnlinkedMentionsTab },
+  { id: "outreach",    label: "\uD83D\uDCE7 Outreach Sequences", component: OutreachSequencesTab },
+  { id: "pr",          label: "\uD83D\uDCF0 PR Stories",          component: PRStoriesTab },
+  { id: "guest",       label: "\uD83D\uDCDD Guest Posts",         component: GuestPostTab },
+  { id: "communities", label: "\uD83D\uDCAC Communities",         component: CommunitiesTab },
+  { id: "broken",      label: "\uD83D\uDD27 Broken Links",        component: BrokenLinksTab },
+];
 
 export default function LinkIntersectOutreach() {
- const [query, setQuery] = useState("");
- const [result, setResult] = useState(null);
- const [loading, setLoading] = useState(false);
- const [error, setError] = useState("");
- const [history, setHistory] = useState([]);
- const [darkMode, setDarkMode] = useState(false);
- const [showOnboarding, setShowOnboarding] = useState(false);
- const [showFeedback, setShowFeedback] = useState(false);
- const [analytics, setAnalytics] = useState([]);
- const [showAnalytics, setShowAnalytics] = useState(false);
- const [notification, setNotification] = useState("");
- const [importing, setImporting] = useState(false);
- const [exporting, setExporting] = useState(false);
- const [showHelp, setShowHelp] = useState(false);
- const [accessibilityMode, setAccessibilityMode] = useState(false);
- const [complianceInfo, setComplianceInfo] = useState(null);
- const [rbacStatus, setRbacStatus] = useState(null);
- const [pluginStatus, setPluginStatus] = useState(null);
-
- const handleAnalyze = async () => {
- setLoading(true);
- setError("");
- setResult(null);
- try {
- const res = await fetch("/api/link-intersect-outreach/analyze", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ query })
- });
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setResult(data.result);
- setHistory(prev => [{ query, result: data.result }, ...prev].slice(0, 10));
- } catch (err) {
- setError(err.message);
- } finally {
- setLoading(false);
- }
- };
-
- // Flagship: fetch analytics
- const fetchAnalytics = async () => {
- setShowAnalytics(true);
- try {
- const res = await fetch("/api/link-intersect-outreach/analytics");
- const data = await res.json();
- setAnalytics(data.analytics || []);
- } catch {
- setAnalytics([]);
- }
- };
-
- // Flagship: import/export
- const handleImport = async e => {
- setImporting(true);
- const file = e.target.files[0];
- if (!file) return;
- const text = await file.text();
- await fetch("/api/link-intersect-outreach/import", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: text
- });
- setImporting(false);
- setNotification("Import complete");
- };
- const handleExport = async () => {
- setExporting(true);
- const res = await fetch("/api/link-intersect-outreach/export");
- const data = await res.json();
- const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: "application/json"});
- const url = URL.createObjectURL(blob);
- const a = document.createElement("a");
- a.href = url;
- a.download = "link-intersect-campaigns.json";
- a.click();
- setExporting(false);
- setNotification("Export complete");
- };
-
- // Flagship: feedback
- const handleFeedbackSubmit = async feedback => {
- await fetch("/api/link-intersect-outreach/notify", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ feedback })
- });
- setShowFeedback(false);
- setNotification("Feedback sent. Thank you!");
- };
-
- // Flagship: accessibility toggle
- const toggleAccessibility = () => setAccessibilityMode(m => !m);
-
- // Flagship: compliance info
- const fetchCompliance = async () => {
- const res = await fetch("/api/link-intersect-outreach/compliance");
- const data = await res.json();
- setComplianceInfo(data.compliance);
- };
-
- // Flagship: RBAC check
- const checkRBAC = async () => {
- const res = await fetch("/api/link-intersect-outreach/rbac/check", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ user: "me", action: "view"})
- });
- const data = await res.json();
- setRbacStatus(data.allowed ? "Access granted": "Access denied");
- };
-
- // Flagship: plugin system
- const runPlugin = async () => {
- const res = await fetch("/api/link-intersect-outreach/plugin", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- // ...existing code...
- });
- setPluginStatus("Plugin executed");
- };
-
- const onboardingContent = (
- <div style={{ padding: 24, background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Link Intersect & Outreach</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>Find link opportunities and manage outreach</li>
- <li>Export, share, and review outreach history</li>
- <li>Accessible, secure, and fully compliant</li>
- </ul>
- <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Get Started</button>
- </div>
- );
-
- return (
- <div style={{
- 
- margin: "40px auto",
- background: darkMode ? "#18181b": accessibilityMode ? "#e0f7fa": "#fff",
- borderRadius: 18,
- boxShadow: "0 2px 24px #0002",
- padding: 36,
- color: darkMode ? "#a3e635": accessibilityMode ? "#09090b": "#09090b",
- fontFamily: 'Inter, sans-serif',
- transition: "background 0.3s, color 0.3s"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Link Intersect & Outreach</h2>
- <div style={{ display: "flex", gap: 10 }}>
- <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode"style={{ background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{darkMode ? "Light": "Dark"} Mode</button>
- <button onClick={toggleAccessibility} aria-label="Toggle accessibility mode"style={{ background: accessibilityMode ? "#a3e635": "#e0e7ff", color: accessibilityMode ? "#09090b": "#4f46e5", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Accessibility</button>
- <button onClick={() => setShowHelp(true)} aria-label="Help"style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiHelpCircle /></button>
- </div>
- </div>
- <div style={{ marginBottom: 10, color: darkMode ? "#a3e635": "#0ea5e9", fontWeight: 600 }}>
- <span role="img"aria-label="link"></span>Find link opportunities and manage outreach.
- </div>
- <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
- <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{showOnboarding ? "Hide": "Show"} Onboarding</button>
- <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiBarChart2 />Analytics</button>
- <label style={{ background: "#a3e635", color: "#09090b", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>
- <FiUpload />Import
- <input type="file"accept=".json"style={{ display: "none"}} onChange={handleImport} disabled={importing} />
- </label>
- <button onClick={handleExport} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}} disabled={exporting}><FiDownload />Export</button>
- <button onClick={() => setShowFeedback(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiBell />Feedback</button>
- <button onClick={checkRBAC} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>RBAC</button>
- <button onClick={fetchCompliance} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Compliance</button>
- <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiSettings />Plugin</button>
- </div>
- {notification && <div style={{ color: "#22c55e", marginBottom: 10 }}>{notification}</div>}
- {showHelp && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Help & Documentation</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>How to use link intersect and outreach features</li>
- <li>Best practices for outreach campaigns</li>
- <li>Accessibility and compliance information</li>
- <li>Integrating plugins and webhooks</li>
- <li>Contact support for advanced help</li>
- </ul>
- <button onClick={() => setShowHelp(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close Help</button>
- </div>
- )}
- {showFeedback && <FeedbackModal open={showFeedback} onClose={() => setShowFeedback(false)} onSubmit={handleFeedbackSubmit} />}
- {showAnalytics && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Analytics Dashboard</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- {analytics.map((a, i) => (
- <li key={i} style={{ marginBottom: 10 }}>
- <div><b>Event:</b> {a.event}</div>
- <div><b>Timestamp:</b> {a.timestamp}</div>
- </li>
- ))}
- </ul>
- <button onClick={() => setShowAnalytics(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close Analytics</button>
- </div>
- )}
- {complianceInfo && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Compliance Information</h3>
- <pre style={{ fontSize: 15 }}>{JSON.stringify(complianceInfo, null, 2)}</pre>
- <button onClick={() => setComplianceInfo(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {rbacStatus && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>RBAC Status</h3>
- <div style={{ fontSize: 15 }}>{rbacStatus}</div>
- <button onClick={() => setRbacStatus(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {pluginStatus && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Plugin Status</h3>
- <div style={{ fontSize: 15 }}>{pluginStatus}</div>
- <button onClick={() => setPluginStatus(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {showOnboarding && onboardingContent}
- <input
- value={query}
- onChange={e => setQuery(e.target.value)}
- type="text"style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555": "1px solid #ccc", marginBottom: 18, background: darkMode ? "#09090b": "#fff", color: darkMode ? "#a3e635": "#09090b"}}
- placeholder="Enter domains or keywords for link intersect..."aria-label="Link intersect input"/>
- <button onClick={handleAnalyze} disabled={loading || !query} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing...": "Analyze"}</button>
- {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
- {result && (
- <div style={{ background: "#27272a", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #27272a"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Outreach Result</span>
- <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer"}}>Copy</button>
- </div>
- <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e4e4e7", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
- </div>
- )}
- {history.length > 0 && (
- <div style={{ marginTop: 24, background: darkMode ? "#52525b": "#f4f4f5", borderRadius: 12, padding: 18 }}>
- <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Outreach History</div>
- <ul style={{ paddingLeft: 18 }}>
- {history.map((h, i) => (
- <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #27272a"}}>
- <div style={{ fontWeight: 600, fontSize: 13, color: "#e4e4e7"}}>{h.query}</div>
- <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "": ""}</div>
- </div>
- ))}
- </ul>
- </div>
- )}
- <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635": "#71717a", textAlign: "center"}}>
- <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai"style={{ color: darkMode ? "#a3e635": "#0ea5e9", textDecoration: "underline"}}>Contact Support</a></span>
- </div>
- </div>
- );
+  const [activeTab, setActiveTab] = useState("link-gap");
+  const ActiveTab = TABS.find(t => t.id === activeTab).component;
+  return (
+    <div style={S.wrap}>
+      <style>{`@keyframes lio-spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={S.header}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 28 }}>\uD83D\uDD17</span>
+          <div>
+            <div style={S.title}>Link Intersect & Outreach</div>
+            <div style={S.subtitle}>AI-powered link building — gap analysis, outreach sequences, PR stories, guest posts & more</div>
+          </div>
+        </div>
+        <div style={S.tabsRow}>
+          {TABS.map(t => (
+            <button key={t.id} style={S.tab(activeTab === t.id)} onClick={() => setActiveTab(t.id)}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+      <div style={S.body}><ActiveTab /></div>
+    </div>
+  );
 }
-
-
-
