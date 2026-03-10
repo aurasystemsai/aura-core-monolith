@@ -892,20 +892,21 @@ router.post('/suggest-competitors', async (req, res) => {
       temperature: 0.4,
       messages: [{
         role: 'user',
-        content: `You are a competitive intelligence analyst. A user runs a brand called "${brand}"${niche ? ` in the niche: ${niche}` : ''}.
+        content: `You are a competitive intelligence analyst. A user runs a brand called "${brand}" that sells: ${niche || 'products/services (no niche specified)'}.
 
-List the 5 most relevant REAL competitor brands or companies they should be benchmarking against for AI search visibility.
+List the 5 most relevant REAL competitor brands or companies they should be benchmarking against for AI search visibility in their specific niche.
 
 Rules:
-- Only include real, well-known brands/companies
-- Include a mix of big players AND niche-relevant ones
-- Rank by how much of a direct competitive threat they are
-- Do NOT include the user's own brand
+- Only include REAL, named brands/companies that operate in the SAME niche as described above
+- Do NOT suggest generic tech giants (e.g. Google, Microsoft, Amazon) unless they are a direct niche competitor
+- Focus on brands their target customers would actually compare them against
+- Include a mix of well-known market leaders AND niche-specific competitors in that exact space
+- Rank by how much of a direct competitive threat they are in that niche
 
 Respond with ONLY a JSON object:
 {
   "competitors": [
-    { "name": "Brand Name", "reason": "One short sentence why they're a direct competitor" },
+    { "name": "Brand Name", "reason": "One short sentence why they're a direct competitor in this niche" },
     ...
   ]
 }`

@@ -1520,20 +1520,21 @@ function SoVTab() {
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
  const [expanded, setExpanded] = useState({});
+ const [niche, setNiche] = useState("");
  const [suggestingComps, setSuggestingComps] = useState(false);
  const [suggestedComps, setSuggestedComps] = useState([]);
  const [compErr, setCompErr] = useState("");
 
  const suggestCompetitors = useCallback(async () => {
-  if (!brand.trim()) return;
+  if (!brand.trim() || !niche.trim()) return;
   setSuggestingComps(true); setSuggestedComps([]); setCompErr("");
   try {
-   const d = await apiFetch(`${API}/suggest-competitors`, { method: "POST", body: JSON.stringify({ brand: brand.trim() }) });
+   const d = await apiFetch(`${API}/suggest-competitors`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), niche: niche.trim() }) });
    if (!d.ok) throw new Error(d.error);
    setSuggestedComps(d.competitors || []);
   } catch (e) { setCompErr("Couldn't find competitors — try typing them manually."); }
   finally { setSuggestingComps(false); }
- }, [brand]);
+ }, [brand, niche]);
 
  const toggleComp = (name) => {
   const existing = competitors.split(",").map(c => c.trim()).filter(Boolean);
@@ -1574,6 +1575,7 @@ function SoVTab() {
 
  const fillExample = () => {
   setBrand("My Store");
+  setNiche("handmade gifts and home decor");
   setCompetitors("Amazon, Etsy, eBay");
   setPromptsText("best handmade gifts online\nwhere to buy unique gifts\ntop gift shops online");
  };
@@ -1622,23 +1624,34 @@ function SoVTab() {
      </div>
 
      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-      <div>
-       <label style={S.label}>Your brand name <span style={{ color: "#ef4444" }}>*</span></label>
-       <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. My Store, Nike, Shopify…" />
-       <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>The name exactly as it would appear in an AI answer</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+       <div>
+        <label style={S.label}>Your brand name <span style={{ color: "#ef4444" }}>*</span></label>
+        <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. My Store, Nike, Shopify…" />
+        <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>The name exactly as it would appear in an AI answer</div>
+       </div>
+       <div>
+        <label style={S.label}>What do you sell? <span style={{ color: "#ef4444" }}>*</span></label>
+        <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. handmade jewellery, yoga mats, SEO software…" />
+        <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>This tells AI exactly which market to search — the more specific the better</div>
+       </div>
       </div>
       <div>
        <label style={S.label}>Competitor brands <span style={{ color: "#ef4444" }}>*</span></label>
        <div style={{ display: "flex", gap: 6 }}>
         <input style={{ ...S.input, flex: 1 }} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="e.g. Amazon, Etsy, eBay" />
-        <button onClick={suggestCompetitors} disabled={suggestingComps || !brand.trim()} title="AI suggests your top competitors"
-         style={{ flexShrink: 0, padding: "0 12px", height: 38, background: suggestingComps ? "#18181b" : "#1e1b4b", border: "1px solid #4338ca", borderRadius: 7, color: suggestingComps ? "#52525b" : "#a78bfa", fontSize: 11, fontWeight: 600, cursor: (suggestingComps || !brand.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: !brand.trim() ? 0.5 : 1 }}>
+        <button onClick={suggestCompetitors} disabled={suggestingComps || !brand.trim() || !niche.trim()}
+         title={!niche.trim() ? "Fill in 'What do you sell?' first for accurate results" : "AI suggests your top competitors"}
+         style={{ flexShrink: 0, padding: "0 12px", height: 38, background: suggestingComps ? "#18181b" : (brand.trim() && niche.trim() ? "#1e1b4b" : "#18181b"), border: `1px solid ${brand.trim() && niche.trim() ? "#4338ca" : "#27272a"}`, borderRadius: 7, color: suggestingComps ? "#52525b" : (brand.trim() && niche.trim() ? "#a78bfa" : "#52525b"), fontSize: 11, fontWeight: 600, cursor: (suggestingComps || !brand.trim() || !niche.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: (!brand.trim() || !niche.trim()) ? 0.5 : 1 }}>
          {suggestingComps
           ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /></>
           : <>✨ Find</>}
         </button>
        </div>
-       <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands · or click <strong style={{ color: "#a78bfa" }}>✨ Find</strong> to discover them automatically</div>
+       {!niche.trim() && brand.trim() && (
+        <div style={{ fontSize: 10, color: "#f59e0b", marginTop: 4 }}>👆 Fill in "What do you sell?" first so AI finds the right competitors</div>
+       )}
+       {(niche.trim() || !brand.trim()) && <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands · or click <strong style={{ color: niche.trim() ? "#a78bfa" : "#52525b" }}>✨ Find</strong> to discover them</div>}
        {compErr && <div style={{ fontSize: 10, color: "#f87171", marginTop: 4 }}>{compErr}</div>}
        {suggestedComps.length > 0 && (
         <div style={{ marginTop: 10, background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px" }}>
