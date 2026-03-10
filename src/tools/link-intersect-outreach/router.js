@@ -516,10 +516,12 @@ Niche/industry: ${niche || '(infer from domain)'}
 
 IMPORTANT: Include actual real-world domains that are known to rank on page 1 of Google for the main keywords in this niche. Think about what a person would search for when looking to buy these products or learn about this topic, then identify who dominates those results.
 
+For googleTopRankers, return ALL 10 results — imagine scanning the first page of Google for the top 2-3 searches in this niche and listing every domain that appears (positions 1-10). Include organic results only (no ads).
+
 Return JSON only:
 {
   "googleTopRankers": [
-    { "domain": "example.com", "keywords": ["keyword1", "keyword2"], "why": "why this site dominates Google for this niche", "size": "small|medium|large|enterprise" }
+    { "domain": "example.com", "position": 1, "keywords": ["keyword1", "keyword2"], "why": "why this site dominates Google for this niche", "size": "small|medium|large|enterprise" }
   ],
   "direct": [
     { "domain": "example.com", "reason": "why they compete with you directly", "size": "small|medium|large|enterprise" }
@@ -534,12 +536,12 @@ Return JSON only:
     { "domain": "amazon.com", "reason": "listings competing for your search terms", "size": "enterprise" }
   ],
   "topKeywordsToCheck": ["the 5-8 most important Google search queries someone in this niche would type"],
-  "topPicks": ["the 5 most important competitor domains to track — highest Google presence"],
+  "topPicks": ["the 10 most important competitor domains to track — highest Google presence"],
   "summary": "1-2 sentence overview of who dominates Google search in this niche and why"
 }`
       }],
       response_format: { type: 'json_object' },
-      max_tokens: 1800,
+      max_tokens: 2200,
     });
     const result = JSON.parse(completion.choices[0].message.content);
     res.json({ ok: true, domain, niche, ...result });

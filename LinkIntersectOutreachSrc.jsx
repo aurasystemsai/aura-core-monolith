@@ -173,8 +173,9 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
               </div>
             </div>
           )}
-          <Section title="🥇 Google Top Rankers — who dominates search results now" color="#fbbf24"
-            items={data.googleTopRankers} />
+          <Section title="🥇 Google Top 10 — who dominates search results right now" color="#fbbf24"
+            items={data.googleTopRankers}
+            renderExtra={(item) => item.position ? <span style={{ fontSize: 10, background: "#78350f", color: "#fbbf24", borderRadius: 3, padding: "2px 6px", marginTop: 3, display: "inline-block" }}>#{item.position}</span> : null} />
           <Section title="⚔️ Direct competitors — same products, same customers" color="#ef4444"
             items={data.direct} />
           <Section title="↔️ Indirect competitors — same niche, different angle" color="#f59e0b"
@@ -184,7 +185,7 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
           <Section title="🛒 Marketplaces" color="#a78bfa"
             items={data.marketplaces} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #27272a", paddingTop: 12, marginTop: 4 }}>
-            <div style={{ fontSize: 12, color: "#71717a" }}>{checked.size} selected — Google Top Rankers ticked by default</div>
+            <div style={{ fontSize: 12, color: "#71717a" }}>{checked.size} selected — Google Top 10 ticked by default</div>
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => setOpen(false)} style={{ padding: "8px 14px", background: "none", border: "1px solid #3f3f46", borderRadius: 6, color: "#71717a", cursor: "pointer", fontSize: 12 }}>Cancel</button>
               <button onClick={apply} style={{ padding: "8px 18px", background: "#7c3aed", border: "none", borderRadius: 6, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>Use Selected ({checked.size})</button>
