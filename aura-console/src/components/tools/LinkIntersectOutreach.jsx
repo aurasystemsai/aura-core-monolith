@@ -103,7 +103,7 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  const [checked, setChecked] = useState(new Set());
 
  const find = useCallback(async () => {
- if (!domain && !niche && !brand) return;
+ if (!niche && !brand) { setErr('Please fill in the "What you sell" field first so the AI knows what industry to look in.'); return; }
  setLoading(true); setErr(""); setData(null); setOpen(true); setChecked(new Set());
  try {
  const d = await apiFetch(`${API}/find-competitors`, { method: "POST", body: JSON.stringify({ domain, niche, brand }) });

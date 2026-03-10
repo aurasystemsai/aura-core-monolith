@@ -503,18 +503,27 @@ router.get('/shop-info', async (req, res) => {
 router.post('/find-competitors', async (req, res) => {
   try {
     const { domain, niche, brand, model = 'gpt-4o-mini' } = req.body || {};
-    if (!domain && !niche) return res.status(400).json({ ok: false, error: 'domain or niche required' });
+    if (!niche && !brand) return res.status(400).json({ ok: false, error: 'Please fill in "What you sell" so the AI can find relevant competitors.' });
+
+    // Strip platform subdomains — they carry no niche signal
+    const isPlatformDomain = domain && (domain.includes('.myshopify.com') || domain.includes('.shopify.com') || domain.includes('.myshopify.io'));
+    const domainForPrompt = isPlatformDomain ? '(Shopify store — custom domain not set)' : (domain || '(unknown)');
+
     const completion = await openai.chat.completions.create({
       model,
       messages: [{
         role: 'user',
         content: `You are an SEO competitive intelligence expert. Find a comprehensive, realistic list of real competitor websites for:
 
-Domain: ${domain || '(unknown)'}
+Niche/industry (PRIMARY SIGNAL — use this above everything else): ${niche}
 Brand/store name: ${brand || '(unknown)'}
-Niche/industry: ${niche || '(infer from domain)'}
+Storefront domain: ${domainForPrompt}
 
-IMPORTANT: Include actual real-world domains that are known to rank on page 1 of Google for the main keywords in this niche. Think about what a person would search for when looking to buy these products or learn about this topic, then identify who dominates those results.
+CRITICAL RULES:
+- The "Niche/industry" field above is your ONLY reliable signal for what this business sells. Use it exclusively to determine competitors.
+- NEVER infer the business type from a .myshopify.com subdomain or any platform subdomain — those are hosting URLs, not business names.
+- Find competitors who sell the SAME TYPE OF PRODUCTS/SERVICES as described in the niche field.
+- All results must be real websites that actually exist and rank on Google.
 
 For googleTopRankers, return ALL 10 results — imagine scanning the first page of Google for the top 2-3 searches in this niche and listing every domain that appears (positions 1-10). Include organic results only (no ads).
 
