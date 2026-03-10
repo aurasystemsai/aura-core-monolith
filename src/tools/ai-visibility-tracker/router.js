@@ -921,6 +921,49 @@ Respond with ONLY a JSON object:
 });
 
 /* ======================================================================
+   SUGGEST PROMPTS
+   POST /api/ai-visibility-tracker/suggest-prompts
+   Given a brand + niche, returns 5 realistic customer search questions
+   ====================================================================== */
+router.post('/suggest-prompts', async (req, res) => {
+  try {
+    const { brand, niche = '' } = req.body || {};
+    if (!brand) return res.status(400).json({ ok: false, error: 'brand required' });
+    const openai = getOpenAI();
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.6,
+      messages: [{
+        role: 'user',
+        content: `You are an SEO expert who understands how people search on AI tools like ChatGPT and Perplexity.
+
+A brand called "${brand}" sells: ${niche || 'products/services'}.
+
+Generate 5 realistic questions or searches that their ideal customers would type into an AI assistant when looking for what this brand offers.
+
+Rules:
+- Write questions as a real customer would actually type them
+- Mix different intents: discovery ("best X"), comparison ("X vs Y"), recommendation ("where to buy X"), how-to ("how to find X")
+- Keep them short and natural (under 10 words each)
+- Be specific to the niche described — no generic questions
+
+Respond with ONLY a JSON object:
+{
+  "prompts": [
+    { "text": "the question", "intent": "discovery | comparison | recommendation | how-to" }
+  ]
+}`
+      }],
+      response_format: { type: 'json_object' }
+    });
+    const data = JSON.parse(resp.choices[0].message.content);
+    res.json({ ok: true, prompts: (data.prompts || []).slice(0, 5) });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/* ======================================================================
    FEATURE 3 & 4: AI Share of Voice + Competitor Citation Analysis
    POST /api/ai-visibility-tracker/ai-sov
    Compares brand vs. competitors across AI responses for given prompts
@@ -933,10 +976,10 @@ router.post('/ai-sov', async (req, res) => {
     if (!Array.isArray(competitors) || competitors.length === 0) return res.status(400).json({ ok: false, error: 'competitors[] required (2-5 brands)' });
 
     const openai = getOpenAI();
-    const allBrands = [brand, ...competitors.slice(0, 4)];
+    const allBrands = [brand, ...competitors.slice(0, 6)];
 
     const promptResults = [];
-    for (const prompt of prompts.slice(0, 3)) {
+    for (const prompt of prompts.slice(0, 5)) {
       const resp = await openai.chat.completions.create({
         model,
         messages: [{

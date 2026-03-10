@@ -1524,6 +1524,9 @@ function SoVTab() {
  const [suggestingComps, setSuggestingComps] = useState(false);
  const [suggestedComps, setSuggestedComps] = useState([]);
  const [compErr, setCompErr] = useState("");
+ const [suggestingPrompts, setSuggestingPrompts] = useState(false);
+ const [suggestedPrompts, setSuggestedPrompts] = useState([]);
+ const [promptErr, setPromptErr] = useState("");
 
  const suggestCompetitors = useCallback(async () => {
   if (!brand.trim() || !niche.trim()) return;
@@ -1536,12 +1539,32 @@ function SoVTab() {
   finally { setSuggestingComps(false); }
  }, [brand, niche]);
 
+ const suggestPrompts = useCallback(async () => {
+  if (!brand.trim() || !niche.trim()) return;
+  setSuggestingPrompts(true); setSuggestedPrompts([]); setPromptErr("");
+  try {
+   const d = await apiFetch(`${API}/suggest-prompts`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), niche: niche.trim() }) });
+   if (!d.ok) throw new Error(d.error);
+   setSuggestedPrompts(d.prompts || []);
+  } catch (e) { setPromptErr("Couldn't suggest questions — try typing them manually."); }
+  finally { setSuggestingPrompts(false); }
+ }, [brand, niche]);
+
  const toggleComp = (name) => {
   const existing = competitors.split(",").map(c => c.trim()).filter(Boolean);
   if (existing.includes(name)) {
    setCompetitors(existing.filter(c => c !== name).join(", "));
-  } else if (existing.length < 4) {
+  } else if (existing.length < 6) {
    setCompetitors([...existing, name].join(", "));
+  }
+ };
+
+ const togglePrompt = (text) => {
+  const existing = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
+  if (existing.includes(text)) {
+   setPromptsText(existing.filter(p => p !== text).join("\n"));
+  } else if (existing.length < 5) {
+   setPromptsText([...existing, text].join("\n"));
   }
  };
 
@@ -1655,11 +1678,11 @@ function SoVTab() {
        {compErr && <div style={{ fontSize: 10, color: "#f87171", marginTop: 4 }}>{compErr}</div>}
        {suggestedComps.length > 0 && (
         <div style={{ marginTop: 10, background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px" }}>
-         <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>✨ AI found these competitors — tap to add (max 4):</div>
+         <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>✨ AI found these competitors — tap to add (max 6):</div>
          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {suggestedComps.map((c, i) => {
            const selected = competitors.split(",").map(x => x.trim()).includes(c.name);
-           const full = !selected && competitors.split(",").map(x => x.trim()).filter(Boolean).length >= 4;
+           const full = !selected && competitors.split(",").map(x => x.trim()).filter(Boolean).length >= 6;
            return (
             <button key={i} onClick={() => toggleComp(c.name)} disabled={full && !selected}
              style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
@@ -1678,8 +1701,40 @@ function SoVTab() {
      </div>
      <div style={{ marginBottom: 18 }}>
       <label style={S.label}>Questions your customers ask AI <span style={{ color: "#ef4444" }}>*</span></label>
+      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+       <button onClick={suggestPrompts} disabled={suggestingPrompts || !brand.trim() || !niche.trim()}
+        title={!niche.trim() ? "Fill in 'What do you sell?' first" : "AI generates questions your customers are asking"}
+        style={{ padding: "6px 12px", background: suggestingPrompts ? "#18181b" : (brand.trim() && niche.trim() ? "#1e1b4b" : "#18181b"), border: `1px solid ${brand.trim() && niche.trim() ? "#4338ca" : "#27272a"}`, borderRadius: 7, color: suggestingPrompts ? "#52525b" : (brand.trim() && niche.trim() ? "#a78bfa" : "#52525b"), fontSize: 11, fontWeight: 600, cursor: (suggestingPrompts || !brand.trim() || !niche.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: (!brand.trim() || !niche.trim()) ? 0.5 : 1 }}>
+        {suggestingPrompts
+         ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</>
+         : <>✨ Suggest questions for me</>}
+       </button>
+      </div>
+      {suggestedPrompts.length > 0 && (
+       <div style={{ background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>✨ Tap questions to add (max 5):</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+         {suggestedPrompts.map((p, i) => {
+          const selected = promptsText.split("\n").map(x => x.trim()).includes(p.text);
+          const full = !selected && promptsText.split("\n").map(x => x.trim()).filter(Boolean).length >= 5;
+          const intentColor = { discovery: "#a78bfa", comparison: "#38bdf8", recommendation: "#34d399", "how-to": "#fbbf24" }[p.intent] || "#71717a";
+          return (
+           <button key={i} onClick={() => togglePrompt(p.text)} disabled={full && !selected}
+            style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
+            <div style={{ width: 18, height: 18, borderRadius: "50%", background: selected ? "#4338ca" : "#27272a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: selected ? "#fff" : "#52525b", fontWeight: 700 }}>{selected ? "✓" : (i + 1)}</div>
+            <div style={{ flex: 1 }}>
+             <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a78bfa" : "#d4d4d8" }}>{p.text}</div>
+            </div>
+            <span style={{ fontSize: 8, fontWeight: 700, color: intentColor, background: "#09090b", border: `1px solid ${intentColor}22`, borderRadius: 3, padding: "2px 6px", flexShrink: 0, textTransform: "uppercase" }}>{p.intent}</span>
+           </button>
+          );
+         })}
+        </div>
+       </div>
+      )}
+      {promptErr && <div style={{ fontSize: 10, color: "#f87171", marginBottom: 6 }}>{promptErr}</div>}
       <textarea style={{ ...S.textarea, fontSize: 12 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best handmade gifts online\nwhere to buy unique home decor\ntop eco-friendly product stores"} />
-      <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>One question per line · up to 3 · think like a customer searching for what you sell</div>
+      <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>One question per line · up to 5 · or click ✨ above to generate them automatically</div>
      </div>
 
      <button onClick={run} disabled={loading || !brand || !competitors || !promptsText.trim()}
