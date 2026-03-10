@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
 
 const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
@@ -94,12 +94,119 @@ function RunButton({ onClick, disabled, loading, label, color, credits }) {
   );
 }
 
+// ─── COMPETITOR FINDER ───────────────────────────────────────────────────────
+function CompetitorFinder({ domain, niche, brand, value, onChange }) {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState("");
+  const [open, setOpen] = useState(false);
+  const [checked, setChecked] = useState(new Set());
+
+  const find = useCallback(async () => {
+    if (!domain && !niche && !brand) return;
+    setLoading(true); setErr(""); setData(null); setOpen(true); setChecked(new Set());
+    try {
+      const d = await apiFetch(`${API}/find-competitors`, { method: "POST", body: JSON.stringify({ domain, niche, brand }) });
+      if (!d.ok) throw new Error(d.error);
+      setData(d);
+      // Auto-check Google top rankers + topPicks by default
+      const autoCheck = new Set();
+      (d.googleTopRankers || []).forEach(x => autoCheck.add(x.domain));
+      if (d.topPicks && typeof d.topPicks[0] === "string") {
+        d.topPicks[0].split(/,\s*/).forEach(x => autoCheck.add(x.trim()));
+      }
+      (d.topPicks || []).filter(x => x && !x.includes(",")).forEach(x => autoCheck.add(x.trim()));
+      setChecked(autoCheck);
+    } catch (e) { setErr(e.message); }
+    setLoading(false);
+  }, [domain, niche, brand]);
+
+  const toggle = (dom) => setChecked(prev => { const n = new Set(prev); n.has(dom) ? n.delete(dom) : n.add(dom); return n; });
+  const apply = () => { onChange(Array.from(checked).join(", ")); setOpen(false); };
+
+  const Section = ({ title, color, items, keyProp = "domain", renderExtra }) => {
+    if (!items || !items.length) return null;
+    return (
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{title}</div>
+        {items.map((item, i) => (
+          <label key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "7px 0", borderBottom: "1px solid #1f1f2e", cursor: "pointer" }}>
+            <input type="checkbox" checked={checked.has(item[keyProp] || item)} onChange={() => toggle(item[keyProp] || item)}
+              style={{ marginTop: 2, cursor: "pointer", accentColor: "#a78bfa", flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#fafafa" }}>{item[keyProp] || item}</div>
+              {item.keywords && <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 3 }}>{item.keywords.map((k, j) => <span key={j} style={{ fontSize: 10, background: "#1e1b4b", color: "#a78bfa", borderRadius: 3, padding: "2px 6px" }}>{k}</span>)}</div>}
+              {(item.reason || item.why) && <div style={{ fontSize: 11, color: "#71717a", marginTop: 2, lineHeight: 1.4 }}>{item.reason || item.why}</div>}
+              {renderExtra && renderExtra(item)}
+            </div>
+            <span style={S.badge(item.size === "enterprise" ? "#ef4444" : item.size === "large" ? "#f59e0b" : "#22c55e")}>{item.size || ""}</span>
+          </label>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input style={{ ...S.input, flex: 1 }} value={value} onChange={e => onChange(e.target.value)} placeholder="comp1.com, comp2.com — or click AI Find" />
+        <button onClick={find} disabled={loading}
+          style={{ padding: "10px 13px", background: loading ? "#1a1030" : "#1a1030", border: "1px solid #7c3aed", borderRadius: 7, color: "#a78bfa", fontSize: 12, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          {loading ? <Spin /> : <>🤖</>} AI Find
+        </button>
+      </div>
+      {err && <div style={{ background: "#2d0011", border: "1px solid #7f1d1d", borderRadius: 6, padding: "8px 12px", color: "#fca5a5", fontSize: 12, marginTop: 6 }}>❌ {err}</div>}
+      {open && data && (
+        <div style={{ background: "#0d0b1a", border: "1px solid #7c3aed", borderRadius: 10, padding: "16px 18px", marginTop: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#c4b5fd" }}>🤖 AI Competitor Discovery</div>
+              {data.summary && <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>{data.summary}</div>}
+            </div>
+            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#71717a", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px" }}>×</button>
+          </div>
+          {data.topKeywordsToCheck && data.topKeywordsToCheck.length > 0 && (
+            <div style={{ background: "#12103a", borderRadius: 7, padding: "10px 12px", marginBottom: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#818cf8", marginBottom: 6 }}>🔍 TOP GOOGLE SEARCHES IN YOUR NICHE</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {data.topKeywordsToCheck.map((k, i) => <span key={i} style={{ fontSize: 11, background: "#1e1b4b", color: "#a78bfa", borderRadius: 4, padding: "3px 8px", border: "1px solid #3730a3" }}>{k}</span>)}
+              </div>
+            </div>
+          )}
+          <Section title="🥇 Google Top Rankers — who dominates search results now" color="#fbbf24"
+            items={data.googleTopRankers} />
+          <Section title="⚔️ Direct competitors — same products, same customers" color="#ef4444"
+            items={data.direct} />
+          <Section title="↔️ Indirect competitors — same niche, different angle" color="#f59e0b"
+            items={data.indirect} />
+          <Section title="📄 Content competitors — rank for the same keywords" color="#38bdf8"
+            items={data.content} />
+          <Section title="🛒 Marketplaces" color="#a78bfa"
+            items={data.marketplaces} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #27272a", paddingTop: 12, marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: "#71717a" }}>{checked.size} selected — Google Top Rankers ticked by default</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => setOpen(false)} style={{ padding: "8px 14px", background: "none", border: "1px solid #3f3f46", borderRadius: 6, color: "#71717a", cursor: "pointer", fontSize: 12 }}>Cancel</button>
+              <button onClick={apply} style={{ padding: "8px 18px", background: "#7c3aed", border: "none", borderRadius: 6, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>Use Selected ({checked.size})</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── LINK GAP ────────────────────────────────────────────────────────────────
 const LGEX = { domain: "myyogashop.com", competitors: "liforme.com, manduka.com", niche: "eco yoga mats" };
 
-function LinkGapTab() {
+function LinkGapTab({ shopInfo = {} }) {
   const [domain, setDomain] = useState(""); const [competitors, setCompetitors] = useState(""); const [niche, setNiche] = useState("");
   const [result, setResult] = useState(null); const [loading, setLoading] = useState(false); const [err, setErr] = useState("");
+
+  // Pre-fill from Shopify on mount
+  useEffect(() => {
+    if (shopInfo.domain && !domain) setDomain(shopInfo.domain);
+  }, [shopInfo.domain]);
 
   const run = useCallback(async () => {
     const comps = competitors.split(",").map(s => s.trim()).filter(Boolean);
@@ -112,20 +219,25 @@ function LinkGapTab() {
     } catch (e) { setErr(e.message); } finally { setLoading(false); }
   }, [domain, competitors, niche]);
 
+  const compsEntered = competitors.split(",").map(s => s.trim()).filter(Boolean).length > 0;
   const lga = result && result.linkGapAnalysis;
   return (
     <div>
       <FeatureExplainer icon="🔍" title="Find where you're losing links to competitors"
         what="Enter your website and 2–3 competitor sites. We'll work out which types of websites link to them but NOT you — so you know exactly where your biggest opportunities are. Think of it like finding the gaps in your team compared to the competition."
-        tip="Not sure who your competitors are? Google your main product and see who else comes up on page 1 — those are your competitors." />
+        tip={'Don\'t know who your competitors are? Click "AI Find" next to the competitors field \u2014 it will discover who\'s on page 1 of Google in your niche automatically.'} />
       <div style={S.card}>
         <div style={S.grid3}>
-          <div><label style={S.label}>Your website</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /><div style={S.hint}>Just the domain — no https://</div></div>
-          <div><label style={S.label}>Competitors' websites</label><input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="comp1.com, comp2.com" /><div style={S.hint}>Comma-separated — 2 to 4 works best</div></div>
+          <div><label style={S.label}>Your website</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /><div style={S.hint}>Auto-filled from your Shopify store — or type another</div></div>
+          <div>
+            <label style={S.label}>Competitors' websites</label>
+            <CompetitorFinder domain={domain} niche={niche} brand={shopInfo.name} value={competitors} onChange={setCompetitors} />
+            <div style={S.hint}>Type manually OR click 🤖 AI Find to auto-discover who's on page 1 of Google</div>
+          </div>
           <div><label style={S.label}>What you sell (optional)</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. eco yoga mats" /><div style={S.hint}>Makes suggestions more relevant to your industry</div></div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <RunButton onClick={run} disabled={!domain || !competitors} loading={loading} color="#7c3aed" label="🔍 Find My Link Gaps" credits={1} />
+          <RunButton onClick={run} disabled={!domain || !compsEntered} loading={loading} color="#7c3aed" label="🔍 Find My Link Gaps" credits={1} />
           <button style={S.exBtn} onClick={() => { setDomain(LGEX.domain); setCompetitors(LGEX.competitors); setNiche(LGEX.niche); }}>✨ Try the example</button>
         </div>
       </div>
@@ -202,9 +314,15 @@ function LinkGapTab() {
 // ─── UNLINKED MENTIONS ───────────────────────────────────────────────────────
 const UMEX = { brand: "My Yoga Shop", domain: "myyogashop.com", competitors: "" };
 
-function UnlinkedMentionsTab() {
+function UnlinkedMentionsTab({ shopInfo = {} }) {
   const [brand, setBrand] = useState(""); const [domain, setDomain] = useState(""); const [competitors, setCompetitors] = useState("");
   const [result, setResult] = useState(null); const [loading, setLoading] = useState(false); const [err, setErr] = useState("");
+
+  // Pre-fill from Shopify on mount
+  useEffect(() => {
+    if (shopInfo.name && !brand) setBrand(shopInfo.name);
+    if (shopInfo.domain && !domain) setDomain(shopInfo.domain);
+  }, [shopInfo.name, shopInfo.domain]);
 
   const run = useCallback(async () => {
     if (!brand) return;
@@ -225,9 +343,13 @@ function UnlinkedMentionsTab() {
         tip="This is often the highest-converting link tactic because they already like you enough to write about you — asking for a link is a small favour." />
       <div style={S.card}>
         <div style={S.grid3}>
-          <div><label style={S.label}>Your brand name</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>Exactly how it appears when people write about you</div></div>
-          <div><label style={S.label}>Your website</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /><div style={S.hint}>We use this to check if their page already links to you</div></div>
-          <div><label style={S.label}>Competitors (optional)</label><input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="comp1.com, comp2.com" /></div>
+          <div><label style={S.label}>Your brand name</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>Auto-filled from your Shopify store name</div></div>
+          <div><label style={S.label}>Your website</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /><div style={S.hint}>Auto-filled from your Shopify store URL</div></div>
+          <div>
+            <label style={S.label}>Competitors (optional)</label>
+            <CompetitorFinder domain={domain} niche="" brand={brand} value={competitors} onChange={setCompetitors} />
+            <div style={S.hint}>Optional — helps find where else your brand might be mentioned</div>
+          </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <RunButton onClick={run} disabled={!brand} loading={loading} color="#059669" label="🏷️ Find My Unlinked Mentions" credits={1} />
@@ -592,9 +714,14 @@ function GuestPostTab() {
 // ─── COMMUNITIES ─────────────────────────────────────────────────────────────
 const CMEX = { niche: "eco yoga equipment", brand: "My Yoga Shop", keywords: "sustainable yoga, eco mat, cork yoga mat" };
 
-function CommunitiesTab() {
+function CommunitiesTab({ shopInfo = {} }) {
   const [niche, setNiche] = useState(""); const [brand, setBrand] = useState(""); const [keywords, setKeywords] = useState("");
   const [result, setResult] = useState(null); const [loading, setLoading] = useState(false); const [err, setErr] = useState("");
+
+  // Pre-fill brand from Shopify on mount
+  useEffect(() => {
+    if (shopInfo.name && !brand) setBrand(shopInfo.name);
+  }, [shopInfo.name]);
 
   const run = useCallback(async () => {
     if (!niche) return;
@@ -614,7 +741,7 @@ function CommunitiesTab() {
       <div style={S.card}>
         <div style={S.grid3}>
           <div><label style={S.label}>Your niche / industry</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
-          <div><label style={S.label}>Your brand name (optional)</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>We'll monitor for brand mentions in communities</div></div>
+          <div><label style={S.label}>Your brand name (optional)</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>Auto-filled from your Shopify store — used to monitor brand mentions</div></div>
           <div><label style={S.label}>Keywords to track (optional)</label><input style={S.input} value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="sustainable yoga, eco mat" /><div style={S.hint}>Comma-separated — topics to jump into</div></div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -817,6 +944,24 @@ const TABS = [
 
 export default function LinkIntersectOutreach() {
   const [activeTab, setActiveTab] = useState("link-gap");
+  const [shopInfo, setShopInfo] = useState({ domain: "", name: "" });
+
+  useEffect(() => {
+    // Try cached value immediately for instant pre-fill
+    try {
+      const cached = localStorage.getItem("aura-lio-shop");
+      if (cached) setShopInfo(JSON.parse(cached));
+    } catch {}
+    // Fetch fresh from the Shopify-backed endpoint
+    apiFetch(`${API}/shop-info`).then(d => {
+      if (d.ok && (d.domain || d.name)) {
+        const info = { domain: d.domain || "", name: d.name || "" };
+        setShopInfo(info);
+        try { localStorage.setItem("aura-lio-shop", JSON.stringify(info)); } catch {}
+      }
+    }).catch(() => {});
+  }, []);
+
   const ActiveTab = TABS.find(t => t.id === activeTab).component;
   return (
     <div style={S.wrap}>
@@ -841,7 +986,7 @@ export default function LinkIntersectOutreach() {
           ))}
         </div>
       </div>
-      <div style={S.body}><ActiveTab /></div>
+      <div style={S.body}><ActiveTab shopInfo={shopInfo} /></div>
     </div>
   );
 }

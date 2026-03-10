@@ -467,6 +467,87 @@ Return JSON:
   }
 });
 
+/* ==========================================================================
+   FEATURE: Shop Info
+   GET /api/link-intersect-outreach/shop-info
+   Returns the Shopify store name and primary domain for pre-filling forms
+   ========================================================================== */
+router.get('/shop-info', async (req, res) => {
+  try {
+    const shopTokens = require('../../core/shopTokens');
+    const shopDomain = req.headers['x-shopify-shop-domain'];
+    if (!shopDomain) return res.json({ ok: true, domain: '', name: '' });
+
+    const token = shopTokens.getToken(shopDomain);
+    if (!token) return res.json({ ok: true, domain: shopDomain.replace('.myshopify.com', ''), name: '' });
+
+    // Fetch live shop data from Shopify REST API
+    const response = await fetch(`https://${shopDomain}/admin/api/2024-01/shop.json`, {
+      headers: { 'X-Shopify-Access-Token': token }
+    });
+    if (!response.ok) throw new Error('Shopify API error');
+    const { shop } = await response.json();
+    // shop.domain is the primary storefront domain (may be custom); shop.myshopify_domain is always the .myshopify.com one
+    res.json({ ok: true, domain: shop.domain || shopDomain, name: shop.name || '' });
+  } catch (err) {
+    // Non-fatal: front end degrades gracefully
+    res.json({ ok: true, domain: '', name: '', _warn: err.message });
+  }
+});
+
+/* ==========================================================================
+   FEATURE: Competitor Finder
+   POST /api/link-intersect-outreach/find-competitors
+   AI discovers a large list of real competitors given a domain/niche
+   ========================================================================== */
+router.post('/find-competitors', async (req, res) => {
+  try {
+    const { domain, niche, brand, model = 'gpt-4o-mini' } = req.body || {};
+    if (!domain && !niche) return res.status(400).json({ ok: false, error: 'domain or niche required' });
+    const completion = await openai.chat.completions.create({
+      model,
+      messages: [{
+        role: 'user',
+        content: `You are an SEO competitive intelligence expert. Find a comprehensive, realistic list of real competitor websites for:
+
+Domain: ${domain || '(unknown)'}
+Brand/store name: ${brand || '(unknown)'}
+Niche/industry: ${niche || '(infer from domain)'}
+
+IMPORTANT: Include actual real-world domains that are known to rank on page 1 of Google for the main keywords in this niche. Think about what a person would search for when looking to buy these products or learn about this topic, then identify who dominates those results.
+
+Return JSON only:
+{
+  "googleTopRankers": [
+    { "domain": "example.com", "keywords": ["keyword1", "keyword2"], "why": "why this site dominates Google for this niche", "size": "small|medium|large|enterprise" }
+  ],
+  "direct": [
+    { "domain": "example.com", "reason": "why they compete with you directly", "size": "small|medium|large|enterprise" }
+  ],
+  "indirect": [
+    { "domain": "example.com", "reason": "how they compete indirectly", "size": "small|medium|large|enterprise" }
+  ],
+  "content": [
+    { "domain": "example.com", "reason": "what keywords/topics they rank for that you want to rank for", "size": "small|medium|large|enterprise" }
+  ],
+  "marketplaces": [
+    { "domain": "amazon.com", "reason": "listings competing for your search terms", "size": "enterprise" }
+  ],
+  "topKeywordsToCheck": ["the 5-8 most important Google search queries someone in this niche would type"],
+  "topPicks": ["the 5 most important competitor domains to track — highest Google presence"],
+  "summary": "1-2 sentence overview of who dominates Google search in this niche and why"
+}`
+      }],
+      response_format: { type: 'json_object' },
+      max_tokens: 1800,
+    });
+    const result = JSON.parse(completion.choices[0].message.content);
+    res.json({ ok: true, domain, niche, ...result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Health check
 router.get('/health', (req, res) => {
   res.json({ ok: true, status: 'Link Intersect Outreach API running', ts: new Date().toISOString() });
