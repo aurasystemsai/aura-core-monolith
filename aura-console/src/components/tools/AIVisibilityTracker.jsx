@@ -1549,58 +1549,78 @@ function SoVTab() {
   return brandColors[1 + idx] || "#71717a";
  };
 
+ const fillExample = () => {
+  setBrand("My Store");
+  setCompetitors("Amazon, Etsy, eBay");
+  setPromptsText("best handmade gifts online\nwhere to buy unique gifts\ntop gift shops online");
+ };
+
  return (
   <div>
    {/* ── Setup card ── */}
    <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
     <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 3 }} />
     <div style={{ padding: "20px" }}>
-     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
-      <div>
-       <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>AI Share of Voice</div>
-       <div style={{ fontSize: 11, color: "#71717a" }}>Who does AI cite most? Map the citation battlefield across prompts and see exactly why competitors beat you — or don't</div>
+
+     {/* Plain-English header */}
+     <div style={{ marginBottom: 18 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>AI Share of Voice</div>
+      <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.6, marginBottom: 12 }}>
+       Find out how often AI tools like <span style={{ color: "#c084fc" }}>ChatGPT</span>, <span style={{ color: "#34d399" }}>Perplexity</span>, and <span style={{ color: "#fbbf24" }}>Google AI</span> recommend your brand vs. competitors — and <strong style={{ color: "#fafafa" }}>exactly why</strong> they pick one over the other.
       </div>
-      <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 12px", textAlign: "center" }}>
-       <div style={{ fontSize: 20 }}>⚔</div>
-       <div style={{ fontSize: 8, color: "#71717a", fontWeight: 700, marginTop: 2, textTransform: "uppercase" }}>Battle Mode</div>
+      {/* How it works steps */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 4 }}>
+       {[
+        { num: "1", icon: "✏️", label: "Enter your brand", desc: "Your store name + up to 4 competitors" },
+        { num: "2", icon: "🤖", label: "We test across AI", desc: "AURA asks ChatGPT, Perplexity & Google AI the questions your customers ask" },
+        { num: "3", icon: "📊", label: "Get your report", desc: "See who ranks highest and why — with actionable tips to improve your score" },
+       ].map((t, i) => (
+        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
+         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 5 }}>
+          <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #4338ca", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#a78bfa", flexShrink: 0 }}>{t.num}</div>
+          <span style={{ fontSize: 10 }}>{t.icon}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#d4d4d8" }}>{t.label}</span>
+         </div>
+         <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5 }}>{t.desc}</div>
+        </div>
+       ))}
       </div>
      </div>
 
-     {/* Context info */}
-     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 18 }}>
-      {[
-       { icon: "🥧", label: "SoV Formula", desc: "Your avg citation ÷ total market × 100" },
-       { icon: "📊", label: "ESOV Signal", desc: "If your SoV > market share → growth mode" },
-       { icon: "🤖", label: "Across all AI", desc: "ChatGPT, Perplexity & Google AI combined" },
-      ].map((t, i) => (
-       <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px" }}>
-        <div style={{ fontSize: 12, marginBottom: 4 }}>{t.icon}</div>
-        <div style={{ fontSize: 9, fontWeight: 700, color: "#d4d4d8", marginBottom: 2 }}>{t.label}</div>
-        <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5 }}>{t.desc}</div>
-       </div>
-      ))}
+     {/* Try example banner */}
+     <div style={{ background: "#0c0c10", border: "1px dashed #3f3f46", borderRadius: 8, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div>
+       <div style={{ fontSize: 11, fontWeight: 600, color: "#d4d4d8", marginBottom: 2 }}>Not sure what to enter? 👋</div>
+       <div style={{ fontSize: 10, color: "#71717a" }}>Load a sample to see how the tool works — you can edit it before running.</div>
+      </div>
+      <button onClick={fillExample} style={{ flexShrink: 0, padding: "6px 14px", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, color: "#a78bfa", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+       Try an example
+      </button>
      </div>
 
      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
       <div>
-       <label style={S.label}>Your brand <span style={{ color: "#ef4444" }}>*</span></label>
-       <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="Your Brand" />
+       <label style={S.label}>Your brand name <span style={{ color: "#ef4444" }}>*</span></label>
+       <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. My Store, Nike, Shopify…" />
+       <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>The name exactly as it would appear in an AI answer</div>
       </div>
       <div>
-       <label style={S.label}>Competitors (2–4, comma-separated) <span style={{ color: "#ef4444" }}>*</span></label>
-       <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Competitor A, Competitor B, Competitor C" />
+       <label style={S.label}>Competitor brands <span style={{ color: "#ef4444" }}>*</span></label>
+       <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="e.g. Amazon, Etsy, eBay" />
+       <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands you compete with</div>
       </div>
      </div>
      <div style={{ marginBottom: 18 }}>
-      <label style={S.label}>Target prompts (one per line, max 3) <span style={{ color: "#ef4444" }}>*</span></label>
-      <textarea style={{ ...S.textarea, fontFamily: "monospace", fontSize: 11 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best yoga mats for beginners\ntop rated eco yoga mats\nhow to pick a yoga mat"} />
+      <label style={S.label}>Questions your customers ask AI <span style={{ color: "#ef4444" }}>*</span></label>
+      <textarea style={{ ...S.textarea, fontSize: 12 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best handmade gifts online\nwhere to buy unique home decor\ntop eco-friendly product stores"} />
+      <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>One question per line · up to 3 · think like a customer searching for what you sell</div>
      </div>
 
      <button onClick={run} disabled={loading || !brand || !competitors || !promptsText.trim()}
       style={{ width: "100%", padding: "12px 20px", background: loading ? "#18181b" : "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", border: "none", borderRadius: 8, color: loading ? "#52525b" : "#fff", fontSize: 13, fontWeight: 700, cursor: (loading || !brand || !competitors || !promptsText.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: (!brand || !competitors || !promptsText.trim()) ? 0.5 : 1 }}>
       {loading
-       ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#c084fc", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Analysing AI citation landscape…</>
-       : <><span style={{ fontSize: 16 }}>⚔</span> Analyze AI Share of Voice <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>3 credits</span></>}
+       ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#c084fc", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Checking how AI ranks your brand…</>
+       : <>🔍 Check My AI Visibility <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>3 credits</span></>}
      </button>
     </div>
    </div>
@@ -1639,7 +1659,7 @@ function SoVTab() {
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
            <div style={{ fontSize: 22, fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{result.yourSoV}%</div>
-           <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>YOUR SoV</div>
+           <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>YOUR SHARE</div>
           </div>
          </div>
 
@@ -1650,11 +1670,11 @@ function SoVTab() {
             Rank #{result.yourRank} of {result.totalBrands}
            </span>
            <span style={{ fontSize: 11, fontWeight: 700, background: result.yourSoV > 100 / result.totalBrands ? "#052e16" : "#2d0000", border: `1px solid ${result.yourSoV > 100 / result.totalBrands ? "#166534" : "#7f1d1d"}`, color: result.yourSoV > 100 / result.totalBrands ? "#86efac" : "#fca5a5", borderRadius: 6, padding: "3px 10px" }}>
-            {result.yourSoV > 100 / result.totalBrands ? "✓ Above avg SoV" : "⚠ Below avg SoV"}
+            {result.yourSoV > 100 / result.totalBrands ? "✓ AI mentions you more than average" : "⚠ AI mentions you less than average"}
            </span>
            {you && leader && !you.isYou && (
             <span style={{ fontSize: 11, fontWeight: 700, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 6, padding: "3px 10px" }}>
-             -{leader.avgCitationProbability - you.avgCitationProbability}pts behind {leader.brand}
+             {leader.avgCitationProbability - you.avgCitationProbability}% behind {leader.brand}
             </span>
            )}
           </div>
@@ -1683,7 +1703,7 @@ function SoVTab() {
              <div style={{ height: "100%", width: `${pct}%`, background: s.isYou ? "linear-gradient(90deg,#7c3aed,#a78bfa)" : bc, borderRadius: 4, transition: "width 0.8s" }} />
             </div>
             <div style={{ width: 36, textAlign: "right", fontSize: 12, fontWeight: 700, color: bc, flexShrink: 0 }}>{pct}%</div>
-            <div style={{ width: 50, textAlign: "right", fontSize: 9, color: "#52525b", flexShrink: 0 }}>{totalCitations > 0 ? Math.round(pct / totalCitations * 100) : 0}% SoV</div>
+            <div style={{ width: 50, textAlign: "right", fontSize: 9, color: "#52525b", flexShrink: 0 }}>{totalCitations > 0 ? Math.round(pct / totalCitations * 100) : 0}% share</div>
            </div>
           );
          })}
