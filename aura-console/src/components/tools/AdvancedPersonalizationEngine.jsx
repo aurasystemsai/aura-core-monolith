@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import AdvancedPersonalizationAnomalyBanner from "./AdvancedPersonalizationAnomalyBanner";
 import AdvancedPersonalizationAnalyticsChart from "./AdvancedPersonalizationAnalyticsChart";
 import useAdvancedPersonalizationSocket from "./AdvancedPersonalizationSocket";
@@ -573,5 +574,6 @@ export default function AdvancedPersonalizationEngine() {
  </div>
  );
 }
+
 
 

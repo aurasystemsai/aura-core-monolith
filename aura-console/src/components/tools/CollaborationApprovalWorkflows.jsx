@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 
 const STORAGE_KEY = "collab-approvals:draft";
 const WORKFLOW_PRESETS = [
@@ -640,5 +641,6 @@ export default function CollaborationApprovalWorkflows() {
  </div>
  );
 }
+
 
 

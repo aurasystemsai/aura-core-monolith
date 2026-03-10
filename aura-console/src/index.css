@@ -55,6 +55,39 @@ body {
   color: var(--text);
 }
 
+/* ─── Moz-style animation keyframes ──────────────────────────────────────── */
+@keyframes moz-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes moz-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ─── Moz-style score ring fill animation ────────────────────────────────── */
+@keyframes moz-ring-fill {
+  from { stroke-dasharray: 0 1000; }
+}
+
+/* ─── Moz-style data table row hover ─────────────────────────────────────── */
+.moz-table tr:hover td { background: #141417; }
+
+/* ─── Moz-style input focus ──────────────────────────────────────────────── */
+.moz-input:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.15) !important; }
+
+/* ─── Moz-style scrollbar ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #18181b; }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+/* ─── Moz-style button press ─────────────────────────────────────────────── */
+button:active { transform: scale(0.97); }
+
+/* ─── Moz-style card transition ──────────────────────────────────────────── */
+.moz-card { transition: border-color 0.15s, box-shadow 0.15s; }
+.moz-card:hover { border-color: #3f3f46 !important; }
+
 /* layout */
 
 .app {

@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import {
  Box,
  Tabs,
@@ -3064,3 +3065,4 @@ const LoyaltyReferralPrograms = () => {
 };
 
 export default LoyaltyReferralPrograms;
+

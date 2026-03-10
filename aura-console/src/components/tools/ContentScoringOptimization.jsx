@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function ContentScoringOptimization() {
@@ -165,6 +166,7 @@ export default function ContentScoringOptimization() {
  </div>
  );
 }
+
 
 
 

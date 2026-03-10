@@ -1,4 +1,5 @@
 ﻿import React from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 
 export default function ReportingIntegrations() {
  const [showOnboarding, setShowOnboarding] = React.useState(true);
@@ -1011,5 +1012,6 @@ export default function ReportingIntegrations() {
  </div>
  );
 }
+
 
 

@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
+import { ScoreRing, MetricRow, MozCard, MozTabs, ErrorBox, EmptyState, Spinner, scoreColor as mozScoreColor } from "../MozUI";
 
 // -----------------------------------------------------------------------------
 // PRODUCT SEO ENGINE FRONTEND (42 tabs, Week 4-6 scope)
@@ -725,13 +726,13 @@ export default function ProductSEOEngine() {
  );
  case "content-scorer":
  return (
- <SectionCard title="Content Scorer"description="SEO score breakdown."accent="#0ea5e9">
- <button onClick={fetchScore} className="btn"disabled={loading || !selectedProduct}>Compute Score</button>
+ <SectionCard title="Content Scorer" description="SEO score breakdown." accent="#0ea5e9">
+ <button onClick={fetchScore} className="btn" disabled={loading || !selectedProduct}>Compute Score</button>
  {seoScore && (
- <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap"}}>
- <StatPill label="Score"value={seoScore.score} />
- <StatPill label="Grade"value={seoScore.grade} />
- <pre className="code-block"style={{ minWidth: 240 }}>{JSON.stringify(seoScore.breakdown, null, 2)}</pre>
+ <div style={{ display: "flex", gap: 16, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
+ <ScoreRing score={seoScore.score ?? 0} label="SEO Score" size={80} />
+ <StatPill label="Grade" value={seoScore.grade} />
+ <pre className="code-block" style={{ minWidth: 240 }}>{JSON.stringify(seoScore.breakdown, null, 2)}</pre>
  </div>
  )}
  </SectionCard>

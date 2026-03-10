@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetch, apiFetchJSON } from '../../api';
 import WinbackFeatureCard from './WinbackFeatureCard';
 import WinbackAnalyticsChart from './WinbackAnalyticsChart';
@@ -3514,5 +3515,6 @@ function StoreLanguageSelector({ segment, onUpdate }) {
 
 export default AbandonedCheckoutWinback;
 // End of file
+
 
 

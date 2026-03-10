@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 const CACHE_KEY = "paw:last-run";
@@ -1356,3 +1357,4 @@ export default function PredictiveAnalyticsWidgets() {
  </div>
  );
 }
+

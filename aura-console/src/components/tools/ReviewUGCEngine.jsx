@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 
 const API = '/api/review-ugc-engine';
 
@@ -1810,3 +1811,4 @@ export default function ReviewUGCEngine() {
  </div>
  );
 }
+

@@ -1,5 +1,6 @@
 ﻿import React, { useState, useCallback } from "react";
 import { apiFetchJSON } from "../../api";
+import { KDCell, AuthorityBadge, MozTabs, ScoreBar, ErrorBox } from "../MozUI";
 
 const API = "/api/keyword-research-suite";
 
@@ -9,60 +10,40 @@ const S = {
  minHeight: "100vh",
  color: "#fafafa",
  fontFamily: "'Inter', sans-serif",
- padding: "32px 24px",
+ padding: "28px 32px",
  },
- header: { marginBottom: 32 },
- title: { fontSize: 28, fontWeight: 700, color: "#fafafa", margin: 0 },
- subtitle: { color: "#a1a1aa", marginTop: 6, fontSize: 14 },
- tabs: {
- display: "flex",
- gap: 4,
- marginBottom: 28,
- overflowX: "auto",
- borderBottom: "1px solid #27272a",
- paddingBottom: 0,
- },
- tab: (active) => ({
- padding: "10px 18px",
- background: "none",
- border: "none",
- color: active ? "#4f46e5": "#71717a",
- fontSize: 13,
- fontWeight: active ? 600 : 400,
- cursor: "pointer",
- borderBottom: active ? "2px solid #4f46e5": "2px solid transparent",
- whiteSpace: "nowrap",
- transition: "color 0.15s",
- marginBottom: -1,
- }),
+ header: { marginBottom: 28 },
+ title: { fontSize: 22, fontWeight: 800, color: "#fafafa", margin: "0 0 4px", letterSpacing: "-0.02em" },
+ subtitle: { color: "#71717a", marginTop: 4, fontSize: 13 },
  card: {
  background: "#18181b",
  border: "1px solid #27272a",
- borderRadius: 16,
+ borderRadius: 14,
  padding: 24,
  marginBottom: 20,
  },
- cardTitle: { fontSize: 15, fontWeight: 600, color: "#fafafa", marginBottom: 16, marginTop: 0 },
- inputRow: { display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap"},
+ cardTitle: { fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 16, marginTop: 0 },
+ inputRow: { display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" },
  input: {
  flex: 1,
  minWidth: 200,
- background: "#09090b",
+ background: "#0d0d10",
  border: "1px solid #3f3f46",
- borderRadius: 8,
+ borderRadius: 10,
  color: "#fafafa",
  fontSize: 14,
- padding: "10px 14px",
+ padding: "11px 14px",
  outline: "none",
+ fontFamily: "'Inter',system-ui,sans-serif",
  },
  btn: {
  background: "#4f46e5",
  color: "#fff",
  border: "none",
- borderRadius: 8,
- padding: "10px 20px",
+ borderRadius: 10,
+ padding: "11px 22px",
  fontSize: 14,
- fontWeight: 600,
+ fontWeight: 700,
  cursor: "pointer",
  whiteSpace: "nowrap",
  },
@@ -70,33 +51,38 @@ const S = {
  th: {
  textAlign: "left",
  color: "#71717a",
- fontWeight: 500,
- padding: "8px 12px",
- borderBottom: "1px solid #27272a",
+ fontWeight: 600,
+ fontSize: 11,
+ textTransform: "uppercase",
+ letterSpacing: "0.05em",
+ padding: "10px 14px",
+ borderBottom: "2px solid #27272a",
  whiteSpace: "nowrap",
+ background: "#18181b",
  },
- td: { padding: "10px 12px", borderBottom: "1px solid #1f1f22", color: "#fafafa", verticalAlign: "middle"},
+ td: { padding: "12px 14px", borderBottom: "1px solid #1f1f22", color: "#fafafa", verticalAlign: "middle" },
  badge: (color) => ({
  display: "inline-block",
- padding: "2px 10px",
- borderRadius: 20,
+ padding: "2px 8px",
+ borderRadius: 6,
  fontSize: 11,
  fontWeight: 600,
- background: color || "#27272a",
- color: "#fafafa",
+ background: (color || "#27272a") + "33",
+ color: color || "#a1a1aa",
+ border: `1px solid ${(color || "#3f3f46")}44`,
  }),
- emptyState: { textAlign: "center", padding: "48px 24px", color: "#52525b", fontSize: 14 },
- loading: { textAlign: "center", padding: "32px 24px", color: "#71717a", fontSize: 14 },
+ emptyState: { textAlign: "center", padding: "56px 24px", color: "#52525b", fontSize: 13 },
+ loading: { textAlign: "center", padding: "32px 24px", color: "#71717a", fontSize: 13 },
  errorBox: {
  background: "#1c0c0c",
  border: "1px solid #7f1d1d",
  color: "#fca5a5",
- borderRadius: 8,
+ borderRadius: 10,
  padding: "12px 16px",
  fontSize: 13,
  marginBottom: 16,
  },
- metaRow: { display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 16 },
+ metaRow: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 },
  metaItem: {
  background: "#09090b",
  border: "1px solid #27272a",
@@ -128,6 +114,26 @@ const S = {
  margin: "2px 4px 2px 0",
  cursor: "pointer",
  },
+ tab: (active) => ({
+ padding: "7px 16px",
+ background: active ? "#27272a" : "none",
+ border: "1px solid " + (active ? "#3f3f46" : "transparent"),
+ color: active ? "#fafafa" : "#71717a",
+ fontSize: 12,
+ fontWeight: active ? 600 : 400,
+ cursor: "pointer",
+ borderRadius: 8,
+ }),
+ daBadge: (da) => ({
+ display: "inline-block",
+ padding: "2px 8px",
+ borderRadius: 6,
+ fontSize: 11,
+ fontWeight: 700,
+ background: da >= 60 ? "#1fbb7a22" : da >= 40 ? "#3b9eff22" : "#e95d1e22",
+ color: da >= 60 ? "#1fbb7a" : da >= 40 ? "#3b9eff" : "#e95d1e",
+ border: `1px solid ${da >= 60 ? "#1fbb7a" : da >= 40 ? "#3b9eff" : "#e95d1e"}44`,
+ }),
  textarea: {
  width: "100%",
  background: "#09090b",
@@ -277,7 +283,7 @@ function DiscoveryTab() {
  <tr key={i}>
  <td style={S.td}>{term}</td>
  <td style={S.td}>{volumeFormat(vol)}</td>
- <td style={S.td}>{diff != null ? <span style={S.diffBadge(diff)}>{diff} {difLabel(diff)}</span> : ""}</td>
+ <td style={S.td}>{diff != null ? <KDCell kd={diff} /> : ""}</td>
  <td style={S.td}>{cpc != null ? `$${Number(cpc).toFixed(2)}` : ""}</td>
  <td style={S.td}>{trend ? <span style={S.badge(trend === "growing"? "#15803d": trend === "declining"? "#7f1d1d": "#3f3f46")}>{trend}</span> : ""}</td>
  </tr>
@@ -308,7 +314,7 @@ function DiscoveryTab() {
  <tr key={i}>
  <td style={S.td}>{kw.keyword || kw.term || ""}</td>
  <td style={S.td}>{volumeFormat(kw.searchVolume ?? kw.volume)}</td>
- <td style={S.td}>{kw.difficulty != null ? <span style={S.diffBadge(kw.difficulty)}>{kw.difficulty}</span> : ""}</td>
+ <td style={S.td}>{kw.difficulty != null ? <KDCell kd={kw.difficulty} /> : ""}</td>
  <td style={S.td}>{kw.cpc != null ? `$${Number(kw.cpc).toFixed(2)}` : ""}</td>
  <td style={S.td}>{kw.intent ? <span style={S.intentBadge(kw.intent)}>{kw.intent}</span> : ""}</td>
  </tr>
@@ -389,7 +395,7 @@ function SERPTab() {
  <tr key={i}>
  <td style={{ ...S.td, color: "#71717a", fontWeight: 700 }}>{r.position ?? i + 1}</td>
  <td style={S.td}><div style={{ fontWeight: 500 }}>{r.title || r.url}</div>{r.url && r.title && <div style={{ fontSize: 11, color: "#71717a", marginTop: 2 }}>{r.url}</div>}</td>
- <td style={S.td}>{r.domainAuthority ?? r.da ?? ""}</td>
+ <td style={S.td}>{(r.domainAuthority ?? r.da) != null ? <AuthorityBadge score={r.domainAuthority ?? r.da} label="DA" /> : ""}</td>
  <td style={S.td}>{r.contentType ? <span style={S.badge()}>{r.contentType}</span> : ""}</td>
  </tr>
  ))}
@@ -475,7 +481,7 @@ function CompetitorsTab() {
  <tr key={i}>
  <td style={S.td}>{c.domain || c.competitor || ""}</td>
  <td style={S.td}>{c.commonKeywords ?? c.sharedKeywords ?? ""}</td>
- <td style={S.td}>{c.domainAuthority ?? c.da ?? ""}</td>
+ <td style={S.td}>{(c.domainAuthority ?? c.da) != null ? <AuthorityBadge score={c.domainAuthority ?? c.da} label="DA" /> : ""}</td>
  </tr>
  ))}
  </tbody>
@@ -704,12 +710,6 @@ function OpportunitiesTab() {
  setBatchLoading(false);
  }
 
- function scoreColor(n) {
- if (n >= 70) return "#22c55e";
- if (n >= 40) return "#f59e0b";
- return "#ef4444";
- }
-
  return (
  <div>
  <div style={S.card}>
@@ -766,7 +766,7 @@ function OpportunitiesTab() {
  <td style={S.td}>{r.keyword}</td>
  <td style={S.td}>{r.opportunityScore != null ? <span style={{ fontWeight: 700, color: scoreColor(r.opportunityScore) }}>{r.opportunityScore}</span> : ""}</td>
  <td style={S.td}>{volumeFormat(r.searchVolume ?? r.volume)}</td>
- <td style={S.td}>{r.difficulty != null ? <span style={S.diffBadge(r.difficulty)}>{r.difficulty}</span> : ""}</td>
+ <td style={S.td}>{r.difficulty != null ? <KDCell kd={r.difficulty} /> : ""}</td>
  <td style={S.td}>{r.cpc != null ? `$${Number(r.cpc).toFixed(2)}` : ""}</td>
  </tr>
  ))}
@@ -927,7 +927,7 @@ function ContentGapsTab() {
  <tr key={i}>
  <td style={S.td}>{op.keyword || op.term || ""}</td>
  <td style={S.td}>{volumeFormat(op.searchVolume ?? op.volume)}</td>
- <td style={S.td}>{op.difficulty != null ? <span style={S.diffBadge(op.difficulty)}>{op.difficulty}</span> : ""}</td>
+ <td style={S.td}>{op.difficulty != null ? <KDCell kd={op.difficulty} /> : ""}</td>
  <td style={S.td}><span style={S.badge(op.priority === "high"? "#92400e": op.priority === "medium"? "#1e3a5f": "#1a1a2e")}>{op.priority || ""}</span></td>
  <td style={S.td}>{op.competitorsRanking ?? op.competitorCount ?? ""}</td>
  </tr>
@@ -948,7 +948,7 @@ function ContentGapsTab() {
  <tr key={i}>
  <td style={S.td}>{g.keyword || g.term || (typeof g === "string"? g : "")}</td>
  <td style={S.td}>{volumeFormat(g.searchVolume ?? g.volume)}</td>
- <td style={S.td}>{g.difficulty != null ? <span style={S.diffBadge(g.difficulty)}>{g.difficulty}</span> : ""}</td>
+ <td style={S.td}>{g.difficulty != null ? <KDCell kd={g.difficulty} /> : ""}</td>
  <td style={S.td}>{g.gapType ? <span style={S.badge()}>{g.gapType}</span> : ""}</td>
  </tr>
  ))}
@@ -985,11 +985,7 @@ export default function KeywordResearchSuite() {
  <h1 style={S.title}>Keyword Research Suite</h1>
  <p style={S.subtitle}>Discover keywords, analyse SERP, track rankings, and find content gaps</p>
  </div>
- <div style={S.tabs}>
- {TABS.map((t) => (
- <button key={t.id} style={S.tab(activeTab === t.id)} onClick={() => setActiveTab(t.id)}>{t.label}</button>
- ))}
- </div>
+ <MozTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
  {activeTab === "discovery"&& <DiscoveryTab />}
  {activeTab === "serp"&& <SERPTab />}
  {activeTab === "competitors"&& <CompetitorsTab />}

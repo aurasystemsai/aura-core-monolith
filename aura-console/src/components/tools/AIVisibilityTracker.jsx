@@ -1,4 +1,5 @@
 ﻿import React, { useState, useCallback, useEffect, useRef } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
 import usePlan, { TOOL_PLAN, canUseTool } from "../../hooks/usePlan";
 // Wrapper: auto-parses JSON body and injects Content-Type on every call
@@ -2978,3 +2979,4 @@ export default function AIVisibilityTracker() {
  </div>
  );
 }
+

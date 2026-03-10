@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 export default function InboxAssistant() {
  const [input, setInput] = useState("");
  const [response, setResponse] = useState("");
@@ -240,5 +241,6 @@ export default function InboxAssistant() {
  </div>
  );
 }
+
 
 

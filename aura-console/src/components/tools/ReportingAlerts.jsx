@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { Card, Button, Table, Modal, Input, Select, Switch, Tooltip, notification, Tabs, Progress, Tag } from "antd";
 import { DownloadOutlined, PlusOutlined, BellOutlined, BarChartOutlined, InfoCircleOutlined, ReloadOutlined, QuestionCircleOutlined, ShareAltOutlined, SettingOutlined } from "@ant-design/icons";
 
@@ -434,5 +435,6 @@ export default function ReportingAlerts() {
  </div>
  );
 }
+
 
 

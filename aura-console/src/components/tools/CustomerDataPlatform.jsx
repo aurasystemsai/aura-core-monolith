@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import './CustomerDataPlatform.css';
 
 function FeedbackModal({ open, onClose, onSubmit }) {
@@ -276,5 +277,6 @@ export default function CustomerDataPlatform() {
  </div>
  );
 }
+
 
 

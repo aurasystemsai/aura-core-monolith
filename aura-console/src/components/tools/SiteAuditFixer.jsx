@@ -3,6 +3,7 @@ import { apiFetchJSON } from "../../api";
 import { useCreditError } from "../../globalCreditError";
 import { useCredits, ACTION_COSTS } from "../../hooks/useCredits";
 import BackButton from "./BackButton";
+import { ScoreRing, ErrorBox, scoreColor as mozScoreColor } from "../MozUI";
 
 const API = "/api/tools/seo-site-crawler";
 
@@ -438,7 +439,7 @@ export default function SiteAuditFixer() {
  if (scanErr && !lastScan) {
  return (
  <div>
- <div style={S.err}>{scanErr}</div>
+ <ErrorBox message={scanErr} />
  <button style={S.btn("primary")} onClick={runScan}>
  {scanLoading ? <><span style={S.spinner} /> Scanning…</> : "Run Site Audit Now"}
  </button>
@@ -466,10 +467,7 @@ export default function SiteAuditFixer() {
 
  {/* Health score */}
  <div style={{ ...S.card, display: "flex", alignItems: "center", gap: 24, marginBottom: 24 }}>
- <div style={{ textAlign: "center" }}>
- <div style={{ fontSize: 52, fontWeight: 900, color: health >= 80 ? C.green : health >= 50 ? C.amber : C.red, lineHeight: 1 }}>{health}</div>
- <div style={{ fontSize: 12, color: C.sub, marginTop: 4 }}>SEO Health</div>
- </div>
+ <ScoreRing score={health} label="SEO Health" size={90} />
  <div style={{ flex: 1 }}>
  <div style={{ height: 10, background: C.muted, borderRadius: 999, marginBottom: 10, overflow: "hidden" }}>
  <div style={{ height: "100%", borderRadius: 999, width: `${health}%`, background: health >= 80 ? C.green : health >= 50 ? C.amber : C.red, transition: "width 1s" }} />
@@ -523,7 +521,7 @@ export default function SiteAuditFixer() {
  )}
  </div>
 
- {scanErr && <div style={{ ...S.err, marginTop: 16 }}>{scanErr}</div>}
+ {scanErr && lastScan && <ErrorBox message={scanErr} />}
  </div>
  );
  }

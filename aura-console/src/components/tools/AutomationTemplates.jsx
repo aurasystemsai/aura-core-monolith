@@ -1,4 +1,5 @@
 ﻿import React from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 
 export default function AutomationTemplates() {
  // Flagship UI state
@@ -100,6 +101,7 @@ export default function AutomationTemplates() {
  </div>
  );
 }
+
 
 
 

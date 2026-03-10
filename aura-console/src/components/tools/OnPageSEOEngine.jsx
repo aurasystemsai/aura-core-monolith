@@ -1,4 +1,5 @@
 ﻿import React, { useState, useCallback, useMemo } from 'react';
+import { MozTabs, ScoreRing, scoreColor as mozScoreColor, MetricRow, ErrorBox, EmptyState, Spinner } from '../MozUI';
 
 const API = '/api/on-page-seo-engine';
 
@@ -48,10 +49,7 @@ const S = {
 const TABS = ['Analyzer', 'AI Deep Analysis', 'Content Score', 'AI Rewrite', 'Competitor Compare', 'History', 'AI Assistant', 'Bulk Scan', 'Link Health', 'Accessibility'];
 
 function scoreColor(score) {
- if (score >= 80) return '#22c55e';
- if (score >= 60) return '#eab308';
- if (score >= 40) return '#f97316';
- return '#ef4444';
+ return mozScoreColor(score);
 }
 
 function sevColor(sev) {
@@ -416,14 +414,12 @@ export default function OnPageSEOEngine() {
  </div>
 
  {/* Tab Bar */}
- <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', flexWrap: 'wrap'}}>
- {TABS.map((t, i) => (
- <button key={t} onClick={() => { setTab(i); if (i === 5) loadHistory(); }}
- style={{ ...S.btnGhost, ...(tab === i ? { background: '#4f46e5', color: '#fafafa', borderColor: '#4f46e5'} : {}) }}>
- {t}
- </button>
- ))}
- </div>
+ <MozTabs
+ tabs={TABS}
+ active={tab}
+ onChange={i => { setTab(i); if (i === 5) loadHistory(); }}
+ style={{ marginBottom: '20px' }}
+ />
 
  {/* URL Input Bar always visible */}
  <div style={{ ...S.card, marginBottom: '16px'}}>
@@ -434,7 +430,7 @@ export default function OnPageSEOEngine() {
  {crawlLoading ? 'Crawling': 'Analyze Page'}
  </button>
  </div>
- {crawlError && <p style={{ color: '#ef4444', margin: '8px 0 0', fontSize: '13px'}}>{crawlError}</p>}
+ {crawlError && <ErrorBox message={crawlError} />}
  </div>
 
  {/* Tab Content */}
@@ -461,13 +457,7 @@ export default function OnPageSEOEngine() {
  ANALYZER TAB crawled page results + weighted scoring
  */
 function AnalyzerTab({ data, keywords, fixLoading, fixResults, onGenerateFix }) {
- if (!data) return (
- <div style={{ ...S.card, textAlign: 'center', padding: '48px'}}>
- <div style={{ fontSize: '48px', marginBottom: '12px'}}></div>
- <div style={{ fontSize: '16px', color: '#a1a1aa'}}>Enter a URL above and click <strong>Analyze Page</strong> to get started</div>
- <div style={S.muted}>We'll crawl the page, extract SEO signals, and give you a category-weighted score with actionable recommendations.</div>
- </div>
- );
+ if (!data) return <EmptyState icon="🔍" title="Enter a URL above and click Analyze Page to get started" message="We'll crawl the page, extract SEO signals, and give you a category-weighted score with actionable recommendations." />;
 
  const { scored } = data;
  const cats = scored?.categories || {};
@@ -485,18 +475,12 @@ function AnalyzerTab({ data, keywords, fixLoading, fixResults, onGenerateFix }) 
  {/* Overall Score */}
  <div style={S.card}>
  <div style={S.rowSpread}>
- <div>
- <div style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '4px'}}>Overall SEO Score</div>
- <div style={{ fontSize: '56px', fontWeight: 800, color: scoreColor(scored?.overall || 0) }}>{scored?.overall ?? '--'}<span style={{ fontSize: '20px', color: '#71717a'}}>/100</span></div>
+ <ScoreRing score={scored?.overall ?? 0} label="SEO Score" size={90} />
+ <div style={{ flex: 1, marginLeft: '20px' }}>
+ <div style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '4px' }}>Page</div>
+ <div style={{ fontSize: '14px', color: '#fafafa', wordBreak: 'break-all' }}>{data.url}</div>
+ {data.title && <div style={{ fontSize: '13px', color: '#71717a', marginTop: '4px' }}>{data.title}</div>}
  </div>
- <div style={{ textAlign: 'right', maxWidth: '50%'}}>
- <div style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '4px'}}>Page</div>
- <div style={{ fontSize: '14px', color: '#fafafa', wordBreak: 'break-all'}}>{data.url}</div>
- {data.title && <div style={{ fontSize: '13px', color: '#71717a', marginTop: '4px'}}>{data.title}</div>}
- </div>
- </div>
- <div style={{ marginTop: '12px'}}>
- <ProgressBar pct={scored?.overall || 0} />
  </div>
  </div>
 

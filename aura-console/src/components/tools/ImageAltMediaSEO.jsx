@@ -1,5 +1,6 @@
 ﻿import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { ScoreRing, scoreColor as mozScoreColor, ErrorBox, MetricRow } from "../MozUI";
 
 
 // Safe theme detector for SSR/CSR

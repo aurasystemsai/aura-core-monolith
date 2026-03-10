@@ -1,5 +1,6 @@
 ﻿
 import React, { useState, useRef } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 
 function VisualInventoryTable({ data, setData, rows = [], setRows }) {
  return (
@@ -210,5 +211,6 @@ export default function InventorySupplierSync() {
  </div>
  );
 }
+
 
 

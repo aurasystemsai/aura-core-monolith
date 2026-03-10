@@ -1,5 +1,6 @@
 ﻿
 import React, { useState, useEffect } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 
@@ -823,5 +824,6 @@ export default function SelfServiceAnalytics() {
  </div>
  );
 }
+
 
 

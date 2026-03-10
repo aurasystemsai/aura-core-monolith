@@ -1,5 +1,6 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
+import { MozCard, MetricRow, ErrorBox, EmptyState, Spinner, SortableTable } from "../MozUI";
 
 export default function SchemaRichResultsEngine() {
  const [input, setInput] = useState("");
@@ -188,10 +189,11 @@ export default function SchemaRichResultsEngine() {
  </div>
  </div>
  )}
- {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
- <div style={{ marginTop: 24, background: "#f4f4f5", borderRadius: 12, padding: 18 }}>
- <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>History</div>
- <ul style={{ paddingLeft: 18 }}>
+ {error && <ErrorBox message={error} />}
+ <div style={{ marginTop: 24, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 12, padding: 18 }}>
+ <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: '#fafafa' }}>History</div>
+ {history.length === 0 && <EmptyState icon="📄" title="No history yet" message="Generate schemas to see your history here." />}
+ <ul style={{ paddingLeft: 0, listStyle: 'none', margin: 0 }}>
  {history.map(h => (
  <div key={h.id} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>

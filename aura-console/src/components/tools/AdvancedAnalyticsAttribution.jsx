@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import BackButton from "./BackButton";
 
 const samplePayload = {
@@ -1105,6 +1106,7 @@ export default function AdvancedAnalyticsAttribution() {
  </div>
  );
 }
+
 
 
 

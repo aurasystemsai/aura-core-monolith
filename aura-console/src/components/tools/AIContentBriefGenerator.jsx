@@ -1,4 +1,5 @@
 ﻿import React, { useState, useCallback } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetch } from "../../api";
 
 const API = "/api/ai-content-brief-generator";
@@ -422,3 +423,4 @@ export default function AIContentBriefGenerator() {
  </div>
  );
 }
+

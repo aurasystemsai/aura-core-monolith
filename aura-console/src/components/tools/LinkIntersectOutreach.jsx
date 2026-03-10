@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
+﻿import React, { useState, useCallback, useEffect } from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
 
 const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
@@ -88,13 +89,13 @@ function RunButton({ onClick, disabled, loading, label, color, credits }) {
  return (
  <button onClick={onClick} disabled={disabled || loading}
  style={{ ...S.runBtn(color), opacity: disabled && !loading ? 0.45 : 1, cursor: disabled ? "not-allowed" : "pointer" }}>
- {loading ? <><Spin /> Running AI analysis…</> : label}
+ {loading ? <><Spin /> Running AI analysisâ€¦</> : label}
  <span style={{ fontSize: 11, background: "rgba(255,255,255,0.15)", borderRadius: 5, padding: "3px 9px" }}>{credits} credit{credits > 1 ? "s" : ""}</span>
  </button>
  );
 }
 
-// ─── COMPETITOR FINDER ───────────────────────────────────────────────────────
+// â”€â”€â”€ COMPETITOR FINDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  const [loading, setLoading] = useState(false);
  const [data, setData] = useState(null);
@@ -103,7 +104,7 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  const [checked, setChecked] = useState(new Set());
 
  const find = useCallback(async () => {
- if (!niche) { setErr('Please fill in the "What you sell" field first — e.g. "handmade candles" or "eco yoga mats". The AI uses this to find the right competitors.'); return; }
+ if (!niche) { setErr('Please fill in the "What you sell" field first â€” e.g. "handmade candles" or "eco yoga mats". The AI uses this to find the right competitors.'); return; }
  setLoading(true); setErr(""); setData(null); setOpen(true); setChecked(new Set());
  try {
  const d = await apiFetch(`${API}/find-competitors`, { method: "POST", body: JSON.stringify({ domain, niche, brand }) });
@@ -149,7 +150,7 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  return (
  <div>
  <div style={{ display: "flex", gap: 8 }}>
- <input style={{ ...S.input, flex: 1 }} value={value} onChange={e => onChange(e.target.value)} placeholder="comp1.com, comp2.com — or click AI Find" />
+ <input style={{ ...S.input, flex: 1 }} value={value} onChange={e => onChange(e.target.value)} placeholder="comp1.com, comp2.com â€” or click AI Find" />
  <button onClick={find} disabled={loading}
  style={{ padding: "10px 13px", background: loading ? "#1a1030" : "#1a1030", border: "1px solid #7c3aed", borderRadius: 7, color: "#a78bfa", fontSize: 12, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
  {loading ? <Spin /> : <></>} AI Find
@@ -163,7 +164,7 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  <div style={{ fontSize: 13, fontWeight: 800, color: "#c4b5fd" }}>AI Competitor Discovery</div>
  {data.summary && <div style={{ fontSize: 11, color: "#71717a", marginTop: 3 }}>{data.summary}</div>}
  </div>
- <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#71717a", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px" }}>×</button>
+ <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#71717a", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px" }}>Ã—</button>
  </div>
  {data.topKeywordsToCheck && data.topKeywordsToCheck.length > 0 && (
  <div style={{ background: "#12103a", borderRadius: 7, padding: "10px 12px", marginBottom: 14 }}>
@@ -173,19 +174,19 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  </div>
  </div>
  )}
- <Section title="Google Top 10 — who dominates search results right now" color="#fbbf24"
+ <Section title="Google Top 10 â€” who dominates search results right now" color="#fbbf24"
  items={data.googleTopRankers}
  renderExtra={(item) => item.position ? <span style={{ fontSize: 10, background: "#78350f", color: "#fbbf24", borderRadius: 3, padding: "2px 6px", marginTop: 3, display: "inline-block" }}>#{item.position}</span> : null} />
- <Section title="Direct competitors — same products, same customers" color="#ef4444"
+ <Section title="Direct competitors â€” same products, same customers" color="#ef4444"
  items={data.direct} />
- <Section title="↔ Indirect competitors — same niche, different angle" color="#f59e0b"
+ <Section title="â†” Indirect competitors â€” same niche, different angle" color="#f59e0b"
  items={data.indirect} />
- <Section title="Content competitors — rank for the same keywords" color="#38bdf8"
+ <Section title="Content competitors â€” rank for the same keywords" color="#38bdf8"
  items={data.content} />
  <Section title="Marketplaces" color="#a78bfa"
  items={data.marketplaces} />
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #27272a", paddingTop: 12, marginTop: 4 }}>
- <div style={{ fontSize: 12, color: "#71717a" }}>{checked.size} selected — Google Top 10 ticked by default</div>
+ <div style={{ fontSize: 12, color: "#71717a" }}>{checked.size} selected â€” Google Top 10 ticked by default</div>
  <div style={{ display: "flex", gap: 8 }}>
  <button onClick={() => setOpen(false)} style={{ padding: "8px 14px", background: "none", border: "1px solid #3f3f46", borderRadius: 6, color: "#71717a", cursor: "pointer", fontSize: 12 }}>Cancel</button>
  <button onClick={apply} style={{ padding: "8px 18px", background: "#7c3aed", border: "none", borderRadius: 6, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>Use Selected ({checked.size})</button>
@@ -197,7 +198,7 @@ function CompetitorFinder({ domain, niche, brand, value, onChange }) {
  );
 }
 
-// ─── LINK GAP ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ LINK GAP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const LGEX = { domain: "myyogashop.com", competitors: "liforme.com, manduka.com", niche: "eco yoga mats" };
 
 function LinkGapTab({ shopInfo = {} }) {
@@ -225,11 +226,11 @@ function LinkGapTab({ shopInfo = {} }) {
  return (
  <div>
  <FeatureExplainer icon="" title="Find where you're losing links to competitors"
- what="Enter your website and 2–3 competitor sites. We'll work out which types of websites link to them but NOT you — so you know exactly where your biggest opportunities are. Think of it like finding the gaps in your team compared to the competition."
+ what="Enter your website and 2â€“3 competitor sites. We'll work out which types of websites link to them but NOT you â€” so you know exactly where your biggest opportunities are. Think of it like finding the gaps in your team compared to the competition."
  tip={'Don\'t know who your competitors are? Click "AI Find" next to the competitors field \u2014 it will discover who\'s on page 1 of Google in your niche automatically.'} />
  <div style={S.card}>
  <div style={S.grid3}>
- <div><label style={S.label}>Your website</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /><div style={S.hint}>Auto-filled from your Shopify store — or type another</div></div>
+ <div><label style={S.label}>Your website</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /><div style={S.hint}>Auto-filled from your Shopify store â€” or type another</div></div>
  <div>
  <label style={S.label}>Competitors' websites</label>
  <CompetitorFinder domain={domain} niche={niche} brand={shopInfo.name} value={competitors} onChange={setCompetitors} />
@@ -255,8 +256,8 @@ function LinkGapTab({ shopInfo = {} }) {
  <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>YOUR SUGGESTED MONTHLY GOAL</div>
  {result.monthlyLinkPlan ? <>
  <div style={{ fontSize: 24, fontWeight: 800, color: "#22c55e", marginBottom: 8 }}>{result.monthlyLinkPlan.target}</div>
- {(result.monthlyLinkPlan.tactics || []).map((t, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa", padding: "3px 0" }}>→ {t}</div>)}
- </> : <div style={{ color: "#a1a1aa", fontSize: 13 }}>Focus on 2–4 new quality links every week to close the gap steadily.</div>}
+ {(result.monthlyLinkPlan.tactics || []).map((t, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa", padding: "3px 0" }}>â†’ {t}</div>)}
+ </> : <div style={{ color: "#a1a1aa", fontSize: 13 }}>Focus on 2â€“4 new quality links every week to close the gap steadily.</div>}
  </div>
  </div>
  {lga.typeGaps && lga.typeGaps.length > 0 && (
@@ -268,7 +269,7 @@ function LinkGapTab({ shopInfo = {} }) {
  )}
  {lga.topOpportunities && lga.topOpportunities.length > 0 && (
  <div style={S.card}>
- <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Your top link opportunities — start here</div>
+ <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Your top link opportunities â€” start here</div>
  <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>HIGH PRIORITY = do these first. The "how to get it" tells you the exact action to take.</div>
  {lga.topOpportunities.map((o, i) => (
  <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", marginBottom: 10 }}>
@@ -284,9 +285,9 @@ function LinkGapTab({ shopInfo = {} }) {
  )}
  {result.intersectTargets && result.intersectTargets.length > 0 && (
  <div style={{ ...S.card, border: "1px solid #3730a3" }}>
- <div style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", marginBottom: 4 }}>Easiest wins — sites that link to ALL your competitors</div>
+ <div style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", marginBottom: 4 }}>Easiest wins â€” sites that link to ALL your competitors</div>
  <div style={{ fontSize: 12, color: "#71717a", marginBottom: 10 }}>If they link to every competitor, they're very likely to link to you too. Start with these!</div>
- {result.intersectTargets.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a78bfa", padding: "5px 0", borderBottom: "1px solid #27272a" }}>→ {t}</div>)}
+ {result.intersectTargets.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a78bfa", padding: "5px 0", borderBottom: "1px solid #27272a" }}>â†’ {t}</div>)}
  </div>
  )}
  {result.quickWinTactics && result.quickWinTactics.length > 0 && (
@@ -301,10 +302,10 @@ function LinkGapTab({ shopInfo = {} }) {
  </div>
  )}
  <WhatToDoNow steps={[
- "Pick the 2–3 highest-priority opportunity types above",
+ "Pick the 2â€“3 highest-priority opportunity types above",
  "Use the 'Outreach Emails' tab to write a personalised email to those sites",
- "Target the Intersect Targets first — they already link to your competitors so they're warmest",
- "Aim for 2–4 outreach emails per week — consistency matters more than volume",
+ "Target the Intersect Targets first â€” they already link to your competitors so they're warmest",
+ "Aim for 2â€“4 outreach emails per week â€” consistency matters more than volume",
  ]} />
  </div>
  )}
@@ -312,7 +313,7 @@ function LinkGapTab({ shopInfo = {} }) {
  );
 }
 
-// ─── UNLINKED MENTIONS ───────────────────────────────────────────────────────
+// â”€â”€â”€ UNLINKED MENTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const UMEX = { brand: "My Yoga Shop", domain: "myyogashop.com", competitors: "" };
 
 function UnlinkedMentionsTab({ shopInfo = {} }) {
@@ -341,7 +342,7 @@ function UnlinkedMentionsTab({ shopInfo = {} }) {
  <div>
  <FeatureExplainer icon="" title="Find people who mention you but forgot to include a link"
  what="Sometimes bloggers, news sites or review pages write about your brand without linking to your website. That's a free backlink just sitting there! We'll show you how to find those pages and give you the exact email to politely ask them to add the link."
- tip="This is often the highest-converting link tactic because they already like you enough to write about you — asking for a link is a small favour." />
+ tip="This is often the highest-converting link tactic because they already like you enough to write about you â€” asking for a link is a small favour." />
  <div style={S.card}>
  <div style={S.grid3}>
  <div><label style={S.label}>Your brand name</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>Auto-filled from your Shopify store name</div></div>
@@ -349,7 +350,7 @@ function UnlinkedMentionsTab({ shopInfo = {} }) {
  <div>
  <label style={S.label}>Competitors (optional)</label>
  <CompetitorFinder domain={domain} niche="" brand={brand} value={competitors} onChange={setCompetitors} />
- <div style={S.hint}>Optional — helps find where else your brand might be mentioned</div>
+ <div style={S.hint}>Optional â€” helps find where else your brand might be mentioned</div>
  </div>
  </div>
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -405,7 +406,7 @@ function UnlinkedMentionsTab({ shopInfo = {} }) {
  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}><CopyBtn text={email.body} /></div>
  {email.followUpSubject && (
  <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid #27272a" }}>
- <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", marginBottom: 10 }}>IF NO REPLY AFTER 5–7 DAYS, SEND THIS FOLLOW-UP:</div>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", marginBottom: 10 }}>IF NO REPLY AFTER 5â€“7 DAYS, SEND THIS FOLLOW-UP:</div>
  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
  <div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "9px 12px", fontSize: 13 }}>{email.followUpSubject}</div>
  <CopyBtn text={email.followUpSubject} />
@@ -419,13 +420,13 @@ function UnlinkedMentionsTab({ shopInfo = {} }) {
  {strat && strat.automationTips && strat.automationTips.length > 0 && (
  <div style={S.tipBox}>
  <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>Set up alerts so you never miss a new mention</div>
- {strat.automationTips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fde68a", padding: "3px 0" }}>→ {t}</div>)}
+ {strat.automationTips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fde68a", padding: "3px 0" }}>â†’ {t}</div>)}
  </div>
  )}
  <WhatToDoNow steps={[
  "Run each Google search query above and note pages mentioning you without a link",
  "Personalise the email with the writer's name and reference their specific article",
- "Send it — most people are happy to add a link, you're making their article better!",
+ "Send it â€” most people are happy to add a link, you're making their article better!",
  "Follow up once after 7 days if no reply, then move on",
  "Set up a free Google Alert for your brand name to catch future mentions automatically",
  ]} />
@@ -435,7 +436,7 @@ function UnlinkedMentionsTab({ shopInfo = {} }) {
  );
 }
 
-// ─── OUTREACH SEQUENCES ──────────────────────────────────────────────────────
+// â”€â”€â”€ OUTREACH SEQUENCES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const OSEX = { targetSite: "yogajournal.com", yourSite: "myyogashop.com", yourContent: "The Complete Guide to Eco-Friendly Yoga Mats", angle: "Their article on sustainable yoga links to brands without eco-certification" };
 
 function OutreachSequencesTab() {
@@ -456,14 +457,14 @@ function OutreachSequencesTab() {
  return (
  <div>
  <FeatureExplainer icon="" title="Get AI to write your link-request emails"
- what="Asking another website for a link almost always requires sending them an email. This writes you a complete 4-email sequence — an initial ask, two follow-ups, and a polite final email. All properly structured to get replies. Just personalise the [brackets] and send."
- tip="A good outreach email focuses on what's in it for THEM — how does linking to your content make their article better for their readers? That framing gets 3× more replies." />
+ what="Asking another website for a link almost always requires sending them an email. This writes you a complete 4-email sequence â€” an initial ask, two follow-ups, and a polite final email. All properly structured to get replies. Just personalise the [brackets] and send."
+ tip="A good outreach email focuses on what's in it for THEM â€” how does linking to your content make their article better for their readers? That framing gets 3Ã— more replies." />
  <div style={S.card}>
  <div style={S.grid2}>
  <div><label style={S.label}>Website you want a link FROM</label><input style={S.input} value={targetSite} onChange={e => setTargetSite(e.target.value)} placeholder="industrymagazine.com" /><div style={S.hint}>A blog, directory or news site in your niche that would be a great link</div></div>
  <div><label style={S.label}>Your website</label><input style={S.input} value={yourSite} onChange={e => setYourSite(e.target.value)} placeholder="yourstore.com" /></div>
  <div><label style={S.label}>Your page or content to get linked to (optional)</label><input style={S.input} value={yourContent} onChange={e => setYourContent(e.target.value)} placeholder="The Complete Guide to Eco Yoga Mats" /><div style={S.hint}>The specific article or page you want them to link to</div></div>
- <div><label style={S.label}>Why should they link to you? (optional but helps)</label><input style={S.input} value={angle} onChange={e => setAngle(e.target.value)} placeholder="Their article mentions yoga sustainability but has outdated stats" /><div style={S.hint}>A specific reason makes emails 3× more likely to get a reply</div></div>
+ <div><label style={S.label}>Why should they link to you? (optional but helps)</label><input style={S.input} value={angle} onChange={e => setAngle(e.target.value)} placeholder="Their article mentions yoga sustainability but has outdated stats" /><div style={S.hint}>A specific reason makes emails 3Ã— more likely to get a reply</div></div>
  </div>
  <div style={{ marginTop: 4, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
  <RunButton onClick={run} disabled={!targetSite || !yourSite} loading={loading} color="#4f46e5" label="Write My Outreach Emails" credits={2} />
@@ -474,7 +475,7 @@ function OutreachSequencesTab() {
  {result && (
  <div>
  <div style={S.tipBox}>
- <div style={{ fontSize: 13, color: "#fde68a" }}><strong>How to use this sequence:</strong> Send Step 1. Wait 4–5 days — if no reply, send Step 2. Wait 5–7 days — send Step 3. Wait 2 weeks — send Step 4 (the break-up). After that, move on. Don't chase indefinitely.</div>
+ <div style={{ fontSize: 13, color: "#fde68a" }}><strong>How to use this sequence:</strong> Send Step 1. Wait 4â€“5 days â€” if no reply, send Step 2. Wait 5â€“7 days â€” send Step 3. Wait 2 weeks â€” send Step 4 (the break-up). After that, move on. Don't chase indefinitely.</div>
  </div>
  {(result.outreachSequence || []).map((step, i) => (
  <div key={i} style={{ ...S.card, borderLeft: `3px solid ${SC[i] || "#3f3f46"}`, marginBottom: 16 }}>
@@ -516,11 +517,11 @@ function OutreachSequencesTab() {
  )}
  </div>
  <WhatToDoNow steps={[
- "Look up the name of the person who runs the target site — address them personally",
+ "Look up the name of the person who runs the target site â€” address them personally",
  "Customise the [brackets] in each email with specific details about THEIR site",
- "Send from your real email inbox, not a marketing tool — looks far more genuine",
+ "Send from your real email inbox, not a marketing tool â€” looks far more genuine",
  "Track outreach in a simple spreadsheet: Site | Date Sent | Status | Reply",
- "Send 5–10 of these per week for consistent results — it's a numbers game",
+ "Send 5â€“10 of these per week for consistent results â€” it's a numbers game",
  ]} />
  </div>
  )}
@@ -528,7 +529,7 @@ function OutreachSequencesTab() {
  );
 }
 
-// ─── PR STORIES ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ PR STORIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PREX = { brand: "My Yoga Shop", niche: "eco yoga equipment", products: "cork yoga mats, recycled yoga blocks" };
 
 function PRStoriesTab() {
@@ -548,13 +549,13 @@ function PRStoriesTab() {
  return (
  <div>
  <FeatureExplainer icon="" title="Get journalists to write about you (and link to your site)"
- what="When a journalist or blogger covers your brand in an article, that's an incredibly powerful backlink — plus real traffic from their audience. This finds story angles that journalists would genuinely want to cover, and writes you a short pitch to send them."
+ what="When a journalist or blogger covers your brand in an article, that's an incredibly powerful backlink â€” plus real traffic from their audience. This finds story angles that journalists would genuinely want to cover, and writes you a short pitch to send them."
  tip="The best PR stories have data behind them. Even a simple survey of 20 of your customers can become a newsworthy article if the findings are interesting." />
  <div style={S.card}>
  <div style={S.grid3}>
  <div><label style={S.label}>Your brand name</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /></div>
- <div><label style={S.label}>Your niche / industry</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /><div style={S.hint}>Be specific — "sustainable fitness gear" beats "sports"</div></div>
- <div><label style={S.label}>Your products (optional)</label><input style={S.input} value={products} onChange={e => setProducts(e.target.value)} placeholder="cork yoga mats, recycled blocks" /><div style={S.hint}>Comma-separated — helps find relevant angles</div></div>
+ <div><label style={S.label}>Your niche / industry</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /><div style={S.hint}>Be specific â€” "sustainable fitness gear" beats "sports"</div></div>
+ <div><label style={S.label}>Your products (optional)</label><input style={S.input} value={products} onChange={e => setProducts(e.target.value)} placeholder="cork yoga mats, recycled blocks" /><div style={S.hint}>Comma-separated â€” helps find relevant angles</div></div>
  </div>
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
  <RunButton onClick={run} disabled={!brand || !niche} loading={loading} color="#db2777" label="Find My PR Story Angles" credits={2} />
@@ -587,7 +588,7 @@ function PRStoriesTab() {
  <div style={{ ...S.card, border: "1px solid #1e3a5f" }}>
  <div style={{ fontSize: 13, fontWeight: 700, color: "#38bdf8", marginBottom: 6 }}>Cheap research you could do</div>
  <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>Original data makes you quotable and earns links from journalists who reference you.</div>
- {result.dataStudyIdeas.map((d, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>→ {d}</div>)}
+ {result.dataStudyIdeas.map((d, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>â†’ {d}</div>)}
  </div>
  )}
  {result.journalistSearchQueries && result.journalistSearchQueries.length > 0 && (
@@ -607,9 +608,9 @@ function PRStoriesTab() {
  )}
  <WhatToDoNow steps={[
  "Pick the angle with HIGH link potential and LOW effort first",
- "If it needs data — send a quick Google Form survey to your customers (it's free)",
+ "If it needs data â€” send a quick Google Form survey to your customers (it's free)",
  "Find journalists covering your niche using the search queries above",
- "Send a short, personal pitch email — 3 to 5 sentences maximum, no attachments",
+ "Send a short, personal pitch email â€” 3 to 5 sentences maximum, no attachments",
  "If they write about you, ask them to include a link to your website in the article",
  ]} />
  </div>
@@ -618,7 +619,7 @@ function PRStoriesTab() {
  );
 }
 
-// ─── GUEST POSTS ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ GUEST POSTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const GPEX = { niche: "eco yoga equipment", expertise: "sustainable living and mindful exercise" };
 
 function GuestPostTab() {
@@ -638,8 +639,8 @@ function GuestPostTab() {
  return (
  <div>
  <FeatureExplainer icon="" title="Write for other blogs and earn a link back"
- what="Guest posting means writing a helpful article for someone else's blog, in exchange for a link back to your site — usually in the author bio or in the article itself. It's a win-win: they get free quality content, you get a valuable backlink and real traffic from their audience."
- tip="Guest posts also drive qualified traffic — readers of a relevant niche blog are exactly who you want visiting your store." />
+ what="Guest posting means writing a helpful article for someone else's blog, in exchange for a link back to your site â€” usually in the author bio or in the article itself. It's a win-win: they get free quality content, you get a valuable backlink and real traffic from their audience."
+ tip="Guest posts also drive qualified traffic â€” readers of a relevant niche blog are exactly who you want visiting your store." />
  <div style={S.card}>
  <div style={S.grid2}>
  <div><label style={S.label}>Your niche / industry</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
@@ -683,7 +684,7 @@ function GuestPostTab() {
  {result.evaluationCriteria && result.evaluationCriteria.length > 0 && (
  <div style={S.card}>
  <div style={{ fontSize: 12, fontWeight: 700, color: "#34d399", marginBottom: 8 }}>How to tell if a site is worth posting on</div>
- {result.evaluationCriteria.map((c, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>• {c}</div>)}
+ {result.evaluationCriteria.map((c, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>â€¢ {c}</div>)}
  </div>
  )}
  {result.commonMistakes && result.commonMistakes.length > 0 && (
@@ -695,16 +696,16 @@ function GuestPostTab() {
  </div>
  {result.linkBuildingByProxy && result.linkBuildingByProxy.length > 0 && (
  <div style={S.tipBox}>
- <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>Warm them up before pitching — much higher acceptance rate</div>
- {result.linkBuildingByProxy.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fde68a", padding: "3px 0" }}>→ {t}</div>)}
+ <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>Warm them up before pitching â€” much higher acceptance rate</div>
+ {result.linkBuildingByProxy.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fde68a", padding: "3px 0" }}>â†’ {t}</div>)}
  </div>
  )}
  <WhatToDoNow steps={[
- "Run 3–4 search queries and bookmark 10–15 relevant blogs you'd like to write for",
- "Check each blog meets the evaluation criteria — only pitch quality, active sites",
- "Comment genuinely on 2–3 of their recent posts first to get on their radar",
- "Send the pitch with your 3 article ideas — give them options",
- "If accepted, write the best article you can — it's your brand reputation",
+ "Run 3â€“4 search queries and bookmark 10â€“15 relevant blogs you'd like to write for",
+ "Check each blog meets the evaluation criteria â€” only pitch quality, active sites",
+ "Comment genuinely on 2â€“3 of their recent posts first to get on their radar",
+ "Send the pitch with your 3 article ideas â€” give them options",
+ "If accepted, write the best article you can â€” it's your brand reputation",
  ]} />
  </div>
  )}
@@ -712,7 +713,7 @@ function GuestPostTab() {
  );
 }
 
-// ─── COMMUNITIES ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ COMMUNITIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CMEX = { niche: "eco yoga equipment", brand: "My Yoga Shop", keywords: "sustainable yoga, eco mat, cork yoga mat" };
 
 function CommunitiesTab({ shopInfo = {} }) {
@@ -738,12 +739,12 @@ function CommunitiesTab({ shopInfo = {} }) {
  <div>
  <FeatureExplainer icon="" title="Find Reddit communities and forums your customers hang out in"
  what="Community engagement is an underrated link strategy. When you genuinely help people in forums and subreddits, they naturally share and link to your site. This finds the best communities in your niche, the right keywords to monitor, and shows you exactly how to add value without being spammy or promotional."
- tip="The golden rule: spend 2–4 weeks just helping people (no links). Once you're a trusted member, sharing your content when genuinely relevant feels natural — and works." />
+ tip="The golden rule: spend 2â€“4 weeks just helping people (no links). Once you're a trusted member, sharing your content when genuinely relevant feels natural â€” and works." />
  <div style={S.card}>
  <div style={S.grid3}>
  <div><label style={S.label}>Your niche / industry</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
- <div><label style={S.label}>Your brand name (optional)</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>Auto-filled from your Shopify store — used to monitor brand mentions</div></div>
- <div><label style={S.label}>Keywords to track (optional)</label><input style={S.input} value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="sustainable yoga, eco mat" /><div style={S.hint}>Comma-separated — topics to jump into</div></div>
+ <div><label style={S.label}>Your brand name (optional)</label><input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="My Yoga Shop" /><div style={S.hint}>Auto-filled from your Shopify store â€” used to monitor brand mentions</div></div>
+ <div><label style={S.label}>Keywords to track (optional)</label><input style={S.input} value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="sustainable yoga, eco mat" /><div style={S.hint}>Comma-separated â€” topics to jump into</div></div>
  </div>
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
  <RunButton onClick={run} disabled={!niche} loading={loading} color="#7c3aed" label="Find My Communities" credits={1} />
@@ -792,7 +793,7 @@ function CommunitiesTab({ shopInfo = {} }) {
  {result.valueAddApproach && result.valueAddApproach.length > 0 && (
  <div style={S.tipBox}>
  <div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>How to be genuinely helpful (so people want to find out more about you)</div>
- {result.valueAddApproach.map((v, i) => <div key={i} style={{ fontSize: 13, color: "#fde68a", padding: "3px 0" }}>→ {v}</div>)}
+ {result.valueAddApproach.map((v, i) => <div key={i} style={{ fontSize: 13, color: "#fde68a", padding: "3px 0" }}>â†’ {v}</div>)}
  </div>
  )}
  </div>
@@ -806,12 +807,12 @@ function CommunitiesTab({ shopInfo = {} }) {
  {result.contentThatPerformsWell && result.contentThatPerformsWell.length > 0 && (
  <div style={S.card}>
  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Types of content that get upvoted in your niche communities</div>
- {result.contentThatPerformsWell.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>→ {t}</div>)}
+ {result.contentThatPerformsWell.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>â†’ {t}</div>)}
  </div>
  )}
  <WhatToDoNow steps={[
  "Join the top 3 subreddits and add them to your daily routine",
- "For the first 2 weeks — only answer questions, never post your own links",
+ "For the first 2 weeks â€” only answer questions, never post your own links",
  "Bookmark the Reddit search URLs and check them for 2 minutes each morning",
  "Once trusted: if someone asks a question your content answers perfectly, share it",
  "Set up a free Google Alert for your brand name to catch mentions you can respond to",
@@ -822,7 +823,7 @@ function CommunitiesTab({ shopInfo = {} }) {
  );
 }
 
-// ─── BROKEN LINKS ────────────────────────────────────────────────────────────
+// â”€â”€â”€ BROKEN LINKS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const BLEX = { niche: "eco yoga equipment", domain: "myyogashop.com", content: "Complete guide to eco yoga mats, Top 10 sustainable yoga accessories" };
 
 function BrokenLinksTab() {
@@ -842,13 +843,13 @@ function BrokenLinksTab() {
  return (
  <div>
  <FeatureExplainer icon="" title={'Turn other websites\' dead links into backlinks for you'}
- what={"When a website links to a page that no longer exists (a 404 error), that's called a broken link. You find those dead links, then email the website owner: \"Hey, that link is broken — here's my similar page you could link to instead.\" It's helpful to them and gets you a link back. Win-win."}
- tip={"This works best when you already have content that covers the same topic as the broken link. If you don't have that content yet, create it first — then come back to this."} />
+ what={"When a website links to a page that no longer exists (a 404 error), that's called a broken link. You find those dead links, then email the website owner: \"Hey, that link is broken â€” here's my similar page you could link to instead.\" It's helpful to them and gets you a link back. Win-win."}
+ tip={"This works best when you already have content that covers the same topic as the broken link. If you don't have that content yet, create it first â€” then come back to this."} />
  <div style={S.card}>
  <div style={S.grid3}>
  <div><label style={S.label}>Your niche / industry</label><input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="eco yoga equipment" /></div>
  <div><label style={S.label}>Your website (optional)</label><input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} placeholder="yourstore.com" /></div>
- <div><label style={S.label}>Content you already have (optional)</label><input style={S.input} value={content} onChange={e => setContent(e.target.value)} placeholder="eco mat guide, sustainable accessories list" /><div style={S.hint}>Comma-separated — pages you can offer as replacements</div></div>
+ <div><label style={S.label}>Content you already have (optional)</label><input style={S.input} value={content} onChange={e => setContent(e.target.value)} placeholder="eco mat guide, sustainable accessories list" /><div style={S.hint}>Comma-separated â€” pages you can offer as replacements</div></div>
  </div>
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
  <RunButton onClick={run} disabled={!niche} loading={loading} color="#b45309" label="Find Broken Link Opportunities" credits={1} />
@@ -868,7 +869,7 @@ function BrokenLinksTab() {
  {result.prospectingSearchQueries && result.prospectingSearchQueries.length > 0 && (
  <div style={S.card}>
  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Step 1: Find resource pages in your niche</div>
- <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Paste these into Google. You're looking for "best resources", "useful links" or reference pages in your niche. These pages have tons of links — some will be broken. Install the free "Check My Links" Chrome extension to highlight dead links in red on any page you visit.</div>
+ <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Paste these into Google. You're looking for "best resources", "useful links" or reference pages in your niche. These pages have tons of links â€” some will be broken. Install the free "Check My Links" Chrome extension to highlight dead links in red on any page you visit.</div>
  {result.prospectingSearchQueries.map((q, i) => (<div key={i} style={S.codeRow}><code style={{ fontSize: 12, color: "#38bdf8", flex: 1 }}>{q}</code><CopyBtn text={q} /></div>))}
  </div>
  )}
@@ -888,7 +889,7 @@ function BrokenLinksTab() {
  {result.outreachTemplate && (
  <div style={{ ...S.card, border: "1px solid #451a03" }}>
  <div style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b", marginBottom: 4 }}>Step 3: Send this email to the site owner</div>
- <div style={{ fontSize: 12, color: "#71717a", marginBottom: 14 }}>This politely points out their broken link AND offers yours as a replacement. It's helpful to them — that's why it works so well. Fill in the [brackets].</div>
+ <div style={{ fontSize: 12, color: "#71717a", marginBottom: 14 }}>This politely points out their broken link AND offers yours as a replacement. It's helpful to them â€” that's why it works so well. Fill in the [brackets].</div>
  <div style={{ marginBottom: 10 }}>
  <div style={S.label}>SUBJECT LINE</div>
  <div style={{ display: "flex", gap: 8 }}><div style={{ flex: 1, background: "#09090b", borderRadius: 6, padding: "9px 12px", fontSize: 13 }}>{result.outreachTemplate.subject}</div><CopyBtn text={result.outreachTemplate.subject} /></div>
@@ -909,19 +910,19 @@ function BrokenLinksTab() {
  <div style={S.card}>
  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Content to create as the replacement</div>
  <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>If you don't have suitable content yet, these types work best</div>
- {result.contentToCreate.map((c, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>→ {c}</div>)}
+ {result.contentToCreate.map((c, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>â†’ {c}</div>)}
  </div>
  )}
  {result.scalingTips && result.scalingTips.length > 0 && (
  <div style={S.card}>
  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>How to do more of this once it's working</div>
- {result.scalingTips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>→ {t}</div>)}
+ {result.scalingTips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#a1a1aa", padding: "4px 0" }}>â†’ {t}</div>)}
  </div>
  )}
  </div>
  <WhatToDoNow steps={[
- "Install 'Check My Links' Chrome extension (free — takes 30 seconds)",
- "Run the Google searches above and browse 5–10 resource pages in your niche",
+ "Install 'Check My Links' Chrome extension (free â€” takes 30 seconds)",
+ "Run the Google searches above and browse 5â€“10 resource pages in your niche",
  "Use the extension to spot broken (red) links on those pages",
  "For each broken link you find, send the personalised email template above",
  "Keep a spreadsheet: Site | Broken URL | Your replacement URL | Date sent | Status",
@@ -932,7 +933,7 @@ function BrokenLinksTab() {
  );
 }
 
-// ─── ROOT ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ ROOT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TABS = [
  { id: "link-gap", label: "Link Gap", component: LinkGapTab },
  { id: "unlinked", label: " Unlinked Mentions", component: UnlinkedMentionsTab },
@@ -978,7 +979,7 @@ export default function LinkIntersectOutreach() {
  <div style={{ background: "#1a1412", border: "1px solid #78350f", borderRadius: 8, padding: "10px 16px", marginBottom: 16, display: "flex", gap: 10, alignItems: "flex-start" }}>
  <span style={{ flexShrink: 0 }}></span>
  <div style={{ fontSize: 12, color: "#fde68a", lineHeight: 1.6 }}>
- <strong>New here? Start with Link Gap.</strong> It shows where your competitors have more links than you — those gaps are your opportunities. Then use the other tools to go after them one by one. Every tab has a plain-English explainer and an example to try.
+ <strong>New here? Start with Link Gap.</strong> It shows where your competitors have more links than you â€” those gaps are your opportunities. Then use the other tools to go after them one by one. Every tab has a plain-English explainer and an example to try.
  </div>
  </div>
  <div style={S.tabsRow}>
@@ -991,3 +992,4 @@ export default function LinkIntersectOutreach() {
  </div>
  );
 }
+

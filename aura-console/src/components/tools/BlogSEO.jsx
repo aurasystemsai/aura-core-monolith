@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useCallback, useEffect } from "react";
+import { ScoreRing, scoreColor as mozScoreColor, ErrorBox, EmptyState, Spinner as MozSpinner } from "../MozUI";
 import { apiFetch, apiFetchJSON } from "../../api";
 import { useCreditError } from "../../globalCreditError";
 import { useCredits, ACTION_COSTS } from "../../hooks/useCredits";
@@ -2025,9 +2026,7 @@ export default function BlogSEO() {
  {/* post info row */}
  <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap", marginBottom: shown.length ? 12 : 0 }}>
  {score !== null && (
- <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", width:52, height:52, borderRadius:"50%", border:`2px solid ${scoreColor}`, color:scoreColor, fontWeight:800, fontSize:18, flexShrink:0 }}>
- {score}
- </div>
+ <ScoreRing score={score} label="" size={52} />
  )}
  <div style={{ flex:1, minWidth:0 }}>
  <div style={{ fontSize:13, fontWeight:700, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>

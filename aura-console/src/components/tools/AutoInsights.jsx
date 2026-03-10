@@ -1,6 +1,7 @@
 ﻿
 
 import React from "react";
+import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 
 // Flagship UI: All features, modern dashboard, segmentation, analytics, kanban, alerts, integrations
 export default function AutoInsights() {
@@ -562,6 +563,7 @@ export default function AutoInsights() {
  </div>
  );
 }
+
 
 
 
