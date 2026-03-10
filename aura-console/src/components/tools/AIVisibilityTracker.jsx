@@ -1520,6 +1520,29 @@ function SoVTab() {
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
  const [expanded, setExpanded] = useState({});
+ const [suggestingComps, setSuggestingComps] = useState(false);
+ const [suggestedComps, setSuggestedComps] = useState([]);
+ const [compErr, setCompErr] = useState("");
+
+ const suggestCompetitors = useCallback(async () => {
+  if (!brand.trim()) return;
+  setSuggestingComps(true); setSuggestedComps([]); setCompErr("");
+  try {
+   const d = await apiFetch(`${API}/suggest-competitors`, { method: "POST", body: JSON.stringify({ brand: brand.trim() }) });
+   if (!d.ok) throw new Error(d.error);
+   setSuggestedComps(d.competitors || []);
+  } catch (e) { setCompErr("Couldn't find competitors — try typing them manually."); }
+  finally { setSuggestingComps(false); }
+ }, [brand]);
+
+ const toggleComp = (name) => {
+  const existing = competitors.split(",").map(c => c.trim()).filter(Boolean);
+  if (existing.includes(name)) {
+   setCompetitors(existing.filter(c => c !== name).join(", "));
+  } else if (existing.length < 4) {
+   setCompetitors([...existing, name].join(", "));
+  }
+ };
 
  const run = useCallback(async () => {
   const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
@@ -1606,8 +1629,38 @@ function SoVTab() {
       </div>
       <div>
        <label style={S.label}>Competitor brands <span style={{ color: "#ef4444" }}>*</span></label>
-       <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="e.g. Amazon, Etsy, eBay" />
-       <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands you compete with</div>
+       <div style={{ display: "flex", gap: 6 }}>
+        <input style={{ ...S.input, flex: 1 }} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="e.g. Amazon, Etsy, eBay" />
+        <button onClick={suggestCompetitors} disabled={suggestingComps || !brand.trim()} title="AI suggests your top competitors"
+         style={{ flexShrink: 0, padding: "0 12px", height: 38, background: suggestingComps ? "#18181b" : "#1e1b4b", border: "1px solid #4338ca", borderRadius: 7, color: suggestingComps ? "#52525b" : "#a78bfa", fontSize: 11, fontWeight: 600, cursor: (suggestingComps || !brand.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: !brand.trim() ? 0.5 : 1 }}>
+         {suggestingComps
+          ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /></>
+          : <>✨ Find</>}
+        </button>
+       </div>
+       <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands · or click <strong style={{ color: "#a78bfa" }}>✨ Find</strong> to discover them automatically</div>
+       {compErr && <div style={{ fontSize: 10, color: "#f87171", marginTop: 4 }}>{compErr}</div>}
+       {suggestedComps.length > 0 && (
+        <div style={{ marginTop: 10, background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px" }}>
+         <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>✨ AI found these competitors — tap to add (max 4):</div>
+         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {suggestedComps.map((c, i) => {
+           const selected = competitors.split(",").map(x => x.trim()).includes(c.name);
+           const full = !selected && competitors.split(",").map(x => x.trim()).filter(Boolean).length >= 4;
+           return (
+            <button key={i} onClick={() => toggleComp(c.name)} disabled={full && !selected}
+             style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
+             <div style={{ width: 18, height: 18, borderRadius: "50%", background: selected ? "#4338ca" : "#27272a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: selected ? "#fff" : "#52525b", fontWeight: 700 }}>{selected ? "✓" : (i + 1)}</div>
+             <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a78bfa" : "#d4d4d8" }}>{c.name}</div>
+              <div style={{ fontSize: 10, color: "#52525b", lineHeight: 1.4 }}>{c.reason}</div>
+             </div>
+            </button>
+           );
+          })}
+         </div>
+        </div>
+       )}
       </div>
      </div>
      <div style={{ marginBottom: 18 }}>

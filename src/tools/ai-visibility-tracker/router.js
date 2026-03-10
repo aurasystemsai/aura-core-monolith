@@ -878,6 +878,48 @@ Return ONLY JSON:
 });
 
 /* ======================================================================
+   SUGGEST COMPETITORS
+   POST /api/ai-visibility-tracker/suggest-competitors
+   Given a brand name + optional niche, returns 4-6 real competitor brands
+   ====================================================================== */
+router.post('/suggest-competitors', async (req, res) => {
+  try {
+    const { brand, niche = '' } = req.body || {};
+    if (!brand) return res.status(400).json({ ok: false, error: 'brand required' });
+    const openai = getOpenAI();
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.4,
+      messages: [{
+        role: 'user',
+        content: `You are a competitive intelligence analyst. A user runs a brand called "${brand}"${niche ? ` in the niche: ${niche}` : ''}.
+
+List the 5 most relevant REAL competitor brands or companies they should be benchmarking against for AI search visibility.
+
+Rules:
+- Only include real, well-known brands/companies
+- Include a mix of big players AND niche-relevant ones
+- Rank by how much of a direct competitive threat they are
+- Do NOT include the user's own brand
+
+Respond with ONLY a JSON object:
+{
+  "competitors": [
+    { "name": "Brand Name", "reason": "One short sentence why they're a direct competitor" },
+    ...
+  ]
+}`
+      }],
+      response_format: { type: 'json_object' }
+    });
+    const data = JSON.parse(resp.choices[0].message.content);
+    res.json({ ok: true, competitors: (data.competitors || []).slice(0, 5) });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/* ======================================================================
    FEATURE 3 & 4: AI Share of Voice + Competitor Citation Analysis
    POST /api/ai-visibility-tracker/ai-sov
    Compares brand vs. competitors across AI responses for given prompts
