@@ -1527,6 +1527,9 @@ function SoVTab() {
  const [suggestingPrompts, setSuggestingPrompts] = useState(false);
  const [suggestedPrompts, setSuggestedPrompts] = useState([]);
  const [promptErr, setPromptErr] = useState("");
+ const [plan, setPlan] = useState(null);
+ const [loadingPlan, setLoadingPlan] = useState(false);
+ const [planErr, setPlanErr] = useState("");
 
  const suggestCompetitors = useCallback(async () => {
   if (!brand.trim() || !niche.trim()) return;
@@ -1568,11 +1571,21 @@ function SoVTab() {
   }
  };
 
+ const generatePlan = useCallback(async (sovResult) => {
+  setLoadingPlan(true); setPlan(null); setPlanErr("");
+  try {
+   const d = await apiFetch(`${API}/improvement-plan`, { method: "POST", body: JSON.stringify({ brand: sovResult.brand, sovScores: sovResult.sovScores, promptResults: sovResult.promptResults }) });
+   if (!d.ok) throw new Error(d.error);
+   setPlan(d);
+  } catch (e) { setPlanErr(e.message); }
+  finally { setLoadingPlan(false); }
+ }, []);
+
  const run = useCallback(async () => {
   const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
   const comps = competitors.split(",").map(c => c.trim()).filter(Boolean);
   if (!brand || prompts.length === 0 || comps.length === 0) return;
-  setLoading(true); setErr(""); setResult(null); setExpanded({});
+  setLoading(true); setErr(""); setResult(null); setExpanded({}); setPlan(null); setPlanErr("");
   try {
    const d = await apiFetch(`${API}/ai-sov`, { method: "POST", body: JSON.stringify({ brand, competitors: comps, prompts }) });
    if (!d.ok) throw new Error(d.error);
@@ -1829,6 +1842,91 @@ function SoVTab() {
           );
          })}
         </div>
+       </div>
+      </div>
+
+      {/* ── Battle Plan card ── */}
+      <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+       <div style={{ background: "linear-gradient(90deg,#065f46,#1e1b4b,#7c2d12)", height: 3 }} />
+       <div style={{ padding: "16px 20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: plan ? 16 : 0 }}>
+         <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>🎯 How to Beat Them</div>
+          <div style={{ fontSize: 11, color: "#71717a" }}>AI analyses every competitor's weak spots and tells you exactly what to do to outrank them</div>
+         </div>
+         {!plan && (
+          <button onClick={() => generatePlan(result)} disabled={loadingPlan}
+           style={{ flexShrink: 0, marginLeft: 16, padding: "10px 18px", background: loadingPlan ? "#18181b" : "linear-gradient(90deg,#065f46,#1e1b4b)", border: "none", borderRadius: 8, color: loadingPlan ? "#52525b" : "#fff", fontSize: 12, fontWeight: 700, cursor: loadingPlan ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+           {loadingPlan
+            ? <><div style={{ width: 12, height: 12, border: "2px solid #27272a", borderTopColor: "#34d399", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Analysing…</>
+            : <>✨ Generate My Battle Plan <span style={{ fontSize: 10, background: "rgba(255,255,255,0.12)", borderRadius: 4, padding: "1px 7px" }}>1 credit</span></>}
+          </button>
+         )}
+        </div>
+        {planErr && <div style={{ fontSize: 11, color: "#f87171", marginTop: 8 }}>{planErr}</div>}
+        {plan && (
+         <div>
+          {/* Top opportunity call-out */}
+          {plan.topOpportunity && (
+           <div style={{ background: "linear-gradient(135deg,#052e16,#0a0a12)", border: "1px solid #166534", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>⚡ Biggest Opportunity Right Now</div>
+            <div style={{ fontSize: 13, color: "#fafafa", lineHeight: 1.7, fontWeight: 500 }}>{plan.topOpportunity}</div>
+           </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
+           {/* Competitor intel — what we found */}
+           <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>
+             🔍 What We Found About Each Competitor
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+             {(plan.competitorIntel || []).map((ci, i) => (
+              <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
+               <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", marginBottom: 6 }}>{ci.competitor}</div>
+               <div style={{ marginBottom: 6 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: "#fca5a5", textTransform: "uppercase", marginBottom: 3 }}>⚠ Their weakness</div>
+                <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.5 }}>{ci.weakness}</div>
+               </div>
+               <div style={{ background: "#052e16", border: "1px solid #065f46", borderRadius: 6, padding: "6px 9px" }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: "#34d399", textTransform: "uppercase", marginBottom: 3 }}>✓ Your opportunity</div>
+                <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.5 }}>{ci.opportunity}</div>
+               </div>
+              </div>
+             ))}
+            </div>
+           </div>
+
+           {/* Action plan */}
+           <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>
+             🚀 Your Action Plan
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+             {(plan.actionPlan || []).map((step, i) => {
+              const effortColor = { quick: "#34d399", week: "#fbbf24", month: "#f97316" }[step.effort] || "#71717a";
+              const priColor = step.priority === "high" ? "#f87171" : "#fbbf24";
+              return (
+               <div key={i} style={{ background: "#09090b", border: `1px solid ${step.priority === "high" ? "#7f1d1d" : "#27272a"}`, borderRadius: 8, padding: "10px 12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 5 }}>
+                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #4338ca", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#a78bfa", flexShrink: 0 }}>{i + 1}</div>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: priColor, background: step.priority === "high" ? "#2d0000" : "#1c1100", border: `1px solid ${priColor}44`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase" }}>{step.priority}</span>
+                 </div>
+                 <span style={{ fontSize: 9, fontWeight: 700, color: effortColor, background: "#09090b", border: `1px solid ${effortColor}44`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase", flexShrink: 0 }}>{step.effort === "quick" ? "⚡ Quick win" : step.effort === "week" ? "📅 This week" : "📆 This month"}</span>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", lineHeight: 1.4, marginBottom: 4 }}>{step.action}</div>
+                <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5 }}>{step.why}</div>
+               </div>
+              );
+             })}
+            </div>
+           </div>
+          </div>
+
+          <button onClick={() => setPlan(null)} style={{ fontSize: 10, color: "#52525b", background: "none", border: "none", cursor: "pointer", padding: 0 }}>↺ Regenerate plan</button>
+         </div>
+        )}
        </div>
       </div>
 

@@ -1043,6 +1043,85 @@ Respond as JSON:
 });
 
 /* ======================================================================
+   IMPROVEMENT PLAN
+   POST /api/ai-visibility-tracker/improvement-plan
+   Takes full ai-sov results and generates competitor intel + action plan
+   ====================================================================== */
+router.post('/improvement-plan', async (req, res) => {
+  try {
+    const { brand, sovScores = [], promptResults = [] } = req.body || {};
+    if (!brand) return res.status(400).json({ ok: false, error: 'brand required' });
+
+    // Build a digest of competitor intel from promptResults
+    const competitorMap = {};
+    promptResults.forEach(pr => {
+      (pr.brands || []).forEach(b => {
+        if (b.brand === brand) return;
+        if (!competitorMap[b.brand]) competitorMap[b.brand] = { strengths: [], weaknesses: [] };
+        if (b.contentStrengths) competitorMap[b.brand].strengths.push(b.contentStrengths);
+        if (b.contentWeaknesses) competitorMap[b.brand].weaknesses.push(b.contentWeaknesses);
+      });
+    });
+    const yourData = promptResults.flatMap(pr => (pr.brands || []).filter(b => b.brand === brand));
+    const yourStrengths = yourData.map(b => b.contentStrengths).filter(Boolean);
+    const yourWeaknesses = yourData.map(b => b.contentWeaknesses).filter(Boolean);
+
+    const competitorSummary = Object.entries(competitorMap).map(([name, d]) => {
+      const topWeakness = d.weaknesses[0] || 'No clear weakness identified';
+      const topStrength = d.strengths[0] || 'No clear strength identified';
+      return `${name}: STRENGTH — ${topStrength}. WEAKNESS — ${topWeakness}.`;
+    }).join('\n');
+
+    const openai = getOpenAI();
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.5,
+      messages: [{
+        role: 'user',
+        content: `You are an AI visibility strategist. A brand called "${brand}" just ran an AI Share of Voice analysis comparing themselves against competitors.
+
+Here is what the analysis found:
+
+YOUR BRAND (${brand}):
+- Strengths identified: ${yourStrengths.join(' | ') || 'None identified yet'}
+- Weaknesses identified: ${yourWeaknesses.join(' | ') || 'None identified yet'}
+
+COMPETITOR INTELLIGENCE:
+${competitorSummary}
+
+Based on competitor weaknesses (gaps you can exploit) and their strengths (things you need to match or beat), generate a practical improvement plan.
+
+Respond with ONLY this JSON:
+{
+  "competitorIntel": [
+    {
+      "competitor": "Brand Name",
+      "weakness": "Their single biggest exploitable weakness in 1 sentence",
+      "opportunity": "One specific thing ${brand} should do to exploit this gap, in 1 sentence"
+    }
+  ],
+  "actionPlan": [
+    {
+      "priority": "high|medium",
+      "action": "Specific action to take (start with a verb)",
+      "why": "Why this will improve your AI visibility, in 1 sentence",
+      "effort": "quick|week|month"
+    }
+  ],
+  "topOpportunity": "The single most impactful thing ${brand} can do right now to gain AI share of voice, in 2 sentences"
+}`
+      }],
+      response_format: { type: 'json_object' }
+    });
+
+    const plan = JSON.parse(resp.choices[0].message.content);
+    res.json({ ok: true, ...plan });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/* ======================================================================
    FEATURE 7: LLM Seeding Recommendations
    POST /api/ai-visibility-tracker/seeding-plan
    Generates a plan for where to post content to boost LLM training signal
