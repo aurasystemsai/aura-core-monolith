@@ -1132,9 +1132,36 @@ function ConfidenceBar({ value, color }) {
 function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
  const nav = (section) => { if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE(section); };
  const tools = [
-  { icon: "✍️", label: "Write Blog Post", sub: "Blog Draft Engine", section: "blog-draft-engine",     color: "#818cf8", border: "#3730a3" },
-  { icon: "📋", label: "Create Content Brief", sub: "AI Brief Generator", section: "ai-content-brief-generator", color: "#34d399", border: "#065f46" },
-  { icon: "🔑", label: "Research Keywords",    sub: "Keyword Research",   section: "keyword-research-suite",        color: "#f59e0b", border: "#92400e" },
+  {
+   icon: "✍️", label: "Write a Blog Post", sub: "Blog Draft Engine",
+   section: "blog-draft-engine", color: "#818cf8", border: "#3730a3",
+   why: "Create content that answers this exact query so AI cites you",
+  },
+  {
+   icon: "📋", label: "Create Content Brief", sub: "AI Content Brief Generator",
+   section: "ai-content-brief-generator", color: "#34d399", border: "#065f46",
+   why: "Build a full keyword + structure brief to guide your content",
+  },
+  {
+   icon: "🔑", label: "Research Keywords", sub: "Keyword Research Suite",
+   section: "keyword-research-suite", color: "#f59e0b", border: "#92400e",
+   why: "Find related search terms AI models associate with this topic",
+  },
+  {
+   icon: "🌱", label: "Get AI to Notice You", sub: "LLM Seeding Plan",
+   section: "ai-visibility-tracker", color: "#a78bfa", border: "#4338ca",
+   why: "Find where to post content so ChatGPT & Perplexity pick you up",
+  },
+  {
+   icon: "📊", label: "Score & Fix Content", sub: "Content Scoring & Optimization",
+   section: "content-scoring-optimization", color: "#38bdf8", border: "#0369a1",
+   why: "Check if your existing content is strong enough to earn citations",
+  },
+  {
+   icon: "🔗", label: "Steal Their Backlinks", sub: "Link Intersect & Outreach",
+   section: "link-intersect-outreach", color: "#f472b6", border: "#9d174d",
+   why: "Find sites linking to competitors but not you — and reach out",
+  },
  ];
  return (
   <div>
@@ -1145,7 +1172,8 @@ function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
       onMouseEnter={e => e.currentTarget.style.background = "#111"} onMouseLeave={e => e.currentTarget.style.background = "#09090b"}>
       <div style={{ fontSize: 16, marginBottom: 4 }}>{t.icon}</div>
       <div style={{ fontSize: 11, fontWeight: 700, color: t.color }}>{t.label}</div>
-      <div style={{ fontSize: 9, color: "#52525b", marginTop: 2 }}>{t.sub} →</div>
+      <div style={{ fontSize: 9, color: "#52525b", marginTop: 2, marginBottom: 4 }}>{t.sub} →</div>
+      <div style={{ fontSize: 9, color: "#3f3f46", lineHeight: 1.4 }}>{t.why}</div>
      </button>
     ))}
    </div>
