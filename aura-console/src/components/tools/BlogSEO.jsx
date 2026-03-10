@@ -169,6 +169,13 @@ export default function BlogSEO() {
  const [briefLoading, setBriefLoading] = useState(false);
  const [briefErr, setBriefErr] = useState("");
  const [writeSub, setWriteSub] = useState("outline");
+ const [writeMode, setWriteMode] = useState("beginner"); // "beginner" | "advanced"
+ /* ── Beginner quick-draft state ── */
+ const [quickTopic, setQuickTopic] = useState("");
+ const [quickResult, setQuickResult] = useState(null);
+ const [quickLoading, setQuickLoading] = useState(false);
+ const [quickErr, setQuickErr] = useState("");
+ const [quickViewRaw, setQuickViewRaw] = useState(false);
 
  /* ── Generate Article flow ── */
  const [showGenModal, setShowGenModal] = useState(false);
@@ -2719,6 +2726,100 @@ export default function BlogSEO() {
  ════════════════════════════ */}
  {section === "Write" && (
  <>
+ {/* Beginner / Advanced toggle */}
+ <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
+ <div style={{ display: "flex", background: "#18181b", border: `1px solid ${C.border}`, borderRadius: 999, padding: 3, gap: 2 }}>
+ {[["beginner", "🟢 Beginner"], ["advanced", "⚡ Advanced"]].map(([mode, label]) => (
+ <button key={mode} onClick={() => setWriteMode(mode)} style={{
+ padding: "6px 18px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none",
+ background: writeMode === mode ? (mode === "beginner" ? "#059669" : C.indigo) : "transparent",
+ color: writeMode === mode ? "#fff" : C.sub, transition: "all .15s",
+ }}
+ >{label}</button>
+ ))}
+ </div>
+ {writeMode === "beginner" && <span style={{ fontSize: 12, color: C.dim }}>Simple mode — AI writes for you, nicely formatted</span>}
+ {writeMode === "advanced" && <span style={{ fontSize: 12, color: C.dim }}>Full control — outlines, intros, titles, briefs & raw HTML</span>}
+ </div>
+
+ {/* ── BEGINNER MODE ── */}
+ {writeMode === "beginner" && (
+ <>
+ {/* Shop chips */}
+ {genShopSuggestions.length > 0 && (
+ <div style={{ marginBottom: 16 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>From your shop — click to add:</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {genShopSuggestions.map((kw, i) => (
+ <button key={i} onClick={() => setQuickTopic(kw)} style={{ background: quickTopic === kw ? C.indigo : "#27272a", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", fontSize: 12, color: quickTopic === kw ? "#fff" : "#d4d4d8", cursor: "pointer" }}>{kw}</button>
+ ))}
+ </div>
+ </div>
+ )}
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>✨ Generate a Blog Post</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Just type your topic — AI writes a complete, formatted blog post for you. No technical knowledge needed.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>What do you want to write about?</div>
+ <textarea style={{ ...S.textarea, marginBottom: 12, minHeight: 70 }}
+ placeholder="e.g. The best snowboards for beginners — tips on choosing your first board"
+ value={quickTopic} onChange={e => setQuickTopic(e.target.value)}
+ />
+ <button style={{ ...S.btn("primary"), width: "100%", fontSize: 14, padding: "12px 20px" }}
+ onClick={async () => {
+ if (!quickTopic.trim()) return;
+ setQuickLoading(true); setQuickErr(""); setQuickResult(null); setQuickViewRaw(false);
+ try {
+ const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: quickTopic.trim() }) });
+ if (r.ok) setQuickResult(r); else setQuickErr(r.error || "Could not generate article. Please try again.");
+ } catch(e) { setQuickErr(e.message); }
+ setQuickLoading(false);
+ }}
+ disabled={quickLoading || !quickTopic.trim()}>
+ {quickLoading ? <><span style={S.spinner} /> Writing your article...</> : "✨ Write My Blog Post"}
+ </button>
+ {quickErr && <div style={{ ...S.err, marginTop: 12 }}>{quickErr}</div>}
+ </div>
+ </div>
+
+ {quickResult && (
+ <div style={{ marginTop: 16, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Your Article</span>
+ <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: "#14532d", color: "#86efac" }}>Ready</span>
+ </div>
+ <div style={{ display: "flex", gap: 6 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px" }}
+ onClick={() => setQuickViewRaw(v => !v)}>{quickViewRaw ? "👁 Preview" : "</> HTML"}</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px" }}
+ onClick={() => navigator.clipboard?.writeText(quickResult.content || quickResult.draft || "")}>📋 Copy</button>
+ </div>
+ </div>
+ {quickViewRaw ? (
+ <div style={{ padding: "16px 20px", background: C.bg, fontSize: 12, fontFamily: "'Courier New', monospace", color: "#a5b4fc", whiteSpace: "pre-wrap", lineHeight: 1.6, maxHeight: 500, overflowY: "auto" }}>
+ {quickResult.content || quickResult.draft || ""}
+ </div>
+ ) : (
+ <div
+ style={{ padding: "20px 24px", maxHeight: 600, overflowY: "auto",
+ fontSize: 15, lineHeight: 1.8, color: C.text }}
+ dangerouslySetInnerHTML={{ __html: quickResult.content || quickResult.draft || "" }}
+ />
+ )}
+ <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+ <button style={{ ...S.btn(), fontSize: 12 }} onClick={() => { setQuickResult(null); setQuickTopic(""); }}>Write Another</button>
+ </div>
+ </div>
+ )}
+ </>
+ )}
+
+ {/* ── ADVANCED MODE — sub-nav ── */}
+ {writeMode === "advanced" && (
+ <>
  {/* Sub-nav — styled tabs */}
  <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
  {[
@@ -2871,12 +2972,19 @@ export default function BlogSEO() {
  {draftErr && <div style={{ ...S.err, marginTop: 10 }}>{draftErr}</div>}
  {draftResult && (
  <div style={{ marginTop: 16 }}>
- <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+ <div style={{ display: "flex", gap: 8, marginBottom: 10, alignItems: "center" }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px" }}
+ onClick={() => setQuickViewRaw(v => !v)}>{quickViewRaw ? "👁 Preview" : "</> HTML"}</button>
  <button style={S.btn()} onClick={() => navigator.clipboard?.writeText(draftResult.content || draftResult.draft || "")}>Copy All</button>
  </div>
- <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "16px 18px", fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.75, maxHeight: 500, overflowY: "auto" }}>
+ {quickViewRaw ? (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "16px 18px", fontSize: 12, fontFamily: "'Courier New', monospace", color: "#a5b4fc", whiteSpace: "pre-wrap", lineHeight: 1.6, maxHeight: 500, overflowY: "auto" }}>
  {draftResult.content || draftResult.draft || JSON.stringify(draftResult)}
  </div>
+ ) : (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "16px 18px", fontSize: 14, lineHeight: 1.8, color: C.text, maxHeight: 500, overflowY: "auto" }}
+ dangerouslySetInnerHTML={{ __html: draftResult.content || draftResult.draft || "" }} />
+ )}
  </div>
  )}
  </div>
@@ -2912,6 +3020,8 @@ export default function BlogSEO() {
  )}
  </div>
  </div>
+ )}
+ </> /* end advanced mode */
  )}
  </>
  )}
