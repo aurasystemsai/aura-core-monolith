@@ -1,5 +1,6 @@
 ﻿import React, { useState, useCallback, useEffect, useRef } from "react";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
+import usePlan, { TOOL_PLAN, canUseTool } from "../../hooks/usePlan";
 // Wrapper: auto-parses JSON body and injects Content-Type on every call
 const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
   ...opts,
@@ -1130,7 +1131,13 @@ function ConfidenceBar({ value, color }) {
 }
 
 function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
- const nav = (section) => { if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE(section); };
+ const { plan: userPlan } = usePlan();
+ const nav = (section, locked) => {
+  if (locked) { if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE('pricing'); return; }
+  if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE(section);
+ };
+ const PLAN_COLOUR = { free: '#71717a', growth: '#38bdf8', pro: '#4f46e5', enterprise: '#a78bfa' };
+ const PLAN_LABEL = { free: 'Starter', growth: 'Growth', pro: 'Pro', enterprise: 'Enterprise' };
  const tools = [
   {
    icon: "✍️", label: "Write a Blog Post", sub: "Blog Draft Engine",
@@ -1167,15 +1174,26 @@ function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
   <div>
    <div style={{ fontSize: 10, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Take Action on This Gap</div>
    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-    {tools.map(t => (
-     <button key={t.section} onClick={() => nav(t.section)} style={{ background: "#09090b", border: `1px solid ${t.border}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "background 0.15s" }}
-      onMouseEnter={e => e.currentTarget.style.background = "#111"} onMouseLeave={e => e.currentTarget.style.background = "#09090b"}>
-      <div style={{ fontSize: 16, marginBottom: 4 }}>{t.icon}</div>
-      <div style={{ fontSize: 11, fontWeight: 700, color: t.color }}>{t.label}</div>
-      <div style={{ fontSize: 9, color: "#52525b", marginTop: 2, marginBottom: 4 }}>{t.sub} →</div>
-      <div style={{ fontSize: 9, color: "#3f3f46", lineHeight: 1.4 }}>{t.why}</div>
-     </button>
-    ))}
+    {tools.map(t => {
+     const reqPlan = TOOL_PLAN[t.section];
+     const locked = reqPlan ? !canUseTool(userPlan, t.section) : false;
+     return (
+      <button key={t.section} onClick={() => nav(t.section, locked)}
+       style={{ background: "#09090b", border: `1px solid ${locked ? '#3f3f46' : t.border}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "background 0.15s", position: "relative", opacity: locked ? 0.75 : 1 }}
+       onMouseEnter={e => e.currentTarget.style.background = "#111"} onMouseLeave={e => e.currentTarget.style.background = "#09090b"}>
+       {locked && (
+        <div style={{ position: "absolute", top: 7, right: 7, display: "flex", alignItems: "center", gap: 3, background: PLAN_COLOUR[reqPlan] + '22', border: `1px solid ${PLAN_COLOUR[reqPlan]}55`, borderRadius: 4, padding: "1px 5px" }}>
+         <span style={{ fontSize: 8 }}>🔒</span>
+         <span style={{ fontSize: 8, fontWeight: 700, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]}</span>
+        </div>
+       )}
+       <div style={{ fontSize: 16, marginBottom: 4 }}>{t.icon}</div>
+       <div style={{ fontSize: 11, fontWeight: 700, color: locked ? '#52525b' : t.color }}>{t.label}</div>
+       <div style={{ fontSize: 9, color: "#52525b", marginTop: 2, marginBottom: 4 }}>{locked ? 'Upgrade to unlock →' : `${t.sub} →`}</div>
+       {!locked && <div style={{ fontSize: 9, color: "#3f3f46", lineHeight: 1.4 }}>{t.why}</div>}
+      </button>
+     );
+    })}
    </div>
   </div>
  );
@@ -1540,24 +1558,27 @@ function PromptTestTab() {
 }
 
 /* Tab: AI Share of Voice */
+const SOV_CACHE_KEY = 'aura_sov_last_result';
+
 function SoVTab() {
- const [brand, setBrand] = useState("");
- const [competitors, setCompetitors] = useState("");
- const [promptsText, setPromptsText] = useState("");
- const [result, setResult] = useState(null);
+ const [brand, setBrand] = useState(() => { try { return JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.brand || ""; } catch { return ""; } });
+ const [competitors, setCompetitors] = useState(() => { try { return JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.competitorsStr || ""; } catch { return ""; } });
+ const [promptsText, setPromptsText] = useState(() => { try { return JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.promptsStr || ""; } catch { return ""; } });
+ const [result, setResult] = useState(() => { try { const c = JSON.parse(localStorage.getItem(SOV_CACHE_KEY)); return c?.result || null; } catch { return null; } });
  const [loading, setLoading] = useState(false);
  const [err, setErr] = useState("");
- const [expanded, setExpanded] = useState({});
- const [niche, setNiche] = useState("");
+ const [expanded, setExpanded] = useState(() => { try { return JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.result ? {0: true} : {}; } catch { return {}; } });
+ const [niche, setNiche] = useState(() => { try { return JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.niche || ""; } catch { return ""; } });
  const [suggestingComps, setSuggestingComps] = useState(false);
  const [suggestedComps, setSuggestedComps] = useState([]);
  const [compErr, setCompErr] = useState("");
  const [suggestingPrompts, setSuggestingPrompts] = useState(false);
  const [suggestedPrompts, setSuggestedPrompts] = useState([]);
  const [promptErr, setPromptErr] = useState("");
- const [plan, setPlan] = useState(null);
+ const [plan, setPlan] = useState(() => { try { return JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.battlePlan || null; } catch { return null; } });
  const [loadingPlan, setLoadingPlan] = useState(false);
  const [planErr, setPlanErr] = useState("");
+ const [restored, setRestored] = useState(() => { try { return !!JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.result; } catch { return false; } });
 
  const suggestCompetitors = useCallback(async () => {
   if (!brand.trim() || !niche.trim()) return;
@@ -1605,6 +1626,7 @@ function SoVTab() {
    const d = await apiFetch(`${API}/improvement-plan`, { method: "POST", body: JSON.stringify({ brand: sovResult.brand, sovScores: sovResult.sovScores, promptResults: sovResult.promptResults }) });
    if (!d.ok) throw new Error(d.error);
    setPlan(d);
+   try { const prev = JSON.parse(localStorage.getItem(SOV_CACHE_KEY) || "{}"); localStorage.setItem(SOV_CACHE_KEY, JSON.stringify({ ...prev, battlePlan: d })); } catch {}
   } catch (e) { setPlanErr(e.message); }
   finally { setLoadingPlan(false); }
  }, []);
@@ -1613,12 +1635,13 @@ function SoVTab() {
   const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
   const comps = competitors.split(",").map(c => c.trim()).filter(Boolean);
   if (!brand || prompts.length === 0 || comps.length === 0) return;
-  setLoading(true); setErr(""); setResult(null); setExpanded({}); setPlan(null); setPlanErr("");
+  setLoading(true); setErr(""); setResult(null); setExpanded({}); setPlan(null); setPlanErr(""); setRestored(false);
   try {
    const d = await apiFetch(`${API}/ai-sov`, { method: "POST", body: JSON.stringify({ brand, competitors: comps, prompts }) });
    if (!d.ok) throw new Error(d.error);
    setResult(d);
    setExpanded({ 0: true });
+   try { localStorage.setItem(SOV_CACHE_KEY, JSON.stringify({ brand, niche, competitorsStr: competitors, promptsStr: promptsText, result: d, savedAt: Date.now() })); } catch {}
   } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, competitors, promptsText]);
 
@@ -1788,6 +1811,13 @@ function SoVTab() {
    </div>
 
    {err && <div style={S.error}>{err}</div>}
+
+   {restored && result && (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1c1400", border: "1px solid #713f12", borderRadius: 8, padding: "10px 14px", marginBottom: 12, gap: 8 }}>
+     <span style={{ fontSize: 12, color: "#fde68a" }}>📂 Showing your last results — inputs restored. No credits used.</span>
+     <button onClick={() => { setResult(null); setPlan(null); setRestored(false); localStorage.removeItem(SOV_CACHE_KEY); setBrand(""); setNiche(""); setCompetitors(""); setPromptsText(""); setExpanded({}); }} style={{ background: "none", border: "1px solid #713f12", borderRadius: 4, color: "#fde68a", fontSize: 11, cursor: "pointer", padding: "2px 8px" }}>✕ Clear</button>
+    </div>
+   )}
 
    {result && (() => {
     const sorted = [...(result.sovScores || [])].sort((a, b) => b.avgCitationProbability - a.avgCitationProbability);
