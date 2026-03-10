@@ -6,21 +6,21 @@ let creditErr = null;
 let listeners = [];
 
 const subscribe = (fn) => {
-  listeners.push(fn);
-  return () => { listeners = listeners.filter((l) => l !== fn); };
+ listeners.push(fn);
+ return () => { listeners = listeners.filter((l) => l !== fn); };
 };
 
 export function useCreditError() {
-  const [err, setErr] = useState(creditErr);
-  useEffect(() => subscribe(setErr), []);
-  const dismiss = () => {
-    creditErr = null;
-    listeners.forEach((fn) => fn(null));
-  };
-  return [err, dismiss];
+ const [err, setErr] = useState(creditErr);
+ useEffect(() => subscribe(setErr), []);
+ const dismiss = () => {
+ creditErr = null;
+ listeners.forEach((fn) => fn(null));
+ };
+ return [err, dismiss];
 }
 
 export function setCreditError(data) {
-  creditErr = data;
-  listeners.forEach((fn) => fn(data));
+ creditErr = data;
+ listeners.forEach((fn) => fn(data));
 }

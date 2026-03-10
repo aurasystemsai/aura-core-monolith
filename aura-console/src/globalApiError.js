@@ -5,21 +5,21 @@ let globalApiError = '';
 let listeners = [];
 
 const subscribe = (fn) => {
-  listeners.push(fn);
-  return () => {
-    listeners = listeners.filter((l) => l !== fn);
-  };
+ listeners.push(fn);
+ return () => {
+ listeners = listeners.filter((l) => l !== fn);
+ };
 };
 
 export function useGlobalApiError() {
-  const [error, setError] = useState(globalApiError);
+ const [error, setError] = useState(globalApiError);
 
-  useEffect(() => subscribe(setError), []);
+ useEffect(() => subscribe(setError), []);
 
-  return [error, setError];
+ return [error, setError];
 }
 
 export function setApiError(err) {
-  globalApiError = err;
-  listeners.forEach((fn) => fn(err));
+ globalApiError = err;
+ listeners.forEach((fn) => fn(err));
 }

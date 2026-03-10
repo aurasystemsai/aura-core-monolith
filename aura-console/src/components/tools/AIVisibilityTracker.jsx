@@ -3,8 +3,8 @@ import { apiFetchJSON as _apiFetchJSON } from "../../api";
 import usePlan, { TOOL_PLAN, canUseTool } from "../../hooks/usePlan";
 // Wrapper: auto-parses JSON body and injects Content-Type on every call
 const apiFetch = (url, opts = {}) => _apiFetchJSON(url, {
-  ...opts,
-  headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+ ...opts,
+ headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
 });
 
 const API = "/api/ai-visibility-tracker";
@@ -69,96 +69,96 @@ function ScoreCircle({ score, label }) {
 /* Loading skeleton shown while /overview AI call is in flight */
 const SHIMMER_CSS = `
 @keyframes ait-shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position:  400px 0; }
+ 0% { background-position: -400px 0; }
+ 100% { background-position: 400px 0; }
 }
 @keyframes ait-spin {
-  to { transform: rotate(360deg); }
+ to { transform: rotate(360deg); }
 }
 .ait-skel {
-  background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
-  background-size: 400px 100%;
-  animation: ait-shimmer 1.4s ease-in-out infinite;
-  border-radius: 6px;
+ background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+ background-size: 400px 100%;
+ animation: ait-shimmer 1.4s ease-in-out infinite;
+ border-radius: 6px;
 }`;
 
 function LoadingOverviewSkeleton() {
-  return (
-    <>
-      <style>{SHIMMER_CSS}</style>
-      <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "18px 20px", marginBottom: 16, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 22, height: 22, border: "2px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#fafafa", marginBottom: 4 }}>Analysing brand visibility across AI platforms…</div>
-          <div style={{ fontSize: 12, color: "#71717a" }}>Querying ChatGPT, Google AI Overview, AI Mode &amp; Gemini — this takes 15–30 seconds</div>
-        </div>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20, gap: 10 }}>
-              <div className="ait-skel" style={{ width: 140, height: 140, borderRadius: "50%" }} />
-              <div className="ait-skel" style={{ width: 80, height: 14 }} />
-              <div className="ait-skel" style={{ width: 120, height: 11 }} />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "14px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 16 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <div className="ait-skel" style={{ width: 44, height: 20 }} />
-                  <div className="ait-skel" style={{ width: 64, height: 10 }} />
-                </div>
-              ))}
-            </div>
-            <div className="ait-skel" style={{ width: 120, height: 12, marginBottom: 10 }} />
-            {[0,1,2,3].map(i => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #1c1c1f" }}>
-                <div className="ait-skel" style={{ width: 9, height: 9, borderRadius: "50%" }} />
-                <div className="ait-skel" style={{ flex: 1, height: 12 }} />
-                <div className="ait-skel" style={{ width: 80, height: 6, borderRadius: 3 }} />
-                <div className="ait-skel" style={{ width: 32, height: 12 }} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div className="ait-skel" style={{ width: 200, height: 14 }} />
-              <div style={{ display: "flex", gap: 8 }}>
-                {[0,1,2,3].map(i => <div key={i} className="ait-skel" style={{ width: 56, height: 11 }} />)}
-              </div>
-            </div>
-            <div className="ait-skel" style={{ width: "100%", height: 130, borderRadius: 8 }} />
-            <div className="ait-skel" style={{ width: "75%", height: 11, marginTop: 10 }} />
-          </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
-            <div className="ait-skel" style={{ width: 120, height: 13, marginBottom: 14 }} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {[0,1,2,3,4,5].map(i => (
-                <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div className="ait-skel" style={{ width: 24, height: 18 }} />
-                  <div className="ait-skel" style={{ width: "80%", height: 12 }} />
-                  <div className="ait-skel" style={{ width: "60%", height: 11 }} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+ return (
+ <>
+ <style>{SHIMMER_CSS}</style>
+ <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "18px 20px", marginBottom: 16, display: "flex", alignItems: "center", gap: 14 }}>
+ <div style={{ width: 22, height: 22, border: "2px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
+ <div>
+ <div style={{ fontSize: 14, fontWeight: 600, color: "#fafafa", marginBottom: 4 }}>Analysing brand visibility across AI platforms…</div>
+ <div style={{ fontSize: 12, color: "#71717a" }}>Querying ChatGPT, Google AI Overview, AI Mode &amp; Gemini — this takes 15–30 seconds</div>
+ </div>
+ </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
+ <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+ <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
+ <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20, gap: 10 }}>
+ <div className="ait-skel" style={{ width: 140, height: 140, borderRadius: "50%" }} />
+ <div className="ait-skel" style={{ width: 80, height: 14 }} />
+ <div className="ait-skel" style={{ width: 120, height: 11 }} />
+ </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "14px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 16 }}>
+ {[0,1,2].map(i => (
+ <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+ <div className="ait-skel" style={{ width: 44, height: 20 }} />
+ <div className="ait-skel" style={{ width: 64, height: 10 }} />
+ </div>
+ ))}
+ </div>
+ <div className="ait-skel" style={{ width: 120, height: 12, marginBottom: 10 }} />
+ {[0,1,2,3].map(i => (
+ <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #1c1c1f" }}>
+ <div className="ait-skel" style={{ width: 9, height: 9, borderRadius: "50%" }} />
+ <div className="ait-skel" style={{ flex: 1, height: 12 }} />
+ <div className="ait-skel" style={{ width: 80, height: 6, borderRadius: 3 }} />
+ <div className="ait-skel" style={{ width: 32, height: 12 }} />
+ </div>
+ ))}
+ </div>
+ </div>
+ <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+ <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+ <div className="ait-skel" style={{ width: 200, height: 14 }} />
+ <div style={{ display: "flex", gap: 8 }}>
+ {[0,1,2,3].map(i => <div key={i} className="ait-skel" style={{ width: 56, height: 11 }} />)}
+ </div>
+ </div>
+ <div className="ait-skel" style={{ width: "100%", height: 130, borderRadius: 8 }} />
+ <div className="ait-skel" style={{ width: "75%", height: 11, marginTop: 10 }} />
+ </div>
+ <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
+ <div className="ait-skel" style={{ width: 120, height: 13, marginBottom: 14 }} />
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+ {[0,1,2,3,4,5].map(i => (
+ <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+ <div className="ait-skel" style={{ width: 24, height: 18 }} />
+ <div className="ait-skel" style={{ width: "80%", height: 12 }} />
+ <div className="ait-skel" style={{ width: "60%", height: 11 }} />
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+ </>
+ );
 }
 
 /* Tab: Overview */
 const OVERVIEW_KEY = "aura_overview_cache";
 function loadCache() {
-  try { return JSON.parse(localStorage.getItem(OVERVIEW_KEY) || "null"); } catch { return null; }
+ try { return JSON.parse(localStorage.getItem(OVERVIEW_KEY) || "null"); } catch { return null; }
 }
 function saveCache(brand, domain, data) {
-  try { localStorage.setItem(OVERVIEW_KEY, JSON.stringify({ brand, domain, data })); } catch {}
+ try { localStorage.setItem(OVERVIEW_KEY, JSON.stringify({ brand, domain, data })); } catch {}
 }
 function clearCache() {
-  try { localStorage.removeItem(OVERVIEW_KEY); } catch {}
+ try { localStorage.removeItem(OVERVIEW_KEY); } catch {}
 }
 
 function OverviewTab({ onNavigate }) {
@@ -179,21 +179,21 @@ function OverviewTab({ onNavigate }) {
  const handleDomainChange = (v) => { setDomain(v); if (result) { setResult(null); clearCache(); } };
 
  const run = useCallback(async () => {
-  if (!brand.trim() && !domain.trim()) { setErr("Enter a brand name or domain first."); return; }
-  setLoading(true); setErr(""); setResult(null); clearCache();
-  try {
-    const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), domain: domain.trim() }) });
-    if (!d.ok) throw new Error(d.error || d.message || `Server error ${d.status}`);
-    setResult(d);
-    saveCache(brand.trim(), domain.trim(), d);
-  } catch (e) { setErr(e.message); } finally { setLoading(false); }
+ if (!brand.trim() && !domain.trim()) { setErr("Enter a brand name or domain first."); return; }
+ setLoading(true); setErr(""); setResult(null); clearCache();
+ try {
+ const d = await apiFetch(`${API}/overview`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), domain: domain.trim() }) });
+ if (!d.ok) throw new Error(d.error || d.message || `Server error ${d.status}`);
+ setResult(d);
+ saveCache(brand.trim(), domain.trim(), d);
+ } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, domain]);
 
  const PLATFORMS = [
- { key: "chatgpt",    label: "ChatGPT",     color: "#22d3ee" },
- { key: "aiOverview", label: "AI Overview",  color: "#4ade80" },
- { key: "aiMode",     label: "AI Mode",      color: "#34d399" },
- { key: "gemini",     label: "Gemini",       color: "#f59e0b" },
+ { key: "chatgpt", label: "ChatGPT", color: "#22d3ee" },
+ { key: "aiOverview", label: "AI Overview", color: "#4ade80" },
+ { key: "aiMode", label: "AI Mode", color: "#34d399" },
+ { key: "gemini", label: "Gemini", color: "#f59e0b" },
  ];
 
  const HOW_IT_WORKS = [
@@ -209,12 +209,12 @@ function OverviewTab({ onNavigate }) {
  const scoreLabel = score >= 80 ? "High" : score >= 50 ? "Medium" : score >= 20 ? "Low" : "Not tracked";
 
  const QUICK_ACTIONS = [
- { icon: "★", label: "Citability Score", desc: "Score a page for AI citation likelihood", tab: 1 },
- { icon: "◎", label: "Prompt Testing",   desc: "Test brand visibility in AI answers",    tab: 2 },
- { icon: "◈", label: "Share of Voice",   desc: "Compare vs competitors across prompts",  tab: 3 },
- { icon: "⬡", label: "Seeding Plan",     desc: "Where to post to grow AI mentions",      tab: 4 },
- { icon: "◑", label: "Prompt Coverage",  desc: "Map all AI prompts in your niche",       tab: 7 },
- { icon: "⬢", label: "GEO Optimizer",   desc: "Rewrite content for AI citation",        tab: 6 },
+ { icon: "", label: "Citability Score", desc: "Score a page for AI citation likelihood", tab: 1 },
+ { icon: "", label: "Prompt Testing", desc: "Test brand visibility in AI answers", tab: 2 },
+ { icon: "", label: "Share of Voice", desc: "Compare vs competitors across prompts", tab: 3 },
+ { icon: "", label: "Seeding Plan", desc: "Where to post to grow AI mentions", tab: 4 },
+ { icon: "", label: "Prompt Coverage", desc: "Map all AI prompts in your niche", tab: 7 },
+ { icon: "", label: "GEO Optimizer", desc: "Rewrite content for AI citation", tab: 6 },
  ];
 
  // Build trend chart polylines from result data if available
@@ -225,10 +225,10 @@ function OverviewTab({ onNavigate }) {
  return arr.slice(-6).map((v, i) => `${xs[i]},${90 - Math.round((v / max) * 80)}`).join(" ");
  };
 
- const trendTotal    = result?.trend?.total    ?? [0,0,0,0,0,0];
- const trendChatgpt  = result?.trend?.chatgpt  ?? [0,0,0,0,0,0];
+ const trendTotal = result?.trend?.total ?? [0,0,0,0,0,0];
+ const trendChatgpt = result?.trend?.chatgpt ?? [0,0,0,0,0,0];
  const trendOverview = result?.trend?.aiOverview ?? [0,0,0,0,0,0];
- const trendGemini   = result?.trend?.gemini   ?? [0,0,0,0,0,0];
+ const trendGemini = result?.trend?.gemini ?? [0,0,0,0,0,0];
 
  const maxMentions = result ? Math.max(result.chatgpt || 0, result.aiOverview || 0, result.aiMode || 0, result.gemini || 0, 1) : 1;
 
@@ -304,8 +304,8 @@ function OverviewTab({ onNavigate }) {
  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "14px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 16, textAlign: "center" }}>
  {[
  { label: "Monthly Audience", value: result?.monthlyAudience ? (result.monthlyAudience >= 1e6 ? `${(result.monthlyAudience/1e6).toFixed(1)}M` : result.monthlyAudience >= 1e3 ? `${(result.monthlyAudience/1e3).toFixed(1)}K` : result.monthlyAudience) : "—" },
- { label: "Mentions",          value: result?.mentions ?? 0 },
- { label: "Cited Pages",       value: result?.citedPages ?? 0 },
+ { label: "Mentions", value: result?.mentions ?? 0 },
+ { label: "Cited Pages", value: result?.citedPages ?? 0 },
  ].map(s => (
  <div key={s.label}>
  <div style={{ fontSize: 22, fontWeight: 900, color: "#fafafa" }}>{s.value}</div>
@@ -349,10 +349,10 @@ function OverviewTab({ onNavigate }) {
  <line x1="0" y1="25" x2="240" y2="25" stroke="#27272a" strokeWidth="0.5" />
  <line x1="0" y1="50" x2="240" y2="50" stroke="#27272a" strokeWidth="0.5" />
  <line x1="0" y1="75" x2="240" y2="75" stroke="#27272a" strokeWidth="0.5" />
- <polyline points={trendPoints(trendTotal)}    fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
- <polyline points={trendPoints(trendChatgpt)}  fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points={trendPoints(trendTotal)} fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points={trendPoints(trendChatgpt)} fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
  <polyline points={trendPoints(trendOverview)} fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
- <polyline points={trendPoints(trendGemini)}   fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points={trendPoints(trendGemini)} fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
  </svg>
  {result?.trendInsight && (
  <div style={{ ...S.infoBox, marginTop: 10 }}>{result.trendInsight}</div>
@@ -385,11 +385,11 @@ function OverviewTab({ onNavigate }) {
  { icon: "≡", title: "Find hot topics for your brand", desc: "Discover high-potential topics where your brand is missing. Create content that puts you back in the conversation and boost your AI Visibility.", cta: "Uncover topic opportunities", tab: 7 },
  { icon: "⊞", title: "Explore competitor strategies", desc: "See which topics competitors dominate and where they publish. Use these insights to create content and grow visibility in AI-generated answers.", cta: "Find competitor gaps", tab: 3 },
  { icon: "⊙", title: "Optimize your domain for AI", desc: "Make sure AI bots can crawl your domain and use your content. If crawlers can't access it, your site won't appear in AI answers.", cta: "Check your domain's AI Health", tab: 9 },
- { icon: "⌾", title: "Find sources where you should be published", desc: "Identify UGC and media platforms where your brand is absent. Publish there to expand reach and strengthen your AI visibility.", cta: "Uncover source opportunities", tab: 4 },
- { icon: "◈", title: "Get everything to rank for your topic", desc: "Choose a topic you want to rank for and use Prompt Research to uncover insights, requirements, and opportunities — all in one place.", cta: "Explore your topic", tab: 2 },
- { icon: "✦", title: "See how AI perceives your brand", desc: "Review your brand's performance across perception, sentiment, and narrative drivers to strengthen your business strategy.", cta: "Explore your brand performance", tab: 3 },
+ { icon: "", title: "Find sources where you should be published", desc: "Identify UGC and media platforms where your brand is absent. Publish there to expand reach and strengthen your AI visibility.", cta: "Uncover source opportunities", tab: 4 },
+ { icon: "", title: "Get everything to rank for your topic", desc: "Choose a topic you want to rank for and use Prompt Research to uncover insights, requirements, and opportunities — all in one place.", cta: "Explore your topic", tab: 2 },
+ { icon: "", title: "See how AI perceives your brand", desc: "Review your brand's performance across perception, sentiment, and narrative drivers to strengthen your business strategy.", cta: "Explore your brand performance", tab: 3 },
  { icon: "≋", title: "Strengthen your local presence", desc: "ChatGPT, Gemini, and Perplexity read many sources. Fix local listing issues to increase your chances of being featured in their answers.", cta: "Fix issues to boost AI Visibility", tab: 9 },
- { icon: "◎", title: "See how LLMs use your domain", desc: "Check which pages already work for LLMs, and where you need to review content to strengthen it.", cta: "Check Cited Pages", tab: 10 },
+ { icon: "", title: "See how LLMs use your domain", desc: "Check which pages already work for LLMs, and where you need to review content to strengthen it.", cta: "Check Cited Pages", tab: 10 },
  ];
  const maxSlide = WHATS_NEXT_CARDS.length - 3;
  const visible = WHATS_NEXT_CARDS.slice(whatsNextSlide, whatsNextSlide + 3);
@@ -466,7 +466,7 @@ function OverviewTab({ onNavigate }) {
  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
  >
  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
- <span style={{ color: expandedTopic === ti ? "#a855f7" : "#71717a", fontSize: 12 }}>{expandedTopic === ti ? "▾" : "▸"}</span>
+ <span style={{ color: expandedTopic === ti ? "#a855f7" : "#71717a", fontSize: 12 }}>{expandedTopic === ti ? "" : ""}</span>
  <span style={{ fontSize: 13, color: "#fafafa" }}>{topic.topic}</span>
  </div>
  <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa", textAlign: "center" }}>{topic.visibility}</span>
@@ -512,7 +512,7 @@ function OverviewTab({ onNavigate }) {
  <span style={{ fontSize: 12, color: "#a1a1aa", textAlign: "center" }}>{p.brands}</span>
  <span style={{ fontSize: 12, color: "#60a5fa", textAlign: "center" }}>{p.sources}</span>
  <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
- <button title="Copy prompt" onClick={() => navigator.clipboard?.writeText(p.prompt)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⎘</button>
+ <button title="Copy prompt" onClick={() => navigator.clipboard?.writeText(p.prompt)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}></button>
  <button title="Test this prompt" onClick={() => onNavigate(2)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: "#71717a", fontSize: 11 }}>⊙</button>
  </div>
  </div>
@@ -525,7 +525,7 @@ function OverviewTab({ onNavigate }) {
  <>
  {/* Explanation banner */}
  <div style={{ margin: "0 0 0 0", padding: "14px 20px", background: "linear-gradient(90deg,#1e1b4b,#18181b)", borderBottom: "1px solid #27272a", display: "flex", gap: 14, alignItems: "flex-start" }}>
- <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>⚠</span>
+ <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}></span>
  <div>
  <div style={{ fontSize: 13, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>Your brand is absent from these high-traffic AI topics</div>
  <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.6 }}>Competitors are being mentioned here but you're not. Use the action buttons to start appearing — map the AI prompts, generate optimised content, or seed your brand on the sources AI cites most.</div>
@@ -551,15 +551,15 @@ function OverviewTab({ onNavigate }) {
  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
  <button onClick={() => onNavigate(7)}
  style={{ background: "#1e1b4b", border: "1px solid #4c1d95", borderRadius: 6, padding: "5px 10px", fontSize: 11, fontWeight: 600, color: "#c4b5fd", cursor: "pointer", whiteSpace: "nowrap" }}>
- 🔍 Map AI prompts
+ Map AI prompts
  </button>
  <button onClick={() => onNavigate(6)}
  style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "5px 10px", fontSize: 11, fontWeight: 600, color: "#86efac", cursor: "pointer", whiteSpace: "nowrap" }}>
- ✏ Optimise content
+ Optimise content
  </button>
  <button onClick={() => onNavigate(4)}
  style={{ background: "#1c1917", border: "1px solid #78350f", borderRadius: 6, padding: "5px 10px", fontSize: 11, fontWeight: 600, color: "#fcd34d", cursor: "pointer", whiteSpace: "nowrap" }}>
- 🌱 Seed brand
+ Seed brand
  </button>
  </div>
  </div>
@@ -629,73 +629,73 @@ function CitabilityTab() {
 
  // Load Shopify store pages on mount
  useEffect(() => {
-  let cancelled = false;
-  apiFetch(`${API}/shopify-context`).then(d => {
-   if (cancelled) return;
-   if (d.ok && d.available) setShopCtx(d);
-  }).catch(() => {}).finally(() => { if (!cancelled) setShopLoading(false); });
-  return () => { cancelled = true; };
+ let cancelled = false;
+ apiFetch(`${API}/shopify-context`).then(d => {
+ if (cancelled) return;
+ if (d.ok && d.available) setShopCtx(d);
+ }).catch(() => {}).finally(() => { if (!cancelled) setShopLoading(false); });
+ return () => { cancelled = true; };
  }, []);
 
  useEffect(() => {
-  apiFetch(`${API}/history`).then(d => {
-   if (d.ok) setHistory((d.citations || []).filter(c => c.type === "citability").slice(0, 5));
-  }).catch(() => {});
+ apiFetch(`${API}/history`).then(d => {
+ if (d.ok) setHistory((d.citations || []).filter(c => c.type === "citability").slice(0, 5));
+ }).catch(() => {});
  }, [result]);
 
  // Declared first — used by autoFix and applyFix dependency arrays below
  const triggerFreeRecheck = useCallback(() => {
-  if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
-  recheckTimerRef.current = setTimeout(async () => {
-   setRecheckLoading(true);
-   try {
-    const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
-    if (r.ok) { setResult(r); setAutoFixStates({}); setAdvancedDrafts({}); }
-   } catch (_) {}
-   finally { setRecheckLoading(false); }
-  }, 1500);
+ if (recheckTimerRef.current) clearTimeout(recheckTimerRef.current);
+ recheckTimerRef.current = setTimeout(async () => {
+ setRecheckLoading(true);
+ try {
+ const r = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url, free: true }) });
+ if (r.ok) { setResult(r); setAutoFixStates({}); setAdvancedDrafts({}); }
+ } catch (_) {}
+ finally { setRecheckLoading(false); }
+ }, 1500);
  }, [url]);
 
  const run = useCallback(async () => {
-  if (!url.trim()) return;
-  setLoading(true); setErr(""); setResult(null); setFixPlan(null); setProgress(0); setAutoFixStates({});
-  const tick = setInterval(() => setProgress(p => p < 80 ? p + Math.random() * 14 : p), 600);
-  try {
-   const d = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url }) });
-   if (!d.ok) throw new Error(d.error);
-   setProgress(100);
-   setTimeout(() => setProgress(0), 400);
-   setResult(d);
-  } catch (e) { setErr(e.message); setProgress(0); } finally { clearInterval(tick); setLoading(false); }
+ if (!url.trim()) return;
+ setLoading(true); setErr(""); setResult(null); setFixPlan(null); setProgress(0); setAutoFixStates({});
+ const tick = setInterval(() => setProgress(p => p < 80 ? p + Math.random() * 14 : p), 600);
+ try {
+ const d = await apiFetch(`${API}/citability-score`, { method: "POST", body: JSON.stringify({ url }) });
+ if (!d.ok) throw new Error(d.error);
+ setProgress(100);
+ setTimeout(() => setProgress(0), 400);
+ setResult(d);
+ } catch (e) { setErr(e.message); setProgress(0); } finally { clearInterval(tick); setLoading(false); }
  }, [url]);
 
  const getFixPlan = useCallback(async () => {
-  if (!result) return;
-  setFixLoading(true); setFixErr(""); setFixPlan(null);
-  try {
-   const d = await apiFetch(`${API}/citability-fix-plan`, { method: "POST", body: JSON.stringify({
-    url: result.url, score: result.score, grade: result.grade,
-    issues: result.issues, strengths: result.strengths, signals: result.signals,
-   }) });
-   if (!d.ok) throw new Error(d.error);
-   setFixPlan(d.fixes);
-  } catch (e) { setFixErr(e.message); } finally { setFixLoading(false); }
+ if (!result) return;
+ setFixLoading(true); setFixErr(""); setFixPlan(null);
+ try {
+ const d = await apiFetch(`${API}/citability-fix-plan`, { method: "POST", body: JSON.stringify({
+ url: result.url, score: result.score, grade: result.grade,
+ issues: result.issues, strengths: result.strengths, signals: result.signals,
+ }) });
+ if (!d.ok) throw new Error(d.error);
+ setFixPlan(d.fixes);
+ } catch (e) { setFixErr(e.message); } finally { setFixLoading(false); }
  }, [result]);
 
  const autoFix = useCallback(async (signalName) => {
-  setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: true, done: false, error: null } }));
-  try {
-   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
-   if (!d.ok) throw new Error(d.error || "Fix failed");
-   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
-   triggerFreeRecheck();
-  } catch (e) {
-   setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
-  }
+ setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: true, done: false, error: null } }));
+ try {
+ const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName }) });
+ if (!d.ok) throw new Error(d.error || "Fix failed");
+ setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: true, error: null, message: d.message } }));
+ triggerFreeRecheck();
+ } catch (e) {
+ setAutoFixStates(prev => ({ ...prev, [signalName]: { loading: false, done: false, error: e.message } }));
+ }
  }, [url, triggerFreeRecheck]);
 
  const ensureFixPlan = useCallback(() => {
-  if (!fixPlan && !fixLoading) getFixPlan();
+ if (!fixPlan && !fixLoading) getFixPlan();
  }, [fixPlan, fixLoading, getFixPlan]);
 
  const getAdvSub = (name) => advancedSubMode[name] || "ai";
@@ -703,499 +703,499 @@ function CitabilityTab() {
 
  // Advanced mode: generate AI preview without writing to Shopify (dry run)
  const previewFix = useCallback(async (signalName) => {
-  setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: true, content: null, editedContent: null, applyDone: false, error: null } }));
-  try {
-   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName, dryRun: true }) });
-   if (!d.ok) throw new Error(d.error || "Preview failed");
-   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: false, content: d.preview, editedContent: d.preview, applyDone: false, error: null } }));
-  } catch (e) {
-   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: false, content: null, editedContent: null, applyDone: false, error: e.message } }));
-  }
+ setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: true, content: null, editedContent: null, applyDone: false, error: null } }));
+ try {
+ const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName, dryRun: true }) });
+ if (!d.ok) throw new Error(d.error || "Preview failed");
+ setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: false, content: d.preview, editedContent: d.preview, applyDone: false, error: null } }));
+ } catch (e) {
+ setAdvancedDrafts(prev => ({ ...prev, [signalName]: { previewLoading: false, content: null, editedContent: null, applyDone: false, error: e.message } }));
+ }
  }, [url]);
 
  // Advanced mode: apply caller-provided (possibly edited) content to Shopify
  const applyFix = useCallback(async (signalName, editedContent) => {
-  setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: true, error: null } }));
-  try {
-   const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName, content: editedContent }) });
-   if (!d.ok) throw new Error(d.error || "Apply failed");
-   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, applyDone: true } }));
-   triggerFreeRecheck();
-  } catch (e) {
-   setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, error: e.message } }));
-  }
+ setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: true, error: null } }));
+ try {
+ const d = await apiFetch(`${API}/citability-auto-fix`, { method: "POST", body: JSON.stringify({ url, signalName, content: editedContent }) });
+ if (!d.ok) throw new Error(d.error || "Apply failed");
+ setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, applyDone: true } }));
+ triggerFreeRecheck();
+ } catch (e) {
+ setAdvancedDrafts(prev => ({ ...prev, [signalName]: { ...prev[signalName], applyLoading: false, error: e.message } }));
+ }
  }, [url, triggerFreeRecheck]);
 
  const copyFix = (key, text) => {
-  navigator.clipboard.writeText(text).then(() => {
-   setCopiedFix(key);
-   setTimeout(() => setCopiedFix(null), 2000);
-  });
+ navigator.clipboard.writeText(text).then(() => {
+ setCopiedFix(key);
+ setTimeout(() => setCopiedFix(null), 2000);
+ });
  };
 
  const scoreColor = result
-  ? result.score >= 70 ? "#22c55e" : result.score >= 50 ? "#f59e0b" : "#ef4444"
-  : "#7c3aed";
+ ? result.score >= 70 ? "#22c55e" : result.score >= 50 ? "#f59e0b" : "#ef4444"
+ : "#7c3aed";
  const scoreLabel = result
-  ? result.score >= 80 ? "Highly Citable"
-   : result.score >= 65 ? "Good"
-   : result.score >= 50 ? "Needs Work"
-   : result.score >= 35 ? "Poor"
-   : "Very Unlikely to be Cited"
-  : "";
+ ? result.score >= 80 ? "Highly Citable"
+ : result.score >= 65 ? "Good"
+ : result.score >= 50 ? "Needs Work"
+ : result.score >= 35 ? "Poor"
+ : "Very Unlikely to be Cited"
+ : "";
 
  // Build the combined page list from store context
  const allPages = shopCtx ? [
-  ...(shopCtx.articles || []).map(a => ({ ...a, type: "blog" })),
-  ...(shopCtx.productPages || []).map(p => ({ ...p, type: "product", blogTitle: "Products" })),
+ ...(shopCtx.articles || []).map(a => ({ ...a, type: "blog" })),
+ ...(shopCtx.productPages || []).map(p => ({ ...p, type: "product", blogTitle: "Products" })),
  ] : [];
  const filtered = allPages.filter(p => {
-  if (pageFilter === "blog" && p.type !== "blog") return false;
-  if (pageFilter === "product" && p.type !== "product") return false;
-  if (search && !p.title.toLowerCase().includes(search.toLowerCase())) return false;
-  return true;
+ if (pageFilter === "blog" && p.type !== "blog") return false;
+ if (pageFilter === "product" && p.type !== "product") return false;
+ if (search && !p.title.toLowerCase().includes(search.toLowerCase())) return false;
+ return true;
  });
 
  return (
-  <div>
-   {/* Input card */}
-   <div style={S.card}>
-    <p style={S.sectionTitle}>🎯 AI-Citability Score</p>
-    <div style={S.infoBox}>
-     Scores your page across <strong>16 signals</strong> that ChatGPT, Perplexity, and Google AI Overviews use when deciding what to cite.
-     Pages with structured facts, schema markup, and authoritative citations are cited <strong>62% more often</strong>.
-    </div>
+ <div>
+ {/* Input card */}
+ <div style={S.card}>
+ <p style={S.sectionTitle}>AI-Citability Score</p>
+ <div style={S.infoBox}>
+ Scores your page across <strong>16 signals</strong> that ChatGPT, Perplexity, and Google AI Overviews use when deciding what to cite.
+ Pages with structured facts, schema markup, and authoritative citations are cited <strong>62% more often</strong>.
+ </div>
 
-    {/* Store page picker */}
-    {shopLoading && (
-     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, fontSize: 12, color: "#71717a" }}>
-      <div style={{ width: 12, height: 12, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />
-      Loading your store pages…
-     </div>
-    )}
-    {shopCtx && (
-     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-       <span style={{ fontSize: 11, background: "#14532d", border: "1px solid #166534", borderRadius: 6, padding: "3px 10px", color: "#86efac" }}>✓ {shopCtx.brand}</span>
-       <span style={{ fontSize: 11, color: "#71717a" }}>{shopCtx.articleCount || 0} blog posts · {shopCtx.productCount || 0} products</span>
-       <div style={{ flex: 1 }} />
-       {/* Filter pills */}
-       {["all", "blog", "product"].map(f => (
-        <button key={f} onClick={() => setPageFilter(f)} style={{ background: pageFilter === f ? "#4c1d95" : "#18181b", border: `1px solid ${pageFilter === f ? "#7c3aed" : "#3f3f46"}`, borderRadius: 6, padding: "3px 10px", fontSize: 11, color: pageFilter === f ? "#c4b5fd" : "#71717a", cursor: "pointer", textTransform: "capitalize" }}>{f === "all" ? "All pages" : f === "blog" ? "Blog posts" : "Products"}</button>
-       ))}
-       <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#fafafa", width: 120, outline: "none" }} />
-      </div>
-      <div style={{ maxHeight: 220, overflowY: "auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-       {filtered.length === 0 && <div style={{ fontSize: 11, color: "#52525b", padding: "8px 0", gridColumn: "span 2" }}>No pages found{search ? ` matching "${search}"` : ""}.</div>}
-       {filtered.map((p, i) => (
-        <button key={i} onClick={() => { setUrl(p.url); setResult(null); setFixPlan(null); }}
-         style={{ display: "flex", gap: 8, alignItems: "center", background: url === p.url ? "#1e1b4b" : "#09090b", border: `1px solid ${url === p.url ? "#7c3aed" : "#27272a"}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer", textAlign: "left" }}>
-         <span style={{ fontSize: 14, flexShrink: 0 }}>{p.type === "blog" ? "📝" : "🛍️"}</span>
-         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: url === p.url ? "#c4b5fd" : "#d4d4d8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
-          <div style={{ fontSize: 9, color: "#52525b", marginTop: 1 }}>{p.blogTitle || "Product"}{p.publishedAt ? ` · ${new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}</div>
-         </div>
-        </button>
-       ))}
-      </div>
-     </div>
-    )}
+ {/* Store page picker */}
+ {shopLoading && (
+ <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, fontSize: 12, color: "#71717a" }}>
+ <div style={{ width: 12, height: 12, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />
+ Loading your store pages…
+ </div>
+ )}
+ {shopCtx && (
+ <div style={{ marginBottom: 16 }}>
+ <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+ <span style={{ fontSize: 11, background: "#14532d", border: "1px solid #166534", borderRadius: 6, padding: "3px 10px", color: "#86efac" }}>{shopCtx.brand}</span>
+ <span style={{ fontSize: 11, color: "#71717a" }}>{shopCtx.articleCount || 0} blog posts · {shopCtx.productCount || 0} products</span>
+ <div style={{ flex: 1 }} />
+ {/* Filter pills */}
+ {["all", "blog", "product"].map(f => (
+ <button key={f} onClick={() => setPageFilter(f)} style={{ background: pageFilter === f ? "#4c1d95" : "#18181b", border: `1px solid ${pageFilter === f ? "#7c3aed" : "#3f3f46"}`, borderRadius: 6, padding: "3px 10px", fontSize: 11, color: pageFilter === f ? "#c4b5fd" : "#71717a", cursor: "pointer", textTransform: "capitalize" }}>{f === "all" ? "All pages" : f === "blog" ? "Blog posts" : "Products"}</button>
+ ))}
+ <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#fafafa", width: 120, outline: "none" }} />
+ </div>
+ <div style={{ maxHeight: 220, overflowY: "auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+ {filtered.length === 0 && <div style={{ fontSize: 11, color: "#52525b", padding: "8px 0", gridColumn: "span 2" }}>No pages found{search ? ` matching "${search}"` : ""}.</div>}
+ {filtered.map((p, i) => (
+ <button key={i} onClick={() => { setUrl(p.url); setResult(null); setFixPlan(null); }}
+ style={{ display: "flex", gap: 8, alignItems: "center", background: url === p.url ? "#1e1b4b" : "#09090b", border: `1px solid ${url === p.url ? "#7c3aed" : "#27272a"}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer", textAlign: "left" }}>
+ <span style={{ fontSize: 14, flexShrink: 0 }}>{p.type === "blog" ? "" : ""}</span>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 11, fontWeight: 600, color: url === p.url ? "#c4b5fd" : "#d4d4d8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
+ <div style={{ fontSize: 9, color: "#52525b", marginTop: 1 }}>{p.blogTitle || "Product"}{p.publishedAt ? ` · ${new Date(p.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}</div>
+ </div>
+ </button>
+ ))}
+ </div>
+ </div>
+ )}
 
-    <label style={S.label}>{shopCtx ? "Selected URL (or paste any URL)" : "Page URL to analyze"}</label>
-    <div style={{ display: "flex", gap: 8 }}>
-     <input style={{ ...S.input, flex: 1, margin: 0 }} value={url} onChange={e => setUrl(e.target.value)}
-      onKeyDown={e => e.key === "Enter" && run()}
-      placeholder="https://yourstore.com/blogs/news/post-title" />
-     <button style={{ ...S.btn(), margin: 0, whiteSpace: "nowrap" }} onClick={run} disabled={loading || !url.trim()}>
-      {loading ? "Analyzing…" : "Analyze (1 credit)"}
-     </button>
-    </div>
-    {loading && (
-     <div style={{ marginTop: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#a1a1aa", marginBottom: 4 }}>
-       <span>Fetching page and scoring 16 signals…</span>
-       <span>{Math.round(progress)}%</span>
-      </div>
-      <div style={{ background: "#27272a", borderRadius: 4, height: 5, overflow: "hidden" }}>
-       <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#7c3aed,#a855f7)", transition: "width 0.5s ease" }} />
-      </div>
-      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-       {["Fetching page", "Parsing structure", "Scoring signals", "Calculating grade"].map((s, i) => (
-        <span key={i} style={{ fontSize: 10, background: progress > i * 22 ? "#4c1d95" : "#18181b", border: `1px solid ${progress > i * 22 ? "#7c3aed" : "#3f3f46"}`, borderRadius: 10, padding: "2px 8px", color: progress > i * 22 ? "#c4b5fd" : "#52525b", transition: "all 0.3s" }}>{s}</span>
-       ))}
-      </div>
-     </div>
-    )}
-   </div>
+ <label style={S.label}>{shopCtx ? "Selected URL (or paste any URL)" : "Page URL to analyze"}</label>
+ <div style={{ display: "flex", gap: 8 }}>
+ <input style={{ ...S.input, flex: 1, margin: 0 }} value={url} onChange={e => setUrl(e.target.value)}
+ onKeyDown={e => e.key === "Enter" && run()}
+ placeholder="https://yourstore.com/blogs/news/post-title" />
+ <button style={{ ...S.btn(), margin: 0, whiteSpace: "nowrap" }} onClick={run} disabled={loading || !url.trim()}>
+ {loading ? "Analyzing…" : "Analyze (1 credit)"}
+ </button>
+ </div>
+ {loading && (
+ <div style={{ marginTop: 12 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#a1a1aa", marginBottom: 4 }}>
+ <span>Fetching page and scoring 16 signals…</span>
+ <span>{Math.round(progress)}%</span>
+ </div>
+ <div style={{ background: "#27272a", borderRadius: 4, height: 5, overflow: "hidden" }}>
+ <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#7c3aed,#a855f7)", transition: "width 0.5s ease" }} />
+ </div>
+ <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+ {["Fetching page", "Parsing structure", "Scoring signals", "Calculating grade"].map((s, i) => (
+ <span key={i} style={{ fontSize: 10, background: progress > i * 22 ? "#4c1d95" : "#18181b", border: `1px solid ${progress > i * 22 ? "#7c3aed" : "#3f3f46"}`, borderRadius: 10, padding: "2px 8px", color: progress > i * 22 ? "#c4b5fd" : "#52525b", transition: "all 0.3s" }}>{s}</span>
+ ))}
+ </div>
+ </div>
+ )}
+ </div>
 
-   {err && <div style={S.error}>{err}</div>}
+ {err && <div style={S.error}>{err}</div>}
 
-   {result && (
-    <div>
-     {/* Score hero */}
-     <div style={{ ...S.card, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
-      {/* Circle */}
-      <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-       <svg width="110" height="110" viewBox="0 0 110 110">
-        <circle cx="55" cy="55" r="46" fill="none" stroke="#27272a" strokeWidth="10" />
-        <circle cx="55" cy="55" r="46" fill="none" stroke={scoreColor} strokeWidth="10"
-         strokeDasharray={`${2 * Math.PI * 46}`}
-         strokeDashoffset={`${2 * Math.PI * 46 * (1 - result.score / 100)}`}
-         strokeLinecap="round"
-         transform="rotate(-90 55 55)"
-         style={{ transition: "stroke-dashoffset 1s ease" }} />
-        <text x="55" y="50" textAnchor="middle" fill={scoreColor} fontSize="22" fontWeight="700">{result.score}</text>
-        <text x="55" y="66" textAnchor="middle" fill="#71717a" fontSize="11">/100</text>
-       </svg>
-       <span style={{ fontSize: 22, fontWeight: 800, color: scoreColor }}>Grade: {result.grade}</span>
-      </div>
+ {result && (
+ <div>
+ {/* Score hero */}
+ <div style={{ ...S.card, display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+ {/* Circle */}
+ <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+ <svg width="110" height="110" viewBox="0 0 110 110">
+ <circle cx="55" cy="55" r="46" fill="none" stroke="#27272a" strokeWidth="10" />
+ <circle cx="55" cy="55" r="46" fill="none" stroke={scoreColor} strokeWidth="10"
+ strokeDasharray={`${2 * Math.PI * 46}`}
+ strokeDashoffset={`${2 * Math.PI * 46 * (1 - result.score / 100)}`}
+ strokeLinecap="round"
+ transform="rotate(-90 55 55)"
+ style={{ transition: "stroke-dashoffset 1s ease" }} />
+ <text x="55" y="50" textAnchor="middle" fill={scoreColor} fontSize="22" fontWeight="700">{result.score}</text>
+ <text x="55" y="66" textAnchor="middle" fill="#71717a" fontSize="11">/100</text>
+ </svg>
+ <span style={{ fontSize: 22, fontWeight: 800, color: scoreColor }}>Grade: {result.grade}</span>
+ </div>
 
-      {/* Info */}
-      <div style={{ flex: 1, minWidth: 200 }}>
-       <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>{scoreLabel}</div>
-       <div style={{ fontSize: 11, color: "#71717a", lineHeight: 1.7, marginBottom: 12 }}>
-        {result.score >= 70
-         ? "This page is structurally ready to be cited by AI. Small improvements can push you into the A zone."
-         : result.score >= 50
-          ? "AI models will sometimes cite this page, but key signals are missing. Fix the high-weight issues below."
-          : "This page is unlikely to appear in AI-generated answers. Significant structural changes are needed."}
-       </div>
-       {/* Passing bar */}
-       <div style={{ fontSize: 10, color: "#52525b", marginBottom: 4 }}>{result.strengths.length} of {result.signals?.length || 16} signals passing</div>
-       <div style={{ background: "#27272a", borderRadius: 4, height: 6, overflow: "hidden", marginBottom: 16 }}>
-        <div style={{ width: `${result.score}%`, height: "100%", background: `linear-gradient(90deg,${scoreColor}88,${scoreColor})`, transition: "width 1s ease" }} />
-       </div>
-       {/* Quick stat pills */}
-       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {[
-         { label: "Words", value: result.wordCount, ok: result.wordCount >= 600 },
-         { label: "H2s", value: result.h2Count, ok: result.h2Count >= 3 },
-         { label: "H3s", value: result.h3Count, ok: result.h3Count >= 2 },
-         { label: "Ext. Links", value: result.externalLinks, ok: result.externalLinks >= 2 },
-         { label: "Tables", value: result.tableCount, ok: result.tableCount > 0 },
-         { label: "Article Schema", value: result.hasArticleSchema ? "✓" : "✗", ok: result.hasArticleSchema },
-         { label: "FAQ Schema", value: result.hasFaqSchema ? "✓" : "✗", ok: result.hasFaqSchema },
-        ].map((stat, i) => (
-         <div key={i} style={{ background: "#09090b", border: `1px solid ${stat.ok ? "#166534" : "#3f3f46"}`, borderRadius: 8, padding: "8px 10px", textAlign: "center", minWidth: 60 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: stat.ok ? "#22c55e" : "#f59e0b" }}>{stat.value}</div>
-          <div style={{ fontSize: 9, color: "#71717a", marginTop: 2 }}>{stat.label}</div>
-         </div>
-        ))}
-       </div>
-      </div>
-     </div>
+ {/* Info */}
+ <div style={{ flex: 1, minWidth: 200 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>{scoreLabel}</div>
+ <div style={{ fontSize: 11, color: "#71717a", lineHeight: 1.7, marginBottom: 12 }}>
+ {result.score >= 70
+ ? "This page is structurally ready to be cited by AI. Small improvements can push you into the A zone."
+ : result.score >= 50
+ ? "AI models will sometimes cite this page, but key signals are missing. Fix the high-weight issues below."
+ : "This page is unlikely to appear in AI-generated answers. Significant structural changes are needed."}
+ </div>
+ {/* Passing bar */}
+ <div style={{ fontSize: 10, color: "#52525b", marginBottom: 4 }}>{result.strengths.length} of {result.signals?.length || 16} signals passing</div>
+ <div style={{ background: "#27272a", borderRadius: 4, height: 6, overflow: "hidden", marginBottom: 16 }}>
+ <div style={{ width: `${result.score}%`, height: "100%", background: `linear-gradient(90deg,${scoreColor}88,${scoreColor})`, transition: "width 1s ease" }} />
+ </div>
+ {/* Quick stat pills */}
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+ {[
+ { label: "Words", value: result.wordCount, ok: result.wordCount >= 600 },
+ { label: "H2s", value: result.h2Count, ok: result.h2Count >= 3 },
+ { label: "H3s", value: result.h3Count, ok: result.h3Count >= 2 },
+ { label: "Ext. Links", value: result.externalLinks, ok: result.externalLinks >= 2 },
+ { label: "Tables", value: result.tableCount, ok: result.tableCount > 0 },
+ { label: "Article Schema", value: result.hasArticleSchema ? "" : "", ok: result.hasArticleSchema },
+ { label: "FAQ Schema", value: result.hasFaqSchema ? "" : "", ok: result.hasFaqSchema },
+ ].map((stat, i) => (
+ <div key={i} style={{ background: "#09090b", border: `1px solid ${stat.ok ? "#166534" : "#3f3f46"}`, borderRadius: 8, padding: "8px 10px", textAlign: "center", minWidth: 60 }}>
+ <div style={{ fontSize: 15, fontWeight: 700, color: stat.ok ? "#22c55e" : "#f59e0b" }}>{stat.value}</div>
+ <div style={{ fontSize: 9, color: "#71717a", marginTop: 2 }}>{stat.label}</div>
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
 
-     {/* Signal breakdown */}
-     <div style={S.card}>
-      <p style={S.sectionTitle}>📋 Signal Breakdown</p>
-      <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
-       All 16 signals sorted by impact weight. <strong style={{ color: "#fde68a" }}>⚠ High-weight failures</strong> hurt your score the most — fix those first.
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-       {(result.signals || []).sort((a, b) => {
-        if (a.pass !== b.pass) return a.pass ? 1 : -1;
-        return b.weight - a.weight;
-       }).map((sig, i) => (
-        <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 10px", background: "#09090b", border: `1px solid ${sig.pass ? "#166534" : sig.weight >= 7 ? "#7c2d12" : "#7f1d1d"}`, borderRadius: 8, opacity: sig.pass ? 0.85 : 1 }}>
-         <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1, color: sig.pass ? "#22c55e" : "#ef4444" }}>{sig.pass ? "✓" : "✗"}</span>
-         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: sig.pass ? "#86efac" : "#fca5a5", marginBottom: 2 }}>{sig.name}</div>
-          <div style={{ fontSize: 10, color: "#71717a" }}>{sig.value}</div>
-         </div>
-         <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#52525b", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 5px", flexShrink: 0 }}>×{sig.weight}</span>
-        </div>
-       ))}
-      </div>
-     </div>
+ {/* Signal breakdown */}
+ <div style={S.card}>
+ <p style={S.sectionTitle}>Signal Breakdown</p>
+ <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
+ All 16 signals sorted by impact weight. <strong style={{ color: "#fde68a" }}>High-weight failures</strong> hurt your score the most — fix those first.
+ </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+ {(result.signals || []).sort((a, b) => {
+ if (a.pass !== b.pass) return a.pass ? 1 : -1;
+ return b.weight - a.weight;
+ }).map((sig, i) => (
+ <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 10px", background: "#09090b", border: `1px solid ${sig.pass ? "#166534" : sig.weight >= 7 ? "#7c2d12" : "#7f1d1d"}`, borderRadius: 8, opacity: sig.pass ? 0.85 : 1 }}>
+ <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1, color: sig.pass ? "#22c55e" : "#ef4444" }}>{sig.pass ? "" : ""}</span>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 11, fontWeight: 600, color: sig.pass ? "#86efac" : "#fca5a5", marginBottom: 2 }}>{sig.name}</div>
+ <div style={{ fontSize: 10, color: "#71717a" }}>{sig.value}</div>
+ </div>
+ <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#52525b", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 5px", flexShrink: 0 }}>×{sig.weight}</span>
+ </div>
+ ))}
+ </div>
+ </div>
 
-     {/* Recheck banner — appears after an auto-fix while score is being refreshed */}
-     {recheckLoading && (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 10, padding: "10px 14px", marginBottom: 8 }}>
-       <div style={{ width: 14, height: 14, border: "2px solid #6366f1", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
-       <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>🔄 Re-checking your score for free…</span>
-      </div>
-     )}
+ {/* Recheck banner — appears after an auto-fix while score is being refreshed */}
+ {recheckLoading && (
+ <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 10, padding: "10px 14px", marginBottom: 8 }}>
+ <div style={{ width: 14, height: 14, border: "2px solid #6366f1", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite", flexShrink: 0 }} />
+ <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>Re-checking your score for free…</span>
+ </div>
+ )}
 
-     {/* Priority fixes */}
-     {result.issues.length > 0 && (
-      <div style={S.card}>
-       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 10 }}>
-        <p style={{ ...S.sectionTitle, margin: 0 }}>🔧 Priority Fixes</p>
-        {/* Beginner / Advanced toggle */}
-        <div style={{ display: "flex", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, padding: 3, gap: 3 }}>
-         <button onClick={() => setFixMode("beginner")} style={{ background: fixMode === "beginner" ? "#4c1d95" : "transparent", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: fixMode === "beginner" ? "#c4b5fd" : "#71717a", cursor: "pointer" }}>👶 Beginner</button>
-         <button onClick={() => setFixMode("advanced")} style={{ background: fixMode === "advanced" ? "#292524" : "transparent", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: fixMode === "advanced" ? "#fbbf24" : "#71717a", cursor: "pointer" }}>⚙️ Advanced</button>
-        </div>
-       </div>
-       <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
-        {fixMode === "beginner"
-         ? "🪄 Beginner mode — click Fix for me and AURA will automatically update your store content."
-         : "⚙️ Advanced mode — choose how to fix each signal: let AI draft the HTML, read step-by-step instructions, or write your own HTML and push it live."}
-       </div>
-       {(result.signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).map((sig, i) => {
-        const afs = autoFixStates[sig.name] || {};
-        return (
-        <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 0", borderBottom: "1px solid #27272a" }}>
-         <div style={{ width: 26, height: 26, background: afs.done ? "#14532d" : "#7f1d1d", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: afs.done ? "#86efac" : "#fca5a5", flexShrink: 0, marginTop: 2 }}>{afs.done ? "✓" : `#${i + 1}`}</div>
-         <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-           <span style={{ fontSize: 13, fontWeight: 700, color: afs.done ? "#86efac" : "#fafafa" }}>{sig.name}</span>
-           <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#a1a1aa", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 6px" }}>weight ×{sig.weight}</span>
-           {sig.weight >= 7 && <span style={{ fontSize: 9, fontWeight: 700, color: "#fb923c", background: "#431407", borderRadius: 4, padding: "2px 6px" }}>HIGH IMPACT</span>}
-          </div>
-          <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>Detected: {sig.value}</div>
-          {fixMode === "beginner" && (
-           <div>
-            {afs.done ? (
-             <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>{afs.message || "Fixed!"}</div>
-            ) : afs.error ? (
-             <div style={{ background: "#2d0000", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", fontSize: 11, color: "#fca5a5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span>⚠️ {afs.error}</span>
-              <button onClick={() => autoFix(sig.name)} style={{ background: "#7f1d1d", border: "none", borderRadius: 4, padding: "3px 10px", fontSize: 10, color: "#fca5a5", cursor: "pointer" }}>Retry</button>
-             </div>
-            ) : (
-             <button onClick={() => autoFix(sig.name)} disabled={afs.loading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#4c1d95", border: "1px solid #7c3aed", borderRadius: 6, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: "#c4b5fd", cursor: afs.loading ? "default" : "pointer", opacity: afs.loading ? 0.7 : 1 }}>
-              {afs.loading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Fixing…</> : <>✨ Fix for me</>}
-             </button>
-            )}
-           </div>
-          )}
-          {fixMode === "advanced" && (() => {
-           const sub = getAdvSub(sig.name);
-           const ads = advancedDrafts[sig.name] || {};
-           const tabBtn = (id, label) => (
-            <button key={id} onClick={() => { setAdvSub(sig.name, id); if (id === "instructions") ensureFixPlan(); }} style={{ flex: 1, background: sub === id ? (id === "ai" ? "#1e1b4b" : id === "instructions" ? "#1c1917" : "#0f172a") : "transparent", border: `1px solid ${sub === id ? (id === "ai" ? "#4338ca" : id === "instructions" ? "#a16207" : "#0f766e") : "#27272a"}`, borderRadius: 6, padding: "5px 0", fontSize: 10, fontWeight: 700, color: sub === id ? (id === "ai" ? "#818cf8" : id === "instructions" ? "#fbbf24" : "#2dd4bf") : "#52525b", cursor: "pointer" }}>{label}</button>
-           );
-           return (
-            <div style={{ marginTop: 4 }}>
-             {/* Tab row */}
-             <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
-              {tabBtn("ai", "🤖 AI Draft")}
-              {tabBtn("instructions", "📋 Instructions")}
-              {tabBtn("manual", "✍️ Write HTML")}
-             </div>
+ {/* Priority fixes */}
+ {result.issues.length > 0 && (
+ <div style={S.card}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 10 }}>
+ <p style={{ ...S.sectionTitle, margin: 0 }}>Priority Fixes</p>
+ {/* Beginner / Advanced toggle */}
+ <div style={{ display: "flex", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, padding: 3, gap: 3 }}>
+ <button onClick={() => setFixMode("beginner")} style={{ background: fixMode === "beginner" ? "#4c1d95" : "transparent", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: fixMode === "beginner" ? "#c4b5fd" : "#71717a", cursor: "pointer" }}>Beginner</button>
+ <button onClick={() => setFixMode("advanced")} style={{ background: fixMode === "advanced" ? "#292524" : "transparent", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: fixMode === "advanced" ? "#fbbf24" : "#71717a", cursor: "pointer" }}>Advanced</button>
+ </div>
+ </div>
+ <div style={{ fontSize: 11, color: "#71717a", marginBottom: 14 }}>
+ {fixMode === "beginner"
+ ? "Beginner mode — click Fix for me and AURA will automatically update your store content."
+ : "Advanced mode — choose how to fix each signal: let AI draft the HTML, read step-by-step instructions, or write your own HTML and push it live."}
+ </div>
+ {(result.signals || []).filter(s => !s.pass).sort((a, b) => b.weight - a.weight).map((sig, i) => {
+ const afs = autoFixStates[sig.name] || {};
+ return (
+ <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 0", borderBottom: "1px solid #27272a" }}>
+ <div style={{ width: 26, height: 26, background: afs.done ? "#14532d" : "#7f1d1d", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: afs.done ? "#86efac" : "#fca5a5", flexShrink: 0, marginTop: 2 }}>{afs.done ? "" : `#${i + 1}`}</div>
+ <div style={{ flex: 1 }}>
+ <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+ <span style={{ fontSize: 13, fontWeight: 700, color: afs.done ? "#86efac" : "#fafafa" }}>{sig.name}</span>
+ <span style={{ fontSize: 9, fontWeight: 700, color: sig.weight >= 7 ? "#fde68a" : "#a1a1aa", background: sig.weight >= 7 ? "#78350f" : "#27272a", borderRadius: 4, padding: "2px 6px" }}>weight ×{sig.weight}</span>
+ {sig.weight >= 7 && <span style={{ fontSize: 9, fontWeight: 700, color: "#fb923c", background: "#431407", borderRadius: 4, padding: "2px 6px" }}>HIGH IMPACT</span>}
+ </div>
+ <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>Detected: {sig.value}</div>
+ {fixMode === "beginner" && (
+ <div>
+ {afs.done ? (
+ <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>{afs.message || "Fixed!"}</div>
+ ) : afs.error ? (
+ <div style={{ background: "#2d0000", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", fontSize: 11, color: "#fca5a5", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+ <span>{afs.error}</span>
+ <button onClick={() => autoFix(sig.name)} style={{ background: "#7f1d1d", border: "none", borderRadius: 4, padding: "3px 10px", fontSize: 10, color: "#fca5a5", cursor: "pointer" }}>Retry</button>
+ </div>
+ ) : (
+ <button onClick={() => autoFix(sig.name)} disabled={afs.loading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#4c1d95", border: "1px solid #7c3aed", borderRadius: 6, padding: "7px 16px", fontSize: 12, fontWeight: 700, color: "#c4b5fd", cursor: afs.loading ? "default" : "pointer", opacity: afs.loading ? 0.7 : 1 }}>
+ {afs.loading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Fixing…</> : <>Fix for me</>}
+ </button>
+ )}
+ </div>
+ )}
+ {fixMode === "advanced" && (() => {
+ const sub = getAdvSub(sig.name);
+ const ads = advancedDrafts[sig.name] || {};
+ const tabBtn = (id, label) => (
+ <button key={id} onClick={() => { setAdvSub(sig.name, id); if (id === "instructions") ensureFixPlan(); }} style={{ flex: 1, background: sub === id ? (id === "ai" ? "#1e1b4b" : id === "instructions" ? "#1c1917" : "#0f172a") : "transparent", border: `1px solid ${sub === id ? (id === "ai" ? "#4338ca" : id === "instructions" ? "#a16207" : "#0f766e") : "#27272a"}`, borderRadius: 6, padding: "5px 0", fontSize: 10, fontWeight: 700, color: sub === id ? (id === "ai" ? "#818cf8" : id === "instructions" ? "#fbbf24" : "#2dd4bf") : "#52525b", cursor: "pointer" }}>{label}</button>
+ );
+ return (
+ <div style={{ marginTop: 4 }}>
+ {/* Tab row */}
+ <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+ {tabBtn("ai", "AI Draft")}
+ {tabBtn("instructions", "Instructions")}
+ {tabBtn("manual", "Write HTML")}
+ </div>
 
-             {/* AI Draft tab */}
-             {sub === "ai" && (
-              <div>
-               {ads.applyDone ? (
-                <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>✅ Applied to Shopify!</div>
-               ) : ads.content != null ? (
-                <div>
-                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.6 }}>AI-generated HTML — edit before applying</span>
-                  <div style={{ display: "flex", gap: 6 }}>
-                   <button onClick={() => { copyFix(`${sig.name}-draft`, ads.editedContent || ads.content); }} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === `${sig.name}-draft` ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>{copiedFix === `${sig.name}-draft` ? "✓ Copied" : "Copy"}</button>
-                   <button onClick={() => previewFix(sig.name)} disabled={ads.previewLoading} style={{ background: "#1c1917", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: "#a1a1aa", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                    {ads.previewLoading ? <><div style={{ width: 8, height: 8, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</> : "↺ Regenerate"}
-                   </button>
-                  </div>
-                 </div>
-                 <textarea
-                  value={ads.editedContent ?? ads.content}
-                  onChange={e => setAdvancedDrafts(prev => ({ ...prev, [sig.name]: { ...prev[sig.name], editedContent: e.target.value } }))}
-                  rows={6}
-                  style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#d4d4d8", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }}
-                 />
-                 {ads.error && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>⚠️ {ads.error}</div>}
-                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                  <button onClick={() => applyFix(sig.name, ads.editedContent ?? ads.content)} disabled={ads.applyLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#818cf8", cursor: ads.applyLoading ? "default" : "pointer", opacity: ads.applyLoading ? 0.7 : 1 }}>
-                   {ads.applyLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Applying…</> : <>🚀 Apply to Shopify</>}
-                  </button>
-                 </div>
-                </div>
-               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
-                 {ads.error && <div style={{ fontSize: 11, color: "#fca5a5" }}>⚠️ {ads.error}</div>}
-                 <div style={{ fontSize: 11, color: "#52525b", marginBottom: 2 }}>AI will generate the exact HTML for this fix. You can edit it before it goes live.</div>
-                 <button onClick={() => previewFix(sig.name)} disabled={ads.previewLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#818cf8", cursor: ads.previewLoading ? "default" : "pointer" }}>
-                  {ads.previewLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating draft…</> : <>✨ Generate AI Draft</>}
-                 </button>
-                </div>
-               )}
-              </div>
-             )}
+ {/* AI Draft tab */}
+ {sub === "ai" && (
+ <div>
+ {ads.applyDone ? (
+ <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>Applied to Shopify!</div>
+ ) : ads.content != null ? (
+ <div>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.6 }}>AI-generated HTML — edit before applying</span>
+ <div style={{ display: "flex", gap: 6 }}>
+ <button onClick={() => { copyFix(`${sig.name}-draft`, ads.editedContent || ads.content); }} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === `${sig.name}-draft` ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>{copiedFix === `${sig.name}-draft` ? "Copied" : "Copy"}</button>
+ <button onClick={() => previewFix(sig.name)} disabled={ads.previewLoading} style={{ background: "#1c1917", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: "#a1a1aa", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+ {ads.previewLoading ? <><div style={{ width: 8, height: 8, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</> : "↺ Regenerate"}
+ </button>
+ </div>
+ </div>
+ <textarea
+ value={ads.editedContent ?? ads.content}
+ onChange={e => setAdvancedDrafts(prev => ({ ...prev, [sig.name]: { ...prev[sig.name], editedContent: e.target.value } }))}
+ rows={6}
+ style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#d4d4d8", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }}
+ />
+ {ads.error && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>{ads.error}</div>}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+ <button onClick={() => applyFix(sig.name, ads.editedContent ?? ads.content)} disabled={ads.applyLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#818cf8", cursor: ads.applyLoading ? "default" : "pointer", opacity: ads.applyLoading ? 0.7 : 1 }}>
+ {ads.applyLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Applying…</> : <>Apply to Shopify</>}
+ </button>
+ </div>
+ </div>
+ ) : (
+ <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+ {ads.error && <div style={{ fontSize: 11, color: "#fca5a5" }}>{ads.error}</div>}
+ <div style={{ fontSize: 11, color: "#52525b", marginBottom: 2 }}>AI will generate the exact HTML for this fix. You can edit it before it goes live.</div>
+ <button onClick={() => previewFix(sig.name)} disabled={ads.previewLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "#1e1b4b", border: "1px solid #4338ca", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#818cf8", cursor: ads.previewLoading ? "default" : "pointer" }}>
+ {ads.previewLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #818cf8", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating draft…</> : <>Generate AI Draft</>}
+ </button>
+ </div>
+ )}
+ </div>
+ )}
 
-             {/* Instructions tab */}
-             {sub === "instructions" && (
-              <div style={{ background: "#0c0c10", border: "1px solid #78350f", borderRadius: 8, padding: "12px 14px" }}>
-               {fixLoading ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#71717a" }}><div style={{ width: 10, height: 10, border: "1.5px solid #f59e0b", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Loading instructions…</div>
-               ) : fixPlan && fixPlan[sig.name] ? (
-                <>
-                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: 0.6 }}>How to fix manually</span>
-                  <button onClick={() => copyFix(sig.name, fixPlan[sig.name])} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === sig.name ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>{copiedFix === sig.name ? "✓ Copied" : "Copy"}</button>
-                 </div>
-                 <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{fixPlan[sig.name]}</div>
-                </>
-               ) : (
-                <div style={{ fontSize: 11, color: "#71717a" }}>{fixErr || "Click to load step-by-step instructions for this signal."}</div>
-               )}
-              </div>
-             )}
+ {/* Instructions tab */}
+ {sub === "instructions" && (
+ <div style={{ background: "#0c0c10", border: "1px solid #78350f", borderRadius: 8, padding: "12px 14px" }}>
+ {fixLoading ? (
+ <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#71717a" }}><div style={{ width: 10, height: 10, border: "1.5px solid #f59e0b", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Loading instructions…</div>
+ ) : fixPlan && fixPlan[sig.name] ? (
+ <>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: 0.6 }}>How to fix manually</span>
+ <button onClick={() => copyFix(sig.name, fixPlan[sig.name])} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 10, color: copiedFix === sig.name ? "#22c55e" : "#a1a1aa", cursor: "pointer" }}>{copiedFix === sig.name ? "Copied" : "Copy"}</button>
+ </div>
+ <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{fixPlan[sig.name]}</div>
+ </>
+ ) : (
+ <div style={{ fontSize: 11, color: "#71717a" }}>{fixErr || "Click to load step-by-step instructions for this signal."}</div>
+ )}
+ </div>
+ )}
 
-             {/* Manual HTML tab */}
-             {sub === "manual" && (() => {
-              const mads = ads;
-              const manualDone = mads.applyDone && !mads.content; // applied from manual path
-              return (
-               <div>
-                <div style={{ fontSize: 11, color: "#52525b", marginBottom: 8 }}>Write or paste your own HTML. AURA will push it directly to Shopify.</div>
-                {mads.applyDone ? (
-                 <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>✅ Applied to Shopify!</div>
-                ) : (
-                 <>
-                  <textarea
-                   value={mads.editedContent ?? ""}
-                   onChange={e => setAdvancedDrafts(prev => ({ ...prev, [sig.name]: { ...(prev[sig.name] || {}), content: prev[sig.name]?.content ?? null, editedContent: e.target.value, applyDone: false } }))}
-                   rows={6}
-                   placeholder={`<h2>Example heading</h2>\n<p>Your custom HTML here...</p>`}
-                   style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#d4d4d8", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }}
-                  />
-                  {mads.error && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>⚠️ {mads.error}</div>}
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                   <button onClick={() => applyFix(sig.name, mads.editedContent || "")} disabled={mads.applyLoading || !mads.editedContent?.trim()} style={{ display: "flex", alignItems: "center", gap: 6, background: "#0f172a", border: "1px solid #0f766e", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#2dd4bf", cursor: (mads.applyLoading || !mads.editedContent?.trim()) ? "default" : "pointer", opacity: (mads.applyLoading || !mads.editedContent?.trim()) ? 0.5 : 1 }}>
-                    {mads.applyLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #2dd4bf", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Applying…</> : <>🚀 Apply to Shopify</>}
-                   </button>
-                  </div>
-                 </>
-                )}
-               </div>
-              );
-             })()}
-            </div>
-           );
-          })()}
-         </div>
-        </div>
-        );
-       })}
-      </div>
-     )}
+ {/* Manual HTML tab */}
+ {sub === "manual" && (() => {
+ const mads = ads;
+ const manualDone = mads.applyDone && !mads.content; // applied from manual path
+ return (
+ <div>
+ <div style={{ fontSize: 11, color: "#52525b", marginBottom: 8 }}>Write or paste your own HTML. AURA will push it directly to Shopify.</div>
+ {mads.applyDone ? (
+ <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#86efac" }}>Applied to Shopify!</div>
+ ) : (
+ <>
+ <textarea
+ value={mads.editedContent ?? ""}
+ onChange={e => setAdvancedDrafts(prev => ({ ...prev, [sig.name]: { ...(prev[sig.name] || {}), content: prev[sig.name]?.content ?? null, editedContent: e.target.value, applyDone: false } }))}
+ rows={6}
+ placeholder={`<h2>Example heading</h2>\n<p>Your custom HTML here...</p>`}
+ style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 6, padding: "8px 10px", fontSize: 10, color: "#d4d4d8", fontFamily: "monospace", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }}
+ />
+ {mads.error && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>{mads.error}</div>}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+ <button onClick={() => applyFix(sig.name, mads.editedContent || "")} disabled={mads.applyLoading || !mads.editedContent?.trim()} style={{ display: "flex", alignItems: "center", gap: 6, background: "#0f172a", border: "1px solid #0f766e", borderRadius: 6, padding: "7px 18px", fontSize: 12, fontWeight: 700, color: "#2dd4bf", cursor: (mads.applyLoading || !mads.editedContent?.trim()) ? "default" : "pointer", opacity: (mads.applyLoading || !mads.editedContent?.trim()) ? 0.5 : 1 }}>
+ {mads.applyLoading ? <><div style={{ width: 10, height: 10, border: "1.5px solid #2dd4bf", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Applying…</> : <>Apply to Shopify</>}
+ </button>
+ </div>
+ </>
+ )}
+ </div>
+ );
+ })()}
+ </div>
+ );
+ })()}
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ )}
 
-     {/* Strengths */}
-     {result.strengths.length > 0 && (
-      <div style={S.card}>
-       <p style={S.sectionTitle}>✅ What's Already Working</p>
-       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {result.strengths.map((s, i) => (
-         <span key={i} style={{ fontSize: 11, background: "#14532d", border: "1px solid #166534", borderRadius: 6, padding: "4px 10px", color: "#86efac" }}>✓ {s}</span>
-        ))}
-       </div>
-      </div>
-     )}
+ {/* Strengths */}
+ {result.strengths.length > 0 && (
+ <div style={S.card}>
+ <p style={S.sectionTitle}>What's Already Working</p>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+ {result.strengths.map((s, i) => (
+ <span key={i} style={{ fontSize: 11, background: "#14532d", border: "1px solid #166534", borderRadius: 6, padding: "4px 10px", color: "#86efac" }}>{s}</span>
+ ))}
+ </div>
+ </div>
+ )}
 
-     {/* Recent scans */}
-     {history.length > 0 && (
-      <div style={S.card}>
-       <p style={S.sectionTitle}>🕐 Recent Scans</p>
-       {history.map((h, i) => (
-        <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderBottom: i < history.length - 1 ? "1px solid #27272a" : "none" }}>
-         <span style={{ fontSize: 17, fontWeight: 700, color: h.score >= 70 ? "#22c55e" : h.score >= 50 ? "#f59e0b" : "#ef4444", minWidth: 36 }}>{h.score}</span>
-         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, color: "#d4d4d8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.url}</div>
-          <div style={{ fontSize: 10, color: "#52525b", marginTop: 2 }}>{new Date(h.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
-         </div>
-         <span style={{ fontSize: 12, fontWeight: 700, color: h.grade === "A+" || h.grade === "A" ? "#22c55e" : h.grade === "B" ? "#f59e0b" : "#ef4444", minWidth: 24 }}>{h.grade}</span>
-         <button onClick={() => { setUrl(h.url); }} style={{ background: "#27272a", border: "none", borderRadius: 5, padding: "4px 10px", fontSize: 10, color: "#a1a1aa", cursor: "pointer" }}>Re-scan</button>
-        </div>
-       ))}
-      </div>
-     )}
-    </div>
-   )}
-  </div>
+ {/* Recent scans */}
+ {history.length > 0 && (
+ <div style={S.card}>
+ <p style={S.sectionTitle}>Recent Scans</p>
+ {history.map((h, i) => (
+ <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderBottom: i < history.length - 1 ? "1px solid #27272a" : "none" }}>
+ <span style={{ fontSize: 17, fontWeight: 700, color: h.score >= 70 ? "#22c55e" : h.score >= 50 ? "#f59e0b" : "#ef4444", minWidth: 36 }}>{h.score}</span>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 11, color: "#d4d4d8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.url}</div>
+ <div style={{ fontSize: 10, color: "#52525b", marginTop: 2 }}>{new Date(h.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+ </div>
+ <span style={{ fontSize: 12, fontWeight: 700, color: h.grade === "A+" || h.grade === "A" ? "#22c55e" : h.grade === "B" ? "#f59e0b" : "#ef4444", minWidth: 24 }}>{h.grade}</span>
+ <button onClick={() => { setUrl(h.url); }} style={{ background: "#27272a", border: "none", borderRadius: 5, padding: "4px 10px", fontSize: 10, color: "#a1a1aa", cursor: "pointer" }}>Re-scan</button>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ )}
+ </div>
  );
 }
 
 /* Tab: Prompt Testing */
 const PT_PLATFORM = {
- chatgpt:    { label: "ChatGPT",    color: "#10b981", dimColor: "#065f46", bg: "linear-gradient(135deg,#052e16,#0a1a12)", border: "#065f46", icon: "🤖", favors: "Wikipedia, Forbes, established media" },
- perplexity: { label: "Perplexity", color: "#818cf8", dimColor: "#3730a3", bg: "linear-gradient(135deg,#1e1b4b,#0f0d2e)", border: "#3730a3", icon: "🔍", favors: "Reddit, G2, peer reviews, forums" },
- googleai:   { label: "Google AI",  color: "#f59e0b", dimColor: "#92400e", bg: "linear-gradient(135deg,#1c1100,#120c00)", border: "#92400e", icon: "✦", favors: "Reddit, YouTube, LinkedIn, Quora" },
+ chatgpt: { label: "ChatGPT", color: "#10b981", dimColor: "#065f46", bg: "linear-gradient(135deg,#052e16,#0a1a12)", border: "#065f46", icon: "", favors: "Wikipedia, Forbes, established media" },
+ perplexity: { label: "Perplexity", color: "#818cf8", dimColor: "#3730a3", bg: "linear-gradient(135deg,#1e1b4b,#0f0d2e)", border: "#3730a3", icon: "", favors: "Reddit, G2, peer reviews, forums" },
+ googleai: { label: "Google AI", color: "#f59e0b", dimColor: "#92400e", bg: "linear-gradient(135deg,#1c1100,#120c00)", border: "#92400e", icon: "", favors: "Reddit, YouTube, LinkedIn, Quora" },
 };
 const PT_INTENT = { commercial: "#fbbf24", comparison: "#818cf8", review: "#34d399", informational: "#71717a" };
 const PT_SENTIMENT = {
  positive: { bg: "linear-gradient(135deg,#052e16,#0a2010)", border: "#166534", text: "#86efac", glow: "0 0 12px #14532d" },
- neutral:  { bg: "linear-gradient(135deg,#1c1917,#111)",   border: "#57534e", text: "#d6d3d1", glow: "none" },
+ neutral: { bg: "linear-gradient(135deg,#1c1917,#111)", border: "#57534e", text: "#d6d3d1", glow: "none" },
  negative: { bg: "linear-gradient(135deg,#2d0000,#1a0000)", border: "#7f1d1d", text: "#fca5a5", glow: "0 0 12px #450a0a" },
 };
 
 function ConfidenceBar({ value, color }) {
  return (
-  <div style={{ height: 4, borderRadius: 2, background: "#1a1a1a", overflow: "hidden", marginTop: 6, marginBottom: 6 }}>
-   <div style={{ height: "100%", width: `${value}%`, background: color, borderRadius: 2, transition: "width 0.8s ease" }} />
-  </div>
+ <div style={{ height: 4, borderRadius: 2, background: "#1a1a1a", overflow: "hidden", marginTop: 6, marginBottom: 6 }}>
+ <div style={{ height: "100%", width: `${value}%`, background: color, borderRadius: 2, transition: "width 0.8s ease" }} />
+ </div>
  );
 }
 
 function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
  const { plan: userPlan } = usePlan();
  const nav = (section, locked) => {
-  if (locked) { if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE('pricing'); return; }
-  if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE(section);
+ if (locked) { if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE('pricing'); return; }
+ if (window.__AURA_NAVIGATE) window.__AURA_NAVIGATE(section);
  };
  const PLAN_COLOUR = { free: '#71717a', growth: '#38bdf8', pro: '#4f46e5', enterprise: '#a78bfa' };
  const PLAN_LABEL = { free: 'Starter', growth: 'Growth', pro: 'Pro', enterprise: 'Enterprise' };
  const tools = [
-  {
-   icon: "✍️", label: "Write a Blog Post", sub: "Blog Draft Engine",
-   section: "blog-draft-engine", color: "#818cf8", border: "#3730a3",
-   why: "Create content that answers this exact query so AI cites you",
-  },
-  {
-   icon: "📋", label: "Create Content Brief", sub: "AI Content Brief Generator",
-   section: "ai-content-brief-generator", color: "#34d399", border: "#065f46",
-   why: "Build a full keyword + structure brief to guide your content",
-  },
-  {
-   icon: "🔑", label: "Research Keywords", sub: "Keyword Research Suite",
-   section: "keyword-research-suite", color: "#f59e0b", border: "#92400e",
-   why: "Find related search terms AI models associate with this topic",
-  },
-  {
-   icon: "🌱", label: "Get AI to Notice You", sub: "LLM Seeding Plan",
-   section: "ai-visibility-tracker", color: "#a78bfa", border: "#4338ca",
-   why: "Find where to post content so ChatGPT & Perplexity pick you up",
-  },
-  {
-   icon: "📊", label: "Score & Fix Content", sub: "Content Scoring & Optimization",
-   section: "content-scoring-optimization", color: "#38bdf8", border: "#0369a1",
-   why: "Check if your existing content is strong enough to earn citations",
-  },
-  {
-   icon: "🔗", label: "Steal Their Backlinks", sub: "Link Intersect & Outreach",
-   section: "link-intersect-outreach", color: "#f472b6", border: "#9d174d",
-   why: "Find sites linking to competitors but not you — and reach out",
-  },
+ {
+ icon: "", label: "Write a Blog Post", sub: "Blog Draft Engine",
+ section: "blog-draft-engine", color: "#818cf8", border: "#3730a3",
+ why: "Create content that answers this exact query so AI cites you",
+ },
+ {
+ icon: "", label: "Create Content Brief", sub: "AI Content Brief Generator",
+ section: "ai-content-brief-generator", color: "#34d399", border: "#065f46",
+ why: "Build a full keyword + structure brief to guide your content",
+ },
+ {
+ icon: "", label: "Research Keywords", sub: "Keyword Research Suite",
+ section: "keyword-research-suite", color: "#f59e0b", border: "#92400e",
+ why: "Find related search terms AI models associate with this topic",
+ },
+ {
+ icon: "", label: "Get AI to Notice You", sub: "LLM Seeding Plan",
+ section: "ai-visibility-tracker", color: "#a78bfa", border: "#4338ca",
+ why: "Find where to post content so ChatGPT & Perplexity pick you up",
+ },
+ {
+ icon: "", label: "Score & Fix Content", sub: "Content Scoring & Optimization",
+ section: "content-scoring-optimization", color: "#38bdf8", border: "#0369a1",
+ why: "Check if your existing content is strong enough to earn citations",
+ },
+ {
+ icon: "", label: "Steal Their Backlinks", sub: "Link Intersect & Outreach",
+ section: "link-intersect-outreach", color: "#f472b6", border: "#9d174d",
+ why: "Find sites linking to competitors but not you — and reach out",
+ },
  ];
  return (
-  <div>
-   <div style={{ fontSize: 10, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Take Action on This Gap</div>
-   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-    {tools.map(t => {
-     const reqPlan = TOOL_PLAN[t.section];
-     const locked = reqPlan ? !canUseTool(userPlan, t.section) : false;
-     return (
-      <button key={t.section} onClick={() => nav(t.section, locked)}
-       style={{ background: "#09090b", border: `1px solid ${locked ? '#3f3f46' : t.border}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "background 0.15s", position: "relative", opacity: locked ? 0.75 : 1 }}
-       onMouseEnter={e => e.currentTarget.style.background = "#111"} onMouseLeave={e => e.currentTarget.style.background = "#09090b"}>
-       {locked && (
-        <div style={{ position: "absolute", top: 7, right: 7, display: "flex", alignItems: "center", gap: 3, background: PLAN_COLOUR[reqPlan] + '22', border: `1px solid ${PLAN_COLOUR[reqPlan]}55`, borderRadius: 4, padding: "1px 5px" }}>
-         <span style={{ fontSize: 8 }}>🔒</span>
-         <span style={{ fontSize: 8, fontWeight: 700, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]}</span>
-        </div>
-       )}
-       <div style={{ fontSize: 16, marginBottom: 4 }}>{t.icon}</div>
-       <div style={{ fontSize: 11, fontWeight: 700, color: locked ? '#52525b' : t.color }}>{t.label}</div>
-       <div style={{ fontSize: 9, color: "#52525b", marginTop: 2, marginBottom: 4 }}>{locked ? 'Upgrade to unlock →' : `${t.sub} →`}</div>
-       {!locked && <div style={{ fontSize: 9, color: "#3f3f46", lineHeight: 1.4 }}>{t.why}</div>}
-      </button>
-     );
-    })}
-   </div>
-  </div>
+ <div>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Take Action on This Gap</div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+ {tools.map(t => {
+ const reqPlan = TOOL_PLAN[t.section];
+ const locked = reqPlan ? !canUseTool(userPlan, t.section) : false;
+ return (
+ <button key={t.section} onClick={() => nav(t.section, locked)}
+ style={{ background: "#09090b", border: `1px solid ${locked ? '#3f3f46' : t.border}`, borderRadius: 8, padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "background 0.15s", position: "relative", opacity: locked ? 0.75 : 1 }}
+ onMouseEnter={e => e.currentTarget.style.background = "#111"} onMouseLeave={e => e.currentTarget.style.background = "#09090b"}>
+ {locked && (
+ <div style={{ position: "absolute", top: 7, right: 7, display: "flex", alignItems: "center", gap: 3, background: PLAN_COLOUR[reqPlan] + '22', border: `1px solid ${PLAN_COLOUR[reqPlan]}55`, borderRadius: 4, padding: "1px 5px" }}>
+ <span style={{ fontSize: 8 }}></span>
+ <span style={{ fontSize: 8, fontWeight: 700, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]}</span>
+ </div>
+ )}
+ <div style={{ fontSize: 16, marginBottom: 4 }}>{t.icon}</div>
+ <div style={{ fontSize: 11, fontWeight: 700, color: locked ? '#52525b' : t.color }}>{t.label}</div>
+ <div style={{ fontSize: 9, color: "#52525b", marginTop: 2, marginBottom: 4 }}>{locked ? 'Upgrade to unlock →' : `${t.sub} →`}</div>
+ {!locked && <div style={{ fontSize: 9, color: "#3f3f46", lineHeight: 1.4 }}>{t.why}</div>}
+ </button>
+ );
+ })}
+ </div>
+ </div>
  );
 }
 
@@ -1215,345 +1215,345 @@ function PromptTestTab() {
  const toggleExpand = (i) => setExpanded(p => ({ ...p, [i]: !p[i] }));
 
  const run = useCallback(async () => {
-  const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
-  if (!brand || prompts.length === 0) return;
-  setLoading(true); setErr(""); setResult(null); setExpanded({});
-  try {
-   const d = await apiFetch(`${API}/prompt-test`, { method: "POST", body: JSON.stringify({ brand, prompts, competitors: competitors.split(",").map(c => c.trim()).filter(Boolean) }) });
-   if (!d.ok) throw new Error(d.error);
-   setResult(d);
-   setExpanded({ 0: true });
-  } catch (e) { setErr(e.message); } finally { setLoading(false); }
+ const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
+ if (!brand || prompts.length === 0) return;
+ setLoading(true); setErr(""); setResult(null); setExpanded({});
+ try {
+ const d = await apiFetch(`${API}/prompt-test`, { method: "POST", body: JSON.stringify({ brand, prompts, competitors: competitors.split(",").map(c => c.trim()).filter(Boolean) }) });
+ if (!d.ok) throw new Error(d.error);
+ setResult(d);
+ setExpanded({ 0: true });
+ } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, promptsText, competitors]);
 
  const getSuggestions = useCallback(async () => {
-  if (!brand) return;
-  setSuggestLoading(true); setSuggestErr(""); setSuggestions([]);
-  try {
-   const d = await apiFetch(`${API}/prompt-suggestions`, { method: "POST", body: JSON.stringify({ brand, niche }) });
-   if (!d.ok) throw new Error(d.error);
-   setSuggestions(d.suggestions || []);
-  } catch (e) { setSuggestErr(e.message); } finally { setSuggestLoading(false); }
+ if (!brand) return;
+ setSuggestLoading(true); setSuggestErr(""); setSuggestions([]);
+ try {
+ const d = await apiFetch(`${API}/prompt-suggestions`, { method: "POST", body: JSON.stringify({ brand, niche }) });
+ if (!d.ok) throw new Error(d.error);
+ setSuggestions(d.suggestions || []);
+ } catch (e) { setSuggestErr(e.message); } finally { setSuggestLoading(false); }
  }, [brand, niche]);
 
  const addPrompt = (p) => {
-  const lines = promptsText.trim().split("\n").map(l => l.trim()).filter(Boolean);
-  if (!lines.includes(p)) setPromptsText(lines.concat(p).join("\n"));
+ const lines = promptsText.trim().split("\n").map(l => l.trim()).filter(Boolean);
+ if (!lines.includes(p)) setPromptsText(lines.concat(p).join("\n"));
  };
 
  const avgByPlatform = (platform) => {
-  if (!result?.results) return 0;
-  const vals = result.results.map(r => r.platforms?.[platform]?.confidence || 0);
-  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+ if (!result?.results) return 0;
+ const vals = result.results.map(r => r.platforms?.[platform]?.confidence || 0);
+ return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
  };
 
  const citedOnPlatform = (platform) => {
-  if (!result?.results) return 0;
-  return result.results.filter(r => r.platforms?.[platform]?.cited).length;
+ if (!result?.results) return 0;
+ return result.results.filter(r => r.platforms?.[platform]?.cited).length;
  };
 
  return (
-  <div>
-   {/* ── Setup card ── */}
-   <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
-    {/* Purple gradient header stripe */}
-    <div style={{ background: "linear-gradient(90deg,#7c3aed,#4f46e5,#0ea5e9)", height: 3 }} />
-    <div style={{ padding: "20px 20px 0" }}>
-     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-      <div>
-       <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>AI Prompt Visibility Test</div>
-       <div style={{ fontSize: 11, color: "#71717a" }}>Simulate how each AI platform responds to real user prompts — and whether your brand gets cited</div>
-      </div>
-      <div style={{ display: "flex", gap: 6 }}>
-       {Object.entries(PT_PLATFORM).map(([k, p]) => (
-        <div key={k} style={{ background: "#09090b", border: `1px solid ${p.dimColor}`, borderRadius: 6, padding: "4px 8px", textAlign: "center" }}>
-         <div style={{ fontSize: 11 }}>{p.icon}</div>
-         <div style={{ fontSize: 8, fontWeight: 700, color: p.color, marginTop: 1 }}>{p.label}</div>
-        </div>
-       ))}
-      </div>
-     </div>
+ <div>
+ {/* ── Setup card ── */}
+ <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+ {/* Purple gradient header stripe */}
+ <div style={{ background: "linear-gradient(90deg,#7c3aed,#4f46e5,#0ea5e9)", height: 3 }} />
+ <div style={{ padding: "20px 20px 0" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+ <div>
+ <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>AI Prompt Visibility Test</div>
+ <div style={{ fontSize: 11, color: "#71717a" }}>Simulate how each AI platform responds to real user prompts — and whether your brand gets cited</div>
+ </div>
+ <div style={{ display: "flex", gap: 6 }}>
+ {Object.entries(PT_PLATFORM).map(([k, p]) => (
+ <div key={k} style={{ background: "#09090b", border: `1px solid ${p.dimColor}`, borderRadius: 6, padding: "4px 8px", textAlign: "center" }}>
+ <div style={{ fontSize: 11 }}>{p.icon}</div>
+ <div style={{ fontSize: 8, fontWeight: 700, color: p.color, marginTop: 1 }}>{p.label}</div>
+ </div>
+ ))}
+ </div>
+ </div>
 
-     {/* Platform bias info bar */}
-     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 18 }}>
-      {Object.entries(PT_PLATFORM).map(([k, p]) => (
-       <div key={k} style={{ background: "#09090b", border: `1px solid ${p.dimColor}`, borderRadius: 8, padding: "8px 10px" }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: p.color, marginBottom: 3 }}>{p.icon} {p.label} citation bias</div>
-        <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5 }}>{p.favors}</div>
-       </div>
-      ))}
-     </div>
+ {/* Platform bias info bar */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 18 }}>
+ {Object.entries(PT_PLATFORM).map(([k, p]) => (
+ <div key={k} style={{ background: "#09090b", border: `1px solid ${p.dimColor}`, borderRadius: 8, padding: "8px 10px" }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: p.color, marginBottom: 3 }}>{p.icon} {p.label} citation bias</div>
+ <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5 }}>{p.favors}</div>
+ </div>
+ ))}
+ </div>
 
-     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-      <div>
-       <label style={S.label}>Brand name <span style={{ color: "#ef4444" }}>*</span></label>
-       <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Snowboard Co." />
-      </div>
-      <div>
-       <label style={S.label}>Product niche / category</label>
-       <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. beginner snowboards" />
-      </div>
-     </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+ <div>
+ <label style={S.label}>Brand name <span style={{ color: "#ef4444" }}>*</span></label>
+ <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. Snowboard Co." />
+ </div>
+ <div>
+ <label style={S.label}>Product niche / category</label>
+ <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. beginner snowboards" />
+ </div>
+ </div>
 
-     <div style={{ marginBottom: 12 }}>
-      <label style={S.label}>Competitors (comma-separated, optional)</label>
-      <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Burton, Capita, Lib Tech" />
-     </div>
+ <div style={{ marginBottom: 12 }}>
+ <label style={S.label}>Competitors (comma-separated, optional)</label>
+ <input style={S.input} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="Burton, Capita, Lib Tech" />
+ </div>
 
-     {/* Prompts area */}
-     <div style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-       <label style={S.label}>Prompts to test <span style={{ color: "#ef4444" }}>*</span> <span style={{ color: "#52525b", fontWeight: 400 }}>(one per line, max 5)</span></label>
-       <button onClick={getSuggestions} disabled={suggestLoading || !brand}
-        style={{ display: "flex", alignItems: "center", gap: 5, background: "linear-gradient(135deg,#1e1b4b,#12103a)", border: "1px solid #4338ca", borderRadius: 6, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: suggestLoading ? "#52525b" : "#a78bfa", cursor: (!brand || suggestLoading) ? "default" : "pointer", transition: "opacity 0.15s" }}>
-        {suggestLoading ? <><div style={{ width: 8, height: 8, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Generating…</> : "✨ AI Suggest Prompts"}
-       </button>
-      </div>
-      <textarea style={{ ...S.textarea, minHeight: 88, fontFamily: "monospace", fontSize: 11 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best snowboards for beginners\ntop snowboard brands 2026\nhow to choose a beginner snowboard"} />
+ {/* Prompts area */}
+ <div style={{ marginBottom: 16 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+ <label style={S.label}>Prompts to test <span style={{ color: "#ef4444" }}>*</span> <span style={{ color: "#52525b", fontWeight: 400 }}>(one per line, max 5)</span></label>
+ <button onClick={getSuggestions} disabled={suggestLoading || !brand}
+ style={{ display: "flex", alignItems: "center", gap: 5, background: "linear-gradient(135deg,#1e1b4b,#12103a)", border: "1px solid #4338ca", borderRadius: 6, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: suggestLoading ? "#52525b" : "#a78bfa", cursor: (!brand || suggestLoading) ? "default" : "pointer", transition: "opacity 0.15s" }}>
+ {suggestLoading ? <><div style={{ width: 8, height: 8, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Generating…</> : "AI Suggest Prompts"}
+ </button>
+ </div>
+ <textarea style={{ ...S.textarea, minHeight: 88, fontFamily: "monospace", fontSize: 11 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best snowboards for beginners\ntop snowboard brands 2026\nhow to choose a beginner snowboard"} />
 
-      {suggestErr && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>{suggestErr}</div>}
+ {suggestErr && <div style={{ fontSize: 11, color: "#fca5a5", marginTop: 4 }}>{suggestErr}</div>}
 
-      {suggestions.length > 0 && (
-       <div style={{ marginTop: 10, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>Click to add to your test list</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-         {suggestions.map((s, i) => {
-          const added = promptsText.trim().split("\n").map(l => l.trim()).includes(s.prompt);
-          const ic = PT_INTENT[s.intent] || "#71717a";
-          return (
-           <button key={i} onClick={() => addPrompt(s.prompt)} disabled={added}
-            style={{ display: "flex", alignItems: "center", gap: 5, background: added ? "#18181b" : "#09090b", border: `1px solid ${added ? "#27272a" : ic}`, borderRadius: 6, padding: "5px 10px", fontSize: 10, color: added ? "#3f3f46" : "#d4d4d8", cursor: added ? "default" : "pointer" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: added ? "#27272a" : ic, flexShrink: 0 }} />
-            <span style={{ fontSize: 8, fontWeight: 700, color: added ? "#3f3f46" : ic, textTransform: "uppercase" }}>{s.intent}</span>
-            {s.prompt}
-            {added ? <span style={{ color: "#22c55e", fontSize: 9 }}>✓</span> : <span style={{ color: "#52525b", fontSize: 9 }}>+</span>}
-           </button>
-          );
-         })}
-        </div>
-       </div>
-      )}
-     </div>
-    </div>
+ {suggestions.length > 0 && (
+ <div style={{ marginTop: 10, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
+ <div style={{ fontSize: 9, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>Click to add to your test list</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {suggestions.map((s, i) => {
+ const added = promptsText.trim().split("\n").map(l => l.trim()).includes(s.prompt);
+ const ic = PT_INTENT[s.intent] || "#71717a";
+ return (
+ <button key={i} onClick={() => addPrompt(s.prompt)} disabled={added}
+ style={{ display: "flex", alignItems: "center", gap: 5, background: added ? "#18181b" : "#09090b", border: `1px solid ${added ? "#27272a" : ic}`, borderRadius: 6, padding: "5px 10px", fontSize: 10, color: added ? "#3f3f46" : "#d4d4d8", cursor: added ? "default" : "pointer" }}>
+ <span style={{ width: 6, height: 6, borderRadius: "50%", background: added ? "#27272a" : ic, flexShrink: 0 }} />
+ <span style={{ fontSize: 8, fontWeight: 700, color: added ? "#3f3f46" : ic, textTransform: "uppercase" }}>{s.intent}</span>
+ {s.prompt}
+ {added ? <span style={{ color: "#22c55e", fontSize: 9 }}></span> : <span style={{ color: "#52525b", fontSize: 9 }}>+</span>}
+ </button>
+ );
+ })}
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
 
-    {/* Run button row */}
-    <div style={{ padding: "0 20px 20px" }}>
-     <button onClick={run} disabled={loading || !brand || !promptsText.trim()}
-      style={{ width: "100%", padding: "12px 20px", background: loading ? "#18181b" : "linear-gradient(90deg,#7c3aed,#4f46e5)", border: "none", borderRadius: 8, color: loading ? "#52525b" : "#fff", fontSize: 13, fontWeight: 700, cursor: (loading || !brand || !promptsText.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "opacity 0.15s", opacity: (!brand || !promptsText.trim()) ? 0.5 : 1 }}>
-      {loading
-       ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Simulating AI responses across 3 platforms…</>
-       : <><span style={{ fontSize: 16 }}>🚀</span> Run Prompt Visibility Test <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>2 credits</span></>}
-     </button>
-    </div>
-   </div>
+ {/* Run button row */}
+ <div style={{ padding: "0 20px 20px" }}>
+ <button onClick={run} disabled={loading || !brand || !promptsText.trim()}
+ style={{ width: "100%", padding: "12px 20px", background: loading ? "#18181b" : "linear-gradient(90deg,#7c3aed,#4f46e5)", border: "none", borderRadius: 8, color: loading ? "#52525b" : "#fff", fontSize: 13, fontWeight: 700, cursor: (loading || !brand || !promptsText.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "opacity 0.15s", opacity: (!brand || !promptsText.trim()) ? 0.5 : 1 }}>
+ {loading
+ ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Simulating AI responses across 3 platforms…</>
+ : <><span style={{ fontSize: 16 }}></span> Run Prompt Visibility Test <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>2 credits</span></>}
+ </button>
+ </div>
+ </div>
 
-   {err && <div style={S.error}>{err}</div>}
+ {err && <div style={S.error}>{err}</div>}
 
-   {result && (
-    <div>
+ {result && (
+ <div>
 
-     {/* ── Summary hero ── */}
-     <div style={{ ...S.card, background: "linear-gradient(135deg,#0a0a0f,#0f0f18)", padding: 0, overflow: "hidden" }}>
-      <div style={{ background: "linear-gradient(90deg,#7c3aed,#4f46e5,#0ea5e9)", height: 2 }} />
-      <div style={{ padding: "20px 20px 16px" }}>
-       <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap", marginBottom: 20 }}>
-        <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
-         <svg width="80" height="80" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="40" cy="40" r="34" fill="none" stroke="#1a1a1a" strokeWidth="8" />
-          <circle cx="40" cy="40" r="34" fill="none" stroke={result.avgScore >= 70 ? "#22c55e" : result.avgScore >= 40 ? "#f59e0b" : "#ef4444"} strokeWidth="8"
-           strokeDasharray={`${2 * Math.PI * 34 * result.avgScore / 100} 999`} strokeLinecap="round" />
-         </svg>
-         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: result.avgScore >= 70 ? "#22c55e" : result.avgScore >= 40 ? "#f59e0b" : "#ef4444", lineHeight: 1 }}>{result.avgScore}</div>
-          <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>/ 100</div>
-         </div>
-        </div>
-        <div style={{ flex: 1, minWidth: 180 }}>
-         <div style={{ fontSize: 17, fontWeight: 800, color: "#fafafa", marginBottom: 4 }}>{result.brand}</div>
-         <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 8 }}>
-          Cited in <strong style={{ color: result.citedCount > 0 ? "#22c55e" : "#ef4444", fontSize: 14 }}>{result.citedCount}/{result.total}</strong> prompts tested
-         </div>
-         <div style={{ display: "flex", gap: 6 }}>
-          <span style={{ fontSize: 10, background: result.avgScore >= 60 ? "#052e16" : result.avgScore >= 30 ? "#1c1100" : "#2d0000", border: `1px solid ${result.avgScore >= 60 ? "#166534" : result.avgScore >= 30 ? "#92400e" : "#7f1d1d"}`, color: result.avgScore >= 60 ? "#86efac" : result.avgScore >= 30 ? "#fde68a" : "#fca5a5", borderRadius: 4, padding: "2px 8px", fontWeight: 700 }}>
-           {result.avgScore >= 60 ? "Good Visibility" : result.avgScore >= 30 ? "Needs Work" : "Poor Visibility"}
-          </span>
-         </div>
-        </div>
-       </div>
+ {/* ── Summary hero ── */}
+ <div style={{ ...S.card, background: "linear-gradient(135deg,#0a0a0f,#0f0f18)", padding: 0, overflow: "hidden" }}>
+ <div style={{ background: "linear-gradient(90deg,#7c3aed,#4f46e5,#0ea5e9)", height: 2 }} />
+ <div style={{ padding: "20px 20px 16px" }}>
+ <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap", marginBottom: 20 }}>
+ <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
+ <svg width="80" height="80" style={{ transform: "rotate(-90deg)" }}>
+ <circle cx="40" cy="40" r="34" fill="none" stroke="#1a1a1a" strokeWidth="8" />
+ <circle cx="40" cy="40" r="34" fill="none" stroke={result.avgScore >= 70 ? "#22c55e" : result.avgScore >= 40 ? "#f59e0b" : "#ef4444"} strokeWidth="8"
+ strokeDasharray={`${2 * Math.PI * 34 * result.avgScore / 100} 999`} strokeLinecap="round" />
+ </svg>
+ <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+ <div style={{ fontSize: 18, fontWeight: 800, color: result.avgScore >= 70 ? "#22c55e" : result.avgScore >= 40 ? "#f59e0b" : "#ef4444", lineHeight: 1 }}>{result.avgScore}</div>
+ <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>/ 100</div>
+ </div>
+ </div>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <div style={{ fontSize: 17, fontWeight: 800, color: "#fafafa", marginBottom: 4 }}>{result.brand}</div>
+ <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 8 }}>
+ Cited in <strong style={{ color: result.citedCount > 0 ? "#22c55e" : "#ef4444", fontSize: 14 }}>{result.citedCount}/{result.total}</strong> prompts tested
+ </div>
+ <div style={{ display: "flex", gap: 6 }}>
+ <span style={{ fontSize: 10, background: result.avgScore >= 60 ? "#052e16" : result.avgScore >= 30 ? "#1c1100" : "#2d0000", border: `1px solid ${result.avgScore >= 60 ? "#166534" : result.avgScore >= 30 ? "#92400e" : "#7f1d1d"}`, color: result.avgScore >= 60 ? "#86efac" : result.avgScore >= 30 ? "#fde68a" : "#fca5a5", borderRadius: 4, padding: "2px 8px", fontWeight: 700 }}>
+ {result.avgScore >= 60 ? "Good Visibility" : result.avgScore >= 30 ? "Needs Work" : "Poor Visibility"}
+ </span>
+ </div>
+ </div>
+ </div>
 
-       {/* Per-platform summary bars */}
-       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-        {["chatgpt", "perplexity", "googleai"].map(pk => {
-         const pm = PT_PLATFORM[pk];
-         const avg = avgByPlatform(pk);
-         const cited = citedOnPlatform(pk);
-         return (
-          <div key={pk} style={{ background: "#09090b", border: `1px solid ${pm.dimColor}`, borderRadius: 10, padding: "12px 14px" }}>
-           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: pm.color }}>{pm.icon} {pm.label}</span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: pm.color }}>{avg}%</span>
-           </div>
-           <ConfidenceBar value={avg} color={pm.color} />
-           <div style={{ fontSize: 9, color: "#52525b", marginTop: 4 }}>Cited in <strong style={{ color: cited > 0 ? pm.color : "#52525b" }}>{cited}/{result.total}</strong> prompts</div>
-          </div>
-         );
-        })}
-       </div>
-      </div>
-     </div>
+ {/* Per-platform summary bars */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+ {["chatgpt", "perplexity", "googleai"].map(pk => {
+ const pm = PT_PLATFORM[pk];
+ const avg = avgByPlatform(pk);
+ const cited = citedOnPlatform(pk);
+ return (
+ <div key={pk} style={{ background: "#09090b", border: `1px solid ${pm.dimColor}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+ <span style={{ fontSize: 11, fontWeight: 700, color: pm.color }}>{pm.icon} {pm.label}</span>
+ <span style={{ fontSize: 12, fontWeight: 800, color: pm.color }}>{avg}%</span>
+ </div>
+ <ConfidenceBar value={avg} color={pm.color} />
+ <div style={{ fontSize: 9, color: "#52525b", marginTop: 4 }}>Cited in <strong style={{ color: cited > 0 ? pm.color : "#52525b" }}>{cited}/{result.total}</strong> prompts</div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ </div>
 
-     {/* ── Per-prompt results ── */}
-     {result.results.map((r, i) => {
-      const isOpen = expanded[i];
-      const platforms = r.platforms || {};
-      const numCited = Object.values(platforms).filter(p => p?.cited).length;
-      const sc = PT_SENTIMENT[r.sentiment] || PT_SENTIMENT.neutral;
-      const borderColor = numCited >= 2 ? "#166534" : numCited === 1 ? "#92400e" : "#7f1d1d";
-      const score = r.overallScore || 0;
+ {/* ── Per-prompt results ── */}
+ {result.results.map((r, i) => {
+ const isOpen = expanded[i];
+ const platforms = r.platforms || {};
+ const numCited = Object.values(platforms).filter(p => p?.cited).length;
+ const sc = PT_SENTIMENT[r.sentiment] || PT_SENTIMENT.neutral;
+ const borderColor = numCited >= 2 ? "#166534" : numCited === 1 ? "#92400e" : "#7f1d1d";
+ const score = r.overallScore || 0;
 
-      return (
-       <div key={i} style={{ ...S.card, padding: 0, overflow: "hidden", borderLeft: `3px solid ${borderColor}` }}>
+ return (
+ <div key={i} style={{ ...S.card, padding: 0, overflow: "hidden", borderLeft: `3px solid ${borderColor}` }}>
 
-        {/* Collapsed header */}
-        <div onClick={() => toggleExpand(i)} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", cursor: "pointer", background: isOpen ? "#0c0c10" : "transparent" }}>
-         {/* Number badge */}
-         <div style={{ width: 30, height: 30, borderRadius: 7, background: "#09090b", border: `1px solid ${borderColor}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: numCited >= 2 ? "#86efac" : numCited === 1 ? "#fde68a" : "#fca5a5", flexShrink: 0 }}>{i + 1}</div>
+ {/* Collapsed header */}
+ <div onClick={() => toggleExpand(i)} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", cursor: "pointer", background: isOpen ? "#0c0c10" : "transparent" }}>
+ {/* Number badge */}
+ <div style={{ width: 30, height: 30, borderRadius: 7, background: "#09090b", border: `1px solid ${borderColor}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: numCited >= 2 ? "#86efac" : numCited === 1 ? "#fde68a" : "#fca5a5", flexShrink: 0 }}>{i + 1}</div>
 
-         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-           "{r.prompt}"
-          </div>
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
-           {["chatgpt", "perplexity", "googleai"].map(pk => {
-            const pm = PT_PLATFORM[pk];
-            const pd = platforms[pk];
-            if (!pd) return null;
-            return (
-             <span key={pk} style={{ fontSize: 9, fontWeight: 700, color: pd.cited ? pm.color : "#3f3f46", background: pd.cited ? "#09090b" : "#18181b", border: `1px solid ${pd.cited ? pm.dimColor : "#27272a"}`, borderRadius: 4, padding: "2px 7px", display: "inline-flex", alignItems: "center", gap: 3 }}>
-              <span>{pm.icon}</span>{pd.confidence}%
-             </span>
-            );
-           })}
-           {r.sentiment && (
-            <span style={{ fontSize: 9, fontWeight: 700, color: sc.text, border: `1px solid ${sc.border}`, borderRadius: 4, padding: "2px 7px", textTransform: "uppercase" }}>{r.sentiment}</span>
-           )}
-          </div>
-         </div>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+ "{r.prompt}"
+ </div>
+ <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
+ {["chatgpt", "perplexity", "googleai"].map(pk => {
+ const pm = PT_PLATFORM[pk];
+ const pd = platforms[pk];
+ if (!pd) return null;
+ return (
+ <span key={pk} style={{ fontSize: 9, fontWeight: 700, color: pd.cited ? pm.color : "#3f3f46", background: pd.cited ? "#09090b" : "#18181b", border: `1px solid ${pd.cited ? pm.dimColor : "#27272a"}`, borderRadius: 4, padding: "2px 7px", display: "inline-flex", alignItems: "center", gap: 3 }}>
+ <span>{pm.icon}</span>{pd.confidence}%
+ </span>
+ );
+ })}
+ {r.sentiment && (
+ <span style={{ fontSize: 9, fontWeight: 700, color: sc.text, border: `1px solid ${sc.border}`, borderRadius: 4, padding: "2px 7px", textTransform: "uppercase" }}>{r.sentiment}</span>
+ )}
+ </div>
+ </div>
 
-         {/* Score */}
-         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: score >= 60 ? "#22c55e" : score >= 30 ? "#f59e0b" : "#ef4444" }}>{score}%</div>
-          <div style={{ fontSize: 8, color: "#52525b", fontWeight: 600, marginTop: 2 }}>VISIBILITY</div>
-         </div>
-         <div style={{ fontSize: 11, color: "#3f3f46" }}>{isOpen ? "▲" : "▼"}</div>
-        </div>
+ {/* Score */}
+ <div style={{ textAlign: "right", flexShrink: 0 }}>
+ <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: score >= 60 ? "#22c55e" : score >= 30 ? "#f59e0b" : "#ef4444" }}>{score}%</div>
+ <div style={{ fontSize: 8, color: "#52525b", fontWeight: 600, marginTop: 2 }}>VISIBILITY</div>
+ </div>
+ <div style={{ fontSize: 11, color: "#3f3f46" }}>{isOpen ? "" : ""}</div>
+ </div>
 
-        {/* ── Expanded detail ── */}
-        {isOpen && (
-         <div style={{ borderTop: "1px solid #18181b", padding: "0 16px 20px" }}>
+ {/* ── Expanded detail ── */}
+ {isOpen && (
+ <div style={{ borderTop: "1px solid #18181b", padding: "0 16px 20px" }}>
 
-          {/* Platform columns */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16, marginBottom: 16 }}>
-           {["chatgpt", "perplexity", "googleai"].map(pk => {
-            const pm = PT_PLATFORM[pk];
-            const pd = platforms[pk];
-            if (!pd) return <div key={pk} />;
-            return (
-             <div key={pk} style={{ background: "#09090b", border: `1px solid ${pd.cited ? pm.dimColor : "#27272a"}`, borderRadius: 10, overflow: "hidden" }}>
-              <div style={{ height: 2, background: pd.cited ? pm.color : "#27272a" }} />
-              <div style={{ padding: "10px 12px" }}>
-               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: pd.cited ? pm.color : "#52525b" }}>{pm.icon} {pm.label}</span>
-                <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, color: pd.cited ? pm.color : "#3f3f46", background: pd.cited ? "#111" : "#18181b", border: `1px solid ${pd.cited ? pm.dimColor : "#27272a"}` }}>
-                 {pd.cited ? "✓ Cited" : "✗ Missed"}
-                </span>
-               </div>
-               <div style={{ fontSize: 26, fontWeight: 800, color: pd.cited ? pm.color : "#3f3f46", lineHeight: 1, marginBottom: 4 }}>{pd.confidence}%</div>
-               <ConfidenceBar value={pd.confidence} color={pd.cited ? pm.color : "#27272a"} />
-               <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.6, marginTop: 6 }}>{pd.reasoning}</div>
-               {pd.narrative && pd.cited && (
-                <div style={{ marginTop: 8, padding: "6px 10px", background: "#070707", border: `1px solid ${pm.dimColor}`, borderRadius: 6, fontSize: 10, color: "#d4d4d8", fontStyle: "italic", lineHeight: 1.6 }}>
-                 "{pd.narrative}"
-                </div>
-               )}
-              </div>
-             </div>
-            );
-           })}
-          </div>
+ {/* Platform columns */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16, marginBottom: 16 }}>
+ {["chatgpt", "perplexity", "googleai"].map(pk => {
+ const pm = PT_PLATFORM[pk];
+ const pd = platforms[pk];
+ if (!pd) return <div key={pk} />;
+ return (
+ <div key={pk} style={{ background: "#09090b", border: `1px solid ${pd.cited ? pm.dimColor : "#27272a"}`, borderRadius: 10, overflow: "hidden" }}>
+ <div style={{ height: 2, background: pd.cited ? pm.color : "#27272a" }} />
+ <div style={{ padding: "10px 12px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+ <span style={{ fontSize: 11, fontWeight: 700, color: pd.cited ? pm.color : "#52525b" }}>{pm.icon} {pm.label}</span>
+ <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, color: pd.cited ? pm.color : "#3f3f46", background: pd.cited ? "#111" : "#18181b", border: `1px solid ${pd.cited ? pm.dimColor : "#27272a"}` }}>
+ {pd.cited ? "Cited" : "Missed"}
+ </span>
+ </div>
+ <div style={{ fontSize: 26, fontWeight: 800, color: pd.cited ? pm.color : "#3f3f46", lineHeight: 1, marginBottom: 4 }}>{pd.confidence}%</div>
+ <ConfidenceBar value={pd.confidence} color={pd.cited ? pm.color : "#27272a"} />
+ <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.6, marginTop: 6 }}>{pd.reasoning}</div>
+ {pd.narrative && pd.cited && (
+ <div style={{ marginTop: 8, padding: "6px 10px", background: "#070707", border: `1px solid ${pm.dimColor}`, borderRadius: 6, fontSize: 10, color: "#d4d4d8", fontStyle: "italic", lineHeight: 1.6 }}>
+ "{pd.narrative}"
+ </div>
+ )}
+ </div>
+ </div>
+ );
+ })}
+ </div>
 
-          {/* Brand narrative */}
-          {r.brandNarrative && (
-           <div style={{ background: "#09090b", border: `1px solid ${sc.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-             <div style={{ fontSize: 10, fontWeight: 700, color: sc.text, textTransform: "uppercase", letterSpacing: 0.8 }}>Brand Narrative</div>
-             <span style={{ fontSize: 9, fontWeight: 700, color: sc.text, border: `1px solid ${sc.border}`, borderRadius: 4, padding: "1px 6px", textTransform: "uppercase" }}>{r.sentiment}</span>
-            </div>
-            <div style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.7 }}>{r.brandNarrative}</div>
-            {r.sentimentReason && <div style={{ fontSize: 11, color: "#71717a", marginTop: 6, borderTop: "1px solid #18181b", paddingTop: 6 }}>{r.sentimentReason}</div>}
-           </div>
-          )}
+ {/* Brand narrative */}
+ {r.brandNarrative && (
+ <div style={{ background: "#09090b", border: `1px solid ${sc.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: sc.text, textTransform: "uppercase", letterSpacing: 0.8 }}>Brand Narrative</div>
+ <span style={{ fontSize: 9, fontWeight: 700, color: sc.text, border: `1px solid ${sc.border}`, borderRadius: 4, padding: "1px 6px", textTransform: "uppercase" }}>{r.sentiment}</span>
+ </div>
+ <div style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.7 }}>{r.brandNarrative}</div>
+ {r.sentimentReason && <div style={{ fontSize: 11, color: "#71717a", marginTop: 6, borderTop: "1px solid #18181b", paddingTop: 6 }}>{r.sentimentReason}</div>}
+ </div>
+ )}
 
-          {/* Gap + Competitor grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-           {r.gapAnalysis && (
-            <div style={{ background: "#09090b", border: "1px solid #7f1d1d", borderRadius: 10, padding: "12px 14px" }}>
-             <div style={{ fontSize: 10, fontWeight: 700, color: "#fca5a5", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 14 }}>⚠</span> Primary Gap
-             </div>
-             <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.7 }}>{r.gapAnalysis}</div>
-            </div>
-           )}
-           {r.competitorEdge && (
-            <div style={{ background: "#09090b", border: "1px solid #78350f", borderRadius: 10, padding: "12px 14px" }}>
-             <div style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 14 }}>🏆</span> Why Competitors Win
-             </div>
-             <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.7 }}>{r.competitorEdge}</div>
-             {r.competitorsThatWouldBeCited?.length > 0 && (
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 8 }}>
-               {r.competitorsThatWouldBeCited.map((c, j) => (
-                <span key={j} style={{ fontSize: 9, background: "#431407", border: "1px solid #78350f", borderRadius: 4, padding: "2px 7px", color: "#fb923c", fontWeight: 600 }}>{c}</span>
-               ))}
-              </div>
-             )}
-            </div>
-           )}
-          </div>
+ {/* Gap + Competitor grid */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+ {r.gapAnalysis && (
+ <div style={{ background: "#09090b", border: "1px solid #7f1d1d", borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#fca5a5", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}>
+ <span style={{ fontSize: 14 }}></span> Primary Gap
+ </div>
+ <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.7 }}>{r.gapAnalysis}</div>
+ </div>
+ )}
+ {r.competitorEdge && (
+ <div style={{ background: "#09090b", border: "1px solid #78350f", borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}>
+ <span style={{ fontSize: 14 }}></span> Why Competitors Win
+ </div>
+ <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.7 }}>{r.competitorEdge}</div>
+ {r.competitorsThatWouldBeCited?.length > 0 && (
+ <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 8 }}>
+ {r.competitorsThatWouldBeCited.map((c, j) => (
+ <span key={j} style={{ fontSize: 9, background: "#431407", border: "1px solid #78350f", borderRadius: 4, padding: "2px 7px", color: "#fb923c", fontWeight: 600 }}>{c}</span>
+ ))}
+ </div>
+ )}
+ </div>
+ )}
+ </div>
 
-          {/* Content action + sources */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-           {r.contentAction && (
-            <div style={{ background: "#09090b", border: "1px solid #3730a3", borderRadius: 10, padding: "12px 14px" }}>
-             <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>📝 Content to Create</div>
-             <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.7 }}>{r.contentAction}</div>
-            </div>
-           )}
-           {r.sourceRecommendations?.length > 0 && (
-            <div style={{ background: "#09090b", border: "1px solid #065f46", borderRadius: 10, padding: "12px 14px" }}>
-             <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>🌐 Where to Get Featured</div>
-             {r.sourceRecommendations.map((s, j) => (
-              <div key={j} style={{ display: "flex", gap: 6, alignItems: "flex-start", marginBottom: 5 }}>
-               <div style={{ width: 2, height: 14, background: "#065f46", borderRadius: 1, flexShrink: 0, marginTop: 2 }} />
-               <div style={{ fontSize: 10, color: "#d4d4d8", lineHeight: 1.6 }}>{s}</div>
-              </div>
-             ))}
-            </div>
-           )}
-          </div>
+ {/* Content action + sources */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+ {r.contentAction && (
+ <div style={{ background: "#09090b", border: "1px solid #3730a3", borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>Content to Create</div>
+ <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.7 }}>{r.contentAction}</div>
+ </div>
+ )}
+ {r.sourceRecommendations?.length > 0 && (
+ <div style={{ background: "#09090b", border: "1px solid #065f46", borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>Where to Get Featured</div>
+ {r.sourceRecommendations.map((s, j) => (
+ <div key={j} style={{ display: "flex", gap: 6, alignItems: "flex-start", marginBottom: 5 }}>
+ <div style={{ width: 2, height: 14, background: "#065f46", borderRadius: 1, flexShrink: 0, marginTop: 2 }} />
+ <div style={{ fontSize: 10, color: "#d4d4d8", lineHeight: 1.6 }}>{s}</div>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
 
-          {/* ── Tool funnels ── */}
-          <div style={{ background: "linear-gradient(135deg,#09090b,#0c0c14)", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px" }}>
-           <ActionFunnelButtons prompt={r.prompt} contentAction={r.contentAction} gapAnalysis={r.gapAnalysis} />
-          </div>
-         </div>
-        )}
-       </div>
-      );
-     })}
-    </div>
-   )}
-  </div>
+ {/* ── Tool funnels ── */}
+ <div style={{ background: "linear-gradient(135deg,#09090b,#0c0c14)", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px" }}>
+ <ActionFunnelButtons prompt={r.prompt} contentAction={r.contentAction} gapAnalysis={r.gapAnalysis} />
+ </div>
+ </div>
+ )}
+ </div>
+ );
+ })}
+ </div>
+ )}
+ </div>
  );
 }
 
@@ -1581,501 +1581,501 @@ function SoVTab() {
  const [restored, setRestored] = useState(() => { try { return !!JSON.parse(localStorage.getItem(SOV_CACHE_KEY))?.result; } catch { return false; } });
 
  const suggestCompetitors = useCallback(async () => {
-  if (!brand.trim() || !niche.trim()) return;
-  setSuggestingComps(true); setSuggestedComps([]); setCompErr("");
-  try {
-   const d = await apiFetch(`${API}/suggest-competitors`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), niche: niche.trim() }) });
-   if (!d.ok) throw new Error(d.error);
-   setSuggestedComps(d.competitors || []);
-  } catch (e) { setCompErr("Couldn't find competitors — try typing them manually."); }
-  finally { setSuggestingComps(false); }
+ if (!brand.trim() || !niche.trim()) return;
+ setSuggestingComps(true); setSuggestedComps([]); setCompErr("");
+ try {
+ const d = await apiFetch(`${API}/suggest-competitors`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), niche: niche.trim() }) });
+ if (!d.ok) throw new Error(d.error);
+ setSuggestedComps(d.competitors || []);
+ } catch (e) { setCompErr("Couldn't find competitors — try typing them manually."); }
+ finally { setSuggestingComps(false); }
  }, [brand, niche]);
 
  const suggestPrompts = useCallback(async () => {
-  if (!brand.trim() || !niche.trim()) return;
-  setSuggestingPrompts(true); setSuggestedPrompts([]); setPromptErr("");
-  try {
-   const d = await apiFetch(`${API}/suggest-prompts`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), niche: niche.trim() }) });
-   if (!d.ok) throw new Error(d.error);
-   setSuggestedPrompts(d.prompts || []);
-  } catch (e) { setPromptErr("Couldn't suggest questions — try typing them manually."); }
-  finally { setSuggestingPrompts(false); }
+ if (!brand.trim() || !niche.trim()) return;
+ setSuggestingPrompts(true); setSuggestedPrompts([]); setPromptErr("");
+ try {
+ const d = await apiFetch(`${API}/suggest-prompts`, { method: "POST", body: JSON.stringify({ brand: brand.trim(), niche: niche.trim() }) });
+ if (!d.ok) throw new Error(d.error);
+ setSuggestedPrompts(d.prompts || []);
+ } catch (e) { setPromptErr("Couldn't suggest questions — try typing them manually."); }
+ finally { setSuggestingPrompts(false); }
  }, [brand, niche]);
 
  const toggleComp = (name) => {
-  const existing = competitors.split(",").map(c => c.trim()).filter(Boolean);
-  if (existing.includes(name)) {
-   setCompetitors(existing.filter(c => c !== name).join(", "));
-  } else if (existing.length < 6) {
-   setCompetitors([...existing, name].join(", "));
-  }
+ const existing = competitors.split(",").map(c => c.trim()).filter(Boolean);
+ if (existing.includes(name)) {
+ setCompetitors(existing.filter(c => c !== name).join(", "));
+ } else if (existing.length < 6) {
+ setCompetitors([...existing, name].join(", "));
+ }
  };
 
  const togglePrompt = (text) => {
-  const existing = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
-  if (existing.includes(text)) {
-   setPromptsText(existing.filter(p => p !== text).join("\n"));
-  } else if (existing.length < 5) {
-   setPromptsText([...existing, text].join("\n"));
-  }
+ const existing = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
+ if (existing.includes(text)) {
+ setPromptsText(existing.filter(p => p !== text).join("\n"));
+ } else if (existing.length < 5) {
+ setPromptsText([...existing, text].join("\n"));
+ }
  };
 
  const generatePlan = useCallback(async (sovResult) => {
-  setLoadingPlan(true); setPlan(null); setPlanErr("");
-  try {
-   const d = await apiFetch(`${API}/improvement-plan`, { method: "POST", body: JSON.stringify({ brand: sovResult.brand, sovScores: sovResult.sovScores, promptResults: sovResult.promptResults }) });
-   if (!d.ok) throw new Error(d.error);
-   setPlan(d);
-   try { const prev = JSON.parse(localStorage.getItem(SOV_CACHE_KEY) || "{}"); localStorage.setItem(SOV_CACHE_KEY, JSON.stringify({ ...prev, battlePlan: d })); } catch {}
-  } catch (e) { setPlanErr(e.message); }
-  finally { setLoadingPlan(false); }
+ setLoadingPlan(true); setPlan(null); setPlanErr("");
+ try {
+ const d = await apiFetch(`${API}/improvement-plan`, { method: "POST", body: JSON.stringify({ brand: sovResult.brand, sovScores: sovResult.sovScores, promptResults: sovResult.promptResults }) });
+ if (!d.ok) throw new Error(d.error);
+ setPlan(d);
+ try { const prev = JSON.parse(localStorage.getItem(SOV_CACHE_KEY) || "{}"); localStorage.setItem(SOV_CACHE_KEY, JSON.stringify({ ...prev, battlePlan: d })); } catch {}
+ } catch (e) { setPlanErr(e.message); }
+ finally { setLoadingPlan(false); }
  }, []);
 
  const run = useCallback(async () => {
-  const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
-  const comps = competitors.split(",").map(c => c.trim()).filter(Boolean);
-  if (!brand || prompts.length === 0 || comps.length === 0) return;
-  setLoading(true); setErr(""); setResult(null); setExpanded({}); setPlan(null); setPlanErr(""); setRestored(false);
-  try {
-   const d = await apiFetch(`${API}/ai-sov`, { method: "POST", body: JSON.stringify({ brand, competitors: comps, prompts }) });
-   if (!d.ok) throw new Error(d.error);
-   setResult(d);
-   setExpanded({ 0: true });
-   try { localStorage.setItem(SOV_CACHE_KEY, JSON.stringify({ brand, niche, competitorsStr: competitors, promptsStr: promptsText, result: d, savedAt: Date.now() })); } catch {}
-  } catch (e) { setErr(e.message); } finally { setLoading(false); }
+ const prompts = promptsText.split("\n").map(p => p.trim()).filter(Boolean);
+ const comps = competitors.split(",").map(c => c.trim()).filter(Boolean);
+ if (!brand || prompts.length === 0 || comps.length === 0) return;
+ setLoading(true); setErr(""); setResult(null); setExpanded({}); setPlan(null); setPlanErr(""); setRestored(false);
+ try {
+ const d = await apiFetch(`${API}/ai-sov`, { method: "POST", body: JSON.stringify({ brand, competitors: comps, prompts }) });
+ if (!d.ok) throw new Error(d.error);
+ setResult(d);
+ setExpanded({ 0: true });
+ try { localStorage.setItem(SOV_CACHE_KEY, JSON.stringify({ brand, niche, competitorsStr: competitors, promptsStr: promptsText, result: d, savedAt: Date.now() })); } catch {}
+ } catch (e) { setErr(e.message); } finally { setLoading(false); }
  }, [brand, competitors, promptsText]);
 
  const freqMeta = (f) => {
-  const m = { always: { color: "#22c55e", bg: "#052e16", border: "#166534" }, often: { color: "#86efac", bg: "#052e16", border: "#15803d" }, sometimes: { color: "#fbbf24", bg: "#1c1100", border: "#92400e" }, rarely: { color: "#f97316", bg: "#1c0700", border: "#7c2d12" }, never: { color: "#ef4444", bg: "#2d0000", border: "#7f1d1d" } };
-  return m[f] || m.rarely;
+ const m = { always: { color: "#22c55e", bg: "#052e16", border: "#166534" }, often: { color: "#86efac", bg: "#052e16", border: "#15803d" }, sometimes: { color: "#fbbf24", bg: "#1c1100", border: "#92400e" }, rarely: { color: "#f97316", bg: "#1c0700", border: "#7c2d12" }, never: { color: "#ef4444", bg: "#2d0000", border: "#7f1d1d" } };
+ return m[f] || m.rarely;
  };
 
  // Assign a unique color to each brand position
  const brandColors = ["#a78bfa", "#10b981", "#f59e0b", "#f472b6", "#38bdf8"];
 
  const toBrandColor = (brandName) => {
-  if (!result) return "#a78bfa";
-  if (brandName === result.brand) return "#a78bfa"; // always purple for "you"
-  const idx = (result.sovScores || []).filter(s => !s.isYou).findIndex(s => s.brand === brandName);
-  return brandColors[1 + idx] || "#71717a";
+ if (!result) return "#a78bfa";
+ if (brandName === result.brand) return "#a78bfa"; // always purple for "you"
+ const idx = (result.sovScores || []).filter(s => !s.isYou).findIndex(s => s.brand === brandName);
+ return brandColors[1 + idx] || "#71717a";
  };
 
  const fillExample = () => {
-  setBrand("My Store");
-  setNiche("handmade gifts and home decor");
-  setCompetitors("Amazon, Etsy, eBay");
-  setPromptsText("best handmade gifts online\nwhere to buy unique gifts\ntop gift shops online");
+ setBrand("My Store");
+ setNiche("handmade gifts and home decor");
+ setCompetitors("Amazon, Etsy, eBay");
+ setPromptsText("best handmade gifts online\nwhere to buy unique gifts\ntop gift shops online");
  };
 
  return (
-  <div>
-   {/* ── Setup card ── */}
-   <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
-    <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 3 }} />
-    <div style={{ padding: "20px" }}>
+ <div>
+ {/* ── Setup card ── */}
+ <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+ <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 3 }} />
+ <div style={{ padding: "20px" }}>
 
-     {/* Plain-English header */}
-     <div style={{ marginBottom: 18 }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>AI Share of Voice</div>
-      <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.6, marginBottom: 12 }}>
-       Find out how often AI tools like <span style={{ color: "#c084fc" }}>ChatGPT</span>, <span style={{ color: "#34d399" }}>Perplexity</span>, and <span style={{ color: "#fbbf24" }}>Google AI</span> recommend your brand vs. competitors — and <strong style={{ color: "#fafafa" }}>exactly why</strong> they pick one over the other.
-      </div>
-      {/* How it works steps */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 4 }}>
-       {[
-        { num: "1", icon: "✏️", label: "Enter your brand", desc: "Your store name + up to 4 competitors" },
-        { num: "2", icon: "🤖", label: "We test across AI", desc: "AURA asks ChatGPT, Perplexity & Google AI the questions your customers ask" },
-        { num: "3", icon: "📊", label: "Get your report", desc: "See who ranks highest and why — with actionable tips to improve your score" },
-       ].map((t, i) => (
-        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
-         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 5 }}>
-          <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #4338ca", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#a78bfa", flexShrink: 0 }}>{t.num}</div>
-          <span style={{ fontSize: 10 }}>{t.icon}</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "#d4d4d8" }}>{t.label}</span>
-         </div>
-         <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5 }}>{t.desc}</div>
-        </div>
-       ))}
-      </div>
-     </div>
+ {/* Plain-English header */}
+ <div style={{ marginBottom: 18 }}>
+ <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>AI Share of Voice</div>
+ <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.6, marginBottom: 12 }}>
+ Find out how often AI tools like <span style={{ color: "#c084fc" }}>ChatGPT</span>, <span style={{ color: "#34d399" }}>Perplexity</span>, and <span style={{ color: "#fbbf24" }}>Google AI</span> recommend your brand vs. competitors — and <strong style={{ color: "#fafafa" }}>exactly why</strong> they pick one over the other.
+ </div>
+ {/* How it works steps */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 4 }}>
+ {[
+ { num: "1", icon: "", label: "Enter your brand", desc: "Your store name + up to 4 competitors" },
+ { num: "2", icon: "", label: "We test across AI", desc: "AURA asks ChatGPT, Perplexity & Google AI the questions your customers ask" },
+ { num: "3", icon: "", label: "Get your report", desc: "See who ranks highest and why — with actionable tips to improve your score" },
+ ].map((t, i) => (
+ <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
+ <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 5 }}>
+ <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #4338ca", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#a78bfa", flexShrink: 0 }}>{t.num}</div>
+ <span style={{ fontSize: 10 }}>{t.icon}</span>
+ <span style={{ fontSize: 10, fontWeight: 700, color: "#d4d4d8" }}>{t.label}</span>
+ </div>
+ <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5 }}>{t.desc}</div>
+ </div>
+ ))}
+ </div>
+ </div>
 
-     {/* Try example banner */}
-     <div style={{ background: "#0c0c10", border: "1px dashed #3f3f46", borderRadius: 8, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-      <div>
-       <div style={{ fontSize: 11, fontWeight: 600, color: "#d4d4d8", marginBottom: 2 }}>Not sure what to enter? 👋</div>
-       <div style={{ fontSize: 10, color: "#71717a" }}>Load a sample to see how the tool works — you can edit it before running.</div>
-      </div>
-      <button onClick={fillExample} style={{ flexShrink: 0, padding: "6px 14px", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, color: "#a78bfa", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
-       Try an example
-      </button>
-     </div>
+ {/* Try example banner */}
+ <div style={{ background: "#0c0c10", border: "1px dashed #3f3f46", borderRadius: 8, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+ <div>
+ <div style={{ fontSize: 11, fontWeight: 600, color: "#d4d4d8", marginBottom: 2 }}>Not sure what to enter? </div>
+ <div style={{ fontSize: 10, color: "#71717a" }}>Load a sample to see how the tool works — you can edit it before running.</div>
+ </div>
+ <button onClick={fillExample} style={{ flexShrink: 0, padding: "6px 14px", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 6, color: "#a78bfa", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+ Try an example
+ </button>
+ </div>
 
-     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-       <div>
-        <label style={S.label}>Your brand name <span style={{ color: "#ef4444" }}>*</span></label>
-        <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. My Store, Nike, Shopify…" />
-        <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>The name exactly as it would appear in an AI answer</div>
-       </div>
-       <div>
-        <label style={S.label}>What do you sell? <span style={{ color: "#ef4444" }}>*</span></label>
-        <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. handmade jewellery, yoga mats, SEO software…" />
-        <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>This tells AI exactly which market to search — the more specific the better</div>
-       </div>
-      </div>
-      <div>
-       <label style={S.label}>Competitor brands <span style={{ color: "#ef4444" }}>*</span></label>
-       <div style={{ display: "flex", gap: 6 }}>
-        <input style={{ ...S.input, flex: 1 }} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="e.g. Amazon, Etsy, eBay" />
-        <button onClick={suggestCompetitors} disabled={suggestingComps || !brand.trim() || !niche.trim()}
-         title={!niche.trim() ? "Fill in 'What do you sell?' first for accurate results" : "AI suggests your top competitors"}
-         style={{ flexShrink: 0, padding: "0 12px", height: 38, background: suggestingComps ? "#18181b" : (brand.trim() && niche.trim() ? "#1e1b4b" : "#18181b"), border: `1px solid ${brand.trim() && niche.trim() ? "#4338ca" : "#27272a"}`, borderRadius: 7, color: suggestingComps ? "#52525b" : (brand.trim() && niche.trim() ? "#a78bfa" : "#52525b"), fontSize: 11, fontWeight: 600, cursor: (suggestingComps || !brand.trim() || !niche.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: (!brand.trim() || !niche.trim()) ? 0.5 : 1 }}>
-         {suggestingComps
-          ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /></>
-          : <>✨ Find</>}
-        </button>
-       </div>
-       {!niche.trim() && brand.trim() && (
-        <div style={{ fontSize: 10, color: "#f59e0b", marginTop: 4 }}>👆 Fill in "What do you sell?" first so AI finds the right competitors</div>
-       )}
-       {(niche.trim() || !brand.trim()) && <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands · or click <strong style={{ color: niche.trim() ? "#a78bfa" : "#52525b" }}>✨ Find</strong> to discover them</div>}
-       {compErr && <div style={{ fontSize: 10, color: "#f87171", marginTop: 4 }}>{compErr}</div>}
-       {suggestedComps.length > 0 && (
-        <div style={{ marginTop: 10, background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px" }}>
-         <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>✨ AI found these competitors — tap to add (max 6):</div>
-         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {suggestedComps.map((c, i) => {
-           const selected = competitors.split(",").map(x => x.trim()).includes(c.name);
-           const full = !selected && competitors.split(",").map(x => x.trim()).filter(Boolean).length >= 6;
-           return (
-            <button key={i} onClick={() => toggleComp(c.name)} disabled={full && !selected}
-             style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
-             <div style={{ width: 18, height: 18, borderRadius: "50%", background: selected ? "#4338ca" : "#27272a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: selected ? "#fff" : "#52525b", fontWeight: 700 }}>{selected ? "✓" : (i + 1)}</div>
-             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a78bfa" : "#d4d4d8" }}>{c.name}</div>
-              <div style={{ fontSize: 10, color: "#52525b", lineHeight: 1.4 }}>{c.reason}</div>
-             </div>
-            </button>
-           );
-          })}
-         </div>
-        </div>
-       )}
-      </div>
-     </div>
-     <div style={{ marginBottom: 18 }}>
-      <label style={S.label}>Questions your customers ask AI <span style={{ color: "#ef4444" }}>*</span></label>
-      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-       <button onClick={suggestPrompts} disabled={suggestingPrompts || !brand.trim() || !niche.trim()}
-        title={!niche.trim() ? "Fill in 'What do you sell?' first" : "AI generates questions your customers are asking"}
-        style={{ padding: "6px 12px", background: suggestingPrompts ? "#18181b" : (brand.trim() && niche.trim() ? "#1e1b4b" : "#18181b"), border: `1px solid ${brand.trim() && niche.trim() ? "#4338ca" : "#27272a"}`, borderRadius: 7, color: suggestingPrompts ? "#52525b" : (brand.trim() && niche.trim() ? "#a78bfa" : "#52525b"), fontSize: 11, fontWeight: 600, cursor: (suggestingPrompts || !brand.trim() || !niche.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: (!brand.trim() || !niche.trim()) ? 0.5 : 1 }}>
-        {suggestingPrompts
-         ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</>
-         : <>✨ Suggest questions for me</>}
-       </button>
-      </div>
-      {suggestedPrompts.length > 0 && (
-       <div style={{ background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>✨ Tap questions to add (max 5):</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-         {suggestedPrompts.map((p, i) => {
-          const selected = promptsText.split("\n").map(x => x.trim()).includes(p.text);
-          const full = !selected && promptsText.split("\n").map(x => x.trim()).filter(Boolean).length >= 5;
-          const intentColor = { discovery: "#a78bfa", comparison: "#38bdf8", recommendation: "#34d399", "how-to": "#fbbf24" }[p.intent] || "#71717a";
-          return (
-           <button key={i} onClick={() => togglePrompt(p.text)} disabled={full && !selected}
-            style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", background: selected ? "#4338ca" : "#27272a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: selected ? "#fff" : "#52525b", fontWeight: 700 }}>{selected ? "✓" : (i + 1)}</div>
-            <div style={{ flex: 1 }}>
-             <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a78bfa" : "#d4d4d8" }}>{p.text}</div>
-            </div>
-            <span style={{ fontSize: 8, fontWeight: 700, color: intentColor, background: "#09090b", border: `1px solid ${intentColor}22`, borderRadius: 3, padding: "2px 6px", flexShrink: 0, textTransform: "uppercase" }}>{p.intent}</span>
-           </button>
-          );
-         })}
-        </div>
-       </div>
-      )}
-      {promptErr && <div style={{ fontSize: 10, color: "#f87171", marginBottom: 6 }}>{promptErr}</div>}
-      <textarea style={{ ...S.textarea, fontSize: 12 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best handmade gifts online\nwhere to buy unique home decor\ntop eco-friendly product stores"} />
-      <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>One question per line · up to 5 · or click ✨ above to generate them automatically</div>
-     </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+ <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+ <div>
+ <label style={S.label}>Your brand name <span style={{ color: "#ef4444" }}>*</span></label>
+ <input style={S.input} value={brand} onChange={e => setBrand(e.target.value)} placeholder="e.g. My Store, Nike, Shopify…" />
+ <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>The name exactly as it would appear in an AI answer</div>
+ </div>
+ <div>
+ <label style={S.label}>What do you sell? <span style={{ color: "#ef4444" }}>*</span></label>
+ <input style={S.input} value={niche} onChange={e => setNiche(e.target.value)} placeholder="e.g. handmade jewellery, yoga mats, SEO software…" />
+ <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>This tells AI exactly which market to search — the more specific the better</div>
+ </div>
+ </div>
+ <div>
+ <label style={S.label}>Competitor brands <span style={{ color: "#ef4444" }}>*</span></label>
+ <div style={{ display: "flex", gap: 6 }}>
+ <input style={{ ...S.input, flex: 1 }} value={competitors} onChange={e => setCompetitors(e.target.value)} placeholder="e.g. Amazon, Etsy, eBay" />
+ <button onClick={suggestCompetitors} disabled={suggestingComps || !brand.trim() || !niche.trim()}
+ title={!niche.trim() ? "Fill in 'What do you sell?' first for accurate results" : "AI suggests your top competitors"}
+ style={{ flexShrink: 0, padding: "0 12px", height: 38, background: suggestingComps ? "#18181b" : (brand.trim() && niche.trim() ? "#1e1b4b" : "#18181b"), border: `1px solid ${brand.trim() && niche.trim() ? "#4338ca" : "#27272a"}`, borderRadius: 7, color: suggestingComps ? "#52525b" : (brand.trim() && niche.trim() ? "#a78bfa" : "#52525b"), fontSize: 11, fontWeight: 600, cursor: (suggestingComps || !brand.trim() || !niche.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: (!brand.trim() || !niche.trim()) ? 0.5 : 1 }}>
+ {suggestingComps
+ ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /></>
+ : <>Find</>}
+ </button>
+ </div>
+ {!niche.trim() && brand.trim() && (
+ <div style={{ fontSize: 10, color: "#f59e0b", marginTop: 4 }}>Fill in "What do you sell?" first so AI finds the right competitors</div>
+ )}
+ {(niche.trim() || !brand.trim()) && <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>Separate with commas · add 2–4 brands · or click <strong style={{ color: niche.trim() ? "#a78bfa" : "#52525b" }}>Find</strong> to discover them</div>}
+ {compErr && <div style={{ fontSize: 10, color: "#f87171", marginTop: 4 }}>{compErr}</div>}
+ {suggestedComps.length > 0 && (
+ <div style={{ marginTop: 10, background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px" }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>AI found these competitors — tap to add (max 6):</div>
+ <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+ {suggestedComps.map((c, i) => {
+ const selected = competitors.split(",").map(x => x.trim()).includes(c.name);
+ const full = !selected && competitors.split(",").map(x => x.trim()).filter(Boolean).length >= 6;
+ return (
+ <button key={i} onClick={() => toggleComp(c.name)} disabled={full && !selected}
+ style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
+ <div style={{ width: 18, height: 18, borderRadius: "50%", background: selected ? "#4338ca" : "#27272a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: selected ? "#fff" : "#52525b", fontWeight: 700 }}>{selected ? "" : (i + 1)}</div>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a78bfa" : "#d4d4d8" }}>{c.name}</div>
+ <div style={{ fontSize: 10, color: "#52525b", lineHeight: 1.4 }}>{c.reason}</div>
+ </div>
+ </button>
+ );
+ })}
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
+ <div style={{ marginBottom: 18 }}>
+ <label style={S.label}>Questions your customers ask AI <span style={{ color: "#ef4444" }}>*</span></label>
+ <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+ <button onClick={suggestPrompts} disabled={suggestingPrompts || !brand.trim() || !niche.trim()}
+ title={!niche.trim() ? "Fill in 'What do you sell?' first" : "AI generates questions your customers are asking"}
+ style={{ padding: "6px 12px", background: suggestingPrompts ? "#18181b" : (brand.trim() && niche.trim() ? "#1e1b4b" : "#18181b"), border: `1px solid ${brand.trim() && niche.trim() ? "#4338ca" : "#27272a"}`, borderRadius: 7, color: suggestingPrompts ? "#52525b" : (brand.trim() && niche.trim() ? "#a78bfa" : "#52525b"), fontSize: 11, fontWeight: 600, cursor: (suggestingPrompts || !brand.trim() || !niche.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap", opacity: (!brand.trim() || !niche.trim()) ? 0.5 : 1 }}>
+ {suggestingPrompts
+ ? <><div style={{ width: 10, height: 10, border: "2px solid #4338ca", borderTopColor: "#a78bfa", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Generating…</>
+ : <>Suggest questions for me</>}
+ </button>
+ </div>
+ {suggestedPrompts.length > 0 && (
+ <div style={{ background: "#0a0a12", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#818cf8", marginBottom: 8 }}>Tap questions to add (max 5):</div>
+ <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+ {suggestedPrompts.map((p, i) => {
+ const selected = promptsText.split("\n").map(x => x.trim()).includes(p.text);
+ const full = !selected && promptsText.split("\n").map(x => x.trim()).filter(Boolean).length >= 5;
+ const intentColor = { discovery: "#a78bfa", comparison: "#38bdf8", recommendation: "#34d399", "how-to": "#fbbf24" }[p.intent] || "#71717a";
+ return (
+ <button key={i} onClick={() => togglePrompt(p.text)} disabled={full && !selected}
+ style={{ display: "flex", alignItems: "center", gap: 8, background: selected ? "#1e1b4b" : "#18181b", border: `1px solid ${selected ? "#4338ca" : "#27272a"}`, borderRadius: 7, padding: "7px 10px", cursor: full && !selected ? "default" : "pointer", opacity: full && !selected ? 0.4 : 1, textAlign: "left", width: "100%" }}>
+ <div style={{ width: 18, height: 18, borderRadius: "50%", background: selected ? "#4338ca" : "#27272a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: selected ? "#fff" : "#52525b", fontWeight: 700 }}>{selected ? "" : (i + 1)}</div>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 11, fontWeight: 600, color: selected ? "#a78bfa" : "#d4d4d8" }}>{p.text}</div>
+ </div>
+ <span style={{ fontSize: 8, fontWeight: 700, color: intentColor, background: "#09090b", border: `1px solid ${intentColor}22`, borderRadius: 3, padding: "2px 6px", flexShrink: 0, textTransform: "uppercase" }}>{p.intent}</span>
+ </button>
+ );
+ })}
+ </div>
+ </div>
+ )}
+ {promptErr && <div style={{ fontSize: 10, color: "#f87171", marginBottom: 6 }}>{promptErr}</div>}
+ <textarea style={{ ...S.textarea, fontSize: 12 }} value={promptsText} onChange={e => setPromptsText(e.target.value)} placeholder={"best handmade gifts online\nwhere to buy unique home decor\ntop eco-friendly product stores"} />
+ <div style={{ fontSize: 10, color: "#52525b", marginTop: 4 }}>One question per line · up to 5 · or click above to generate them automatically</div>
+ </div>
 
-     <button onClick={run} disabled={loading || !brand || !competitors || !promptsText.trim()}
-      style={{ width: "100%", padding: "12px 20px", background: loading ? "#18181b" : "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", border: "none", borderRadius: 8, color: loading ? "#52525b" : "#fff", fontSize: 13, fontWeight: 700, cursor: (loading || !brand || !competitors || !promptsText.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: (!brand || !competitors || !promptsText.trim()) ? 0.5 : 1 }}>
-      {loading
-       ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#c084fc", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Checking how AI ranks your brand…</>
-       : <>🔍 Check My AI Visibility <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>3 credits</span></>}
-     </button>
-    </div>
-   </div>
+ <button onClick={run} disabled={loading || !brand || !competitors || !promptsText.trim()}
+ style={{ width: "100%", padding: "12px 20px", background: loading ? "#18181b" : "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", border: "none", borderRadius: 8, color: loading ? "#52525b" : "#fff", fontSize: 13, fontWeight: 700, cursor: (loading || !brand || !competitors || !promptsText.trim()) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: (!brand || !competitors || !promptsText.trim()) ? 0.5 : 1 }}>
+ {loading
+ ? <><div style={{ width: 14, height: 14, border: "2px solid #52525b", borderTopColor: "#c084fc", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Checking how AI ranks your brand…</>
+ : <>Check My AI Visibility <span style={{ fontSize: 10, background: "rgba(255,255,255,0.15)", borderRadius: 4, padding: "2px 8px" }}>3 credits</span></>}
+ </button>
+ </div>
+ </div>
 
-   {err && <div style={S.error}>{err}</div>}
+ {err && <div style={S.error}>{err}</div>}
 
-   {restored && result && (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1c1400", border: "1px solid #713f12", borderRadius: 8, padding: "10px 14px", marginBottom: 12, gap: 8 }}>
-     <span style={{ fontSize: 12, color: "#fde68a" }}>📂 Showing your last results — inputs restored. No credits used.</span>
-     <button onClick={() => { setResult(null); setPlan(null); setRestored(false); localStorage.removeItem(SOV_CACHE_KEY); setBrand(""); setNiche(""); setCompetitors(""); setPromptsText(""); setExpanded({}); }} style={{ background: "none", border: "1px solid #713f12", borderRadius: 4, color: "#fde68a", fontSize: 11, cursor: "pointer", padding: "2px 8px" }}>✕ Clear</button>
-    </div>
-   )}
+ {restored && result && (
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1c1400", border: "1px solid #713f12", borderRadius: 8, padding: "10px 14px", marginBottom: 12, gap: 8 }}>
+ <span style={{ fontSize: 12, color: "#fde68a" }}>Showing your last results — inputs restored. No credits used.</span>
+ <button onClick={() => { setResult(null); setPlan(null); setRestored(false); localStorage.removeItem(SOV_CACHE_KEY); setBrand(""); setNiche(""); setCompetitors(""); setPromptsText(""); setExpanded({}); }} style={{ background: "none", border: "1px solid #713f12", borderRadius: 4, color: "#fde68a", fontSize: 11, cursor: "pointer", padding: "2px 8px" }}>Clear</button>
+ </div>
+ )}
 
-   {result && (() => {
-    const sorted = [...(result.sovScores || [])].sort((a, b) => b.avgCitationProbability - a.avgCitationProbability);
-    const you = sorted.find(s => s.isYou);
-    const leader = sorted[0];
-    const totalCitations = sorted.reduce((s, x) => s + x.avgCitationProbability, 0);
+ {result && (() => {
+ const sorted = [...(result.sovScores || [])].sort((a, b) => b.avgCitationProbability - a.avgCitationProbability);
+ const you = sorted.find(s => s.isYou);
+ const leader = sorted[0];
+ const totalCitations = sorted.reduce((s, x) => s + x.avgCitationProbability, 0);
 
-    return (
-     <div>
-      {/* ── Hero scorecard ── */}
-      <div style={{ ...S.card, background: "linear-gradient(135deg,#0a0a0f,#100818)", padding: 0, overflow: "hidden" }}>
-       <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 2 }} />
-       <div style={{ padding: "20px" }}>
-        <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap", marginBottom: 20 }}>
-         {/* SoV donut */}
-         <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
-          <svg width="100" height="100" style={{ transform: "rotate(-90deg)" }}>
-           <circle cx="50" cy="50" r="42" fill="none" stroke="#1a1a1a" strokeWidth="10" />
-           {/* competitor arcs */}
-           {(() => {
-            let offset = 0;
-            const circ = 2 * Math.PI * 42;
-            return sorted.map((s, i) => {
-             const pct = totalCitations > 0 ? s.avgCitationProbability / totalCitations : 0;
-             const dash = pct * circ;
-             const el = <circle key={i} cx="50" cy="50" r="42" fill="none" stroke={toBrandColor(s.brand)} strokeWidth="10" strokeDasharray={`${dash} ${circ - dash}`} strokeDashoffset={-offset} strokeLinecap="butt" />;
-             offset += dash;
-             return el;
-            });
-           })()}
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-           <div style={{ fontSize: 22, fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{result.yourSoV}%</div>
-           <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>YOUR SHARE</div>
-          </div>
-         </div>
+ return (
+ <div>
+ {/* ── Hero scorecard ── */}
+ <div style={{ ...S.card, background: "linear-gradient(135deg,#0a0a0f,#100818)", padding: 0, overflow: "hidden" }}>
+ <div style={{ background: "linear-gradient(90deg,#be185d,#7c3aed,#1d4ed8)", height: 2 }} />
+ <div style={{ padding: "20px" }}>
+ <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap", marginBottom: 20 }}>
+ {/* SoV donut */}
+ <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
+ <svg width="100" height="100" style={{ transform: "rotate(-90deg)" }}>
+ <circle cx="50" cy="50" r="42" fill="none" stroke="#1a1a1a" strokeWidth="10" />
+ {/* competitor arcs */}
+ {(() => {
+ let offset = 0;
+ const circ = 2 * Math.PI * 42;
+ return sorted.map((s, i) => {
+ const pct = totalCitations > 0 ? s.avgCitationProbability / totalCitations : 0;
+ const dash = pct * circ;
+ const el = <circle key={i} cx="50" cy="50" r="42" fill="none" stroke={toBrandColor(s.brand)} strokeWidth="10" strokeDasharray={`${dash} ${circ - dash}`} strokeDashoffset={-offset} strokeLinecap="butt" />;
+ offset += dash;
+ return el;
+ });
+ })()}
+ </svg>
+ <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+ <div style={{ fontSize: 22, fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{result.yourSoV}%</div>
+ <div style={{ fontSize: 8, color: "#71717a", fontWeight: 600 }}>YOUR SHARE</div>
+ </div>
+ </div>
 
-         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: "#fafafa", marginBottom: 4 }}>{result.brand}</div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-           <span style={{ fontSize: 11, fontWeight: 700, background: "#1e1b4b", border: "1px solid #4338ca", color: "#a78bfa", borderRadius: 6, padding: "3px 10px" }}>
-            Rank #{result.yourRank} of {result.totalBrands}
-           </span>
-           <span style={{ fontSize: 11, fontWeight: 700, background: result.yourSoV > 100 / result.totalBrands ? "#052e16" : "#2d0000", border: `1px solid ${result.yourSoV > 100 / result.totalBrands ? "#166534" : "#7f1d1d"}`, color: result.yourSoV > 100 / result.totalBrands ? "#86efac" : "#fca5a5", borderRadius: 6, padding: "3px 10px" }}>
-            {result.yourSoV > 100 / result.totalBrands ? "✓ AI mentions you more than average" : "⚠ AI mentions you less than average"}
-           </span>
-           {you && leader && !you.isYou && (
-            <span style={{ fontSize: 11, fontWeight: 700, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 6, padding: "3px 10px" }}>
-             {leader.avgCitationProbability - you.avgCitationProbability}% behind {leader.brand}
-            </span>
-           )}
-          </div>
-          {/* Colour legend */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-           {sorted.map((s, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-             <div style={{ width: 8, height: 8, borderRadius: "50%", background: toBrandColor(s.brand), flexShrink: 0 }} />
-             <span style={{ fontSize: 9, color: s.isYou ? "#a78bfa" : "#71717a", fontWeight: s.isYou ? 700 : 400 }}>{s.isYou ? `${s.brand} (you)` : s.brand}</span>
-            </div>
-           ))}
-          </div>
-         </div>
-        </div>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 17, fontWeight: 800, color: "#fafafa", marginBottom: 4 }}>{result.brand}</div>
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+ <span style={{ fontSize: 11, fontWeight: 700, background: "#1e1b4b", border: "1px solid #4338ca", color: "#a78bfa", borderRadius: 6, padding: "3px 10px" }}>
+ Rank #{result.yourRank} of {result.totalBrands}
+ </span>
+ <span style={{ fontSize: 11, fontWeight: 700, background: result.yourSoV > 100 / result.totalBrands ? "#052e16" : "#2d0000", border: `1px solid ${result.yourSoV > 100 / result.totalBrands ? "#166534" : "#7f1d1d"}`, color: result.yourSoV > 100 / result.totalBrands ? "#86efac" : "#fca5a5", borderRadius: 6, padding: "3px 10px" }}>
+ {result.yourSoV > 100 / result.totalBrands ? "AI mentions you more than average" : "AI mentions you less than average"}
+ </span>
+ {you && leader && !you.isYou && (
+ <span style={{ fontSize: 11, fontWeight: 700, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 6, padding: "3px 10px" }}>
+ {leader.avgCitationProbability - you.avgCitationProbability}% behind {leader.brand}
+ </span>
+ )}
+ </div>
+ {/* Colour legend */}
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+ {sorted.map((s, i) => (
+ <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+ <div style={{ width: 8, height: 8, borderRadius: "50%", background: toBrandColor(s.brand), flexShrink: 0 }} />
+ <span style={{ fontSize: 9, color: s.isYou ? "#a78bfa" : "#71717a", fontWeight: s.isYou ? 700 : 400 }}>{s.isYou ? `${s.brand} (you)` : s.brand}</span>
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
 
-        {/* Ranked bar leaderboard */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-         {sorted.map((s, i) => {
-          const pct = s.avgCitationProbability;
-          const bc = toBrandColor(s.brand);
-          return (
-           <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <div style={{ width: 18, height: 18, borderRadius: 5, background: "#09090b", border: `1px solid ${i === 0 ? "#92400e" : "#27272a"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: i === 0 ? "#fbbf24" : "#52525b", flexShrink: 0 }}>{i + 1}</div>
-            <div style={{ width: 100, fontSize: 11, fontWeight: s.isYou ? 700 : 400, color: s.isYou ? "#a78bfa" : "#d4d4d8", flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.brand}{s.isYou ? " ★" : ""}</div>
-            <div style={{ flex: 1, height: 8, background: "#18181b", borderRadius: 4, overflow: "hidden" }}>
-             <div style={{ height: "100%", width: `${pct}%`, background: s.isYou ? "linear-gradient(90deg,#7c3aed,#a78bfa)" : bc, borderRadius: 4, transition: "width 0.8s" }} />
-            </div>
-            <div style={{ width: 36, textAlign: "right", fontSize: 12, fontWeight: 700, color: bc, flexShrink: 0 }}>{pct}%</div>
-            <div style={{ width: 50, textAlign: "right", fontSize: 9, color: "#52525b", flexShrink: 0 }}>{totalCitations > 0 ? Math.round(pct / totalCitations * 100) : 0}% share</div>
-           </div>
-          );
-         })}
-        </div>
-       </div>
-      </div>
+ {/* Ranked bar leaderboard */}
+ <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+ {sorted.map((s, i) => {
+ const pct = s.avgCitationProbability;
+ const bc = toBrandColor(s.brand);
+ return (
+ <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+ <div style={{ width: 18, height: 18, borderRadius: 5, background: "#09090b", border: `1px solid ${i === 0 ? "#92400e" : "#27272a"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: i === 0 ? "#fbbf24" : "#52525b", flexShrink: 0 }}>{i + 1}</div>
+ <div style={{ width: 100, fontSize: 11, fontWeight: s.isYou ? 700 : 400, color: s.isYou ? "#a78bfa" : "#d4d4d8", flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.brand}{s.isYou ? " " : ""}</div>
+ <div style={{ flex: 1, height: 8, background: "#18181b", borderRadius: 4, overflow: "hidden" }}>
+ <div style={{ height: "100%", width: `${pct}%`, background: s.isYou ? "linear-gradient(90deg,#7c3aed,#a78bfa)" : bc, borderRadius: 4, transition: "width 0.8s" }} />
+ </div>
+ <div style={{ width: 36, textAlign: "right", fontSize: 12, fontWeight: 700, color: bc, flexShrink: 0 }}>{pct}%</div>
+ <div style={{ width: 50, textAlign: "right", fontSize: 9, color: "#52525b", flexShrink: 0 }}>{totalCitations > 0 ? Math.round(pct / totalCitations * 100) : 0}% share</div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ </div>
 
-      {/* ── Battle Plan card ── */}
-      <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
-       <div style={{ background: "linear-gradient(90deg,#065f46,#1e1b4b,#7c2d12)", height: 3 }} />
-       <div style={{ padding: "16px 20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: plan ? 16 : 0 }}>
-         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>🎯 How to Beat Them</div>
-          <div style={{ fontSize: 11, color: "#71717a" }}>AI analyses every competitor's weak spots and tells you exactly what to do to outrank them</div>
-         </div>
-         {!plan && (
-          <button onClick={() => generatePlan(result)} disabled={loadingPlan}
-           style={{ flexShrink: 0, marginLeft: 16, padding: "10px 18px", background: loadingPlan ? "#18181b" : "linear-gradient(90deg,#065f46,#1e1b4b)", border: "none", borderRadius: 8, color: loadingPlan ? "#52525b" : "#fff", fontSize: 12, fontWeight: 700, cursor: loadingPlan ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
-           {loadingPlan
-            ? <><div style={{ width: 12, height: 12, border: "2px solid #27272a", borderTopColor: "#34d399", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Analysing…</>
-            : <>✨ Generate My Battle Plan <span style={{ fontSize: 10, background: "rgba(255,255,255,0.12)", borderRadius: 4, padding: "1px 7px" }}>1 credit</span></>}
-          </button>
-         )}
-        </div>
-        {planErr && <div style={{ fontSize: 11, color: "#f87171", marginTop: 8 }}>{planErr}</div>}
-        {plan && (
-         <div>
-          {/* Top opportunity call-out */}
-          {plan.topOpportunity && (
-           <div style={{ background: "linear-gradient(135deg,#052e16,#0a0a12)", border: "1px solid #166534", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>⚡ Biggest Opportunity Right Now</div>
-            <div style={{ fontSize: 13, color: "#fafafa", lineHeight: 1.7, fontWeight: 500 }}>{plan.topOpportunity}</div>
-           </div>
-          )}
+ {/* ── Battle Plan card ── */}
+ <div style={{ ...S.card, padding: 0, overflow: "hidden" }}>
+ <div style={{ background: "linear-gradient(90deg,#065f46,#1e1b4b,#7c2d12)", height: 3 }} />
+ <div style={{ padding: "16px 20px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: plan ? 16 : 0 }}>
+ <div>
+ <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa", marginBottom: 3 }}>How to Beat Them</div>
+ <div style={{ fontSize: 11, color: "#71717a" }}>AI analyses every competitor's weak spots and tells you exactly what to do to outrank them</div>
+ </div>
+ {!plan && (
+ <button onClick={() => generatePlan(result)} disabled={loadingPlan}
+ style={{ flexShrink: 0, marginLeft: 16, padding: "10px 18px", background: loadingPlan ? "#18181b" : "linear-gradient(90deg,#065f46,#1e1b4b)", border: "none", borderRadius: 8, color: loadingPlan ? "#52525b" : "#fff", fontSize: 12, fontWeight: 700, cursor: loadingPlan ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+ {loadingPlan
+ ? <><div style={{ width: 12, height: 12, border: "2px solid #27272a", borderTopColor: "#34d399", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} />Analysing…</>
+ : <>Generate My Battle Plan <span style={{ fontSize: 10, background: "rgba(255,255,255,0.12)", borderRadius: 4, padding: "1px 7px" }}>1 credit</span></>}
+ </button>
+ )}
+ </div>
+ {planErr && <div style={{ fontSize: 11, color: "#f87171", marginTop: 8 }}>{planErr}</div>}
+ {plan && (
+ <div>
+ {/* Top opportunity call-out */}
+ {plan.topOpportunity && (
+ <div style={{ background: "linear-gradient(135deg,#052e16,#0a0a12)", border: "1px solid #166534", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
+ <div style={{ fontSize: 10, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>Biggest Opportunity Right Now</div>
+ <div style={{ fontSize: 13, color: "#fafafa", lineHeight: 1.7, fontWeight: 500 }}>{plan.topOpportunity}</div>
+ </div>
+ )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
-           {/* Competitor intel — what we found */}
-           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>
-             🔍 What We Found About Each Competitor
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-             {(plan.competitorIntel || []).map((ci, i) => (
-              <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
-               <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", marginBottom: 6 }}>{ci.competitor}</div>
-               <div style={{ marginBottom: 6 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "#fca5a5", textTransform: "uppercase", marginBottom: 3 }}>⚠ Their weakness</div>
-                <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.5 }}>{ci.weakness}</div>
-               </div>
-               <div style={{ background: "#052e16", border: "1px solid #065f46", borderRadius: 6, padding: "6px 9px" }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "#34d399", textTransform: "uppercase", marginBottom: 3 }}>✓ Your opportunity</div>
-                <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.5 }}>{ci.opportunity}</div>
-               </div>
-              </div>
-             ))}
-            </div>
-           </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
+ {/* Competitor intel — what we found */}
+ <div>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>
+ What We Found About Each Competitor
+ </div>
+ <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+ {(plan.competitorIntel || []).map((ci, i) => (
+ <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px" }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", marginBottom: 6 }}>{ci.competitor}</div>
+ <div style={{ marginBottom: 6 }}>
+ <div style={{ fontSize: 9, fontWeight: 700, color: "#fca5a5", textTransform: "uppercase", marginBottom: 3 }}>Their weakness</div>
+ <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.5 }}>{ci.weakness}</div>
+ </div>
+ <div style={{ background: "#052e16", border: "1px solid #065f46", borderRadius: 6, padding: "6px 9px" }}>
+ <div style={{ fontSize: 9, fontWeight: 700, color: "#34d399", textTransform: "uppercase", marginBottom: 3 }}>Your opportunity</div>
+ <div style={{ fontSize: 11, color: "#d4d4d8", lineHeight: 1.5 }}>{ci.opportunity}</div>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
 
-           {/* Action plan */}
-           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>
-             🚀 Your Action Plan
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-             {(plan.actionPlan || []).map((step, i) => {
-              const effortColor = { quick: "#34d399", week: "#fbbf24", month: "#f97316" }[step.effort] || "#71717a";
-              const priColor = step.priority === "high" ? "#f87171" : "#fbbf24";
-              return (
-               <div key={i} style={{ background: "#09090b", border: `1px solid ${step.priority === "high" ? "#7f1d1d" : "#27272a"}`, borderRadius: 8, padding: "10px 12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 5 }}>
-                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #4338ca", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#a78bfa", flexShrink: 0 }}>{i + 1}</div>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: priColor, background: step.priority === "high" ? "#2d0000" : "#1c1100", border: `1px solid ${priColor}44`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase" }}>{step.priority}</span>
-                 </div>
-                 <span style={{ fontSize: 9, fontWeight: 700, color: effortColor, background: "#09090b", border: `1px solid ${effortColor}44`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase", flexShrink: 0 }}>{step.effort === "quick" ? "⚡ Quick win" : step.effort === "week" ? "📅 This week" : "📆 This month"}</span>
-                </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", lineHeight: 1.4, marginBottom: 4 }}>{step.action}</div>
-                <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5 }}>{step.why}</div>
-               </div>
-              );
-             })}
-            </div>
-           </div>
-          </div>
+ {/* Action plan */}
+ <div>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", marginBottom: 8, display: "flex", alignItems: "center", gap: 5 }}>
+ Your Action Plan
+ </div>
+ <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+ {(plan.actionPlan || []).map((step, i) => {
+ const effortColor = { quick: "#34d399", week: "#fbbf24", month: "#f97316" }[step.effort] || "#71717a";
+ const priColor = step.priority === "high" ? "#f87171" : "#fbbf24";
+ return (
+ <div key={i} style={{ background: "#09090b", border: `1px solid ${step.priority === "high" ? "#7f1d1d" : "#27272a"}`, borderRadius: 8, padding: "10px 12px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 5 }}>
+ <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+ <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #4338ca", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#a78bfa", flexShrink: 0 }}>{i + 1}</div>
+ <span style={{ fontSize: 9, fontWeight: 700, color: priColor, background: step.priority === "high" ? "#2d0000" : "#1c1100", border: `1px solid ${priColor}44`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase" }}>{step.priority}</span>
+ </div>
+ <span style={{ fontSize: 9, fontWeight: 700, color: effortColor, background: "#09090b", border: `1px solid ${effortColor}44`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase", flexShrink: 0 }}>{step.effort === "quick" ? "Quick win" : step.effort === "week" ? "This week" : "This month"}</span>
+ </div>
+ <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", lineHeight: 1.4, marginBottom: 4 }}>{step.action}</div>
+ <div style={{ fontSize: 10, color: "#71717a", lineHeight: 1.5 }}>{step.why}</div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ </div>
 
-          <button onClick={() => setPlan(null)} style={{ fontSize: 10, color: "#52525b", background: "none", border: "none", cursor: "pointer", padding: 0 }}>↺ Regenerate plan</button>
-         </div>
-        )}
-       </div>
-      </div>
+ <button onClick={() => setPlan(null)} style={{ fontSize: 10, color: "#52525b", background: "none", border: "none", cursor: "pointer", padding: 0 }}>↺ Regenerate plan</button>
+ </div>
+ )}
+ </div>
+ </div>
 
-      {/* ── Per-prompt battle cards ── */}
-      {(result.promptResults || []).map((pr, i) => {
-       const isOpen = expanded[i];
-       const winner = pr.winnerBrand;
-       const youWin = winner === result.brand;
-       const yourBrandData = (pr.brands || []).find(b => b.brand === result.brand);
+ {/* ── Per-prompt battle cards ── */}
+ {(result.promptResults || []).map((pr, i) => {
+ const isOpen = expanded[i];
+ const winner = pr.winnerBrand;
+ const youWin = winner === result.brand;
+ const yourBrandData = (pr.brands || []).find(b => b.brand === result.brand);
 
-       return (
-        <div key={i} style={{ ...S.card, padding: 0, overflow: "hidden", borderLeft: `3px solid ${youWin ? "#7c3aed" : "#be185d"}` }}>
-         {/* Header */}
-         <div onClick={() => setExpanded(p => ({ ...p, [i]: !p[i] }))} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", cursor: "pointer", background: isOpen ? "#0c0c10" : "transparent" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: youWin ? "#1e1b4b" : "#2d0000", border: `1px solid ${youWin ? "#4338ca" : "#7f1d1d"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: youWin ? "#a78bfa" : "#fca5a5", flexShrink: 0 }}>P{i + 1}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-           <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>"{pr.prompt}"</div>
-           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: youWin ? "#a78bfa" : "#fbbf24", background: youWin ? "#1e1b4b" : "#1c1100", border: `1px solid ${youWin ? "#4338ca" : "#92400e"}`, borderRadius: 4, padding: "2px 7px" }}>
-             {youWin ? "🏆 You Win" : `🏆 ${winner} wins`}
-            </span>
-            {yourBrandData && (
-             <span style={{ fontSize: 9, color: "#a78bfa" }}>Your citation: <strong>{yourBrandData.citationProbability}%</strong></span>
-            )}
-           </div>
-          </div>
-          <div style={{ fontSize: 11, color: "#3f3f46" }}>{isOpen ? "▲" : "▼"}</div>
-         </div>
+ return (
+ <div key={i} style={{ ...S.card, padding: 0, overflow: "hidden", borderLeft: `3px solid ${youWin ? "#7c3aed" : "#be185d"}` }}>
+ {/* Header */}
+ <div onClick={() => setExpanded(p => ({ ...p, [i]: !p[i] }))} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", cursor: "pointer", background: isOpen ? "#0c0c10" : "transparent" }}>
+ <div style={{ width: 28, height: 28, borderRadius: 7, background: youWin ? "#1e1b4b" : "#2d0000", border: `1px solid ${youWin ? "#4338ca" : "#7f1d1d"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: youWin ? "#a78bfa" : "#fca5a5", flexShrink: 0 }}>P{i + 1}</div>
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: "#fafafa", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>"{pr.prompt}"</div>
+ <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+ <span style={{ fontSize: 9, fontWeight: 700, color: youWin ? "#a78bfa" : "#fbbf24", background: youWin ? "#1e1b4b" : "#1c1100", border: `1px solid ${youWin ? "#4338ca" : "#92400e"}`, borderRadius: 4, padding: "2px 7px" }}>
+ {youWin ? "You Win" : `${winner} wins`}
+ </span>
+ {yourBrandData && (
+ <span style={{ fontSize: 9, color: "#a78bfa" }}>Your citation: <strong>{yourBrandData.citationProbability}%</strong></span>
+ )}
+ </div>
+ </div>
+ <div style={{ fontSize: 11, color: "#3f3f46" }}>{isOpen ? "" : ""}</div>
+ </div>
 
-         {/* Expanded */}
-         {isOpen && (
-          <div style={{ borderTop: "1px solid #18181b", padding: "14px 16px 18px" }}>
+ {/* Expanded */}
+ {isOpen && (
+ <div style={{ borderTop: "1px solid #18181b", padding: "14px 16px 18px" }}>
 
-           {/* Brand battle columns */}
-           <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min((pr.brands || []).length, 5)}, 1fr)`, gap: 8, marginBottom: 14 }}>
-            {(pr.brands || []).map((b, j) => {
-             const bc = toBrandColor(b.brand);
-             const isWinner = b.brand === winner;
-             const isYou = b.brand === result.brand;
-             const fm = freqMeta(b.mentionFrequency);
-             return (
-              <div key={j} style={{ background: "#09090b", border: `1px solid ${isWinner ? bc : "#27272a"}`, borderRadius: 10, overflow: "hidden" }}>
-               <div style={{ height: 2, background: isWinner ? bc : "#27272a" }} />
-               <div style={{ padding: "10px 10px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                 <span style={{ fontSize: 10, fontWeight: 700, color: bc, lineHeight: 1.3 }}>{b.brand}{isYou ? " ★" : ""}</span>
-                 {isWinner && <span style={{ fontSize: 8, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 3, padding: "1px 5px", fontWeight: 700 }}>WINNER</span>}
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 800, color: bc, lineHeight: 1, marginBottom: 4 }}>{b.citationProbability}%</div>
-                <ConfidenceBar value={b.citationProbability} color={bc} />
-                <span style={{ fontSize: 8, fontWeight: 700, color: fm.color, background: fm.bg, border: `1px solid ${fm.border}`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase" }}>{b.mentionFrequency}</span>
-                {b.reason && <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5, marginTop: 6 }}>{b.reason}</div>}
-                {b.contentStrengths && (
-                 <div style={{ marginTop: 6, padding: "4px 7px", background: "#070707", border: "1px solid #065f46", borderRadius: 5 }}>
-                  <div style={{ fontSize: 8, fontWeight: 700, color: "#34d399", marginBottom: 2, textTransform: "uppercase" }}>✓ Strength</div>
-                  <div style={{ fontSize: 9, color: "#d4d4d8", lineHeight: 1.5 }}>{b.contentStrengths}</div>
-                 </div>
-                )}
-                {b.contentWeaknesses && (
-                 <div style={{ marginTop: 5, padding: "4px 7px", background: "#070707", border: "1px solid #7f1d1d", borderRadius: 5 }}>
-                  <div style={{ fontSize: 8, fontWeight: 700, color: "#fca5a5", marginBottom: 2, textTransform: "uppercase" }}>⚠ Weakness</div>
-                  <div style={{ fontSize: 9, color: "#d4d4d8", lineHeight: 1.5 }}>{b.contentWeaknesses}</div>
-                 </div>
-                )}
-               </div>
-              </div>
-             );
-            })}
-           </div>
+ {/* Brand battle columns */}
+ <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min((pr.brands || []).length, 5)}, 1fr)`, gap: 8, marginBottom: 14 }}>
+ {(pr.brands || []).map((b, j) => {
+ const bc = toBrandColor(b.brand);
+ const isWinner = b.brand === winner;
+ const isYou = b.brand === result.brand;
+ const fm = freqMeta(b.mentionFrequency);
+ return (
+ <div key={j} style={{ background: "#09090b", border: `1px solid ${isWinner ? bc : "#27272a"}`, borderRadius: 10, overflow: "hidden" }}>
+ <div style={{ height: 2, background: isWinner ? bc : "#27272a" }} />
+ <div style={{ padding: "10px 10px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: bc, lineHeight: 1.3 }}>{b.brand}{isYou ? " " : ""}</span>
+ {isWinner && <span style={{ fontSize: 8, background: "#1c1100", border: "1px solid #92400e", color: "#fbbf24", borderRadius: 3, padding: "1px 5px", fontWeight: 700 }}>WINNER</span>}
+ </div>
+ <div style={{ fontSize: 24, fontWeight: 800, color: bc, lineHeight: 1, marginBottom: 4 }}>{b.citationProbability}%</div>
+ <ConfidenceBar value={b.citationProbability} color={bc} />
+ <span style={{ fontSize: 8, fontWeight: 700, color: fm.color, background: fm.bg, border: `1px solid ${fm.border}`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase" }}>{b.mentionFrequency}</span>
+ {b.reason && <div style={{ fontSize: 9, color: "#71717a", lineHeight: 1.5, marginTop: 6 }}>{b.reason}</div>}
+ {b.contentStrengths && (
+ <div style={{ marginTop: 6, padding: "4px 7px", background: "#070707", border: "1px solid #065f46", borderRadius: 5 }}>
+ <div style={{ fontSize: 8, fontWeight: 700, color: "#34d399", marginBottom: 2, textTransform: "uppercase" }}>Strength</div>
+ <div style={{ fontSize: 9, color: "#d4d4d8", lineHeight: 1.5 }}>{b.contentStrengths}</div>
+ </div>
+ )}
+ {b.contentWeaknesses && (
+ <div style={{ marginTop: 5, padding: "4px 7px", background: "#070707", border: "1px solid #7f1d1d", borderRadius: 5 }}>
+ <div style={{ fontSize: 8, fontWeight: 700, color: "#fca5a5", marginBottom: 2, textTransform: "uppercase" }}>Weakness</div>
+ <div style={{ fontSize: 9, color: "#d4d4d8", lineHeight: 1.5 }}>{b.contentWeaknesses}</div>
+ </div>
+ )}
+ </div>
+ </div>
+ );
+ })}
+ </div>
 
-           {/* Strategic insight */}
-           {pr.insight && (
-            <div style={{ background: "linear-gradient(135deg,#1e1b4b,#0f0d24)", border: "1px solid #3730a3", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
-             <div style={{ fontSize: 9, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>💡 Strategic Insight</div>
-             <div style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.7 }}>{pr.insight}</div>
-            </div>
-           )}
+ {/* Strategic insight */}
+ {pr.insight && (
+ <div style={{ background: "linear-gradient(135deg,#1e1b4b,#0f0d24)", border: "1px solid #3730a3", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+ <div style={{ fontSize: 9, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 }}>Strategic Insight</div>
+ <div style={{ fontSize: 12, color: "#d4d4d8", lineHeight: 1.7 }}>{pr.insight}</div>
+ </div>
+ )}
 
-           {/* Action funnels */}
-           <div style={{ background: "linear-gradient(135deg,#09090b,#0c0c14)", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px" }}>
-            <ActionFunnelButtons prompt={pr.prompt} contentAction={null} gapAnalysis={null} />
-           </div>
-          </div>
-         )}
-        </div>
-       );
-      })}
-     </div>
-    );
-   })()}
-  </div>
+ {/* Action funnels */}
+ <div style={{ background: "linear-gradient(135deg,#09090b,#0c0c14)", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px" }}>
+ <ActionFunnelButtons prompt={pr.prompt} contentAction={null} gapAnalysis={null} />
+ </div>
+ </div>
+ )}
+ </div>
+ );
+ })}
+ </div>
+ );
+ })()}
+ </div>
  );
 }
 
@@ -2183,7 +2183,7 @@ function SeedingPlanTab() {
  <>
  {contentModal.title && <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 16, lineHeight: 1.4 }}>{contentModal.title}</div>}
  <div style={{ fontSize: 13, color: "#d4d4d8", lineHeight: 1.8, background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", marginBottom: 16, whiteSpace: "pre-wrap" }}>{contentModal.content}</div>
- {contentModal.tip && <div style={{ fontSize: 12, color: "#86efac", background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "8px 12px", marginBottom: 16 }}>💡 {contentModal.tip}</div>}
+ {contentModal.tip && <div style={{ fontSize: 12, color: "#86efac", background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "8px 12px", marginBottom: 16 }}>{contentModal.tip}</div>}
  {/* Where & how to post */}
  {(() => {
  const platform = contentModal.platform;
@@ -2259,7 +2259,7 @@ function SeedingPlanTab() {
  <button onClick={() => {
  navigator.clipboard?.writeText((contentModal.title ? contentModal.title + "\n\n" : "") + contentModal.content);
  setCopied(true); setTimeout(() => setCopied(false), 2000);
- }} style={{ background: copied ? "#166534" : "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}>{copied ? "✓ Copied!" : "Copy to clipboard"}</button>
+ }} style={{ background: copied ? "#166534" : "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}>{copied ? "Copied!" : "Copy to clipboard"}</button>
  <button onClick={async () => {
  if (markingPosted) return;
  setMarkingPosted(true);
@@ -2276,7 +2276,7 @@ function SeedingPlanTab() {
  setTimeout(() => setMarkedPosted(false), 3000);
  } catch {} finally { setMarkingPosted(false); }
  }} style={{ background: markedPosted ? "#052e16" : "#18181b", border: `1px solid ${markedPosted ? "#166534" : "#3f3f46"}`, borderRadius: 6, padding: "8px 16px", color: markedPosted ? "#86efac" : "#a1a1aa", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
- {markingPosted ? "Saving…" : markedPosted ? "✓ Logged!" : "✓ Mark as Posted"}
+ {markingPosted ? "Saving…" : markedPosted ? "Logged!" : "Mark as Posted"}
  </button>
  <button onClick={() => generateContent({ platform: contentModal.platform, strategy: "", contentType: "", subreddits: contentModal.subreddits || [] })} style={{ background: "#27272a", border: "none", borderRadius: 6, padding: "8px 16px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Regenerate</button>
  </div>
@@ -2340,7 +2340,7 @@ function SeedingPlanTab() {
  <div style={{ fontSize: 11, color: "#71717a", marginBottom: 8 }}>⟳ Loading your store data…</div>
  ) : shopCtx?.available ? (
  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "7px 12px", background: "#052e16", border: "1px solid #166534", borderRadius: 8, fontSize: 11 }}>
- <span style={{ color: "#86efac", fontWeight: 700 }}>✓ Loaded from your Shopify store</span>
+ <span style={{ color: "#86efac", fontWeight: 700 }}>Loaded from your Shopify store</span>
  <span style={{ color: "#4ade80" }}>{shopCtx.productCount} product{shopCtx.productCount !== 1 ? "s" : ""}</span>
  {shopCtx.collections?.length > 0 && <span style={{ color: "#4ade80" }}>· {shopCtx.collections.slice(0,3).join(", ")}</span>}
  <span style={{ color: "#166534", marginLeft: "auto" }}>Fields pre-filled — edit anytime</span>
@@ -2397,7 +2397,7 @@ function SeedingPlanTab() {
  >
  {generatingFor === p.platform ? (
  <><div style={{ width: 10, height: 10, border: "1.5px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "ait-spin 0.8s linear infinite" }} /> Writing…</>
- ) : "✨ Write with AI"}
+ ) : "Write with AI"}
  </button>
  </div>
  </div>
@@ -2406,7 +2406,7 @@ function SeedingPlanTab() {
  <div style={{ fontSize: "11px", color: "#71717a", marginTop: "4px"}}>Time to impact: {p.timeToImpact}</div>
  {/* Post as guidance */}
  <div style={{ marginTop: 10, padding: "8px 10px", background: "#0f0f13", border: `1px solid ${guide.color}33`, borderRadius: 7, display: "flex", gap: 8, alignItems: "flex-start" }}>
- <span style={{ fontSize: 14, flexShrink: 0 }}>👤</span>
+ <span style={{ fontSize: 14, flexShrink: 0 }}></span>
  <div>
  <span style={{ fontSize: 10, fontWeight: 700, color: guide.color, textTransform: "uppercase", letterSpacing: 0.5 }}>Post as: </span>
  <span style={{ fontSize: 11, color: "#d4d4d8", fontWeight: 600 }}>{guide.account}</span>
@@ -2436,12 +2436,12 @@ function SeedingPlanTab() {
  {/* Posting History */}
  <div style={S.card}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
- <p style={{ ...S.sectionTitle, margin: 0 }}>📋 Posting History</p>
+ <p style={{ ...S.sectionTitle, margin: 0 }}>Posting History</p>
  <span style={{ fontSize: 11, color: "#52525b" }}>{postHistory.length} post{postHistory.length !== 1 ? "s" : ""} logged</span>
  </div>
  {postHistory.length === 0 ? (
  <div style={{ fontSize: 12, color: "#52525b", textAlign: "center", padding: "20px 0" }}>
- No posts logged yet. Generate content and click "✓ Mark as Posted" to track your activity.
+ No posts logged yet. Generate content and click "Mark as Posted" to track your activity.
  </div>
  ) : (
  <div>
@@ -2454,7 +2454,7 @@ function SeedingPlanTab() {
  {postHistory.slice(0, 30).map((post) => (
  <div key={post.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 0", borderBottom: "1px solid #27272a" }}>
  <div style={{ flexShrink: 0, width: 36, height: 36, background: "#27272a", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
- {post.platform === "Reddit" ? "🟠" : post.platform === "Quora" ? "🔴" : post.platform === "Medium" ? "🟢" : post.platform === "GitHub Discussions" ? "🟣" : "📝"}
+ {post.platform === "Reddit" ? "" : post.platform === "Quora" ? "" : post.platform === "Medium" ? "" : post.platform === "GitHub Discussions" ? "" : ""}
  </div>
  <div style={{ flex: 1, minWidth: 0 }}>
  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3 }}>

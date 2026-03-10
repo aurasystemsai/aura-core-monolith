@@ -4,421 +4,421 @@ import { apiFetch } from "../../api";
 const API = "/api/ai-content-brief-generator";
 
 const C = {
-  bg: "#09090b", card: "#18181b", border: "#27272a", borderBright: "#3f3f46",
-  text: "#fafafa", sub: "#a1a1aa", dim: "#71717a",
-  green: "#4ade80", greenBg: "#052e16", greenBorder: "#166534",
-  blue: "#60a5fa", blueBg: "#0c1a2e", blueBorder: "#1e3a5f",
-  yellow: "#fbbf24", yellowBg: "#1c1007", yellowBorder: "#92400e",
-  purple: "#a78bfa", purpleBg: "#1e1b4b", purpleBorder: "#4338ca",
-  indigo: "#818cf8",
+ bg: "#09090b", card: "#18181b", border: "#27272a", borderBright: "#3f3f46",
+ text: "#fafafa", sub: "#a1a1aa", dim: "#71717a",
+ green: "#4ade80", greenBg: "#052e16", greenBorder: "#166534",
+ blue: "#60a5fa", blueBg: "#0c1a2e", blueBorder: "#1e3a5f",
+ yellow: "#fbbf24", yellowBg: "#1c1007", yellowBorder: "#92400e",
+ purple: "#a78bfa", purpleBg: "#1e1b4b", purpleBorder: "#4338ca",
+ indigo: "#818cf8",
 };
 
 const intentColors = {
-  informational:  { bg: "#0c1a2e", border: "#1e3a5f", text: "#60a5fa", label: "Informational" },
-  commercial:     { bg: "#1e1b4b", border: "#4338ca", text: "#a78bfa", label: "Commercial" },
-  transactional:  { bg: "#052e16", border: "#166534", text: "#4ade80", label: "Transactional" },
-  navigational:   { bg: "#1c0a00", border: "#7c2d12", text: "#fb923c", label: "Navigational" },
+ informational: { bg: "#0c1a2e", border: "#1e3a5f", text: "#60a5fa", label: "Informational" },
+ commercial: { bg: "#1e1b4b", border: "#4338ca", text: "#a78bfa", label: "Commercial" },
+ transactional: { bg: "#052e16", border: "#166534", text: "#4ade80", label: "Transactional" },
+ navigational: { bg: "#1c0a00", border: "#7c2d12", text: "#fb923c", label: "Navigational" },
 };
 
 function Section({ title, children, action }) {
-  return (
-    <div style={{ marginBottom: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.7px" }}>{title}</div>
-        {action}
-      </div>
-      {children}
-    </div>
-  );
+ return (
+ <div style={{ marginBottom: 24 }}>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.7px" }}>{title}</div>
+ {action}
+ </div>
+ {children}
+ </div>
+ );
 }
 
 function CopyBtn({ text, small }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-      style={{ background: "none", border: `1px solid ${C.borderBright}`, borderRadius: 5, padding: small ? "2px 7px" : "4px 10px", color: C.sub, fontSize: small ? 10 : 11, cursor: "pointer" }}
-    >{copied ? "Copied!" : "Copy"}</button>
-  );
+ const [copied, setCopied] = useState(false);
+ return (
+ <button
+ onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+ style={{ background: "none", border: `1px solid ${C.borderBright}`, borderRadius: 5, padding: small ? "2px 7px" : "4px 10px", color: C.sub, fontSize: small ? 10 : 11, cursor: "pointer" }}
+ >{copied ? "Copied!" : "Copy"}</button>
+ );
 }
 
 export default function AIContentBriefGenerator() {
-  const [keyword, setKeyword]   = useState("");
-  const [audience, setAudience] = useState("");
-  const [tone, setTone]         = useState("Professional");
+ const [keyword, setKeyword] = useState("");
+ const [audience, setAudience] = useState("");
+ const [tone, setTone] = useState("Professional");
 
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-  const [brief, setBrief]       = useState(null);
-  const [selectedTitle, setSelectedTitle] = useState(0);
-  const [selectedMeta,  setSelectedMeta]  = useState(0);
-  const [outline, setOutline]   = useState([]);
+ const [loading, setLoading] = useState(false);
+ const [error, setError] = useState("");
+ const [brief, setBrief] = useState(null);
+ const [selectedTitle, setSelectedTitle] = useState(0);
+ const [selectedMeta, setSelectedMeta] = useState(0);
+ const [outline, setOutline] = useState([]);
 
-  const generate = useCallback(async () => {
-    if (!keyword.trim()) return;
-    setLoading(true); setError(""); setBrief(null);
-    try {
-      const res  = await apiFetch(`${API}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: keyword.trim(), audience, tone }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Generation failed");
-      setBrief(data.brief);
-      setOutline(data.brief.outline || []);
-      setSelectedTitle(0);
-      setSelectedMeta(0);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [keyword, audience, tone]);
+ const generate = useCallback(async () => {
+ if (!keyword.trim()) return;
+ setLoading(true); setError(""); setBrief(null);
+ try {
+ const res = await apiFetch(`${API}/generate`, {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ keyword: keyword.trim(), audience, tone }),
+ });
+ const data = await res.json();
+ if (!data.ok) throw new Error(data.error || "Generation failed");
+ setBrief(data.brief);
+ setOutline(data.brief.outline || []);
+ setSelectedTitle(0);
+ setSelectedMeta(0);
+ } catch (e) {
+ setError(e.message);
+ } finally {
+ setLoading(false);
+ }
+ }, [keyword, audience, tone]);
 
-  const updateSection = (id, field, val) =>
-    setOutline(prev => prev.map(s => s.id === id ? { ...s, [field]: val } : s));
+ const updateSection = (id, field, val) =>
+ setOutline(prev => prev.map(s => s.id === id ? { ...s, [field]: val } : s));
 
-  const addSection = (afterId) => {
-    const idx = outline.findIndex(s => s.id === afterId);
-    const newSec = { id: `s-${Date.now()}`, tag: "H2", text: "New section", direction: "", wordCount: 200, keywordsToInclude: [] };
-    const next = [...outline];
-    next.splice(idx + 1, 0, newSec);
-    setOutline(next);
-  };
+ const addSection = (afterId) => {
+ const idx = outline.findIndex(s => s.id === afterId);
+ const newSec = { id: `s-${Date.now()}`, tag: "H2", text: "New section", direction: "", wordCount: 200, keywordsToInclude: [] };
+ const next = [...outline];
+ next.splice(idx + 1, 0, newSec);
+ setOutline(next);
+ };
 
-  const removeSection = (id) => setOutline(prev => prev.filter(s => s.id !== id));
+ const removeSection = (id) => setOutline(prev => prev.filter(s => s.id !== id));
 
-  const exportBrief = () => {
-    if (!brief) return;
-    const t = brief.titles?.[selectedTitle]?.text || keyword;
-    const m = brief.metaDescriptions?.[selectedMeta]?.text || "";
-    const kws = [brief.primaryKeyword, ...(brief.secondaryKeywords || [])].join(", ");
-    const outlineText = outline.map(s => `${s.tag}: ${s.text}\n  -> ${s.direction || ""}${s.wordCount ? ` (${s.wordCount} words)` : ""}`).join("\n");
-    const faqs = (brief.faqQuestions || []).map((q, i) => `${i + 1}. ${q}`).join("\n");
-    const text = `CONTENT BRIEF: ${keyword.toUpperCase()}\n${"=".repeat(60)}\n\nTITLE: ${t}\nMETA: ${m}\n\nSEARCH INTENT: ${brief.searchIntent} - ${brief.searchIntentExplain}\nWORD COUNT TARGET: ${brief.estimatedWordCount}\nTONE: ${tone}\nAUDIENCE: ${audience || "General"}\n\nKEYWORDS: ${kws}\n\nOUTLINE:\n${outlineText}\n\nFAQ:\n${faqs}\n\nCTA: ${brief.callToAction || ""}\n\nGenerated by AURA`;
-    const blob = new Blob([text], { type: "text/plain" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `brief-${keyword.replace(/\s+/g, "-")}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+ const exportBrief = () => {
+ if (!brief) return;
+ const t = brief.titles?.[selectedTitle]?.text || keyword;
+ const m = brief.metaDescriptions?.[selectedMeta]?.text || "";
+ const kws = [brief.primaryKeyword, ...(brief.secondaryKeywords || [])].join(", ");
+ const outlineText = outline.map(s => `${s.tag}: ${s.text}\n -> ${s.direction || ""}${s.wordCount ? ` (${s.wordCount} words)` : ""}`).join("\n");
+ const faqs = (brief.faqQuestions || []).map((q, i) => `${i + 1}. ${q}`).join("\n");
+ const text = `CONTENT BRIEF: ${keyword.toUpperCase()}\n${"=".repeat(60)}\n\nTITLE: ${t}\nMETA: ${m}\n\nSEARCH INTENT: ${brief.searchIntent} - ${brief.searchIntentExplain}\nWORD COUNT TARGET: ${brief.estimatedWordCount}\nTONE: ${tone}\nAUDIENCE: ${audience || "General"}\n\nKEYWORDS: ${kws}\n\nOUTLINE:\n${outlineText}\n\nFAQ:\n${faqs}\n\nCTA: ${brief.callToAction || ""}\n\nGenerated by AURA`;
+ const blob = new Blob([text], { type: "text/plain" });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement("a");
+ a.href = url;
+ a.download = `brief-${keyword.replace(/\s+/g, "-")}.txt`;
+ a.click();
+ URL.revokeObjectURL(url);
+ };
 
-  const fullBriefText = brief ? [
-    `Title: ${brief.titles?.[selectedTitle]?.text || keyword}`,
-    `Meta: ${brief.metaDescriptions?.[selectedMeta]?.text || ""}`,
-    `Keywords: ${[brief.primaryKeyword, ...(brief.secondaryKeywords || [])].join(", ")}`,
-    `Outline:\n${outline.map(s => `${s.tag}: ${s.text} - ${s.direction || ""}`).join("\n")}`,
-  ].join("\n") : "";
+ const fullBriefText = brief ? [
+ `Title: ${brief.titles?.[selectedTitle]?.text || keyword}`,
+ `Meta: ${brief.metaDescriptions?.[selectedMeta]?.text || ""}`,
+ `Keywords: ${[brief.primaryKeyword, ...(brief.secondaryKeywords || [])].join(", ")}`,
+ `Outline:\n${outline.map(s => `${s.tag}: ${s.text} - ${s.direction || ""}`).join("\n")}`,
+ ].join("\n") : "";
 
-  const intentStyle = brief ? (intentColors[brief.searchIntent?.toLowerCase?.()] || intentColors.informational) : null;
+ const intentStyle = brief ? (intentColors[brief.searchIntent?.toLowerCase?.()] || intentColors.informational) : null;
 
-  return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.text, fontFamily: "system-ui, sans-serif", paddingBottom: 60 }}>
+ return (
+ <div style={{ background: C.bg, minHeight: "100vh", color: C.text, fontFamily: "system-ui, sans-serif", paddingBottom: 60 }}>
 
-      {/* Header */}
-      <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "18px 28px" }}>
-        <div style={{ fontSize: 20, fontWeight: 800, color: C.text, marginBottom: 2 }}>Content Brief Generator</div>
-        <div style={{ fontSize: 13, color: C.sub }}>Enter a keyword to generate a full SEO content brief — titles, meta, outline, keywords, FAQs and more</div>
-      </div>
+ {/* Header */}
+ <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "18px 28px" }}>
+ <div style={{ fontSize: 20, fontWeight: 800, color: C.text, marginBottom: 2 }}>Content Brief Generator</div>
+ <div style={{ fontSize: 13, color: C.sub }}>Enter a keyword to generate a full SEO content brief — titles, meta, outline, keywords, FAQs and more</div>
+ </div>
 
-      <div style={{ padding: "24px 28px" }}>
+ <div style={{ padding: "24px 28px" }}>
 
-        {/* Input Panel */}
-        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 24px", marginBottom: 28 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TARGET KEYWORD *</label>
-              <input
-                value={keyword}
-                onChange={e => setKeyword(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && generate()}
-                placeholder="e.g. best running shoes for beginners"
-                style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 14, boxSizing: "border-box", outline: "none" }}
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TARGET AUDIENCE</label>
-              <input
-                value={audience}
-                onChange={e => setAudience(e.target.value)}
-                placeholder="e.g. beginner runners"
-                style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, boxSizing: "border-box", outline: "none" }}
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TONE</label>
-              <select
-                value={tone}
-                onChange={e => setTone(e.target.value)}
-                style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, boxSizing: "border-box" }}
-              >
-                {["Professional", "Conversational", "Friendly", "Authoritative", "Inspiring", "Educational", "Persuasive"].map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button
-              onClick={generate}
-              disabled={loading || !keyword.trim()}
-              style={{ background: loading ? "#4f46e5" : "#6366f1", border: "none", borderRadius: 9, padding: "11px 28px", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading || !keyword.trim() ? "default" : "pointer", opacity: !keyword.trim() ? 0.5 : 1 }}
-            >
-              {loading ? "Generating..." : "Generate Brief  2 cr"}
-            </button>
-            {brief && <span style={{ fontSize: 12, color: C.green }}>Brief ready for "{brief.keyword}"</span>}
-            {error && <span style={{ fontSize: 12, color: "#f87171" }}>{error}</span>}
-          </div>
-        </div>
+ {/* Input Panel */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 24px", marginBottom: 28 }}>
+ <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 14, marginBottom: 16 }}>
+ <div>
+ <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TARGET KEYWORD *</label>
+ <input
+ value={keyword}
+ onChange={e => setKeyword(e.target.value)}
+ onKeyDown={e => e.key === "Enter" && generate()}
+ placeholder="e.g. best running shoes for beginners"
+ style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 14, boxSizing: "border-box", outline: "none" }}
+ />
+ </div>
+ <div>
+ <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TARGET AUDIENCE</label>
+ <input
+ value={audience}
+ onChange={e => setAudience(e.target.value)}
+ placeholder="e.g. beginner runners"
+ style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, boxSizing: "border-box", outline: "none" }}
+ />
+ </div>
+ <div>
+ <label style={{ fontSize: 11, fontWeight: 600, color: C.sub, display: "block", marginBottom: 5 }}>TONE</label>
+ <select
+ value={tone}
+ onChange={e => setTone(e.target.value)}
+ style={{ width: "100%", background: "#09090b", border: `1px solid ${C.borderBright}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 13, boxSizing: "border-box" }}
+ >
+ {["Professional", "Conversational", "Friendly", "Authoritative", "Inspiring", "Educational", "Persuasive"].map(t => <option key={t}>{t}</option>)}
+ </select>
+ </div>
+ </div>
+ <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+ <button
+ onClick={generate}
+ disabled={loading || !keyword.trim()}
+ style={{ background: loading ? "#4f46e5" : "#6366f1", border: "none", borderRadius: 9, padding: "11px 28px", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading || !keyword.trim() ? "default" : "pointer", opacity: !keyword.trim() ? 0.5 : 1 }}
+ >
+ {loading ? "Generating..." : "Generate Brief 2 cr"}
+ </button>
+ {brief && <span style={{ fontSize: 12, color: C.green }}>Brief ready for "{brief.keyword}"</span>}
+ {error && <span style={{ fontSize: 12, color: "#f87171" }}>{error}</span>}
+ </div>
+ </div>
 
-        {/* Loading */}
-        {loading && (
-          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 40, textAlign: "center" }}>
-            <div style={{ fontSize: 14, color: C.sub, marginBottom: 6 }}>Analysing search intent, keywords and competitor structure...</div>
-            <div style={{ fontSize: 12, color: C.dim }}>Building your full content brief — titles, meta descriptions, outline, FAQ and more</div>
-          </div>
-        )}
+ {/* Loading */}
+ {loading && (
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 40, textAlign: "center" }}>
+ <div style={{ fontSize: 14, color: C.sub, marginBottom: 6 }}>Analysing search intent, keywords and competitor structure...</div>
+ <div style={{ fontSize: 12, color: C.dim }}>Building your full content brief — titles, meta descriptions, outline, FAQ and more</div>
+ </div>
+ )}
 
-        {/* Results */}
-        {brief && !loading && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
+ {/* Results */}
+ {brief && !loading && (
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
 
-            {/* LEFT */}
-            <div>
+ {/* LEFT */}
+ <div>
 
-              {/* Intent + stats row */}
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 20px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <span style={{ background: intentStyle.bg, border: `1px solid ${intentStyle.border}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: intentStyle.text }}>{intentStyle.label}</span>
-                <span style={{ fontSize: 13, color: C.sub, flex: 1 }}>{brief.searchIntentExplain}</span>
-                <span style={{ fontSize: 12, color: C.sub, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 12px" }}>~{brief.estimatedWordCount} words</span>
-                <span style={{ fontSize: 12, color: C.sub, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 12px" }}>{brief.readingLevel}</span>
-              </div>
+ {/* Intent + stats row */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 20px", marginBottom: 18, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+ <span style={{ background: intentStyle.bg, border: `1px solid ${intentStyle.border}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: intentStyle.text }}>{intentStyle.label}</span>
+ <span style={{ fontSize: 13, color: C.sub, flex: 1 }}>{brief.searchIntentExplain}</span>
+ <span style={{ fontSize: 12, color: C.sub, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 12px" }}>~{brief.estimatedWordCount} words</span>
+ <span style={{ fontSize: 12, color: C.sub, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 7, padding: "4px 12px" }}>{brief.readingLevel}</span>
+ </div>
 
-              {/* Titles */}
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
-                <Section title="Title Suggestions (pick one)" action={<CopyBtn text={(brief.titles||[]).map((t,i)=>`${i+1}. ${t.text}`).join("\n")} small />}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {(brief.titles || []).map((t, i) => (
-                      <div key={i} onClick={() => setSelectedTitle(i)} style={{ background: selectedTitle===i ? "#1e1b4b" : C.bg, border: `1px solid ${selectedTitle===i ? "#4338ca" : C.border}`, borderRadius: 9, padding: "12px 16px", cursor: "pointer" }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: selectedTitle===i ? "#818cf8" : C.dim, background: selectedTitle===i ? "#312e81" : C.card, border: `1px solid ${selectedTitle===i ? "#4338ca" : C.border}`, borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 2 }}>
-                            {selectedTitle===i ? "SELECTED" : `OPTION ${i+1}`}
-                          </span>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 14, color: C.text, fontWeight: 600, marginBottom: 4 }}>{t.text}</div>
-                            <div style={{ fontSize: 11, color: C.dim }}>{t.reason}</div>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: t.score>=85 ? C.green : t.score>=75 ? C.yellow : C.sub }}>{t.score}</span>
-                            <CopyBtn text={t.text} small />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Section>
-              </div>
+ {/* Titles */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
+ <Section title="Title Suggestions (pick one)" action={<CopyBtn text={(brief.titles||[]).map((t,i)=>`${i+1}. ${t.text}`).join("\n")} small />}>
+ <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+ {(brief.titles || []).map((t, i) => (
+ <div key={i} onClick={() => setSelectedTitle(i)} style={{ background: selectedTitle===i ? "#1e1b4b" : C.bg, border: `1px solid ${selectedTitle===i ? "#4338ca" : C.border}`, borderRadius: 9, padding: "12px 16px", cursor: "pointer" }}>
+ <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: selectedTitle===i ? "#818cf8" : C.dim, background: selectedTitle===i ? "#312e81" : C.card, border: `1px solid ${selectedTitle===i ? "#4338ca" : C.border}`, borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 2 }}>
+ {selectedTitle===i ? "SELECTED" : `OPTION ${i+1}`}
+ </span>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 14, color: C.text, fontWeight: 600, marginBottom: 4 }}>{t.text}</div>
+ <div style={{ fontSize: 11, color: C.dim }}>{t.reason}</div>
+ </div>
+ <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+ <span style={{ fontSize: 12, fontWeight: 700, color: t.score>=85 ? C.green : t.score>=75 ? C.yellow : C.sub }}>{t.score}</span>
+ <CopyBtn text={t.text} small />
+ </div>
+ </div>
+ </div>
+ ))}
+ </div>
+ </Section>
+ </div>
 
-              {/* Meta */}
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
-                <Section title="Meta Description (pick one)">
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {(brief.metaDescriptions || []).map((m, i) => (
-                      <div key={i} onClick={() => setSelectedMeta(i)} style={{ background: selectedMeta===i ? "#0c1a2e" : C.bg, border: `1px solid ${selectedMeta===i ? "#1e3a5f" : C.border}`, borderRadius: 9, padding: "12px 16px", cursor: "pointer" }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: selectedMeta===i ? "#60a5fa" : C.dim, background: selectedMeta===i ? "#0c1a2e" : C.card, border: `1px solid ${selectedMeta===i ? "#1e3a5f" : C.border}`, borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 2 }}>
-                            {selectedMeta===i ? "SELECTED" : `OPTION ${i+1}`}
-                          </span>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, color: C.text, marginBottom: 4 }}>{m.text}</div>
-                            <div style={{ fontSize: 11, color: m.charCount>160 ? "#f87171" : m.charCount>=150 ? C.green : C.dim }}>{m.charCount} chars {m.charCount>160 ? "- too long" : m.charCount>=150 ? "- ideal" : ""}</div>
-                          </div>
-                          <CopyBtn text={m.text} small />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Section>
-              </div>
+ {/* Meta */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
+ <Section title="Meta Description (pick one)">
+ <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+ {(brief.metaDescriptions || []).map((m, i) => (
+ <div key={i} onClick={() => setSelectedMeta(i)} style={{ background: selectedMeta===i ? "#0c1a2e" : C.bg, border: `1px solid ${selectedMeta===i ? "#1e3a5f" : C.border}`, borderRadius: 9, padding: "12px 16px", cursor: "pointer" }}>
+ <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+ <span style={{ fontSize: 10, fontWeight: 700, color: selectedMeta===i ? "#60a5fa" : C.dim, background: selectedMeta===i ? "#0c1a2e" : C.card, border: `1px solid ${selectedMeta===i ? "#1e3a5f" : C.border}`, borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 2 }}>
+ {selectedMeta===i ? "SELECTED" : `OPTION ${i+1}`}
+ </span>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 13, color: C.text, marginBottom: 4 }}>{m.text}</div>
+ <div style={{ fontSize: 11, color: m.charCount>160 ? "#f87171" : m.charCount>=150 ? C.green : C.dim }}>{m.charCount} chars {m.charCount>160 ? "- too long" : m.charCount>=150 ? "- ideal" : ""}</div>
+ </div>
+ <CopyBtn text={m.text} small />
+ </div>
+ </div>
+ ))}
+ </div>
+ </Section>
+ </div>
 
-              {/* Keywords */}
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
-                <Section title="Target Keywords">
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>PRIMARY</div>
-                    <span style={{ background: "#1a0f2e", border: "1px solid #7c3aed", borderRadius: 6, padding: "5px 14px", fontSize: 13, fontWeight: 700, color: "#a78bfa" }}>{brief.primaryKeyword}</span>
-                  </div>
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>SECONDARY</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {(brief.secondaryKeywords || []).map((k, i) => (
-                        <span key={i} style={{ background: C.bg, border: `1px solid ${C.borderBright}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, color: C.sub }}>{k}</span>
-                      ))}
-                    </div>
-                  </div>
-                  {(brief.lsiKeywords || []).length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>SEMANTIC / LSI</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {brief.lsiKeywords.map((k, i) => (
-                          <span key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, color: C.dim }}>{k}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </Section>
-              </div>
+ {/* Keywords */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px", marginBottom: 18 }}>
+ <Section title="Target Keywords">
+ <div style={{ marginBottom: 12 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>PRIMARY</div>
+ <span style={{ background: "#1a0f2e", border: "1px solid #7c3aed", borderRadius: 6, padding: "5px 14px", fontSize: 13, fontWeight: 700, color: "#a78bfa" }}>{brief.primaryKeyword}</span>
+ </div>
+ <div style={{ marginBottom: 12 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>SECONDARY</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {(brief.secondaryKeywords || []).map((k, i) => (
+ <span key={i} style={{ background: C.bg, border: `1px solid ${C.borderBright}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, color: C.sub }}>{k}</span>
+ ))}
+ </div>
+ </div>
+ {(brief.lsiKeywords || []).length > 0 && (
+ <div>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>SEMANTIC / LSI</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {brief.lsiKeywords.map((k, i) => (
+ <span key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 12px", fontSize: 12, color: C.dim }}>{k}</span>
+ ))}
+ </div>
+ </div>
+ )}
+ </Section>
+ </div>
 
-              {/* Outline */}
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px" }}>
-                <Section title={`Content Outline (${outline.length} sections)`} action={
-                  <button onClick={() => addSection(outline[outline.length-1]?.id)} style={{ background:"none", border:`1px solid ${C.borderBright}`, borderRadius:5, padding:"3px 10px", color:C.sub, fontSize:11, cursor:"pointer" }}>+ Add Section</button>
-                }>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {outline.map((sec) => (
-                      <div key={sec.id} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: sec.direction ? 6 : 0 }}>
-                          <select
-                            value={sec.tag}
-                            onChange={e => updateSection(sec.id, "tag", e.target.value)}
-                            style={{ background: sec.tag==="H1" ? "#1a0f2e" : sec.tag==="H2" ? "#0c1a2e" : C.card, border: `1px solid ${sec.tag==="H1" ? "#7c3aed" : sec.tag==="H2" ? "#1e3a5f" : C.border}`, borderRadius: 5, padding: "3px 6px", color: sec.tag==="H1" ? "#a78bfa" : sec.tag==="H2" ? "#60a5fa" : C.sub, fontSize: 11, fontWeight: 700, flexShrink: 0 }}
-                          >
-                            {["H1","H2","H3","H4"].map(t => <option key={t}>{t}</option>)}
-                          </select>
-                          <input
-                            value={sec.text}
-                            onChange={e => updateSection(sec.id, "text", e.target.value)}
-                            style={{ flex: 1, background: "none", border: "none", color: C.text, fontSize: 13, fontWeight: sec.tag==="H1" ? 700 : sec.tag==="H2" ? 600 : 400, outline: "none", padding: 0 }}
-                          />
-                          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                            {sec.wordCount > 0 && <span style={{ fontSize: 10, color: C.dim }}>{sec.wordCount}w</span>}
-                            <button onClick={() => addSection(sec.id)} style={{ background:"none", border:"none", color:C.dim, fontSize:16, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>+</button>
-                            <button onClick={() => removeSection(sec.id)} style={{ background:"none", border:"none", color:C.dim, fontSize:12, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>x</button>
-                          </div>
-                        </div>
-                        {sec.direction && (
-                          <div style={{ display:"flex", gap:6, paddingLeft:36 }}>
-                            <span style={{ fontSize:10, color:C.yellow, flexShrink:0, marginTop:2 }}>-&gt;</span>
-                            <input value={sec.direction} onChange={e => updateSection(sec.id, "direction", e.target.value)} style={{ flex:1, background:"none", border:"none", color:C.dim, fontSize:11, outline:"none", padding:0 }} placeholder="Content direction..." />
-                          </div>
-                        )}
-                        {(sec.keywordsToInclude||[]).length > 0 && (
-                          <div style={{ paddingLeft:36, marginTop:4, display:"flex", flexWrap:"wrap", gap:4 }}>
-                            {sec.keywordsToInclude.map((k,ki) => (
-                              <span key={ki} style={{ fontSize:10, color:"#818cf8", background:"#1e1b4b", border:"1px solid #4338ca", borderRadius:4, padding:"1px 6px" }}>{k}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </Section>
-              </div>
+ {/* Outline */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 22px" }}>
+ <Section title={`Content Outline (${outline.length} sections)`} action={
+ <button onClick={() => addSection(outline[outline.length-1]?.id)} style={{ background:"none", border:`1px solid ${C.borderBright}`, borderRadius:5, padding:"3px 10px", color:C.sub, fontSize:11, cursor:"pointer" }}>+ Add Section</button>
+ }>
+ <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+ {outline.map((sec) => (
+ <div key={sec.id} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: sec.direction ? 6 : 0 }}>
+ <select
+ value={sec.tag}
+ onChange={e => updateSection(sec.id, "tag", e.target.value)}
+ style={{ background: sec.tag==="H1" ? "#1a0f2e" : sec.tag==="H2" ? "#0c1a2e" : C.card, border: `1px solid ${sec.tag==="H1" ? "#7c3aed" : sec.tag==="H2" ? "#1e3a5f" : C.border}`, borderRadius: 5, padding: "3px 6px", color: sec.tag==="H1" ? "#a78bfa" : sec.tag==="H2" ? "#60a5fa" : C.sub, fontSize: 11, fontWeight: 700, flexShrink: 0 }}
+ >
+ {["H1","H2","H3","H4"].map(t => <option key={t}>{t}</option>)}
+ </select>
+ <input
+ value={sec.text}
+ onChange={e => updateSection(sec.id, "text", e.target.value)}
+ style={{ flex: 1, background: "none", border: "none", color: C.text, fontSize: 13, fontWeight: sec.tag==="H1" ? 700 : sec.tag==="H2" ? 600 : 400, outline: "none", padding: 0 }}
+ />
+ <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+ {sec.wordCount > 0 && <span style={{ fontSize: 10, color: C.dim }}>{sec.wordCount}w</span>}
+ <button onClick={() => addSection(sec.id)} style={{ background:"none", border:"none", color:C.dim, fontSize:16, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>+</button>
+ <button onClick={() => removeSection(sec.id)} style={{ background:"none", border:"none", color:C.dim, fontSize:12, cursor:"pointer", padding:"0 2px", lineHeight:1 }}>x</button>
+ </div>
+ </div>
+ {sec.direction && (
+ <div style={{ display:"flex", gap:6, paddingLeft:36 }}>
+ <span style={{ fontSize:10, color:C.yellow, flexShrink:0, marginTop:2 }}>-&gt;</span>
+ <input value={sec.direction} onChange={e => updateSection(sec.id, "direction", e.target.value)} style={{ flex:1, background:"none", border:"none", color:C.dim, fontSize:11, outline:"none", padding:0 }} placeholder="Content direction..." />
+ </div>
+ )}
+ {(sec.keywordsToInclude||[]).length > 0 && (
+ <div style={{ paddingLeft:36, marginTop:4, display:"flex", flexWrap:"wrap", gap:4 }}>
+ {sec.keywordsToInclude.map((k,ki) => (
+ <span key={ki} style={{ fontSize:10, color:"#818cf8", background:"#1e1b4b", border:"1px solid #4338ca", borderRadius:4, padding:"1px 6px" }}>{k}</span>
+ ))}
+ </div>
+ )}
+ </div>
+ ))}
+ </div>
+ </Section>
+ </div>
 
-            </div>
+ </div>
 
-            {/* RIGHT sidebar */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+ {/* RIGHT sidebar */}
+ <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              {/* Actions */}
-              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", marginBottom: 12 }}>ACTIONS</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <button onClick={exportBrief} style={{ padding:"9px 0", borderRadius:8, background:"#6366f1", border:"none", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>Export Brief (.txt)</button>
-                  <div style={{ padding:"3px 0" }}><CopyBtn text={fullBriefText} /></div>
-                </div>
-              </div>
+ {/* Actions */}
+ <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", marginBottom: 12 }}>ACTIONS</div>
+ <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+ <button onClick={exportBrief} style={{ padding:"9px 0", borderRadius:8, background:"#6366f1", border:"none", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>Export Brief (.txt)</button>
+ <div style={{ padding:"3px 0" }}><CopyBtn text={fullBriefText} /></div>
+ </div>
+ </div>
 
-              {/* Content Goals */}
-              {(brief.contentGoals||[]).length > 0 && (
-                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>CONTENT GOALS</div>
-                  {brief.contentGoals.map((g,i) => (
-                    <div key={i} style={{ display:"flex", gap:8, marginBottom:6 }}>
-                      <span style={{ color:C.green, flexShrink:0 }}>+</span>
-                      <span style={{ fontSize:12, color:C.sub }}>{g}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+ {/* Content Goals */}
+ {(brief.contentGoals||[]).length > 0 && (
+ <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+ <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>CONTENT GOALS</div>
+ {brief.contentGoals.map((g,i) => (
+ <div key={i} style={{ display:"flex", gap:8, marginBottom:6 }}>
+ <span style={{ color:C.green, flexShrink:0 }}>+</span>
+ <span style={{ fontSize:12, color:C.sub }}>{g}</span>
+ </div>
+ ))}
+ </div>
+ )}
 
-              {/* FAQ */}
-              {(brief.faqQuestions||[]).length > 0 && (
-                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>FAQ / PEOPLE ALSO ASK</div>
-                  {brief.faqQuestions.map((q,i) => (
-                    <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:7, padding:"8px 12px", fontSize:12, color:C.sub, marginBottom:6 }}>{q}</div>
-                  ))}
-                </div>
-              )}
+ {/* FAQ */}
+ {(brief.faqQuestions||[]).length > 0 && (
+ <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+ <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>FAQ / PEOPLE ALSO ASK</div>
+ {brief.faqQuestions.map((q,i) => (
+ <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:7, padding:"8px 12px", fontSize:12, color:C.sub, marginBottom:6 }}>{q}</div>
+ ))}
+ </div>
+ )}
 
-              {/* Competitor Gaps */}
-              {(brief.competitorTopics||[]).length > 0 && (
-                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>COMPETITOR GAPS</div>
-                  {brief.competitorTopics.map((c,i) => (
-                    <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:7, padding:"8px 12px", marginBottom:6 }}>
-                      <div style={{ fontSize:12, color:C.text, fontWeight:600, marginBottom:2 }}>{c.topic}</div>
-                      <div style={{ fontSize:11, color:C.green }}>{c.gap}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+ {/* Competitor Gaps */}
+ {(brief.competitorTopics||[]).length > 0 && (
+ <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+ <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>COMPETITOR GAPS</div>
+ {brief.competitorTopics.map((c,i) => (
+ <div key={i} style={{ background:C.bg, border:`1px solid ${C.border}`, borderRadius:7, padding:"8px 12px", marginBottom:6 }}>
+ <div style={{ fontSize:12, color:C.text, fontWeight:600, marginBottom:2 }}>{c.topic}</div>
+ <div style={{ fontSize:11, color:C.green }}>{c.gap}</div>
+ </div>
+ ))}
+ </div>
+ )}
 
-              {/* CTA */}
-              {brief.callToAction && (
-                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:8 }}>SUGGESTED CTA</div>
-                  <div style={{ fontSize:13, color:C.yellow, fontWeight:600 }}>"{brief.callToAction}"</div>
-                </div>
-              )}
+ {/* CTA */}
+ {brief.callToAction && (
+ <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+ <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:8 }}>SUGGESTED CTA</div>
+ <div style={{ fontSize:13, color:C.yellow, fontWeight:600 }}>"{brief.callToAction}"</div>
+ </div>
+ )}
 
-              {/* Internal Links */}
-              {(brief.internalLinkSuggestions||[]).length > 0 && (
-                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>INTERNAL LINK IDEAS</div>
-                  {brief.internalLinkSuggestions.map((l,i) => (
-                    <div key={i} style={{ fontSize:12, color:C.blue, marginBottom:4 }}>-- {l}</div>
-                  ))}
-                </div>
-              )}
+ {/* Internal Links */}
+ {(brief.internalLinkSuggestions||[]).length > 0 && (
+ <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+ <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>INTERNAL LINK IDEAS</div>
+ {brief.internalLinkSuggestions.map((l,i) => (
+ <div key={i} style={{ fontSize:12, color:C.blue, marginBottom:4 }}>-- {l}</div>
+ ))}
+ </div>
+ )}
 
-              {/* Key Takeaways */}
-              {(brief.keyTakeaways||[]).length > 0 && (
-                <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>KEY TAKEAWAYS</div>
-                  {brief.keyTakeaways.map((t,i) => (
-                    <div key={i} style={{ display:"flex", gap:8, marginBottom:6 }}>
-                      <span style={{ color:"#818cf8", flexShrink:0 }}>*</span>
-                      <span style={{ fontSize:12, color:C.sub }}>{t}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+ {/* Key Takeaways */}
+ {(brief.keyTakeaways||[]).length > 0 && (
+ <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:"16px 18px" }}>
+ <div style={{ fontSize:11, fontWeight:700, color:C.dim, textTransform:"uppercase", marginBottom:10 }}>KEY TAKEAWAYS</div>
+ {brief.keyTakeaways.map((t,i) => (
+ <div key={i} style={{ display:"flex", gap:8, marginBottom:6 }}>
+ <span style={{ color:"#818cf8", flexShrink:0 }}>*</span>
+ <span style={{ fontSize:12, color:C.sub }}>{t}</span>
+ </div>
+ ))}
+ </div>
+ )}
 
-            </div>
-          </div>
-        )}
+ </div>
+ </div>
+ )}
 
-        {/* Empty state */}
-        {!brief && !loading && !error && (
-          <div style={{ textAlign:"center", padding:"60px 20px", color:C.dim }}>
-            <div style={{ fontSize:40, marginBottom:16 }}>*</div>
-            <div style={{ fontSize:18, fontWeight:700, color:C.sub, marginBottom:8 }}>Enter a keyword to get started</div>
-            <div style={{ fontSize:14, maxWidth:480, margin:"0 auto", lineHeight:1.6 }}>
-              Generate a full SEO content brief with title options, meta descriptions, keyword targets,
-              content outline, FAQ questions, competitor gaps and more in seconds.
-            </div>
-            <div style={{ marginTop:28, display:"flex", justifyContent:"center", gap:24, flexWrap:"wrap" }}>
-              {["Keyword-based brief generation","Search intent detection","Customisable outline & structure","Title and meta description suggestions","Target keyword sets","FAQ / People Also Ask","Competitor gap analysis","Export to .txt or copy"].map((f,i) => (
-                <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:9, padding:"10px 18px", fontSize:12, color:C.sub }}>+ {f}</div>
-              ))}
-            </div>
-          </div>
-        )}
+ {/* Empty state */}
+ {!brief && !loading && !error && (
+ <div style={{ textAlign:"center", padding:"60px 20px", color:C.dim }}>
+ <div style={{ fontSize:40, marginBottom:16 }}>*</div>
+ <div style={{ fontSize:18, fontWeight:700, color:C.sub, marginBottom:8 }}>Enter a keyword to get started</div>
+ <div style={{ fontSize:14, maxWidth:480, margin:"0 auto", lineHeight:1.6 }}>
+ Generate a full SEO content brief with title options, meta descriptions, keyword targets,
+ content outline, FAQ questions, competitor gaps and more in seconds.
+ </div>
+ <div style={{ marginTop:28, display:"flex", justifyContent:"center", gap:24, flexWrap:"wrap" }}>
+ {["Keyword-based brief generation","Search intent detection","Customisable outline & structure","Title and meta description suggestions","Target keyword sets","FAQ / People Also Ask","Competitor gap analysis","Export to .txt or copy"].map((f,i) => (
+ <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:9, padding:"10px 18px", fontSize:12, color:C.sub }}>+ {f}</div>
+ ))}
+ </div>
+ </div>
+ )}
 
-      </div>
-    </div>
-  );
+ </div>
+ </div>
+ );
 }

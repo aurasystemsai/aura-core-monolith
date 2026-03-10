@@ -3,121 +3,121 @@ import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
 const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      labels: { color: '#fafafa' },
-    },
-  },
-  scales: {
-    x: { 
-      ticks: { color: '#a1a1aa' },
-      grid: { color: '#27272a' },
-    },
-    y: { 
-      ticks: { color: '#a1a1aa' },
-      grid: { color: '#27272a' },
-    },
-  },
+ responsive: true,
+ plugins: {
+ legend: {
+ display: true,
+ position: 'top',
+ labels: { color: '#fafafa' },
+ },
+ },
+ scales: {
+ x: { 
+ ticks: { color: '#a1a1aa' },
+ grid: { color: '#27272a' },
+ },
+ y: { 
+ ticks: { color: '#a1a1aa' },
+ grid: { color: '#27272a' },
+ },
+ },
 };
 
 export default function DashboardCharts() {
-  const [chartData, setChartData] = useState(null);
-  
-  useEffect(() => {
-    async function fetchAnalytics() {
-      try {
-        // Generate last 7 days data (mock trend until real API available)
-        const today = new Date();
-        const labels = [];
-        const revenueData = [];
-        const ordersData = [];
-        
-        for (let i = 6; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-          
-          // Generate some realistic-looking trend data
-          // In production, this would come from Shopify Analytics API
-          const dayRevenue = Math.floor(Math.random() * 2000) + 500;
-          const dayOrders = Math.floor(Math.random() * 20) + 5;
-          
-          revenueData.push(dayRevenue);
-          ordersData.push(dayOrders);
-        }
-        
-        setChartData({
-          labels,
-          datasets: [
-            {
-              label: 'Revenue ($)',
-              data: revenueData,
-              fill: false,
-              borderColor: '#4f46e5',
-              backgroundColor: '#4f46e5',
-              tension: 0.4,
-              yAxisID: 'y',
-            },
-            {
-              label: 'Orders',
-              data: ordersData,
-              fill: false,
-              borderColor: '#fbbf24',
-              backgroundColor: '#fbbf24',
-              tension: 0.4,
-              yAxisID: 'y1',
-            },
-          ],
-        });
-      } catch (err) {
-        console.error('Failed to generate chart data:', err);
-        setChartData(null);
-      }
-    }
-    fetchAnalytics();
-  }, []);
+ const [chartData, setChartData] = useState(null);
+ 
+ useEffect(() => {
+ async function fetchAnalytics() {
+ try {
+ // Generate last 7 days data (mock trend until real API available)
+ const today = new Date();
+ const labels = [];
+ const revenueData = [];
+ const ordersData = [];
+ 
+ for (let i = 6; i >= 0; i--) {
+ const date = new Date(today);
+ date.setDate(date.getDate() - i);
+ labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+ 
+ // Generate some realistic-looking trend data
+ // In production, this would come from Shopify Analytics API
+ const dayRevenue = Math.floor(Math.random() * 2000) + 500;
+ const dayOrders = Math.floor(Math.random() * 20) + 5;
+ 
+ revenueData.push(dayRevenue);
+ ordersData.push(dayOrders);
+ }
+ 
+ setChartData({
+ labels,
+ datasets: [
+ {
+ label: 'Revenue ($)',
+ data: revenueData,
+ fill: false,
+ borderColor: '#4f46e5',
+ backgroundColor: '#4f46e5',
+ tension: 0.4,
+ yAxisID: 'y',
+ },
+ {
+ label: 'Orders',
+ data: ordersData,
+ fill: false,
+ borderColor: '#fbbf24',
+ backgroundColor: '#fbbf24',
+ tension: 0.4,
+ yAxisID: 'y1',
+ },
+ ],
+ });
+ } catch (err) {
+ console.error('Failed to generate chart data:', err);
+ setChartData(null);
+ }
+ }
+ fetchAnalytics();
+ }, []);
 
-  const multiAxisOptions = {
-    ...options,
-    scales: {
-      ...options.scales,
-      y: {
-        ...options.scales.y,
-        type: 'linear',
-        display: true,
-        position: 'left',
-      },
-      y1: {
-        ...options.scales.y,
-        type: 'linear',
-        display: true,
-        position: 'right',
-        grid: {
-          drawOnChartArea: false,
-        },
-      },
-    },
-  };
+ const multiAxisOptions = {
+ ...options,
+ scales: {
+ ...options.scales,
+ y: {
+ ...options.scales.y,
+ type: 'linear',
+ display: true,
+ position: 'left',
+ },
+ y1: {
+ ...options.scales.y,
+ type: 'linear',
+ display: true,
+ position: 'right',
+ grid: {
+ drawOnChartArea: false,
+ },
+ },
+ },
+ };
 
-  return (
-    <div style={{ position: 'relative', minHeight: 300 }}>
-      {chartData ? (
-        <Line data={chartData} options={multiAxisOptions} />
-      ) : (
-        <div style={{ 
-          textAlign: 'center', 
-          color: '#a1a1aa', 
-          padding: '60px 0',
-          fontSize: 14,
-        }}>
-          
-          Loading chart data...
-        </div>
-      )}
-    </div>
-  );
+ return (
+ <div style={{ position: 'relative', minHeight: 300 }}>
+ {chartData ? (
+ <Line data={chartData} options={multiAxisOptions} />
+ ) : (
+ <div style={{ 
+ textAlign: 'center', 
+ color: '#a1a1aa', 
+ padding: '60px 0',
+ fontSize: 14,
+ }}>
+ 
+ Loading chart data...
+ </div>
+ )}
+ </div>
+ );
 }
 

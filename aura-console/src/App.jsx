@@ -470,7 +470,7 @@ function App() {
  onMouseEnter={e => e.currentTarget.style.borderColor = '#6366f1'}
  onMouseLeave={e => e.currentTarget.style.borderColor = unlimited ? '#166534' : (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}
  >
- <span style={{ fontSize: 13 }}>⚡</span>
+ <span style={{ fontSize: 13 }}></span>
  {unlimited ? 'Unlimited' : balance === null ? '…' : `${balance.toLocaleString()} credits`}
  </button>
  )}

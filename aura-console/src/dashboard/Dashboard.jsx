@@ -193,7 +193,7 @@ try {
 const det = await apiFetchJSON("/api/analytics/orders?limit=5&details=true");
 if (det?.orders?.length) {
 setRecentActivity(det.orders.map(o => ({
-icon: "🛒",
+icon: "",
 title: "Order #" + (o.order_number || o.id),
 timestamp: o.created_at ? new Date(o.created_at).toLocaleString() : "Recently",
 type: "Order",
@@ -261,12 +261,12 @@ const countdown = setInterval(() => setScanRemainingTime(r => Math.max(0, r - 1)
 try {
 // Try every possible source for the shop domain
 const shopDomain =
-  shop?.myshopify_domain ||
-  shop?.domain ||
-  localStorage.getItem("auraShop") ||
-  localStorage.getItem("shopDomain") ||
-  new URLSearchParams(window.location.search).get("shop") ||
-  "";
+ shop?.myshopify_domain ||
+ shop?.domain ||
+ localStorage.getItem("auraShop") ||
+ localStorage.getItem("shopDomain") ||
+ new URLSearchParams(window.location.search).get("shop") ||
+ "";
 const res = await apiFetch("/api/tools/seo-site-crawler/crawl", {
 method: "POST",
 headers: { "Content-Type": "application/json", ...(shopDomain ? { "x-shopify-shop-domain": shopDomain } : {}) },
@@ -334,7 +334,7 @@ fontSize: 14, fontWeight: 500, maxWidth: 340,
 boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
 display: "flex", alignItems: "center", gap: 10,
 }}>
-<span>{t.type === "error" ? "⚠️" : "✅"}</span>
+<span>{t.type === "error" ? "" : ""}</span>
 <span style={{ flex: 1 }}>{t.message}</span>
 <button onClick={() => setToasts(p => p.filter(x => x.id !== t.id))}
 style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, padding: 0, opacity: 0.7 }}>×</button>
@@ -350,8 +350,8 @@ style={{ background: "none", border: "none", color: "inherit", cursor: "pointer"
 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 {scanningInProgress
 ? <div style={{ width: 32, height: 32, border: "3px solid #6366f1", borderTop: "3px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-: scanError ? <span style={{ fontSize: 28 }}>⚠️</span>
-: <span style={{ fontSize: 28 }}>🔍</span>}
+: scanError ? <span style={{ fontSize: 28 }}></span>
+: <span style={{ fontSize: 28 }}></span>}
 <div>
 <h2 style={{ color: "#fafafa", fontWeight: 800, fontSize: 18, margin: 0 }}>
 {scanningInProgress ? "Scanning site…" : scanError ? "Scan Failed" : "Scan Complete — " + (siteAudit.errors ?? 0) + " errors, " + (siteAudit.warnings ?? 0) + " warnings"}
@@ -378,7 +378,7 @@ Est. remaining: <strong style={{ color: "#a1a1aa" }}>{Math.floor(scanRemainingTi
 )}
 {!scanningInProgress && scanError && (
 <div style={{ padding: "24px 26px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-<span style={{ fontSize: 36 }}>⚠️</span>
+<span style={{ fontSize: 36 }}></span>
 <div style={{ color: "#fc8181", fontWeight: 700, fontSize: 15, textAlign: "center" }}>{scanError}</div>
 <div style={{ color: "#71717a", fontSize: 13, textAlign: "center" }}>Make sure your store is connected and re-install the app if the issue persists.</div>
 <button onClick={() => { setScanError(null); setShowScanModal(false); }} style={{ marginTop: 6, background: "#3f3f46", border: "none", color: "#fafafa", borderRadius: 8, padding: "9px 20px", cursor: "pointer", fontWeight: 600 }}>Close</button>
@@ -387,14 +387,14 @@ Est. remaining: <strong style={{ color: "#a1a1aa" }}>{Math.floor(scanRemainingTi
 {!scanningInProgress && !scanError && siteAudit.crawlResults && (
 <div style={{ flex: 1, overflowY: "auto", padding: "0 26px 22px" }}>
 <div style={{ display: "flex", gap: 10, padding: "14px 0", flexWrap: "wrap" }}>
-<span style={{ background: "#2d1515", border: "1px solid #e53e3e", color: "#fc8181", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>🔴 {siteAudit.errors} High</span>
-<span style={{ background: "#2d2210", border: "1px solid #f59e0b", color: "#fbbf24", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>🟡 {siteAudit.warnings} Medium</span>
+<span style={{ background: "#2d1515", border: "1px solid #e53e3e", color: "#fc8181", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{siteAudit.errors} High</span>
+<span style={{ background: "#2d2210", border: "1px solid #f59e0b", color: "#fbbf24", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{siteAudit.warnings} Medium</span>
 </div>
 {(siteAudit.crawlResults.issues || []).map((issue, i) => (
 <div key={i}
 onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix); setShowScanModal(false); } }}
 style={{ background: "#09090b", border: "1px solid " + (issue.severity === "high" ? "#e53e3e" : issue.severity === "medium" ? "#f59e0b" : "#4ade80"), borderRadius: 10, padding: "10px 14px", marginBottom: 8, display: "flex", gap: 10, cursor: issue.fix ? "pointer" : "default" }}>
-<span>{issue.severity === "high" ? "🔴" : issue.severity === "medium" ? "🟡" : "🟢"}</span>
+<span>{issue.severity === "high" ? "" : issue.severity === "medium" ? "" : ""}</span>
 <div>
 <div style={{ color: "#fafafa", fontWeight: 600, fontSize: 14 }}>{issue.type}</div>
 <div style={{ color: "#a1a1aa", fontSize: 13 }}>{issue.detail}</div>
@@ -406,7 +406,7 @@ style={{ background: "#09090b", border: "1px solid " + (issue.severity === "high
 <button
 onClick={() => { setShowScanModal(false); setActiveSection && setActiveSection("site-audit-fixer"); }}
 style={{ background: "#4f46e5", border: "none", borderRadius: 8, padding: "11px 22px", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", width: "100%" }}>
-🤖 Fix All Issues with AI →
+Fix All Issues with AI →
 </button>
 </div>
 )}
@@ -432,7 +432,7 @@ Last updated: {new Date().toLocaleDateString("en-US", { month: "short", day: "nu
 <div style={{ display: "flex", gap: 10 }}>
 <button onClick={() => setShowCopilot(p => !p)}
 style={{ background: showCopilot ? "#3f3f46" : "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "9px 16px", color: "#a5b4fc", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-🤖 AI Copilot
+AI Copilot
 </button>
 <button onClick={fetchDashboardData}
 style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "9px 14px", color: "#71717a", fontSize: 18, cursor: "pointer" }}
@@ -466,135 +466,135 @@ style={{ background: copilotLoading ? "#3f3f46" : "#6366f1", border: "none", bor
 {/* AI Visibility */}
 <Widget title="AI Visibility" info="How visible your brand is across AI search tools"
 action={
-  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-    <button onClick={() => setShowAiInfo(p => !p)} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", color: "#a1a1aa", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>ⓘ How it works</button>
-    <span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>
-  </div>
+ <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+ <button onClick={() => setShowAiInfo(p => !p)} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", color: "#a1a1aa", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>ⓘ How it works</button>
+ <span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>
+ </div>
 }>
 
 {/* Top: score circle + trend chart */}
 <div style={{ display: "flex", gap: 16, marginBottom: 14, alignItems: "flex-start" }}>
 
-  {/* Conic score circle */}
-  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-    <div style={{ width: 88, height: 88, borderRadius: "50%", background: `conic-gradient(#a855f7 ${aiVisibility.score * 3.6}deg, #27272a 0deg)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ width: 68, height: 68, borderRadius: "50%", background: "#18181b", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: 20, fontWeight: 900, color: "#a855f7", lineHeight: 1 }}>{aiVisibility.score}</span>
-        <span style={{ fontSize: 9, color: "#71717a" }}>/100</span>
-      </div>
-    </div>
-    <span style={{ fontSize: 11, fontWeight: 700, color: aiVisibility.score >= 80 ? "#22c55e" : aiVisibility.score >= 50 ? "#f59e0b" : "#a855f7", marginTop: 6 }}>
-      {aiVisibility.score >= 80 ? "High" : aiVisibility.score >= 50 ? "Medium" : aiVisibility.score >= 20 ? "Low" : "Not tracked"}
-    </span>
-    <span style={{ fontSize: 10, color: "#52525b", marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>
-      {aiVisibility.score === 0 ? "Run analysis\nto score" : "AI Visibility"}
-    </span>
-  </div>
+ {/* Conic score circle */}
+ <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+ <div style={{ width: 88, height: 88, borderRadius: "50%", background: `conic-gradient(#a855f7 ${aiVisibility.score * 3.6}deg, #27272a 0deg)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+ <div style={{ width: 68, height: 68, borderRadius: "50%", background: "#18181b", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+ <span style={{ fontSize: 20, fontWeight: 900, color: "#a855f7", lineHeight: 1 }}>{aiVisibility.score}</span>
+ <span style={{ fontSize: 9, color: "#71717a" }}>/100</span>
+ </div>
+ </div>
+ <span style={{ fontSize: 11, fontWeight: 700, color: aiVisibility.score >= 80 ? "#22c55e" : aiVisibility.score >= 50 ? "#f59e0b" : "#a855f7", marginTop: 6 }}>
+ {aiVisibility.score >= 80 ? "High" : aiVisibility.score >= 50 ? "Medium" : aiVisibility.score >= 20 ? "Low" : "Not tracked"}
+ </span>
+ <span style={{ fontSize: 10, color: "#52525b", marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>
+ {aiVisibility.score === 0 ? "Run analysis\nto score" : "AI Visibility"}
+ </span>
+ </div>
 
-  {/* Mini trend chart */}
-  <div style={{ flex: 1, minWidth: 0 }}>
-    <div style={{ fontSize: 10, color: "#52525b", marginBottom: 6 }}>Visibility trend · last 6 months</div>
-    <svg width="100%" height="72" viewBox="0 0 220 72" preserveAspectRatio="none" style={{ display: "block" }}>
-      <line x1="0" y1="18" x2="220" y2="18" stroke="#27272a" strokeWidth="0.5" />
-      <line x1="0" y1="36" x2="220" y2="36" stroke="#27272a" strokeWidth="0.5" />
-      <line x1="0" y1="54" x2="220" y2="54" stroke="#27272a" strokeWidth="0.5" />
-      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#a855f7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
-      {[["#a855f7", "Total"], ["#22d3ee", "ChatGPT"], ["#4ade80", "AI Overview"], ["#f59e0b", "Gemini"]].map(([color, lbl]) => (
-        <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "#71717a" }}>
-          <div style={{ width: 14, height: 2, background: color, borderRadius: 1 }} />{lbl}
-        </div>
-      ))}
-    </div>
-  </div>
+ {/* Mini trend chart */}
+ <div style={{ flex: 1, minWidth: 0 }}>
+ <div style={{ fontSize: 10, color: "#52525b", marginBottom: 6 }}>Visibility trend · last 6 months</div>
+ <svg width="100%" height="72" viewBox="0 0 220 72" preserveAspectRatio="none" style={{ display: "block" }}>
+ <line x1="0" y1="18" x2="220" y2="18" stroke="#27272a" strokeWidth="0.5" />
+ <line x1="0" y1="36" x2="220" y2="36" stroke="#27272a" strokeWidth="0.5" />
+ <line x1="0" y1="54" x2="220" y2="54" stroke="#27272a" strokeWidth="0.5" />
+ <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#a855f7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ <polyline points="0,68 44,68 88,68 132,68 176,68 220,68" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+ </svg>
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+ {[["#a855f7", "Total"], ["#22d3ee", "ChatGPT"], ["#4ade80", "AI Overview"], ["#f59e0b", "Gemini"]].map(([color, lbl]) => (
+ <div key={lbl} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "#71717a" }}>
+ <div style={{ width: 14, height: 2, background: color, borderRadius: 1 }} />{lbl}
+ </div>
+ ))}
+ </div>
+ </div>
 </div>
 
 {/* Stats row */}
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "12px 0", borderTop: "1px solid #27272a", borderBottom: "1px solid #27272a", marginBottom: 12, textAlign: "center" }}>
-  {[
-    { label: "Monthly Audience", value: "—" },
-    { label: "Mentions",         value: aiVisibility.mentions },
-    { label: "Cited Pages",      value: aiVisibility.citedPages },
-  ].map(s => (
-    <div key={s.label}>
-      <div style={{ fontSize: 20, fontWeight: 900, color: "#fafafa" }}>{s.value}</div>
-      <div style={{ fontSize: 10, color: "#71717a", marginTop: 2 }}>{s.label}</div>
-    </div>
-  ))}
+ {[
+ { label: "Monthly Audience", value: "—" },
+ { label: "Mentions", value: aiVisibility.mentions },
+ { label: "Cited Pages", value: aiVisibility.citedPages },
+ ].map(s => (
+ <div key={s.label}>
+ <div style={{ fontSize: 20, fontWeight: 900, color: "#fafafa" }}>{s.value}</div>
+ <div style={{ fontSize: 10, color: "#71717a", marginTop: 2 }}>{s.label}</div>
+ </div>
+ ))}
 </div>
 
 {/* Platform breakdown */}
 <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 14 }}>
-  {[
-    { dot: "#22d3ee", label: "ChatGPT",     val: aiVisibility.chatgpt },
-    { dot: "#4ade80", label: "AI Overview", val: aiVisibility.aiOverview },
-    { dot: "#34d399", label: "AI Mode",     val: aiVisibility.aiMode },
-    { dot: "#f59e0b", label: "Gemini",      val: aiVisibility.gemini },
-  ].map(row => (
-    <div key={row.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid #1c1c1f" }}>
-      <div style={{ width: 8, height: 8, borderRadius: "50%", background: row.dot, flexShrink: 0 }} />
-      <span style={{ color: "#d4d4d8", fontSize: 13, flex: 1 }}>{row.label}</span>
-      <div style={{ width: 64, height: 5, background: "#27272a", borderRadius: 3, overflow: "hidden" }}>
-        <div style={{ width: `${Math.min((row.val / 100) * 100, 100)}%`, height: "100%", background: row.dot, borderRadius: 3 }} />
-      </div>
-      <span style={{ color: row.dot, fontSize: 13, fontWeight: 700, minWidth: 24, textAlign: "right" }}>{row.val}</span>
-    </div>
-  ))}
+ {[
+ { dot: "#22d3ee", label: "ChatGPT", val: aiVisibility.chatgpt },
+ { dot: "#4ade80", label: "AI Overview", val: aiVisibility.aiOverview },
+ { dot: "#34d399", label: "AI Mode", val: aiVisibility.aiMode },
+ { dot: "#f59e0b", label: "Gemini", val: aiVisibility.gemini },
+ ].map(row => (
+ <div key={row.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid #1c1c1f" }}>
+ <div style={{ width: 8, height: 8, borderRadius: "50%", background: row.dot, flexShrink: 0 }} />
+ <span style={{ color: "#d4d4d8", fontSize: 13, flex: 1 }}>{row.label}</span>
+ <div style={{ width: 64, height: 5, background: "#27272a", borderRadius: 3, overflow: "hidden" }}>
+ <div style={{ width: `${Math.min((row.val / 100) * 100, 100)}%`, height: "100%", background: row.dot, borderRadius: 3 }} />
+ </div>
+ <span style={{ color: row.dot, fontSize: 13, fontWeight: 700, minWidth: 24, textAlign: "right" }}>{row.val}</span>
+ </div>
+ ))}
 </div>
 
 {/* CTA */}
 <button
-  onClick={() => setActiveSection && setActiveSection("ai-visibility-tracker")}
-  style={{ width: "100%", background: "#2e1065", border: "1px solid #6d28d9", borderRadius: 8, padding: "9px 0", color: "#c4b5fd", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-  Analyze AI Visibility →
+ onClick={() => setActiveSection && setActiveSection("ai-visibility-tracker")}
+ style={{ width: "100%", background: "#2e1065", border: "1px solid #6d28d9", borderRadius: 8, padding: "9px 0", color: "#c4b5fd", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+ Analyze AI Visibility →
 </button>
 
 {/* How it works panel */}
 {showAiInfo && (
-  <div style={{ marginTop: 14, background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, padding: "18px 18px 14px", fontSize: 13, color: "#a1a1aa", lineHeight: 1.6 }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-      <span style={{ fontWeight: 700, color: "#fafafa", fontSize: 14 }}>How it works</span>
-      <button onClick={() => setShowAiInfo(false)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
-    </div>
-    {[
-      {
-        q: "What's AI Visibility?",
-        a: "A benchmark score (0–100) showing how often a brand appears in AI-generated answers. The score reflects both the number of topics where the brand is mentioned and how consistently it appears within those topics compared to other brands."
-      },
-      {
-        q: "How can I get more mentions?",
-        a: "Check the Topic Opportunities in the AI Visibility Tracker. It highlights topics and prompts that trigger answers mentioning competitors but not your brand. Publish content on those topics or get mentioned on the cited sources."
-      },
-      {
-        q: "How is the score calculated?",
-        a: "AURA analyses AI-generated responses from ChatGPT, Google AI Overviews, AI Mode, and Gemini — checking how often your brand or domain appears compared to others on the same prompts."
-      },
-      {
-        q: "How do I track a specific prompt?",
-        a: "Set up prompt tracking in the AI Visibility Tracker tool. You can add custom prompts and monitor whether your brand is mentioned in the response."
-      },
-      {
-        q: "What are Sources?",
-        a: "Sources are domains cited by an LLM in its response. For UGC platforms (Reddit, Quora) engage in those communities. For competitor sources, create your own content on those topics. For media sources, reach out for collaboration."
-      },
-    ].map(({ q, a }) => (
-      <div key={q} style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 700, color: "#c4b5fd", fontSize: 13, marginBottom: 4 }}>▸ {q}</div>
-        <div style={{ color: "#a1a1aa", fontSize: 12, lineHeight: 1.6 }}>{a}</div>
-      </div>
-    ))}
-  </div>
+ <div style={{ marginTop: 14, background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, padding: "18px 18px 14px", fontSize: 13, color: "#a1a1aa", lineHeight: 1.6 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+ <span style={{ fontWeight: 700, color: "#fafafa", fontSize: 14 }}>How it works</span>
+ <button onClick={() => setShowAiInfo(false)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+ </div>
+ {[
+ {
+ q: "What's AI Visibility?",
+ a: "A benchmark score (0–100) showing how often a brand appears in AI-generated answers. The score reflects both the number of topics where the brand is mentioned and how consistently it appears within those topics compared to other brands."
+ },
+ {
+ q: "How can I get more mentions?",
+ a: "Check the Topic Opportunities in the AI Visibility Tracker. It highlights topics and prompts that trigger answers mentioning competitors but not your brand. Publish content on those topics or get mentioned on the cited sources."
+ },
+ {
+ q: "How is the score calculated?",
+ a: "AURA analyses AI-generated responses from ChatGPT, Google AI Overviews, AI Mode, and Gemini — checking how often your brand or domain appears compared to others on the same prompts."
+ },
+ {
+ q: "How do I track a specific prompt?",
+ a: "Set up prompt tracking in the AI Visibility Tracker tool. You can add custom prompts and monitor whether your brand is mentioned in the response."
+ },
+ {
+ q: "What are Sources?",
+ a: "Sources are domains cited by an LLM in its response. For UGC platforms (Reddit, Quora) engage in those communities. For competitor sources, create your own content on those topics. For media sources, reach out for collaboration."
+ },
+ ].map(({ q, a }) => (
+ <div key={q} style={{ marginBottom: 14 }}>
+ <div style={{ fontWeight: 700, color: "#c4b5fd", fontSize: 13, marginBottom: 4 }}>{q}</div>
+ <div style={{ color: "#a1a1aa", fontSize: 12, lineHeight: 1.6 }}>{a}</div>
+ </div>
+ ))}
+ </div>
 )}
 
 </Widget>
 
 {/* SEO Overview */}
 <Widget title="SEO" info="Domain-level SEO metrics"
-action={<span style={{ color: "#52525b", fontSize: 12 }}>Root Domain · 🇺🇸 United States · 🖥 Desktop</span>}>
+action={<span style={{ color: "#52525b", fontSize: 12 }}>Root Domain · United States · Desktop</span>}>
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
 <MetricPill label="Authority Score" value={loading ? "…" : (seoOverview.authorityScore ?? 2)} sub="Semrush Rank ↑ 0" color="#6366f1" />
 <MetricPill label="Organic Traffic" value={loading ? "…" : (seoOverview.organicTraffic ?? 0)} sub="0%" color="#22d3ee" />
@@ -613,7 +613,7 @@ action={<span style={{ color: "#52525b", fontSize: 12 }}>Root Domain · 🇺🇸
 	style={{ marginBottom: 20 }}
 	action={
 		<div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-			<span style={{ color: "#52525b", fontSize: 12 }}>🌍 Google · English</span>
+			<span style={{ color: "#52525b", fontSize: 12 }}>Google · English</span>
 			<span style={{ color: "#52525b", fontSize: 12 }}>Feb 28 – Mar 6, 2026</span>
 			<button onClick={() => setActiveSection && setActiveSection("rank-tracker")}
 				style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 6, padding: "5px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>
@@ -661,10 +661,10 @@ action={<span style={{ color: "#52525b", fontSize: 12 }}>Root Domain · 🇺🇸
 		{/* Keyword counts with circular indicators */}
 		<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
 			{[
-				{ label: "Top 3",   val: positionTracking.top3,   activeColor: "#4ade80"  },
-				{ label: "Top 10",  val: positionTracking.top10,  activeColor: "#22d3ee"  },
-				{ label: "Top 20",  val: positionTracking.top20,  activeColor: "#a3e635"  },
-				{ label: "Top 100", val: positionTracking.top100, activeColor: "#6366f1"  },
+				{ label: "Top 3", val: positionTracking.top3, activeColor: "#4ade80" },
+				{ label: "Top 10", val: positionTracking.top10, activeColor: "#22d3ee" },
+				{ label: "Top 20", val: positionTracking.top20, activeColor: "#a3e635" },
+				{ label: "Top 100", val: positionTracking.top100, activeColor: "#6366f1" },
 			].map(({ label, val, activeColor }) => (
 				<div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
 					<div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</div>
@@ -764,14 +764,14 @@ style={{ background: scanningInProgress ? "#3f3f46" : "#6366f1", border: "none",
 <button
 onClick={() => setActiveSection && setActiveSection("site-audit-fixer")}
 style={{ background: "#4f46e5", border: "none", borderRadius: 8, padding: "10px 18px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-🤖 Fix All Issues with AI →
+Fix All Issues with AI →
 </button>
 </div>
 )}
 </>
 ) : (
 <div style={{ textAlign: "center", padding: "24px 0" }}>
-<div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+<div style={{ fontSize: 40, marginBottom: 12 }}></div>
 <div style={{ color: "#a1a1aa", fontSize: 14, marginBottom: 16 }}>No scan data yet. Run a Site Audit to check your store's SEO health.</div>
 <button onClick={runSeoScan}
 style={{ background: "#6366f1", border: "none", borderRadius: 8, padding: "10px 20px", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
@@ -783,10 +783,10 @@ style={{ background: "#6366f1", border: "none", borderRadius: 8, padding: "10px 
 
 {/* Setup Cards */}
 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-<SetupCard icon="📝" title="On Page SEO Checker" desc="Analyse blog posts and product pages for SEO improvements." onClick={() => setActiveSection && setActiveSection("blog-seo")} />
-<SetupCard icon="🔗" title="Backlink Audit" desc="Review your backlink profile and find toxic or lost links." onClick={() => setActiveSection && setActiveSection("tools")} />
-<SetupCard icon="📊" title="Organic Traffic Insights" desc="Uncover not-provided keywords combining analytics data." onClick={() => setActiveSection && setActiveSection("tools")} />
-<SetupCard icon="🏗️" title="Link Building Tool" desc="Find and track link building opportunities in your niche." onClick={() => setActiveSection && setActiveSection("tools")} />
+<SetupCard icon="" title="On Page SEO Checker" desc="Analyse blog posts and product pages for SEO improvements." onClick={() => setActiveSection && setActiveSection("blog-seo")} />
+<SetupCard icon="" title="Backlink Audit" desc="Review your backlink profile and find toxic or lost links." onClick={() => setActiveSection && setActiveSection("tools")} />
+<SetupCard icon="" title="Organic Traffic Insights" desc="Uncover not-provided keywords combining analytics data." onClick={() => setActiveSection && setActiveSection("tools")} />
+<SetupCard icon="" title="Link Building Tool" desc="Find and track link building opportunities in your niche." onClick={() => setActiveSection && setActiveSection("tools")} />
 </div>
 </div>
 
@@ -813,7 +813,7 @@ action={<button onClick={() => setActiveSection && setActiveSection("rank-tracke
 </div>
 ) : (
 <div style={{ textAlign: "center", padding: "24px 0", color: "#52525b", fontSize: 14 }}>
-<div style={{ fontSize: 36, marginBottom: 10 }}>📊</div>
+<div style={{ fontSize: 36, marginBottom: 10 }}></div>
 Nothing found — add keywords to Rank Tracker to see rankings here.
 </div>
 )}
@@ -871,7 +871,7 @@ action={<span style={{ fontSize: 12, color: "#52525b" }}>Root Domain</span>}>
 <Spinner />
 ) : (
 <div style={{ textAlign: "center", padding: "24px 0" }}>
-<div style={{ fontSize: 36, marginBottom: 10 }}>📈</div>
+<div style={{ fontSize: 36, marginBottom: 10 }}></div>
 <div style={{ color: "#52525b", fontSize: 14, marginBottom: 14 }}>We haven't found any traffic data for the analysed domain.</div>
 <button onClick={() => setActiveSection && setActiveSection("tools")}
 style={{ background: "#6366f1", border: "none", borderRadius: 8, padding: "9px 18px", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
@@ -904,7 +904,7 @@ Connect Analytics
 
 {/* Connect Google */}
 <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: 20, display: "flex", alignItems: "center", gap: 16 }}>
-<div style={{ fontSize: 36 }}>🔗</div>
+<div style={{ fontSize: 36 }}></div>
 <div style={{ flex: 1 }}>
 <div style={{ fontWeight: 700, color: "#fafafa", fontSize: 14, marginBottom: 4 }}>Connect Google services</div>
 <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.4 }}>Enrich your dashboard with data from Google Analytics and Google Search Console.</div>
