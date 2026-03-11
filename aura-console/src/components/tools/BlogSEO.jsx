@@ -3140,15 +3140,71 @@ export default function BlogSEO() {
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Topic or keyword</div>
- <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 12 }}>
  <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={outlineKw} onChange={e => setOutlineKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runOutline()} />
- <input style={{ ...S.input, flex: "0 0 auto", width: 190 }} placeholder="Target audience" value={outlineAud} onChange={e => setOutlineAud(e.target.value)} />
+ <div style={{ flex: "0 0 auto", minWidth: 190 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(outlineAud) ? outlineAud : "__custom__"}
+ onChange={e => { if (e.target.value !== "__custom__") setOutlineAud(e.target.value); }}>
+ <option value="general readers">General readers</option>
+ <option value="beginners">Beginners</option>
+ <option value="intermediate">Intermediate</option>
+ <option value="advanced / experts">Advanced / Experts</option>
+ <optgroup label="Business">
+ <option value="e-commerce store owners">E-commerce store owners</option>
+ <option value="shopify merchants">Shopify merchants</option>
+ <option value="entrepreneurs">Entrepreneurs</option>
+ <option value="small business owners">Small business owners</option>
+ <option value="marketers">Marketers</option>
+ <option value="content creators">Content creators</option>
+ </optgroup>
+ <optgroup label="Demographics">
+ <option value="parents">Parents</option>
+ <option value="students">Students</option>
+ <option value="seniors">Seniors</option>
+ <option value="teens">Teens</option>
+ </optgroup>
+ <optgroup label="Interest">
+ <option value="fitness enthusiasts">Fitness enthusiasts</option>
+ <option value="tech enthusiasts">Tech enthusiasts</option>
+ <option value="budget shoppers">Budget shoppers</option>
+ <option value="luxury buyers">Luxury buyers</option>
+ </optgroup>
+ <option value="__custom__">Custom...</option>
+ </select>
+ {(!["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(outlineAud)) && (
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={outlineAud === "general readers" ? "" : outlineAud} onChange={e => setOutlineAud(e.target.value)} />
+ )}
+ </div>
  </div>
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
  <div style={{ flex: 1, minWidth: 160 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Tone</div>
  <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={outlineTone} onChange={e => setOutlineTone(e.target.value)}>
- {["professional", "conversational", "authoritative", "educational", "casual"].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+ <optgroup label="General">
+ <option value="professional">Professional</option>
+ <option value="conversational">Conversational</option>
+ <option value="casual">Casual &amp; Friendly</option>
+ <option value="formal">Formal</option>
+ <option value="enthusiastic">Enthusiastic</option>
+ </optgroup>
+ <optgroup label="Content style">
+ <option value="authoritative">Authoritative</option>
+ <option value="educational">Educational</option>
+ <option value="storytelling">Storytelling</option>
+ <option value="inspirational">Inspirational</option>
+ <option value="motivational">Motivational</option>
+ </optgroup>
+ <optgroup label="Niche">
+ <option value="witty">Witty &amp; Humorous</option>
+ <option value="empathetic">Empathetic</option>
+ <option value="bold">Bold &amp; Direct</option>
+ <option value="minimalist">Minimalist / Clean</option>
+ <option value="luxury">Luxury / Premium</option>
+ <option value="technical">Technical / Detailed</option>
+ <option value="journalistic">Journalistic</option>
+ <option value="persuasive">Persuasive / Sales</option>
+ </optgroup>
  </select>
  </div>
  <div style={{ flex: 1, minWidth: 160 }}>
