@@ -176,6 +176,7 @@ export default function BlogSEO() {
  const [draftWordCount, setDraftWordCount] = useState(1500);
  const [outlineTone, setOutlineTone] = useState("professional");
  const [outlineSections, setOutlineSections] = useState("medium"); // small|medium|large
+ const [outlineViewRaw, setOutlineViewRaw] = useState(false);
  const [introAud, setIntroAud] = useState("");
  const [titleCount, setTitleCount] = useState(10);
  const [titleFormula, setTitleFormula] = useState("all");
@@ -3163,9 +3164,89 @@ export default function BlogSEO() {
  {outlineLoading ? <><span style={S.spinner} /> Generating outline...</> : "✨ Generate Outline"}
  </button>
  {outlineResult && (
- <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
- <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{outlineResult.outline || JSON.stringify(outlineResult, null, 2)}</div>
- <button style={{ ...S.btn(), marginTop: 10, fontSize: 12 }} onClick={() => navigator.clipboard?.writeText(outlineResult.outline || "")}>Copy</button>
+ <div style={{ marginTop: 16 }}>
+ {/* header row: meta + view toggle */}
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+ <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+ {outlineResult.estimatedReadTime && <span style={{ fontSize: 12, color: C.dim }}>⏱ {outlineResult.estimatedReadTime}</span>}
+ {outlineResult.totalWordCount > 0 && <span style={{ fontSize: 12, color: C.dim }}>~{outlineResult.totalWordCount.toLocaleString()} words</span>}
+ {outlineResult.contentAngle && <span style={{ fontSize: 12, color: "#a5b4fc" }}>Angle: {outlineResult.contentAngle}</span>}
+ </div>
+ <div style={{ display: "flex", gap: 6 }}>
+ <button onClick={() => setOutlineViewRaw(false)} style={{ padding: "3px 12px", borderRadius: 6, border: `1px solid ${!outlineViewRaw ? C.indigo : C.border}`, background: !outlineViewRaw ? "#1e1b4b" : "transparent", color: !outlineViewRaw ? "#a5b4fc" : C.sub, fontSize: 11, cursor: "pointer" }}>Formatted</button>
+ <button onClick={() => setOutlineViewRaw(true)} style={{ padding: "3px 12px", borderRadius: 6, border: `1px solid ${outlineViewRaw ? C.indigo : C.border}`, background: outlineViewRaw ? "#1e1b4b" : "transparent", color: outlineViewRaw ? "#a5b4fc" : C.sub, fontSize: 11, cursor: "pointer" }}>Raw JSON</button>
+ </div>
+ </div>
+
+ {outlineViewRaw ? (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ <pre style={{ fontSize: 12, color: "#a5b4fc", whiteSpace: "pre-wrap", lineHeight: 1.6, margin: 0, fontFamily: "'Courier New', monospace", maxHeight: 500, overflowY: "auto" }}>{JSON.stringify(outlineResult, null, 2)}</pre>
+ <button style={{ ...S.btn(), marginTop: 10, fontSize: 12 }} onClick={() => navigator.clipboard?.writeText(JSON.stringify(outlineResult, null, 2))}>Copy JSON</button>
+ </div>
+ ) : (
+ <div>
+ {/* Title suggestion */}
+ {outlineResult.title && (
+ <div style={{ background: "#1e1b4b", border: `1px solid ${C.indigo}`, borderRadius: 10, padding: "12px 16px", marginBottom: 12 }}>
+ <div style={{ fontSize: 11, color: "#818cf8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Suggested Title</div>
+ <div style={{ fontSize: 14, fontWeight: 700, color: "#c7d2fe" }}>{outlineResult.title}</div>
+ {outlineResult.metaDescription && <div style={{ fontSize: 12, color: "#a5b4fc", marginTop: 6, lineHeight: 1.5 }}>{outlineResult.metaDescription}</div>}
+ </div>
+ )}
+
+ {/* Sections */}
+ {(outlineResult.sections || []).map((sec, i) => (
+ <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8 }}>
+ <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: sec.keyPoints?.length ? 10 : 0 }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+ <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, flexShrink: 0 }}>H2</span>
+ <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{sec.heading}</span>
+ </div>
+ <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
+ {sec.type && <span style={{ fontSize: 10, color: C.dim, background: C.muted, padding: "2px 8px", borderRadius: 4, textTransform: "capitalize" }}>{sec.type}</span>}
+ {sec.suggestedWordCount > 0 && <span style={{ fontSize: 10, color: C.dim }}>~{sec.suggestedWordCount}w</span>}
+ </div>
+ </div>
+ {sec.keyPoints?.length > 0 && (
+ <ul style={{ margin: "0 0 0 24px", padding: 0 }}>
+ {sec.keyPoints.map((pt, j) => (
+ <li key={j} style={{ fontSize: 12, color: C.sub, lineHeight: 1.7 }}>{pt}</li>
+ ))}
+ </ul>
+ )}
+ {sec.seoTip && (
+ <div style={{ marginTop: 8, fontSize: 11, color: "#6ee7b7", borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>💡 {sec.seoTip}</div>
+ )}
+ </div>
+ ))}
+
+ {/* Keywords row */}
+ {(outlineResult.secondaryKeywords?.length > 0 || outlineResult.primaryKeyword) && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", marginTop: 4 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Keywords to include</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {outlineResult.primaryKeyword && <span style={{ fontSize: 12, padding: "3px 10px", borderRadius: 6, background: "#1e1b4b", color: "#a5b4fc", border: `1px solid ${C.indigo}` }}>{outlineResult.primaryKeyword} (primary)</span>}
+ {(outlineResult.secondaryKeywords || []).map((kw, i) => (
+ <span key={i} style={{ fontSize: 12, padding: "3px 10px", borderRadius: 6, background: C.muted, color: C.sub, border: `1px solid ${C.border}` }}>{kw}</span>
+ ))}
+ </div>
+ </div>
+ )}
+
+ {/* Copy plain text */}
+ <button style={{ ...S.btn(), marginTop: 12, fontSize: 12 }} onClick={() => {
+ const lines = [];
+ if (outlineResult.title) lines.push(`Title: ${outlineResult.title}`, "");
+ if (outlineResult.metaDescription) lines.push(`Meta: ${outlineResult.metaDescription}`, "");
+ (outlineResult.sections || []).forEach(s => {
+ lines.push(`## ${s.heading}`);
+ (s.keyPoints || []).forEach(p => lines.push(` - ${p}`));
+ lines.push("");
+ });
+ navigator.clipboard?.writeText(lines.join("\n"));
+ }}>Copy as Text</button>
+ </div>
+ )}
  </div>
  )}
  {!outlineResult && !outlineLoading && <div style={{ textAlign: "center", padding: "20px 0 4px", color: C.dim, fontSize: 13 }}>Enter a topic to generate a structured blog outline.</div>}
