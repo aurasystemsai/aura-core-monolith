@@ -11,7 +11,7 @@ const PLAN_CHECKS_DISABLED = process.env.DISABLE_PLAN_CHECKS !== 'false';
 // 4 tiers: free (10 credits) → growth (5,000) → pro (25,000) → enterprise (unlimited)
 const PLAN_FEATURES = {
   free: {
-    ai_runs_limit: 10,
+    ai_runs_limit: 50,
     products_limit: 50,
     team_members: 1,
     tools: ['blog-seo', 'image-alt-media-seo'],

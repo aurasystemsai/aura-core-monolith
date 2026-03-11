@@ -9340,7 +9340,7 @@ router.post('/ai/generate-cover-image', async (req, res) => {
     });
     const imageUrl = img.data[0]?.url;
     if (!imageUrl) return res.status(500).json({ ok: false, error: 'No image generated' });
-    if (req.deductCredits) req.deductCredits({ model: 'dall-e-3', action: 'blog-draft' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'dall-e-3' });
     res.json({ ok: true, imageUrl, source: 'dalle' });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

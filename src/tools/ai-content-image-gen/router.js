@@ -430,7 +430,7 @@ router.post('/image/product-photo', async (req, res) => {
     const prompt = `Professional product photography of "${productTitle}"${productCategory ? `, a ${productCategory}` : ''} on a ${backgroundStyle} background. Studio lighting, sharp focus, commercial quality, no shadows, photorealistic.`;
     const imageUrl = await generateImage(prompt, size, 'hd');
     db.addHistory({ type: 'image-product-photo', productTitle, backgroundStyle, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -444,7 +444,7 @@ router.post('/image/lifestyle', async (req, res) => {
     const prompt = `Professional lifestyle product photography: ${productTitle}${productCategory ? ` (${productCategory})` : ''} ${scene}. ${style === 'photorealistic' ? 'Photorealistic, natural lighting' : style}. High-end commercial photography, editorial quality, aspirational.`;
     const imageUrl = await generateImage(prompt, size, 'hd');
     db.addHistory({ type: 'image-lifestyle', productTitle, scene, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -458,7 +458,7 @@ router.post('/image/background-replace', async (req, res) => {
     const prompt = `Product shot of "${productTitle}" with ${newBackground} background. ${season ? season + ' seasonal theme.' : ''} ${mood} mood. Professional e-commerce photography, product is the hero, background enhances without distracting.`;
     const imageUrl = await generateImage(prompt, size);
     db.addHistory({ type: 'image-background', productTitle, newBackground, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -474,7 +474,7 @@ router.post('/image/ad-creative', async (req, res) => {
     const prompt = `${style} e-commerce ad creative for "${productTitle}". Include bold text overlay: "${headline}" and CTA button: "${cta}". Clean design, high contrast, mobile-optimized. Aspect ratio ${aspectRatio}. Brand-safe, conversion-optimized ad design.`;
     const imageUrl = await generateImage(prompt, imgSize, 'hd');
     db.addHistory({ type: 'image-ad-creative', productTitle, headline, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt, aspectRatio });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -488,7 +488,7 @@ router.post('/image/brand-logo', async (req, res) => {
     const prompt = `${style} logo design for brand named "${brandName}"${industry ? ` in the ${industry} industry` : ''}. Color palette: ${colorPalette}. Clean vector-style logo mark, professional, scalable, works as favicon. No text unless brand name is integral. White background.`;
     const imageUrl = await generateImage(prompt, size, 'hd');
     db.addHistory({ type: 'image-logo', brandName, style, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -502,7 +502,7 @@ router.post('/image/variant-visual', async (req, res) => {
     const prompt = `Professional product photography of a ${productCategory || 'product'} "${productTitle}" in ${newColor} color${style ? `, ${style} style` : ''}. Same product shape as ${originalColor || 'original'} variant but in ${newColor}. Clean white background, studio lighting, e-commerce ready.`;
     const imageUrl = await generateImage(prompt, size);
     db.addHistory({ type: 'image-variant', productTitle, newColor, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -516,7 +516,7 @@ router.post('/image/upscale-prompt', async (req, res) => {
     const prompt = `Ultra-high resolution professional product photography of "${productTitle}"${productCategory ? ` (${productCategory})` : ''}. ${description ? description + '.' : ''} 4K quality, fine detail, sharp textures, perfect studio lighting. Suitable for Shopify zoom feature.`;
     const imageUrl = await generateImage(prompt, '1792x1024', 'hd');
     db.addHistory({ type: 'image-upscale', productTitle, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, imageUrl, prompt });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -702,7 +702,7 @@ router.post('/video/gif-cinemagraph', async (req, res) => {
     };
 
     db.addHistory({ type: 'gif-cinemagraph', productTitle, imageUrl });
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1' });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1' });
     res.json({ ok: true, ...motionGuide });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
@@ -750,7 +750,7 @@ router.post('/blog/image-pack', async (req, res) => {
       } catch (e) { return { section, url: null, error: e.message, prompt }; }
     }));
 
-    if (req.deductCredits) req.deductCredits({ model: 'gpt-image-1', multiplier: images.length });
+    if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'gpt-image-1', multiplier: images.length });
     db.addHistory({ type: 'blog-image-pack', blogTitle, count: images.length });
     res.json({ ok: true, blogTitle, images });
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }

@@ -131,6 +131,8 @@ const ACTION_COSTS = {
   'personalization':     2,
   'fix-queue-item':      1,
   'generic-ai':          1,
+  // Image generation — flat 10 credits regardless of model (API cost ~$0.04-0.08/image)
+  'image-gen':           10,
 };
 
 const MODEL_MULTIPLIERS = {
@@ -138,10 +140,12 @@ const MODEL_MULTIPLIERS = {
   'gpt-4o': 2, 'gpt-4.1': 2, 'gpt-4-turbo': 2, 'gpt-4-turbo-preview': 2,
   'gpt-4': 3, 'gpt-5': 3,
   'gpt-5.2': 5, 'o1': 5, 'o1-mini': 3, 'o3': 5, 'o3-mini': 3, 'o4-mini': 3,
+  // Image models — multiplier 1: action cost (image-gen=10) already covers real API cost
+  'gpt-image-1': 1, 'dall-e-3': 1, 'dall-e-2': 1,
 };
 
 const PLAN_CREDITS = {
-  free:       10,      // 10 lifetime credits on dashboard-only tier
+  free:       50,      // 50 lifetime credits — enough to try ~5 text actions or 5 images
   growth:     5000,    // 5,000/mo
   pro:        25000,   // 25,000/mo
   enterprise: -1,      // unlimited
