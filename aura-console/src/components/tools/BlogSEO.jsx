@@ -2923,23 +2923,37 @@ export default function BlogSEO() {
  {/* ── ADVANCED MODE — sub-nav ── */}
  {writeMode === "advanced" && (
  <>
- {/* Sub-nav — styled tabs */}
- <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
- {[
- ["outline", "📝 Blog Outline"],
- ["intro", "✍️ Write Intro"],
- ["titles", "💡 Title Ideas"],
- ["draft", "📄 Full Draft"],
- ["brief", "📋 Content Brief"],
- ].map(([key, label]) => (
- <button key={key} onClick={() => setWriteSub(key)} style={{
- padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 600,
- cursor: "pointer", border: writeSub === key ? "none" : `1px solid ${C.border}`,
- background: writeSub === key ? C.indigo : "transparent",
- color: writeSub === key ? "#fff" : C.sub,
- transition: "all .15s",
- }}>{label}</button>
- ))}
+{/* Sub-nav — workflow pipeline */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 11, color: C.dim, marginBottom: 8 }}>Suggested workflow — click any step to jump directly:</div>
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
+              {[
+                ["brief",   "1", "📋", "Brief",   !!briefResult],
+                ["titles",  "2", "💡", "Titles",  !!titleResult],
+                ["outline", "3", "📝", "Outline", !!outlineResult],
+                ["intro",   "4", "✍️",  "Intro",   !!introResult],
+                ["draft",   "5", "📄", "Draft",   !!draftResult],
+              ].map(([key, num, icon, label, done], i, arr) => (
+                <React.Fragment key={key}>
+                  <button onClick={() => setWriteSub(key)} style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    cursor: "pointer",
+                    border: writeSub === key ? `1px solid ${C.indigo}` : "1px solid transparent",
+                    background: writeSub === key ? "#1e1b4b" : "transparent",
+                    color: writeSub === key ? "#a5b4fc" : done ? "#6ee7b7" : C.sub,
+                    transition: "all .15s",
+                  }}>
+                    {done && writeSub !== key
+                      ? <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#052e16", color: "#6ee7b7", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                      : <span style={{ width: 16, height: 16, borderRadius: "50%", background: writeSub === key ? C.indigo : C.muted, color: writeSub === key ? "#fff" : C.sub, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{num}</span>
+                    }
+                    <span>{icon} {label}</span>
+                  </button>
+                  {i < arr.length - 1 && <span style={{ color: C.dim, fontSize: 14, padding: "0 2px", userSelect: "none" }}>›</span>}
+                </React.Fragment>
+              ))}
+            </div>
  </div>
 
  {/* Full Article — advanced version of beginner mode with all controls */}
@@ -3303,6 +3317,13 @@ export default function BlogSEO() {
  });
  navigator.clipboard?.writeText(lines.join("\n"));
  }}>Copy as Text</button>
+ {/* Next step */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(outlineKw); setWriteSub("titles"); }}>💡 Title Ideas →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(outlineKw); setWriteSub("intro"); }}>✍️ Write Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(outlineKw); setWriteSub("draft"); }}>📄 Full Draft →</button>
+ </div>
  </div>
  )}
  </div>
@@ -3410,6 +3431,13 @@ export default function BlogSEO() {
  <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{introResult.intro || introResult.text || JSON.stringify(introResult)}</div>
  )}
  {introResult.intros && <button style={{ ...S.btn("primary"), marginTop: 4, fontSize: 12 }} onClick={() => { const best = introResult.intros?.[introResult.recommended ?? 0]; navigator.clipboard?.writeText(best?.text || ""); }}>Copy Best Option</button>}
+ {/* Next step */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(introKw); setWriteSub("draft"); }}>📄 Write Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(introKw); setWriteSub("titles"); }}>💡 Title Ideas →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(introKw); setWriteSub("outline"); }}>📝 Blog Outline →</button>
+ </div>
  </div>
  )}
  </div>
@@ -3570,6 +3598,8 @@ export default function BlogSEO() {
  <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(title)}>Copy</button>
  <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setDraftKw(title); setWriteSub("draft"); }}>Use in Full Draft →</button>
  <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setOutlineKw(title); setWriteSub("outline"); }}>Use in Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setIntroKw(title); setWriteSub("intro"); }}>✍️ Write Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setBriefTopic(title); setBriefPrimary(titleKw); setWriteSub("brief"); }}>📋 Content Brief →</button>
  </div>
  </div>
  );
@@ -3644,6 +3674,13 @@ export default function BlogSEO() {
  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "16px 18px", fontSize: 14, lineHeight: 1.8, color: C.text, maxHeight: 500, overflowY: "auto" }}
  dangerouslySetInnerHTML={{ __html: draftResult.content || draftResult.draft || "" }} />
  )}
+ {/* Also */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Also:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(draftKw); setWriteSub("outline"); }}>📝 Generate Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(draftKw); setWriteSub("intro"); }}>✍️ Rewrite Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(draftKw); setWriteSub("titles"); }}>💡 More Title Ideas →</button>
+ </div>
  </div>
  )}
  </div>
@@ -3691,6 +3728,14 @@ export default function BlogSEO() {
  {briefResult && (
  <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px", fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
  {typeof briefResult === "string" ? briefResult : JSON.stringify(briefResult, null, 2)}
+ </div>
+ )}
+ {briefResult && (
+ <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(briefPrimary || briefTopic); setWriteSub("titles"); }}>💡 Generate Titles →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(briefPrimary || briefTopic); setWriteSub("outline"); }}>📝 Create Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(briefPrimary || briefTopic); setWriteSub("draft"); }}>📄 Write Full Draft →</button>
  </div>
  )}
  </div>
