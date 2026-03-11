@@ -170,6 +170,18 @@ export default function BlogSEO() {
  const [briefErr, setBriefErr] = useState("");
  const [writeSub, setWriteSub] = useState("outline");
  const [writeMode, setWriteMode] = useState("beginner"); // "beginner" | "advanced"
+ /* ── Advanced mode extra controls ── */
+ const [draftTone, setDraftTone] = useState("conversational");
+ const [draftNiche, setDraftNiche] = useState("");
+ const [draftWordCount, setDraftWordCount] = useState(1500);
+ const [outlineTone, setOutlineTone] = useState("professional");
+ const [outlineSections, setOutlineSections] = useState("medium"); // small|medium|large
+ const [introAud, setIntroAud] = useState("");
+ const [titleCount, setTitleCount] = useState(10);
+ const [titleFormula, setTitleFormula] = useState("all");
+ const [briefSecondary, setBriefSecondary] = useState("");
+ const [briefAudience, setBriefAudience] = useState("");
+ const [briefTone, setBriefTone] = useState("professional");
  /* ── Beginner quick-draft state ── */
  const [quickTopic, setQuickTopic] = useState("");
  const [quickResult, setQuickResult] = useState(null);
@@ -692,33 +704,33 @@ export default function BlogSEO() {
  const runOutline = useCallback(async () => {
  if (!outlineKw.trim()) return;
  setOutlineLoading(true); setOutlineResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: outlineKw.trim(), audience: outlineAud }) }); if (r.ok) setOutlineResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: outlineKw.trim(), audience: outlineAud, tone: outlineTone, sections: outlineSections }) }); if (r.ok) setOutlineResult(r); } catch {}
  setOutlineLoading(false);
- }, [outlineKw, outlineAud]);
+ }, [outlineKw, outlineAud, outlineTone, outlineSections]);
 
  const runIntro = useCallback(async () => {
  if (!introKw.trim()) return;
  setIntroLoading(true); setIntroResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introKw.trim(), style: introStyle }) }); if (r.ok) setIntroResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introKw.trim(), style: introStyle, audience: introAud || undefined }) }); if (r.ok) setIntroResult(r); } catch {}
  setIntroLoading(false);
- }, [introKw, introStyle]);
+ }, [introKw, introStyle, introAud]);
 
  const runTitleIdeas = useCallback(async () => {
  if (!titleKw.trim()) return;
  setTitleLoading(true); setTitleResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleKw.trim() }) }); if (r.ok) setTitleResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleKw.trim(), count: titleCount, formula: titleFormula !== "all" ? titleFormula : undefined }) }); if (r.ok) setTitleResult(r); } catch {}
  setTitleLoading(false);
- }, [titleKw]);
+ }, [titleKw, titleCount, titleFormula]);
 
  const runDraft = useCallback(async () => {
  if (!draftKw.trim()) return;
  setDraftLoading(true); setDraftErr(""); setDraftResult(null);
  try {
- const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: draftKw.trim() }) });
+ const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: draftKw.trim(), tone: draftTone, niche: draftNiche || undefined, wordCount: draftWordCount }) });
  if (r.ok) setDraftResult(r); else setDraftErr(r.error || "Draft generation failed");
  } catch(e) { setDraftErr(e.message); }
  setDraftLoading(false);
- }, [draftKw]);
+ }, [draftKw, draftTone, draftNiche, draftWordCount]);
 
  /* ─── Generate Article modal handlers ─── */
  const openGenModal = useCallback(() => {
@@ -1010,11 +1022,12 @@ export default function BlogSEO() {
  if (!briefTopic.trim()) return;
  setBriefLoading(true); setBriefErr(""); setBriefResult(null);
  try {
- const r = await apiFetchJSON(`${API}/content-brief`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: briefTopic.trim(), primaryKeyword: briefPrimary.trim() || undefined }) });
- if (r.ok) setBriefResult(r); else setBriefErr(r.error || "Brief generation failed");
+ const secondaryArr = briefSecondary.trim() ? briefSecondary.split(",").map(s => s.trim()).filter(Boolean) : undefined;
+ const r = await apiFetchJSON(`${API}/ai/content-brief`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: briefTopic.trim(), primaryKeyword: briefPrimary.trim() || undefined, secondaryKeywords: secondaryArr, audience: briefAudience.trim() || undefined, tone: briefTone }) });
+ if (r.ok) setBriefResult(r.structured || r.brief || r); else setBriefErr(r.error || "Brief generation failed");
  } catch(e) { setBriefErr(e.message); }
  setBriefLoading(false);
- }, [briefTopic, briefPrimary]);
+ }, [briefTopic, briefPrimary, briefSecondary, briefAudience, briefTone]);
 
  /* ── Optimize ── */
  const runOptimize = useCallback(async () => {
@@ -3130,6 +3143,22 @@ export default function BlogSEO() {
  <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={outlineKw} onChange={e => setOutlineKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runOutline()} />
  <input style={{ ...S.input, flex: "0 0 auto", width: 190 }} placeholder="Target audience" value={outlineAud} onChange={e => setOutlineAud(e.target.value)} />
  </div>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Tone</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={outlineTone} onChange={e => setOutlineTone(e.target.value)}>
+ {["professional", "conversational", "authoritative", "educational", "casual"].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+ </select>
+ </div>
+ <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Section depth</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={outlineSections} onChange={e => setOutlineSections(e.target.value)}>
+ <option value="small">Small (4–6 sections)</option>
+ <option value="medium">Medium (6–9 sections)</option>
+ <option value="large">Large (9–12 sections)</option>
+ </select>
+ </div>
+ </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runOutline} disabled={outlineLoading || !outlineKw.trim()}>
  {outlineLoading ? <><span style={S.spinner} /> Generating outline...</> : "✨ Generate Outline"}
  </button>
@@ -3158,8 +3187,14 @@ export default function BlogSEO() {
  <div style={{ flex: "0 0 auto" }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Writing style</div>
  <select style={{ ...S.input, width: 180, flex: "unset" }} value={introStyle} onChange={e => setIntroStyle(e.target.value)}>
- {["conversational", "professional", "storytelling", "direct"].map(s => <option key={s} value={s}>{s}</option>)}
+ {["PAS", "AIDA", "conversational", "storytelling", "direct"].map(s => <option key={s} value={s}>{s}</option>)}
  </select>
+ </div>
+ </div>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 220 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience (optional)</div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. beginner runners, Shopify store owners" value={introAud} onChange={e => setIntroAud(e.target.value)} />
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runIntro} disabled={introLoading || !introKw.trim()}>
@@ -3167,8 +3202,23 @@ export default function BlogSEO() {
  </button>
  {introResult && (
  <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ {introResult.intros ? (
+ <div>
+ {(introResult.intros || []).map((intro, i) => (
+ <div key={i} style={{ marginBottom: 14, borderBottom: i < introResult.intros.length - 1 ? `1px solid ${C.border}` : "none", paddingBottom: i < introResult.intros.length - 1 ? 14 : 0 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+ <span style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 600, textTransform: "uppercase" }}>{intro.style || `Option ${i + 1}`}</span>
+ {intro.hookType && <span style={{ fontSize: 10, color: C.dim, background: C.muted, padding: "2px 8px", borderRadius: 4 }}>{intro.hookType}</span>}
+ </div>
+ <div style={{ fontSize: 13, color: C.text, lineHeight: 1.7 }}>{intro.text}</div>
+ <button style={{ ...S.btn(), marginTop: 8, fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(intro.text || "")}>Copy</button>
+ </div>
+ ))}
+ </div>
+ ) : (
  <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{introResult.intro || introResult.text || JSON.stringify(introResult)}</div>
- <button style={{ ...S.btn(), marginTop: 10, fontSize: 12 }} onClick={() => navigator.clipboard?.writeText(introResult.intro || introResult.text || "")}>Copy</button>
+ )}
+ {introResult.intros && <button style={{ ...S.btn("primary"), marginTop: 4, fontSize: 12 }} onClick={() => { const best = introResult.intros?.[introResult.recommended ?? 0]; navigator.clipboard?.writeText(best?.text || ""); }}>Copy Best Option</button>}
  </div>
  )}
  </div>
@@ -3180,12 +3230,33 @@ export default function BlogSEO() {
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
  <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Title Ideas</div>
- <div style={{ fontSize: 13, color: C.dim }}>Get 10 click-worthy title variations optimised for SEO and social sharing.</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Get {titleCount} click-worthy title variations optimised for SEO and social sharing.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Keyword or topic</div>
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
  <input style={{ ...S.input, flex: 1 }} placeholder="e.g. winter skincare routine" value={titleKw} onChange={e => setTitleKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runTitleIdeas()} />
+ </div>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>How many?</div>
+ <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+ {[5, 10, 15, 20].map(n => (
+ <button key={n} onClick={() => setTitleCount(n)} style={{ padding: "4px 12px", borderRadius: 6, border: `1px solid ${titleCount === n ? C.indigo : C.border}`, background: titleCount === n ? "#1e1b4b" : "transparent", color: titleCount === n ? "#a5b4fc" : C.sub, fontSize: 12, cursor: "pointer" }}>{n}</button>
+ ))}
+ </div>
+ </div>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Title formula</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={titleFormula} onChange={e => setTitleFormula(e.target.value)}>
+ <option value="all">All (mixed)</option>
+ <option value="how-to">How-to</option>
+ <option value="listicle">Listicle</option>
+ <option value="question">Question</option>
+ <option value="power">Power word</option>
+ <option value="data">Data-driven</option>
+ </select>
+ </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runTitleIdeas} disabled={titleLoading || !titleKw.trim()}>
  {titleLoading ? <><span style={S.spinner} /> Generating titles...</> : "✨ Get Title Ideas"}
@@ -3212,11 +3283,34 @@ export default function BlogSEO() {
  <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Full Blog Post Draft</div>
  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#1e1b4b", color: "#a5b4fc" }}>3 credits</span>
  </div>
- <div style={{ fontSize: 13, color: C.dim }}>AI generates a complete 1,500+ word blog post ready to publish.</div>
+ <div style={{ fontSize: 13, color: C.dim }}>AI generates a complete {draftWordCount.toLocaleString()}+ word blog post ready to publish.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
  <input style={{ ...S.input, width: "100%", marginBottom: 12, boxSizing: "border-box" }} placeholder="e.g. how to choose the right snowboard for beginners" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runDraft()} />
+ <div style={{ marginBottom: 12 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>Word count</div>
+ <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+ {[800, 1200, 1500, 2500, 4000].map(n => (
+ <button key={n} onClick={() => setDraftWordCount(n)} style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${draftWordCount === n ? C.indigo : C.border}`, background: draftWordCount === n ? "#1e1b4b" : "transparent", color: draftWordCount === n ? "#a5b4fc" : C.sub, fontSize: 12, cursor: "pointer" }}>{n.toLocaleString()}</button>
+ ))}
+ <span style={{ fontSize: 11, color: C.dim }}>or</span>
+ <input type="number" min={300} max={8000} style={{ ...S.input, width: 100, padding: "5px 8px", fontSize: 12, textAlign: "center" }} placeholder="Custom" value={[800,1200,1500,2500,4000].includes(draftWordCount) ? "" : draftWordCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 100) setDraftWordCount(v); }} />
+ <span style={{ fontSize: 11, color: C.dim }}>words</span>
+ </div>
+ </div>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Tone</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={draftTone} onChange={e => setDraftTone(e.target.value)}>
+ {["conversational", "professional", "authoritative", "storytelling", "casual", "expert"].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+ </select>
+ </div>
+ <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Niche (optional)</div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. fitness, beauty, tech" value={draftNiche} onChange={e => setDraftNiche(e.target.value)} />
+ </div>
+ </div>
  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "12px 14px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8 }}>
  <div style={{ flex: 1 }}>
  <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>AI web research</div>
@@ -3267,6 +3361,22 @@ export default function BlogSEO() {
  <div style={{ flex: 1, minWidth: 180 }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Primary keyword</div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. winter skincare routine" value={briefPrimary} onChange={e => setBriefPrimary(e.target.value)} />
+ </div>
+ </div>
+ <div style={{ marginBottom: 12 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Secondary keywords <span style={{ fontSize: 11, fontWeight: 400, textTransform: "none", color: C.dim }}>(comma-separated, optional)</span></div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. dry skin care, winter moisturiser, hydrating tips" value={briefSecondary} onChange={e => setBriefSecondary(e.target.value)} />
+ </div>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Audience</div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. Shopify store owners, beginners" value={briefAudience} onChange={e => setBriefAudience(e.target.value)} />
+ </div>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Tone</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={briefTone} onChange={e => setBriefTone(e.target.value)}>
+ {["professional", "conversational", "authoritative", "educational", "casual"].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+ </select>
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runBrief} disabled={briefLoading || !briefTopic.trim()}>
