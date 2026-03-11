@@ -4225,11 +4225,12 @@ router.post('/ai/intro-generator', async (req, res) => {
 /* 28. AI Title Ideas */
 router.post('/ai/title-ideas', async (req, res) => {
   try {
-    const { keyword, topic, count = 10, formula, model = 'gpt-4o-mini' } = req.body || {};
+    const { keyword, topic, count = 10, formula, niche, audience, model = 'gpt-4o-mini' } = req.body || {};
     if (!keyword && !topic) return res.status(400).json({ ok: false, error: 'keyword or topic required' });
     const currentYear = new Date().getFullYear();
     const formulaHint = formula && formula !== 'all' ? `Focus specifically on "${formula}" type titles. ` : 'Mix title formulas (how-to, listicle, question, power word, year-based, negative, etc). ';
-    const prompt = `The current year is ${currentYear}. Generate ${count} SEO-optimised, high-CTR blog post titles for keyword: "${keyword || topic}". ${formulaHint}When using year-based titles always use ${currentYear} — never use any past year. Return JSON: {"titles":[{"title":"...","formula":"how-to|listicle|question|power|negative|data","charCount":0,"ctrScore":0-10,"powerWords":["..."],"note":"why this works"}],"bestTitle":"...","tip":"..."}`;
+    const contextLine = [niche ? `Niche/industry: ${niche}.` : '', audience ? `Target audience: ${audience}.` : ''].filter(Boolean).join(' ');
+    const prompt = `The current year is ${currentYear}. Generate ${count} SEO-optimised, high-CTR blog post titles for keyword: "${keyword || topic}". ${formulaHint}${contextLine} When using year-based titles always use ${currentYear} — never use any past year. Return JSON: {"titles":[{"title":"...","formula":"how-to|listicle|question|power|negative|data","charCount":0,"ctrScore":0-10,"powerWords":["..."],"note":"why this works"}],"bestTitle":"...","tip":"..."}`;
     const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
