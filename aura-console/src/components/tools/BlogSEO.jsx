@@ -484,6 +484,18 @@ export default function BlogSEO() {
  if (autoScanPend && url) { setAutoScanPend(false); runScan(); }
  }, [autoScanPend, url]);
 
+ /* Auto-load shop keywords when Write section is opened */
+ useEffect(() => {
+ if (section === "Write" && genShopSuggestions.length === 0 && !genSuggestionsLoading) {
+ setGenSuggestionsLoading(true);
+ apiFetchJSON(`${API}/ai/shop-keywords`).then(r => {
+ setGenSuggestionsLoading(false);
+ if (r.ok && r.keywords?.length) setGenShopSuggestions(r.keywords);
+ }).catch(() => setGenSuggestionsLoading(false));
+ }
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [section]);
+
  /* Scroll chat to bottom */
  useEffect(() => {
  chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -2744,77 +2756,152 @@ export default function BlogSEO() {
 
  {/* ── BEGINNER MODE ── */}
  {writeMode === "beginner" && (
- <>
- {/* Shop chips */}
- {genShopSuggestions.length > 0 && (
- <div style={{ marginBottom: 16 }}>
- <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>From your shop — click to add:</div>
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "24px 24px 20px" }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>✨ Generate a Blog Post</div>
+ <div style={{ fontSize: 13, color: C.dim, marginBottom: 20 }}>Add keywords and options — AI writes a full, SEO-optimised article and saves it to Shopify.</div>
+
+ {/* Keyword mode radio */}
+ <div style={{ fontSize: 13, fontWeight: 500, color: "#d4d4d8", marginBottom: 10 }}>Create article using the following keywords</div>
+ <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
+ {[["manual","Manual Input"],["ai","AI Generate"]].map(([val,lbl]) => (
+ <label key={val} style={{ display:"flex", alignItems:"center", gap:6, cursor:"pointer", fontSize:13, color:"#d4d4d8" }}>
+ <input type="radio" checked={genKwMode===val} onChange={() => setGenKwMode(val)} style={{ accentColor:"#6366f1" }}/> {lbl}
+ </label>
+ ))}
+ </div>
+
+ {/* Shop keyword chips */}
+ {(genSuggestionsLoading || genShopSuggestions.length > 0) && (
+ <div style={{ marginBottom: 8 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>
+ {genSuggestionsLoading ? "Loading from your shop..." : "From your shop — click to add:"}
+ </div>
  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
- {genShopSuggestions.map((kw, i) => (
- <button key={i} onClick={() => setQuickTopic(kw)} style={{ background: quickTopic === kw ? C.indigo : "#27272a", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", fontSize: 12, color: quickTopic === kw ? "#fff" : "#d4d4d8", cursor: "pointer" }}>{kw}</button>
+ {genSuggestionsLoading
+ ? <span style={S.spinner}/>
+ : genShopSuggestions.map((kw, i) => (
+ <button key={i}
+ onClick={() => { if (!genKeywords.includes(kw)) setGenKeywords(prev => [...prev, kw]); }}
+ style={{ background: genKeywords.includes(kw) ? "#4f46e5" : "#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color: genKeywords.includes(kw) ? "#fff" : "#d4d4d8", cursor:"pointer" }}
+ >{kw}</button>
  ))}
  </div>
  </div>
  )}
- <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
- <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>✨ Generate a Blog Post</div>
- <div style={{ fontSize: 13, color: C.dim }}>Just type your topic — AI writes a complete, formatted blog post for you. No technical knowledge needed.</div>
+
+ {/* Keyword input box */}
+ {genKwMode === "ai" ? (
+ <div style={{ border:"1.5px solid #3f3f46", borderRadius:10, padding:"10px 12px", marginBottom:16, background:"#09090b" }}>
+ <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
+ {genKeywords.map((kw,i) => (
+ <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#d4d4d8" }}>
+ {kw}
+ <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+ </span>
+ ))}
  </div>
- <div style={{ padding: "18px 22px" }}>
- <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>What do you want to write about?</div>
- <textarea style={{ ...S.textarea, marginBottom: 12, minHeight: 70 }}
- placeholder="e.g. The best snowboards for beginners — tips on choosing your first board"
- value={quickTopic} onChange={e => setQuickTopic(e.target.value)}
+ <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+ <input style={{ flex:1, border:"none", outline:"none", fontSize:13, background:"transparent", color:"#fafafa", padding:"2px 0" }}
+ placeholder={genKeywords.length ? "Add more keywords..." : "Or type a keyword..."}
+ value={genKwInput}
+ onChange={e => setGenKwInput(e.target.value)}
+ onKeyDown={e => { if(e.key==="Enter" && genKwInput.trim()) { setGenKeywords(prev=>[...prev, genKwInput.trim()]); setGenKwInput(""); } }}
  />
- <button style={{ ...S.btn("primary"), width: "100%", fontSize: 14, padding: "12px 20px" }}
- onClick={async () => {
- if (!quickTopic.trim()) return;
- setQuickLoading(true); setQuickErr(""); setQuickResult(null); setQuickViewRaw(false);
- try {
- const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: quickTopic.trim() }) });
- if (r.ok) setQuickResult(r); else setQuickErr(r.error || "Could not generate article. Please try again.");
- } catch(e) { setQuickErr(e.message); }
- setQuickLoading(false);
- }}
- disabled={quickLoading || !quickTopic.trim()}>
- {quickLoading ? <><span style={S.spinner} /> Writing your article...</> : "✨ Write My Blog Post"}
- </button>
- {quickErr && <div style={{ ...S.err, marginTop: 12 }}>{quickErr}</div>}
+ <button onClick={genExpandKeywords} disabled={!genKwInput.trim() || genKwLoading} title="AI expand keywords"
+ style={{ background:"#6366f1", border:"none", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", cursor:!genKwInput.trim()||genKwLoading?"default":"pointer", opacity:!genKwInput.trim()||genKwLoading?0.5:1 }}
+ >{genKwLoading ? <span style={S.spinner}/> : <span style={{ color:"#fff", fontSize:14 }}>✦</span>}</button>
+ </div>
+ </div>
+ ) : (
+ <div style={{ border:"1.5px solid #3f3f46", borderRadius:10, padding:"10px 12px", marginBottom:16, background:"#09090b" }}>
+ <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom: genKeywords.length ? 8 : 0 }}>
+ {genKeywords.map((kw,i) => (
+ <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, background:"#27272a", border:"1px solid #3f3f46", borderRadius:6, padding:"3px 10px", fontSize:12, color:"#d4d4d8" }}>
+ {kw}
+ <button onClick={() => setGenKeywords(prev => prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", color:"#71717a", fontSize:13, padding:0, lineHeight:1 }}>×</button>
+ </span>
+ ))}
+ </div>
+ <input style={{ width:"100%", border:"none", outline:"none", fontSize:13, background:"transparent", color:"#fafafa", padding:"2px 0" }}
+ placeholder="Press Enter ↵ to add another keyword"
+ value={genKwInput}
+ onChange={e => setGenKwInput(e.target.value)}
+ onKeyDown={e => { if(e.key==="Enter" && genKwInput.trim()) { setGenKeywords(prev=>[...prev, genKwInput.trim()]); setGenKwInput(""); } }}
+ />
+ </div>
+ )}
+
+ {/* Cover image */}
+ <div style={{ marginBottom: 14 }}>
+ <div style={{ fontSize: 13, fontWeight: 500, color: "#d4d4d8", marginBottom: 8 }}>Cover image</div>
+ <div style={{ position: "relative" }}>
+ <select value={genCoverImage} onChange={e => setGenCoverImage(e.target.value)}
+ style={{ width:"100%", padding:"10px 36px 10px 12px", borderRadius:8, border:"1px solid #3f3f46", background:"#09090b", color:"#d4d4d8", fontSize:13, appearance:"none", outline:"none", cursor:"pointer" }}>
+ <option value="ai-1:1">Generate by AI – 1:1</option>
+ <option value="ai-16:9">Generate by AI – 16:9</option>
+ <option value="ai-4:3">Generate by AI – 4:3</option>
+ <option value="none">No cover image</option>
+ </select>
+ <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", color:"#71717a", pointerEvents:"none", fontSize:12 }}>▾</span>
  </div>
  </div>
 
- {quickResult && (
- <div style={{ marginTop: 16, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
- <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
- <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Your Article</span>
- <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: "#14532d", color: "#86efac" }}>Ready</span>
+ {/* Language */}
+ <div style={{ marginBottom: 14 }}>
+ <div style={{ fontSize: 13, fontWeight: 500, color: "#d4d4d8", marginBottom: 8 }}>Article language</div>
+ <div style={{ display: "flex", gap: 8 }}>
+ <div style={{ position:"relative", flex:1 }}>
+ <select value={genLanguage.split("-")[1] || "US"} onChange={e => setGenLanguage(`${genLanguage.split("-")[0]}-${e.target.value}`)}
+ style={{ width:"100%", padding:"10px 32px 10px 12px", borderRadius:8, border:"1px solid #3f3f46", background:"#09090b", color:"#d4d4d8", fontSize:13, appearance:"none", outline:"none", cursor:"pointer" }}>
+ <option value="US">United States</option>
+ <option value="GB">United Kingdom</option>
+ <option value="AU">Australia</option>
+ <option value="CA">Canada</option>
+ <option value="DE">Germany</option>
+ <option value="FR">France</option>
+ <option value="ES">Spain</option>
+ </select>
+ <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", color:"#71717a", pointerEvents:"none", fontSize:12 }}>▾</span>
  </div>
- <div style={{ display: "flex", gap: 6 }}>
- <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px" }}
- onClick={() => setQuickViewRaw(v => !v)}>{quickViewRaw ? "👁 Preview" : "</> HTML"}</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px" }}
- onClick={() => navigator.clipboard?.writeText(quickResult.content || quickResult.draft || "")}>📋 Copy</button>
+ <div style={{ position:"relative", flex:1 }}>
+ <select value={genLanguage.split("-")[0] || "en"} onChange={e => setGenLanguage(`${e.target.value}-${genLanguage.split("-")[1] || "US"}`)}
+ style={{ width:"100%", padding:"10px 32px 10px 12px", borderRadius:8, border:"1px solid #3f3f46", background:"#09090b", color:"#d4d4d8", fontSize:13, appearance:"none", outline:"none", cursor:"pointer" }}>
+ <option value="en">English (US)</option>
+ <option value="en-GB">English (UK)</option>
+ <option value="fr">French</option>
+ <option value="de">German</option>
+ <option value="es">Spanish</option>
+ <option value="it">Italian</option>
+ <option value="pt">Portuguese</option>
+ </select>
+ <span style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", color:"#71717a", pointerEvents:"none", fontSize:12 }}>▾</span>
  </div>
  </div>
- {quickViewRaw ? (
- <div style={{ padding: "16px 20px", background: C.bg, fontSize: 12, fontFamily: "'Courier New', monospace", color: "#a5b4fc", whiteSpace: "pre-wrap", lineHeight: 1.6, maxHeight: 500, overflowY: "auto" }}>
- {quickResult.content || quickResult.draft || ""}
  </div>
- ) : (
- <div
- style={{ padding: "20px 24px", maxHeight: 600, overflowY: "auto",
- fontSize: 15, lineHeight: 1.8, color: C.text }}
- dangerouslySetInnerHTML={{ __html: quickResult.content || quickResult.draft || "" }}
- />
- )}
- <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
- <button style={{ ...S.btn(), fontSize: 12 }} onClick={() => { setQuickResult(null); setQuickTopic(""); }}>Write Another</button>
+
+ {/* AI web research */}
+ <div style={{ background:"#09090b", border:"1px solid #3f3f46", borderRadius:10, padding:"12px 14px", marginBottom:18, display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+ <div>
+ <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+ <span style={{ fontSize:13 }}>🔍</span>
+ <span style={{ fontSize:13, fontWeight:600, color:"#a78bfa" }}>AI web research</span>
+ </div>
+ <div style={{ fontSize:12, color:"#71717a", lineHeight:1.5 }}>We'll search Google/Wikipedia for similar topics to generate up-to-date content.</div>
+ </div>
+ <div onClick={() => setGenAiResearch(!genAiResearch)}
+ style={{ flexShrink:0, width:40, height:22, borderRadius:99, background: genAiResearch ? "#6366f1" : "#3f3f46", cursor:"pointer", position:"relative", transition:"background .2s", marginTop:2 }}>
+ <div style={{ position:"absolute", top:3, left: genAiResearch ? 21 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left .2s" }}/>
  </div>
  </div>
- )}
- </>
+
+ {genModalErr && <div style={{ ...S.err, marginBottom: 12 }}>{genModalErr}</div>}
+
+ <button
+ style={{ width:"100%", padding:"13px 0", borderRadius:10, background: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "#4338ca" : "#6366f1", color:"#fff", fontWeight:700, fontSize:15, border:"none", cursor: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, opacity: (!genKeywords.length && !genKwInput.trim()) || genTitleLoading ? 0.6 : 1 }}
+ disabled={(!genKeywords.length && !genKwInput.trim()) || genTitleLoading}
+ onClick={genGenerateTitles}
+ >{genTitleLoading ? <><span style={S.spinner}/> Generating titles...</> : <><span style={{ fontSize:15 }}>✨</span> Write My Blog Post</>}</button>
+ </div>
  )}
 
  {/* ── ADVANCED MODE — sub-nav ── */}
