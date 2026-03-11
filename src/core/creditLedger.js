@@ -141,11 +141,10 @@ const MODEL_MULTIPLIERS = {
 };
 
 const PLAN_CREDITS = {
-  free:         10,
-  growth:       5000,
-  pro:          25000,
-  professional: 25000,
-  enterprise:   -1,
+  free:       10,      // 10 lifetime credits on dashboard-only tier
+  growth:     5000,    // 5,000/mo
+  pro:        25000,   // 25,000/mo
+  enterprise: -1,      // unlimited
 };
 
 function getEffectiveCost(actionType, model) {

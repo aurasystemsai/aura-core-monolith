@@ -8,19 +8,58 @@ const shopifyBillingService = require('./shopifyBillingService');
 const PLAN_CHECKS_DISABLED = process.env.DISABLE_PLAN_CHECKS !== 'false';
 
 // Define feature access by plan
+// 4 tiers: free (10 credits) → growth (5,000) → pro (25,000) → enterprise (unlimited)
 const PLAN_FEATURES = {
   free: {
-    ai_runs_limit: 100,
+    ai_runs_limit: 10,
     products_limit: 50,
     team_members: 1,
-    tools: ['blog-seo', 'product-seo', 'keyword-research-basic'],
+    tools: ['blog-seo', 'image-alt-media-seo'],
     features: ['basic_analytics', 'email_support']
   },
-  professional: {
-    ai_runs_limit: 10000,
-    products_limit: 10000,
-    team_members: 5,
-    tools: ['blog-seo', 'product-seo', 'keyword-research', 'content-brief-generator', 'blog-draft-engine', 'weekly-blog-content', 'abandoned-checkout', 'reviews-ugc'],
+  growth: {
+    ai_runs_limit: 5000,
+    products_limit: 5000,
+    team_members: 3,
+    tools: [
+      'blog-seo', 'image-alt-media-seo', 'product-seo', 'seo-site-crawler',
+      'on-page-seo-engine', 'blog-draft-engine', 'weekly-blog-content-engine',
+      'ai-content-brief-generator', 'content-scoring-optimization',
+      'keyword-research-suite', 'internal-link-optimizer', 'technical-seo-auditor',
+      'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker',
+      'local-seo-toolkit', 'email-automation-builder', 'abandoned-checkout-winback',
+      'review-ugc-engine', 'social-scheduler-content-engine', 'brand-mention-tracker',
+      'dynamic-pricing-engine', 'inbox-assistant', 'ltv-churn-predictor',
+      'finance-autopilot', 'inventory-supplier-sync'
+    ],
+    features: ['basic_analytics', 'advanced_analytics', 'priority_support']
+  },
+  pro: {
+    ai_runs_limit: 25000,
+    products_limit: 50000,
+    team_members: 10,
+    tools: [
+      'blog-seo', 'image-alt-media-seo', 'product-seo', 'seo-site-crawler',
+      'on-page-seo-engine', 'blog-draft-engine', 'weekly-blog-content-engine',
+      'ai-content-brief-generator', 'content-scoring-optimization',
+      'keyword-research-suite', 'internal-link-optimizer', 'technical-seo-auditor',
+      'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker',
+      'local-seo-toolkit', 'email-automation-builder', 'abandoned-checkout-winback',
+      'review-ugc-engine', 'social-scheduler-content-engine', 'brand-mention-tracker',
+      'dynamic-pricing-engine', 'inbox-assistant', 'ltv-churn-predictor',
+      'finance-autopilot', 'inventory-supplier-sync',
+      'backlink-explorer', 'link-intersect-outreach', 'competitive-analysis',
+      'ai-content-image-gen', 'automation-templates', 'collaboration-approval-workflows',
+      'returns-rma-automation', 'ai-support-assistant', 'self-service-portal',
+      'social-media-analytics-listening', 'creative-automation-engine',
+      'brand-intelligence-layer', 'google-ads-integration', 'facebook-ads-integration',
+      'tiktok-ads-integration', 'ads-anomaly-guard', 'ad-creative-optimizer',
+      'omnichannel-campaign-builder', 'advanced-analytics-attribution',
+      'predictive-analytics-widgets', 'self-service-analytics', 'auto-insights',
+      'ai-segmentation-engine', 'upsell-cross-sell-engine', 'customer-data-platform',
+      'personalization-recommendation-engine', 'advanced-personalization-engine',
+      'churn-prediction-playbooks', 'inventory-forecasting', 'compliance-privacy-suite'
+    ],
     features: ['basic_analytics', 'advanced_analytics', 'priority_support', 'api_access', 'webhooks']
   },
   enterprise: {
@@ -32,35 +71,90 @@ const PLAN_FEATURES = {
   }
 };
 
-// Tool-to-plan mapping for quick checks
+// Tool-to-plan mapping for quick checks (matches usePlan.js TOOL_PLAN)
 const TOOL_PLAN_REQUIREMENTS = {
-  // Free tier tools
+  // Free tier
   'blog-seo': 'free',
-  'product-seo': 'free',
-  'keyword-research-basic': 'free',
-  
-  // Professional tier tools
-  'keyword-research': 'professional',
-  'content-brief-generator': 'professional',
-  'blog-draft-engine': 'professional',
-  'weekly-blog-content': 'professional',
-  'abandoned-checkout': 'professional',
-  'reviews-ugc': 'professional',
-  'customer-data-platform': 'professional',
-  'social-media-analytics': 'professional',
-  
-  // Enterprise tier tools
-  'ai-support-assistant': 'enterprise',
-  'advanced-personalization': 'enterprise',
-  'ab-testing-suite': 'enterprise',
+  'image-alt-media-seo': 'free',
+
+  // Growth tier
+  'product-seo': 'growth',
+  'seo-site-crawler': 'growth',
+  'on-page-seo-engine': 'growth',
+  'blog-draft-engine': 'growth',
+  'weekly-blog-content-engine': 'growth',
+  'ai-content-brief-generator': 'growth',
+  'content-scoring-optimization': 'growth',
+  'keyword-research-suite': 'growth',
+  'internal-link-optimizer': 'growth',
+  'technical-seo-auditor': 'growth',
+  'schema-rich-results-engine': 'growth',
+  'rank-visibility-tracker': 'growth',
+  'ai-visibility-tracker': 'growth',
+  'local-seo-toolkit': 'growth',
+  'email-automation-builder': 'growth',
+  'abandoned-checkout-winback': 'growth',
+  'review-ugc-engine': 'growth',
+  'social-scheduler-content-engine': 'growth',
+  'brand-mention-tracker': 'growth',
+  'dynamic-pricing-engine': 'growth',
+  'inbox-assistant': 'growth',
+  'ltv-churn-predictor': 'growth',
+  'finance-autopilot': 'growth',
+  'inventory-supplier-sync': 'growth',
+
+  // Pro tier
+  'backlink-explorer': 'pro',
+  'link-intersect-outreach': 'pro',
+  'competitive-analysis': 'pro',
+  'ai-content-image-gen': 'pro',
+  'automation-templates': 'pro',
+  'collaboration-approval-workflows': 'pro',
+  'returns-rma-automation': 'pro',
+  'ai-support-assistant': 'pro',
+  'self-service-portal': 'pro',
+  'social-media-analytics-listening': 'pro',
+  'creative-automation-engine': 'pro',
+  'brand-intelligence-layer': 'pro',
+  'google-ads-integration': 'pro',
+  'facebook-ads-integration': 'pro',
+  'tiktok-ads-integration': 'pro',
+  'ads-anomaly-guard': 'pro',
+  'ad-creative-optimizer': 'pro',
+  'omnichannel-campaign-builder': 'pro',
+  'advanced-analytics-attribution': 'pro',
+  'predictive-analytics-widgets': 'pro',
+  'self-service-analytics': 'pro',
+  'auto-insights': 'pro',
+  'ai-segmentation-engine': 'pro',
+  'upsell-cross-sell-engine': 'pro',
+  'customer-data-platform': 'pro',
+  'personalization-recommendation-engine': 'pro',
+  'advanced-personalization-engine': 'pro',
+  'churn-prediction-playbooks': 'pro',
+  'inventory-forecasting': 'pro',
+  'compliance-privacy-suite': 'pro',
+
+  // Enterprise tier
+  'reporting-integrations': 'enterprise',
+  'custom-dashboard-builder': 'enterprise',
+  'scheduled-export': 'enterprise',
   'data-warehouse-connector': 'enterprise',
-  'white-label-api': 'enterprise'
+  'customer-segmentation-engine': 'enterprise',
+  'customer-journey-mapping': 'enterprise',
+  'data-enrichment-suite': 'enterprise',
+  'aura-operations-ai': 'enterprise',
+  'ai-launch-planner': 'enterprise',
+  'aura-api-sdk': 'enterprise',
+  'webhook-api-triggers': 'enterprise',
+  'loyalty-referral-programs': 'enterprise',
 };
 
 const PLAN_HIERARCHY = {
   free: 0,
-  professional: 1,
-  enterprise: 2
+  growth: 1,
+  pro: 2,
+  enterprise: 3
 };
 
 /**
@@ -171,7 +265,7 @@ function requireTool(toolId) {
       const currentPlan = subscription.plan_id || 'free';
 
       if (!canAccessTool(currentPlan, toolId)) {
-        const requiredPlan = TOOL_PLAN_REQUIREMENTS[toolId] || 'professional';
+        const requiredPlan = TOOL_PLAN_REQUIREMENTS[toolId] || 'growth';
         return res.status(403).json({ 
           error: `This tool requires ${requiredPlan} plan`,
           current_plan: currentPlan,
