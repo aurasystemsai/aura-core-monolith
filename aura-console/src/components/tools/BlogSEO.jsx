@@ -180,6 +180,8 @@ export default function BlogSEO() {
  const [introAud, setIntroAud] = useState("");
  const [titleCount, setTitleCount] = useState(10);
  const [titleFormula, setTitleFormula] = useState("all");
+ const [titleNiche, setTitleNiche] = useState("");
+ const [titleAudience, setTitleAudience] = useState("");
  const [briefSecondary, setBriefSecondary] = useState("");
  const [briefAudience, setBriefAudience] = useState("");
  const [briefTone, setBriefTone] = useState("professional");
@@ -719,9 +721,9 @@ export default function BlogSEO() {
  const runTitleIdeas = useCallback(async () => {
  if (!titleKw.trim()) return;
  setTitleLoading(true); setTitleResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleKw.trim(), count: titleCount, formula: titleFormula !== "all" ? titleFormula : undefined }) }); if (r.ok) setTitleResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleKw.trim(), count: titleCount, formula: titleFormula !== "all" ? titleFormula : undefined, niche: titleNiche || undefined, audience: titleAudience || undefined }) }); if (r.ok) setTitleResult(r); } catch {}
  setTitleLoading(false);
- }, [titleKw, titleCount, titleFormula]);
+ }, [titleKw, titleCount, titleFormula, titleNiche, titleAudience]);
 
  const runDraft = useCallback(async () => {
  if (!draftKw.trim()) return;
@@ -3419,15 +3421,54 @@ export default function BlogSEO() {
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
  <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Title Ideas</div>
- <div style={{ fontSize: 13, color: C.dim }}>Get {titleCount} click-worthy title variations optimised for SEO and social sharing.</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Generate {titleCount} click-worthy, SEO-optimised title variations with CTR scores, formulas and power word analysis.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Keyword or topic</div>
- <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
- <input style={{ ...S.input, flex: 1 }} placeholder="e.g. winter skincare routine" value={titleKw} onChange={e => setTitleKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runTitleIdeas()} />
- </div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginBottom: 12 }} placeholder="e.g. winter skincare routine" value={titleKw} onChange={e => setTitleKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runTitleIdeas()} />
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
  <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Niche / industry (optional)</div>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. skincare, snowboarding, B2B SaaS" value={titleNiche} onChange={e => setTitleNiche(e.target.value)} />
+ </div>
+ <div style={{ flex: 1, minWidth: 180 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(titleAudience) ? titleAudience : titleAudience ? "__custom__" : ""}
+ onChange={e => { if (e.target.value !== "__custom__") setTitleAudience(e.target.value); }}>
+ <option value="">Any audience</option>
+ <option value="general readers">General readers</option>
+ <option value="beginners">Beginners</option>
+ <option value="intermediate">Intermediate</option>
+ <option value="advanced / experts">Advanced / Experts</option>
+ <optgroup label="Business">
+ <option value="e-commerce store owners">E-commerce store owners</option>
+ <option value="shopify merchants">Shopify merchants</option>
+ <option value="entrepreneurs">Entrepreneurs</option>
+ <option value="small business owners">Small business owners</option>
+ <option value="marketers">Marketers</option>
+ <option value="content creators">Content creators</option>
+ </optgroup>
+ <optgroup label="Demographics">
+ <option value="parents">Parents</option>
+ <option value="students">Students</option>
+ <option value="seniors">Seniors</option>
+ <option value="teens">Teens</option>
+ </optgroup>
+ <optgroup label="Interest">
+ <option value="fitness enthusiasts">Fitness enthusiasts</option>
+ <option value="tech enthusiasts">Tech enthusiasts</option>
+ <option value="budget shoppers">Budget shoppers</option>
+ <option value="luxury buyers">Luxury buyers</option>
+ </optgroup>
+ <option value="__custom__">Custom...</option>
+ </select>
+ {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(titleAudience)) && (
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={titleAudience} onChange={e => setTitleAudience(e.target.value)} />
+ )}
+ </div>
+ </div>
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 14 }}>
+ <div style={{ flex: 1 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 6 }}>How many?</div>
  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
  {[5, 10, 15, 20].map(n => (
@@ -3439,11 +3480,19 @@ export default function BlogSEO() {
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Title formula</div>
  <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={titleFormula} onChange={e => setTitleFormula(e.target.value)}>
  <option value="all">All (mixed)</option>
+ <optgroup label="Formats">
  <option value="how-to">How-to</option>
- <option value="listicle">Listicle</option>
+ <option value="listicle">Listicle (X Ways / X Tips)</option>
  <option value="question">Question</option>
+ <option value="comparison">Comparison / vs.</option>
+ <option value="case-study">Case study / Results</option>
+ </optgroup>
+ <optgroup label="Persuasion">
  <option value="power">Power word</option>
- <option value="data">Data-driven</option>
+ <option value="negative">Negative / Avoid / Stop</option>
+ <option value="data">Data-driven (stats)</option>
+ <option value="urgency">Urgency / Time-based</option>
+ </optgroup>
  </select>
  </div>
  </div>
@@ -3452,12 +3501,79 @@ export default function BlogSEO() {
  </button>
  {titleResult && (
  <div style={{ marginTop: 16 }}>
- {(titleResult.titles || titleResult.ideas || []).map((t, i) => (
- <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
- <span style={{ fontSize: 13, color: C.text }}>{typeof t === "string" ? t : t.title || t.text}</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px", flexShrink: 0 }} onClick={() => navigator.clipboard?.writeText(typeof t === "string" ? t : t.title || t.text || "")}>Copy</button>
+ {/* Best pick callout */}
+ {titleResult.bestTitle && (
+ <div style={{ background: "#1e1b4b", border: `1px solid ${C.indigo}`, borderRadius: 10, padding: "12px 16px", marginBottom: 12 }}>
+ <div style={{ fontSize: 11, color: "#818cf8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>⭐ Best pick</div>
+ <div style={{ fontSize: 14, fontWeight: 700, color: "#c7d2fe", marginBottom: 6 }}>{titleResult.bestTitle}</div>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(titleResult.bestTitle)}>Copy</button>
  </div>
- ))}
+ )}
+ {/* Tip from AI */}
+ {titleResult.tip && (
+ <div style={{ fontSize: 12, color: "#6ee7b7", background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "8px 12px", marginBottom: 12 }}>💡 {titleResult.tip}</div>
+ )}
+ {/* Copy all */}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
+ const all = (titleResult.titles || titleResult.ideas || []).map(t => typeof t === "string" ? t : t.title || "").filter(Boolean).join("\n");
+ navigator.clipboard?.writeText(all);
+ }}>Copy all titles</button>
+ </div>
+ {/* Title cards */}
+ {(titleResult.titles || titleResult.ideas || []).map((t, i) => {
+ const title = typeof t === "string" ? t : t.title || t.text || "";
+ const formula = typeof t === "object" ? t.formula : null;
+ const charCount = typeof t === "object" ? t.charCount : title.length;
+ const ctrScore = typeof t === "object" ? t.ctrScore : null;
+ const powerWords = typeof t === "object" && t.powerWords?.length ? t.powerWords : [];
+ const note = typeof t === "object" ? t.note : null;
+ const charOk = charCount >= 50 && charCount <= 65;
+ const charWarn = charCount > 65 && charCount <= 75;
+ const isBest = titleResult.bestTitle && title === titleResult.bestTitle;
+ return (
+ <div key={i} style={{ background: C.bg, border: `1.5px solid ${isBest ? C.indigo : C.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+ {/* Row 1: title + badges */}
+ <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 14, color: C.text, fontWeight: isBest ? 700 : 400, lineHeight: 1.5 }}>
+ {powerWords.length > 0
+ ? title.split(new RegExp(`(${powerWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi')).map((part, pi) =>
+ powerWords.some(w => w.toLowerCase() === part.toLowerCase())
+ ? <mark key={pi} style={{ background: "#422006", color: "#fb923c", borderRadius: 3, padding: "0 2px" }}>{part}</mark>
+ : part
+ )
+ : title
+ }
+ </div>
+ </div>
+ </div>
+ {/* Row 2: meta chips */}
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginBottom: note ? 8 : 6 }}>
+ {formula && <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "#1e1b4b", color: "#a5b4fc", fontWeight: 600, textTransform: "capitalize" }}>{formula}</span>}
+ {charCount > 0 && (
+ <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: charOk ? "#052e16" : charWarn ? "#422006" : "#3b0a0a", color: charOk ? "#6ee7b7" : charWarn ? "#fb923c" : "#f87171" }}>
+ {charCount} chars {charOk ? "✓" : charWarn ? "⚠ slightly long" : charCount < 50 ? "⚠ short" : "⚠ too long"}
+ </span>
+ )}
+ {ctrScore != null && (
+ <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: ctrScore >= 8 ? "#052e16" : ctrScore >= 5 ? "#422006" : "#27272a", color: ctrScore >= 8 ? "#6ee7b7" : ctrScore >= 5 ? "#fb923c" : C.dim }}>
+ CTR {ctrScore}/10
+ </span>
+ )}
+ {powerWords.length > 0 && <span style={{ fontSize: 10, color: "#fb923c", padding: "2px 8px", borderRadius: 4, background: "#1c0a00" }}>⚡ {powerWords.join(", ")}</span>}
+ </div>
+ {/* Note */}
+ {note && <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>{note}</div>}
+ {/* Actions */}
+ <div style={{ display: "flex", gap: 6 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(title)}>Copy</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setDraftKw(title); setWriteSub("draft"); }}>Use in Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setOutlineKw(title); setWriteSub("outline"); }}>Use in Outline →</button>
+ </div>
+ </div>
+ );
+ })}
  </div>
  )}
  </div>
