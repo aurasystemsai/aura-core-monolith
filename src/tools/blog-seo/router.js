@@ -31,6 +31,11 @@ router.post('/ai/content-brief',     aiLimiter);
 router.post('/ai/keyword-research',  aiLimiter);
 router.post('/ai/generate',          aiLimiter);
 router.post('/ai/content-fix',       aiLimiter);
+router.post('/ai/suggest-fields',    aiLimiter);
+router.post('/ai/blog-images',       aiLimiter);
+router.post('/ai/repurpose',         aiLimiter);
+router.post('/ai/tags-schema',       aiLimiter);
+router.post('/ai/seo-score',         aiLimiter);
 router.post('/bulk-analyze',         bulkLimiter);
 router.post('/links/check',          bulkLimiter);
 router.post('/competitor-gap',       bulkLimiter);
@@ -9483,6 +9488,123 @@ router.post('/site-architecture', async (req, res) => {
     if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini' });
     res.json({ ok: true, ...data });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+/* =========================================================================
+   AI: SUGGEST FIELDS — auto-fill secondary form inputs from a topic
+   ========================================================================= */
+router.post('/ai/suggest-fields', aiLimiter, async (req, res) => {
+  try {
+    const { topic, field } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+    const fieldInstructions = { keywords: 'Return only the keywords fields.', audience: 'Return only the audience field.', niche: 'Return only the niche field.', all: 'Return all fields.' }[field] || 'Return all fields.';
+    const prompt = `You are an SEO and content strategy expert for Shopify e-commerce blogs. Given the blog topic or keyword below, suggest the best values for these form fields. ${fieldInstructions}\n\nTopic: "${topic}"\n\nReturn JSON with ALL of these keys (use null for any you cannot confidently suggest):\n{\n  "primaryKeyword": "the single most important target keyword (short, high-volume)",\n  "secondaryKeywords": ["3-5 supporting keyword phrases"],\n  "audience": "the most likely target audience in 3-6 words",\n  "niche": "the niche or industry in 1-3 words",\n  "relatedTopics": ["2-3 related blog topic ideas"],\n  "searchIntent": "informational|commercial|transactional|navigational"\n}`;
+    const completion = await getOpenAI().chat.completions.create({ model: req.body.model || 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.4, response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'seo-scan' });
+    res.json({ ok: true, ...data });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* =========================================================================
+   AI: BLOG IMAGES — hero concept, section image prompts, alt text, filenames
+   ========================================================================= */
+router.post('/ai/blog-images', aiLimiter, async (req, res) => {
+  try {
+    const { topic, outline, tone, niche } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+
+    const sectionsText = Array.isArray(outline) && outline.length
+      ? outline.map((s, i) => `${i + 1}. ${s.heading || s}`).join('\n')
+      : '';
+
+    const prompt = `You are a visual content strategist for e-commerce blogs. Generate a complete image plan for a blog post.\n\nTopic: "${topic}"\nNiche: ${niche || 'e-commerce'}\nTone: ${tone || 'professional'}\n${sectionsText ? `Sections:\n${sectionsText}` : ''}\n\nReturn JSON:\n{\n  "hero": {\n    "concept": "vivid description of the ideal hero/cover image",\n    "aiImagePrompt": "detailed prompt for DALL-E / Midjourney (style, lighting, colours, composition)",\n    "altText": "SEO-optimised alt text (under 125 chars)",\n    "filename": "seo-friendly-filename-no-spaces.jpg",\n    "stockSearchTerms": ["3 stock photo search terms"]\n  },\n  "sections": [\n    {\n      "heading": "section heading",\n      "concept": "what image works here and why",\n      "aiImagePrompt": "DALL-E / Midjourney prompt",\n      "altText": "alt text for this image",\n      "filename": "filename.jpg"\n    }\n  ],\n  "infographicIdea": "concept for a shareable infographic or data visualisation for this post",\n  "generalTips": ["2-3 photography / visual style tips that match the blog tone"]\n}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.6,
+      response_format: { type: 'json_object' },
+    });
+    const data = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'email-gen' });
+    res.json({ ok: true, ...data });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* =========================================================================
+   AI: REPURPOSE — turn a blog topic/draft into social + email content
+   ========================================================================= */
+router.post('/ai/repurpose', aiLimiter, async (req, res) => {
+  try {
+    const { topic, summary, tone, niche } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+
+    const prompt = `You are a social media and content repurposing expert for e-commerce brands. Repurpose the following blog post into multiple formats.\n\nBlog Topic: "${topic}"\n${summary ? `Summary: ${summary}` : ''}\nBrand tone: ${tone || 'conversational'}\nNiche: ${niche || 'e-commerce'}\n\nReturn JSON:\n{\n  "twitter": {\n    "thread": ["tweet 1 (hook, max 280 chars)", "tweet 2", "tweet 3", "tweet 4 (CTA)"],\n    "singleTweet": "a standalone tweet version"\n  },\n  "linkedin": {\n    "post": "a full LinkedIn post (150-300 words, line breaks, 3 hashtags at end)",\n    "hook": "first line hook for LinkedIn (grabs attention)"\n  },\n  "instagram": {\n    "caption": "Instagram caption with emojis (100-150 words)",\n    "hashtags": ["10 relevant hashtags without #"],\n    "storyIdeas": ["2 Instagram Story slide concepts"]\n  },\n  "email": {\n    "subjectLines": ["3 email subject line options"],\n    "preheader": "preview text (under 90 chars)",\n    "teaser": "2-3 sentence email teaser to link to the blog post"\n  },\n  "shortVideo": {\n    "hookLine": "attention-grabbing opening line for a 30-60 second video",\n    "scriptOutline": ["5-7 bullet points for the video script"],\n    "caption": "caption for TikTok / Instagram Reel / YouTube Shorts"\n  },\n  "pinterest": {\n    "title": "Pinterest pin title",\n    "description": "Pinterest pin description (150 chars)",\n    "boardSuggestions": ["3 board names to pin to"]\n  }\n}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    });
+    const data = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'email-gen' });
+    res.json({ ok: true, ...data });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* =========================================================================
+   AI: TAGS & SCHEMA — Shopify tags, categories, FAQ + JSON-LD schema
+   ========================================================================= */
+router.post('/ai/tags-schema', aiLimiter, async (req, res) => {
+  try {
+    const { topic, outline, primaryKeyword, audience } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+
+    const sectionsText = Array.isArray(outline) && outline.length
+      ? outline.map((s, i) => `${i + 1}. ${s.heading || s}`).join('\n')
+      : '';
+
+    const prompt = `You are an SEO and structured data expert for Shopify blogs.\n\nBlog Topic: "${topic}"\nPrimary Keyword: ${primaryKeyword || topic}\nAudience: ${audience || 'general readers'}\n${sectionsText ? `Outline sections:\n${sectionsText}` : ''}\n\nReturn JSON:\n{\n  "tags": ["8-12 Shopify blog tags (short, lowercase, no #, mix of topic + niche + audience tags)"],\n  "categories": ["2-3 suggested Shopify blog category names"],\n  "faq": [\n    { "question": "natural language question readers would ask", "answer": "concise 2-4 sentence answer, optimised for AI answer boxes" }\n  ],\n  "faqSchema": "the complete JSON-LD <script> block for FAQ schema markup, ready to paste into Shopify",\n  "articleSchema": "the complete JSON-LD <script> block for Article schema (BlogPosting type) with placeholder fields for title, author, datePublished",\n  "readingLevel": "estimated Flesch reading ease level: Easy / Medium / Advanced",\n  "contentType": "guide|listicle|how-to|comparison|case-study|opinion|news",\n  "seriesIdeas": ["2-3 related post titles that could form a content series with this article"]\n}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      response_format: { type: 'json_object' },
+    });
+    const data = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'email-gen' });
+    res.json({ ok: true, ...data });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+/* =========================================================================
+   AI: SEO SCORE — Detailed SEO analysis with breakdown, tips and quick wins
+   ========================================================================= */
+router.post('/ai/seo-score', aiLimiter, async (req, res) => {
+  try {
+    const { topic, content, outline, primaryKeyword, audience } = req.body || {};
+    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
+
+    const sectionsText = Array.isArray(outline) && outline.length
+      ? outline.map((s, i) => `${i + 1}. ${s.heading || s}`).join('\n')
+      : '';
+    const contentSnippet = content ? content.substring(0, 3000) : '';
+
+    const prompt = `You are an expert SEO analyst for Shopify ecommerce blogs. Analyse the following blog topic/content and provide a detailed SEO score report.\n\nBlog Topic: "${topic}"\nPrimary Keyword: ${primaryKeyword || topic}\nTarget Audience: ${audience || 'general readers'}\n${sectionsText ? `Outline:\n${sectionsText}\n` : ''}${contentSnippet ? `Content snippet:\n${contentSnippet}\n` : '(No content provided — analyse based on topic/outline)'}\n\nReturn JSON:\n{\n  "overallScore": <integer 0-100>,\n  "grade": "<A+/A/A-/B+/B/B-/C+/C/D/F>",\n  "summary": "<2-sentence overall SEO assessment>",\n  "breakdown": {\n    "keywordOptimization": { "score": <0-100>, "label": "Keyword Optimisation", "issues": ["specific issues"], "tips": ["actionable tips"] },\n    "contentStructure": { "score": <0-100>, "label": "Content Structure", "issues": [], "tips": [] },\n    "readability": { "score": <0-100>, "label": "Readability", "issues": [], "tips": [] },\n    "metaOptimization": { "score": <0-100>, "label": "Meta & Titles", "issues": [], "tips": [] },\n    "eeat": { "score": <0-100>, "label": "E-E-A-T Signals", "issues": [], "tips": [] }\n  },\n  "titleSuggestions": ["3 SEO-optimised titles under 60 chars including keyword"],\n  "metaDescriptions": ["2 meta descriptions under 160 chars with keyword + CTA"],\n  "quickWins": ["3-5 quick improvements doable in 10 minutes"],\n  "criticalIssues": ["issues significantly hurting ranking — may be empty"],\n  "passedChecks": ["3-5 things already done well"]\n}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    });
+    const data = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'seo-scan' });
+    res.json({ ok: true, ...data });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
 module.exports = router;

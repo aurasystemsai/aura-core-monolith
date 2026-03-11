@@ -185,6 +185,33 @@ export default function BlogSEO() {
  const [briefSecondary, setBriefSecondary] = useState("");
  const [briefAudience, setBriefAudience] = useState("");
  const [briefTone, setBriefTone] = useState("professional");
+ /* ── AI field-suggest (shared across all sub-tabs) ── */
+ const [sfLoading, setSfLoading] = useState(false);
+ const [sfLoadingKey, setSfLoadingKey] = useState("");
+ /* ── Images tab ── */
+ const [imgTopic, setImgTopic] = useState("");
+ const [imgResult, setImgResult] = useState(null);
+ const [imgLoading, setImgLoading] = useState(false);
+ const [imgErr, setImgErr] = useState("");
+ /* ── Repurpose tab ── */
+ const [repTopic, setRepTopic] = useState("");
+ const [repSummary, setRepSummary] = useState("");
+ const [repResult, setRepResult] = useState(null);
+ const [repLoading, setRepLoading] = useState(false);
+ const [repErr, setRepErr] = useState("");
+ const [repPlatform, setRepPlatform] = useState("twitter");
+ /* ── Tags & Schema tab ── */
+ const [tagsTopic, setTagsTopic] = useState("");
+ const [tagsResult, setTagsResult] = useState(null);
+ const [tagsLoading, setTagsLoading] = useState(false);
+ const [tagsErr, setTagsErr] = useState("");
+ const [tagsSchemaView, setTagsSchemaView] = useState("tags"); // "tags"|"faq"|"schema"
+ /* ── SEO Score tab ── */
+ const [seoTopic, setSeoTopic] = useState("");
+ const [seoContent, setSeoContent] = useState("");
+ const [seoResult, setSeoResult] = useState(null);
+ const [seoLoading, setSeoLoading] = useState(false);
+ const [seoErr, setSeoErr] = useState("");
  /* ── Beginner quick-draft state ── */
  const [quickTopic, setQuickTopic] = useState("");
  const [quickResult, setQuickResult] = useState(null);
@@ -1031,6 +1058,64 @@ export default function BlogSEO() {
  } catch(e) { setBriefErr(e.message); }
  setBriefLoading(false);
  }, [briefTopic, briefPrimary, briefSecondary, briefAudience, briefTone]);
+
+ /* ── AI Suggest Fields — auto-fill secondary form inputs from a topic ── */
+ const runSuggestFields = useCallback(async (topic, key, applyFn) => {
+ if (!topic?.trim()) return;
+ setSfLoading(true); setSfLoadingKey(key);
+ try {
+ const r = await apiFetchJSON(`${API}/ai/suggest-fields`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: topic.trim() }) });
+ if (r.ok) applyFn(r);
+ } catch(_) {}
+ setSfLoading(false); setSfLoadingKey("");
+ }, []);
+
+ /* ── Blog Images ── */
+ const runBlogImages = useCallback(async () => {
+ if (!imgTopic.trim()) return;
+ setImgLoading(true); setImgErr(""); setImgResult(null);
+ try {
+ const outlineSections = Array.isArray(outlineResult?.sections) ? outlineResult.sections : [];
+ const r = await apiFetchJSON(`${API}/ai/blog-images`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: imgTopic.trim(), outline: outlineSections, tone: draftTone, niche: draftNiche || undefined }) });
+ if (r.ok) setImgResult(r); else setImgErr(r.error || "Image plan generation failed");
+ } catch(e) { setImgErr(e.message); }
+ setImgLoading(false);
+ }, [imgTopic, outlineResult, draftTone, draftNiche]);
+
+ /* ── Repurpose ── */
+ const runRepurpose = useCallback(async () => {
+ if (!repTopic.trim()) return;
+ setRepLoading(true); setRepErr(""); setRepResult(null);
+ try {
+ const r = await apiFetchJSON(`${API}/ai/repurpose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: repTopic.trim(), summary: repSummary.trim() || undefined, tone: draftTone, niche: draftNiche || undefined }) });
+ if (r.ok) setRepResult(r); else setRepErr(r.error || "Repurpose generation failed");
+ } catch(e) { setRepErr(e.message); }
+ setRepLoading(false);
+ }, [repTopic, repSummary, draftTone, draftNiche]);
+
+ /* ── Tags & Schema ── */
+ const runTagsSchema = useCallback(async () => {
+ if (!tagsTopic.trim()) return;
+ setTagsLoading(true); setTagsErr(""); setTagsResult(null);
+ try {
+ const outlineSections = Array.isArray(outlineResult?.sections) ? outlineResult.sections : [];
+ const r = await apiFetchJSON(`${API}/ai/tags-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: tagsTopic.trim(), primaryKeyword: outlineKw || tagsTopic.trim(), outline: outlineSections, audience: outlineAud || undefined }) });
+ if (r.ok) setTagsResult(r); else setTagsErr(r.error || "Tags & schema generation failed");
+ } catch(e) { setTagsErr(e.message); }
+ setTagsLoading(false);
+ }, [tagsTopic, outlineResult, outlineKw, outlineAud]);
+
+ /* ── SEO Score ── */
+ const runSeoScore = useCallback(async () => {
+ if (!seoTopic.trim()) return;
+ setSeoLoading(true); setSeoErr(""); setSeoResult(null);
+ try {
+ const outlineSecs = Array.isArray(outlineResult?.sections) ? outlineResult.sections : [];
+ const r = await apiFetchJSON(`${API}/ai/seo-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: seoTopic.trim(), content: seoContent.trim() || undefined, outline: outlineSecs, primaryKeyword: outlineKw || seoTopic.trim(), audience: outlineAud || undefined }) });
+ if (r.ok) setSeoResult(r); else setSeoErr(r.error || "SEO score generation failed");
+ } catch(e) { setSeoErr(e.message); }
+ setSeoLoading(false);
+ }, [seoTopic, seoContent, outlineResult, outlineKw, outlineAud]);
 
  /* ── Optimize ── */
  const runOptimize = useCallback(async () => {
@@ -2925,8 +3010,13 @@ export default function BlogSEO() {
  <>
 {/* Sub-nav — workflow pipeline */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, color: C.dim, marginBottom: 8 }}>Suggested workflow — click any step to jump directly:</div>
-            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: C.dim }}>Suggested workflow — click any step:</div>
+              <span style={{ fontSize: 10, color: C.dim, fontStyle: "italic" }}>✓ = result ready</span>
+            </div>
+            {/* Row 1 — Creation steps */}
+            <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 5 }}>Create</div>
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px", marginBottom: 8 }}>
               {[
                 ["brief",   "1", "📋", "Brief",   !!briefResult],
                 ["titles",  "2", "💡", "Titles",  !!titleResult],
@@ -2947,6 +3037,35 @@ export default function BlogSEO() {
                     {done && writeSub !== key
                       ? <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#052e16", color: "#6ee7b7", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, flexShrink: 0 }}>✓</span>
                       : <span style={{ width: 16, height: 16, borderRadius: "50%", background: writeSub === key ? C.indigo : C.muted, color: writeSub === key ? "#fff" : C.sub, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{num}</span>
+                    }
+                    <span>{icon} {label}</span>
+                  </button>
+                  {i < arr.length - 1 && <span style={{ color: C.dim, fontSize: 14, padding: "0 2px", userSelect: "none" }}>›</span>}
+                </React.Fragment>
+              ))}
+            </div>
+            {/* Row 2 — Publish prep steps */}
+            <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 5 }}>Publish prep</div>
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 10px" }}>
+              {[
+                ["images",  "6", "🖼️",  "Images",    !!imgResult],
+                ["repurpose","7","📣",  "Repurpose", !!repResult],
+                ["tags",    "8", "🏷️",  "Tags & Schema", !!tagsResult],
+                ["seo",     "9", "📊",  "SEO Score",     !!seoResult],
+              ].map(([key, num, icon, label, done], i, arr) => (
+                <React.Fragment key={key}>
+                  <button onClick={() => setWriteSub(key)} style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    cursor: "pointer",
+                    border: writeSub === key ? `1px solid #0d9488` : "1px solid transparent",
+                    background: writeSub === key ? "#042f2e" : "transparent",
+                    color: writeSub === key ? "#5eead4" : done ? "#6ee7b7" : C.sub,
+                    transition: "all .15s",
+                  }}>
+                    {done && writeSub !== key
+                      ? <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#052e16", color: "#6ee7b7", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                      : <span style={{ width: 16, height: 16, borderRadius: "50%", background: writeSub === key ? "#0d9488" : C.muted, color: writeSub === key ? "#fff" : C.sub, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{num}</span>
                     }
                     <span>{icon} {label}</span>
                   </button>
@@ -3155,6 +3274,19 @@ export default function BlogSEO() {
  <div style={{ fontSize: 13, color: C.dim }}>AI builds a structured outline with H2/H3 sections, key points and suggested word counts.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
+ {/* AI Fill */}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px", display: "flex", alignItems: "center", gap: 5, opacity: !outlineKw.trim() ? 0.45 : 1 }}
+ disabled={!outlineKw.trim() || sfLoading}
+ onClick={() => runSuggestFields(outlineKw, "outline-all", r => {
+ if (r.audience) {
+ const known = ["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
+ setOutlineAud(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
+ }
+ })}>
+ {sfLoading && sfLoadingKey === "outline-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Suggest Audience"}
+ </button>
+ </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Topic or keyword</div>
  <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 12 }}>
  <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={outlineKw} onChange={e => setOutlineKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runOutline()} />
@@ -3341,6 +3473,19 @@ export default function BlogSEO() {
  <div style={{ fontSize: 13, color: C.dim }}>Write a compelling opening paragraph that hooks readers and sets the tone for your post.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
+ {/* AI Fill */}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px", display: "flex", alignItems: "center", gap: 5, opacity: !introKw.trim() ? 0.45 : 1 }}
+ disabled={!introKw.trim() || sfLoading}
+ onClick={() => runSuggestFields(introKw, "intro-all", r => {
+ if (r.audience) {
+ const known = ["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
+ setIntroAud(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
+ }
+ })}>
+ {sfLoading && sfLoadingKey === "intro-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Suggest Audience"}
+ </button>
+ </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginBottom: 12 }} placeholder="e.g. best running shoes for beginners" value={introKw} onChange={e => setIntroKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntro()} />
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
@@ -3452,11 +3597,32 @@ export default function BlogSEO() {
  <div style={{ fontSize: 13, color: C.dim }}>Generate {titleCount} click-worthy, SEO-optimised title variations with CTR scores, formulas and power word analysis.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
+ {/* AI Fill */}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px", display: "flex", alignItems: "center", gap: 5, opacity: !titleKw.trim() ? 0.45 : 1 }}
+ disabled={!titleKw.trim() || sfLoading}
+ onClick={() => runSuggestFields(titleKw, "titles-all", r => {
+ if (r.niche) setTitleNiche(r.niche);
+ if (r.audience) {
+ const known = ["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
+ setTitleAudience(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
+ }
+ })}>
+ {sfLoading && sfLoadingKey === "titles-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Fill Niche & Audience"}
+ </button>
+ </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Keyword or topic</div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginBottom: 12 }} placeholder="e.g. winter skincare routine" value={titleKw} onChange={e => setTitleKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runTitleIdeas()} />
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
  <div style={{ flex: 1, minWidth: 160 }}>
- <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Niche / industry (optional)</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <span style={{ fontSize: 11, color: C.dim }}>Niche / industry (optional)</span>
+ <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !titleKw.trim() ? 0.4 : 1 }}
+ disabled={!titleKw.trim() || sfLoading}
+ onClick={() => runSuggestFields(titleKw, "titles-niche", r => { if (r.niche) setTitleNiche(r.niche); })}>
+ {sfLoading && sfLoadingKey === "titles-niche" ? "..." : "✨ AI"}
+ </button>
+ </div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. skincare, snowboarding, B2B SaaS" value={titleNiche} onChange={e => setTitleNiche(e.target.value)} />
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
@@ -3621,6 +3787,16 @@ export default function BlogSEO() {
  <div style={{ fontSize: 13, color: C.dim }}>AI generates a complete {draftWordCount.toLocaleString()}+ word blog post ready to publish.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
+ {/* AI Fill */}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px", display: "flex", alignItems: "center", gap: 5, opacity: !draftKw.trim() ? 0.45 : 1 }}
+ disabled={!draftKw.trim() || sfLoading}
+ onClick={() => runSuggestFields(draftKw, "draft-all", r => {
+ if (r.niche) setDraftNiche(r.niche);
+ })}>
+ {sfLoading && sfLoadingKey === "draft-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Fill Niche"}
+ </button>
+ </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
  <input style={{ ...S.input, width: "100%", marginBottom: 12, boxSizing: "border-box" }} placeholder="e.g. how to choose the right snowboard for beginners" value={draftKw} onChange={e => setDraftKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runDraft()} />
  <div style={{ marginBottom: 12 }}>
@@ -3642,7 +3818,14 @@ export default function BlogSEO() {
  </select>
  </div>
  <div style={{ flex: 1, minWidth: 160 }}>
- <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Niche (optional)</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <span style={{ fontSize: 11, color: C.dim }}>Niche (optional)</span>
+ <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !draftKw.trim() ? 0.4 : 1 }}
+ disabled={!draftKw.trim() || sfLoading}
+ onClick={() => runSuggestFields(draftKw, "draft-niche", r => { if (r.niche) setDraftNiche(r.niche); })}>
+ {sfLoading && sfLoadingKey === "draft-niche" ? "..." : "✨ AI"}
+ </button>
+ </div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. fitness, beauty, tech" value={draftNiche} onChange={e => setDraftNiche(e.target.value)} />
  </div>
  </div>
@@ -3695,23 +3878,56 @@ export default function BlogSEO() {
  <div style={{ fontSize: 13, color: C.dim }}>Build a full editorial brief — target keywords, structure, tone, word count and competitor insights.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
+ {/* AI Fill All button */}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "5px 12px", display: "flex", alignItems: "center", gap: 5, opacity: !briefTopic.trim() ? 0.45 : 1 }}
+ disabled={!briefTopic.trim() || sfLoading}
+ onClick={() => runSuggestFields(briefTopic, "brief-all", r => {
+ if (r.primaryKeyword) setBriefPrimary(r.primaryKeyword);
+ if (r.secondaryKeywords?.length) setBriefSecondary(r.secondaryKeywords.join(", "));
+ if (r.audience) setBriefAudience(r.audience);
+ })}>
+ {sfLoading && sfLoadingKey === "brief-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Fill Fields"}
+ </button>
+ </div>
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
  <div style={{ flex: 1, minWidth: 200 }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Blog topic</div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. winter skincare tips for dry skin" value={briefTopic} onChange={e => setBriefTopic(e.target.value)} />
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
- <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Primary keyword</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+ <span style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px" }}>Primary keyword</span>
+ <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !briefTopic.trim() ? 0.4 : 1 }}
+ disabled={!briefTopic.trim() || sfLoading}
+ onClick={() => runSuggestFields(briefTopic, "brief-primary", r => { if (r.primaryKeyword) setBriefPrimary(r.primaryKeyword); })}>
+ {sfLoading && sfLoadingKey === "brief-primary" ? "..." : "✨ AI"}
+ </button>
+ </div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. winter skincare routine" value={briefPrimary} onChange={e => setBriefPrimary(e.target.value)} />
  </div>
  </div>
  <div style={{ marginBottom: 12 }}>
- <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Secondary keywords <span style={{ fontSize: 11, fontWeight: 400, textTransform: "none", color: C.dim }}>(comma-separated, optional)</span></div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+ <span style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px" }}>Secondary keywords <span style={{ fontSize: 11, fontWeight: 400, textTransform: "none", color: C.dim }}>(comma-separated, optional)</span></span>
+ <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !briefTopic.trim() ? 0.4 : 1 }}
+ disabled={!briefTopic.trim() || sfLoading}
+ onClick={() => runSuggestFields(briefTopic, "brief-secondary", r => { if (r.secondaryKeywords?.length) setBriefSecondary(r.secondaryKeywords.join(", ")); })}>
+ {sfLoading && sfLoadingKey === "brief-secondary" ? "..." : "✨ AI"}
+ </button>
+ </div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. dry skin care, winter moisturiser, hydrating tips" value={briefSecondary} onChange={e => setBriefSecondary(e.target.value)} />
  </div>
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
  <div style={{ flex: 1, minWidth: 180 }}>
- <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Audience</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+ <span style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px" }}>Audience</span>
+ <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !briefTopic.trim() ? 0.4 : 1 }}
+ disabled={!briefTopic.trim() || sfLoading}
+ onClick={() => runSuggestFields(briefTopic, "brief-audience", r => { if (r.audience) setBriefAudience(r.audience); })}>
+ {sfLoading && sfLoadingKey === "brief-audience" ? "..." : "✨ AI"}
+ </button>
+ </div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. Shopify store owners, beginners" value={briefAudience} onChange={e => setBriefAudience(e.target.value)} />
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
@@ -3725,11 +3941,246 @@ export default function BlogSEO() {
  {briefLoading ? <><span style={S.spinner} /> Generating brief...</> : "✨ Generate Brief"}
  </button>
  {briefErr && <div style={{ ...S.err, marginTop: 10 }}>{briefErr}</div>}
- {briefResult && (
- <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px", fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
- {typeof briefResult === "string" ? briefResult : JSON.stringify(briefResult, null, 2)}
+ {briefResult && (() => {
+ const b = typeof briefResult === "string" ? (() => { try { return JSON.parse(briefResult); } catch { return {}; } })() : (briefResult || {});
+ const kw = b.keywordStrategy || {};
+ const geo = b.geo || {};
+ const SectionLabel = ({ children }) => (
+ <div style={{ fontSize: 10, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 8 }}>{children}</div>
+ );
+ const CopyBtn = ({ text }) => (
+ <button style={{ ...S.btn(), fontSize: 10, padding: "2px 8px", flexShrink: 0 }} onClick={() => navigator.clipboard?.writeText(text || "")}>Copy</button>
+ );
+ const Chip = ({ label, color = C.muted, textColor = C.sub }) => (
+ <span style={{ fontSize: 11, padding: "3px 9px", borderRadius: 5, background: color, color: textColor, flexShrink: 0 }}>{label}</span>
+ );
+ return (
+ <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+
+ {/* ── Summary bar ── */}
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px" }}>
+ {b.searchIntent && <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 5, background: "#1e1b4b", color: "#a5b4fc", fontWeight: 600 }}>{b.searchIntent}</span>}
+ {b.targetWordCount && <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 5, background: C.muted, color: C.sub }}>~{b.targetWordCount.toLocaleString()} words</span>}
+ {b.estimatedRank && <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 5, background: "#052e16", color: "#6ee7b7" }}>🎯 {b.estimatedRank}</span>}
+ <div style={{ flex: 1 }} />
+ <button style={{ ...S.btn(), fontSize: 10, padding: "3px 10px" }} onClick={() => {
+ const lines = [];
+ if (b.title) lines.push(`Title: ${b.title}`);
+ if (b.metaTitle) lines.push(`Meta Title: ${b.metaTitle}`);
+ if (b.metaDescription) lines.push(`Meta Description: ${b.metaDescription}`);
+ if (b.h1) lines.push(`H1: ${b.h1}`);
+ if (b.targetWordCount) lines.push(`Target Word Count: ${b.targetWordCount}`);
+ if (b.searchIntent) lines.push(`Search Intent: ${b.searchIntent}`);
+ lines.push("", "=== OUTLINE ===");
+ (b.outline || []).forEach((s, i) => { lines.push(`${i+1}. ${s.heading}`); (s.subheadings||[]).forEach(sh => lines.push(`   - ${sh}`)); if (s.notes) lines.push(`   Notes: ${s.notes}`); });
+ lines.push("", "=== KEYWORDS ===");
+ if (kw.primary) lines.push(`Primary: ${kw.primary}`);
+ if (kw.secondary?.length) lines.push(`Secondary: ${kw.secondary.join(", ")}`);
+ if (kw.lsi?.length) lines.push(`LSI: ${kw.lsi.join(", ")}`);
+ navigator.clipboard?.writeText(lines.join("\n"));
+ }}>📋 Copy Brief</button>
+ </div>
+
+ {/* ── Title row ── */}
+ {(b.title || b.h1) && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <SectionLabel>Recommended titles</SectionLabel>
+ {b.title && (
+ <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: b.h1 && b.h1 !== b.title ? 8 : 0 }}>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 10, color: C.dim, marginBottom: 2 }}>ARTICLE TITLE</div>
+ <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.4 }}>{b.title}</div>
+ </div>
+ <CopyBtn text={b.title} />
  </div>
  )}
+ {b.h1 && b.h1 !== b.title && (
+ <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 10, color: C.dim, marginBottom: 2 }}>H1</div>
+ <div style={{ fontSize: 13, color: "#c7d2fe", lineHeight: 1.4 }}>{b.h1}</div>
+ </div>
+ <CopyBtn text={b.h1} />
+ </div>
+ )}
+ </div>
+ )}
+
+ {/* ── Meta section ── */}
+ {(b.metaTitle || b.metaDescription) && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <SectionLabel>Meta tags</SectionLabel>
+ {b.metaTitle && (
+ <div style={{ marginBottom: 10 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+ <span style={{ fontSize: 10, color: C.dim }}>META TITLE · {b.metaTitle.length} chars {b.metaTitle.length > 60 ? "⚠" : "✓"}</span>
+ <CopyBtn text={b.metaTitle} />
+ </div>
+ <div style={{ fontSize: 13, color: "#a5b4fc", lineHeight: 1.5 }}>{b.metaTitle}</div>
+ </div>
+ )}
+ {b.metaDescription && (
+ <div style={{ paddingTop: b.metaTitle ? 8 : 0, borderTop: b.metaTitle ? `1px solid ${C.border}` : "none" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+ <span style={{ fontSize: 10, color: C.dim }}>META DESCRIPTION · {b.metaDescription.length} chars {b.metaDescription.length > 160 ? "⚠ long" : b.metaDescription.length < 120 ? "⚠ short" : "✓"}</span>
+ <CopyBtn text={b.metaDescription} />
+ </div>
+ <div style={{ fontSize: 13, color: C.sub, lineHeight: 1.6 }}>{b.metaDescription}</div>
+ </div>
+ )}
+ </div>
+ )}
+
+ {/* ── Keyword strategy ── */}
+ {(kw.primary || kw.secondary?.length || kw.lsi?.length) && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <SectionLabel>Keyword strategy</SectionLabel>
+ {kw.primary && (
+ <div style={{ marginBottom: 8 }}>
+ <div style={{ fontSize: 10, color: C.dim, marginBottom: 4 }}>PRIMARY</div>
+ <span style={{ fontSize: 12, padding: "3px 10px", borderRadius: 5, background: "#1e1b4b", color: "#a5b4fc", border: `1px solid ${C.indigo}`, fontWeight: 600 }}>{kw.primary}</span>
+ </div>
+ )}
+ {kw.secondary?.length > 0 && (
+ <div style={{ marginBottom: 8 }}>
+ <div style={{ fontSize: 10, color: C.dim, marginBottom: 4 }}>SECONDARY</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+ {kw.secondary.map((k, i) => <Chip key={i} label={k} color="#1e3a5f" textColor="#93c5fd" />)}
+ </div>
+ </div>
+ )}
+ {kw.lsi?.length > 0 && (
+ <div>
+ <div style={{ fontSize: 10, color: C.dim, marginBottom: 4 }}>LSI / RELATED</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+ {kw.lsi.map((k, i) => <Chip key={i} label={k} />)}
+ </div>
+ </div>
+ )}
+ </div>
+ )}
+
+ {/* ── Outline ── */}
+ {b.outline?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <SectionLabel>Content outline</SectionLabel>
+ <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+ {b.outline.map((sec, i) => (
+ <div key={i} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px" }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+ <span style={{ width: 20, height: 20, borderRadius: "50%", background: C.indigo, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
+ <span style={{ fontSize: 13, fontWeight: 600, color: C.text, flex: 1 }}>{sec.heading}</span>
+ {sec.wordCount > 0 && <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 4, background: C.muted, color: C.dim }}>~{sec.wordCount} words</span>}
+ </div>
+ {sec.subheadings?.length > 0 && (
+ <ul style={{ margin: "4px 0 0 28px", padding: 0, listStyle: "disc" }}>
+ {sec.subheadings.map((sh, j) => <li key={j} style={{ fontSize: 12, color: C.sub, lineHeight: 1.6 }}>{sh}</li>)}
+ </ul>
+ )}
+ {sec.notes && <div style={{ fontSize: 11, color: C.dim, marginTop: 6, fontStyle: "italic", paddingLeft: 28 }}>💡 {sec.notes}</div>}
+ </div>
+ ))}
+ </div>
+ </div>
+ )}
+
+ {/* ── Competitor gaps + Unique angles ── */}
+ {((b.competitorGaps?.length > 0) || (b.uniqueAngles?.length > 0)) && (
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+ {b.competitorGaps?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <SectionLabel>Competitor gaps to fill</SectionLabel>
+ <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
+ {b.competitorGaps.map((g, i) => (
+ <li key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 12, color: C.sub, lineHeight: 1.5 }}>
+ <span style={{ color: "#f87171", flexShrink: 0, marginTop: 1 }}>✗</span>{g}
+ </li>
+ ))}
+ </ul>
+ </div>
+ )}
+ {b.uniqueAngles?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <SectionLabel>Unique angles to own</SectionLabel>
+ <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
+ {b.uniqueAngles.map((a, i) => (
+ <li key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 12, color: C.sub, lineHeight: 1.5 }}>
+ <span style={{ color: "#6ee7b7", flexShrink: 0, marginTop: 1 }}>✓</span>{a}
+ </li>
+ ))}
+ </ul>
+ </div>
+ )}
+ </div>
+ )}
+
+ {/* ── CTA ── */}
+ {b.cta && (
+ <div style={{ background: "#1e1b4b", border: `1px solid ${C.indigo}`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+ <span style={{ fontSize: 16, flexShrink: 0 }}>🎯</span>
+ <div style={{ flex: 1 }}>
+ <div style={{ fontSize: 10, color: "#a5b4fc", fontWeight: 700, marginBottom: 2 }}>SUGGESTED CTA</div>
+ <div style={{ fontSize: 13, color: C.text }}>{b.cta}</div>
+ </div>
+ <CopyBtn text={b.cta} />
+ </div>
+ )}
+
+ {/* ── GEO section ── */}
+ {(geo.entityTargets?.length || geo.authoritySources?.length || geo.directAnswerSections?.length || geo.aiAnswerFormatTips?.length || geo.firstPersonSignalIdeas?.length) ? (
+ <div style={{ background: C.bg, border: `1px solid #7c3aed`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+ <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 5, background: "#4c1d95", color: "#c4b5fd" }}>GEO</span>
+ <span style={{ fontSize: 11, color: "#a78bfa" }}>Generative Engine Optimisation — rank in ChatGPT, Gemini & Perplexity</span>
+ </div>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+ {geo.entityTargets?.length > 0 && (
+ <div>
+ <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>ENTITY TARGETS</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+ {geo.entityTargets.map((e, i) => <Chip key={i} label={e} color="#2e1065" textColor="#c4b5fd" />)}
+ </div>
+ </div>
+ )}
+ {geo.authoritySources?.length > 0 && (
+ <div>
+ <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>CITE THESE SOURCES</div>
+ <ul style={{ margin: 0, padding: "0 0 0 14px" }}>
+ {geo.authoritySources.map((s, i) => <li key={i} style={{ fontSize: 12, color: "#a78bfa", lineHeight: 1.6 }}>{s}</li>)}
+ </ul>
+ </div>
+ )}
+ {geo.directAnswerSections?.length > 0 && (
+ <div>
+ <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>DIRECT ANSWER SECTIONS</div>
+ <ul style={{ margin: 0, padding: "0 0 0 14px" }}>
+ {geo.directAnswerSections.map((s, i) => <li key={i} style={{ fontSize: 12, color: C.sub, lineHeight: 1.6 }}>{s}</li>)}
+ </ul>
+ </div>
+ )}
+ {geo.aiAnswerFormatTips?.length > 0 && (
+ <div>
+ <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>AI FORMAT TIPS</div>
+ <ul style={{ margin: 0, padding: "0 0 0 14px" }}>
+ {geo.aiAnswerFormatTips.map((t, i) => <li key={i} style={{ fontSize: 12, color: C.sub, lineHeight: 1.6 }}>{t}</li>)}
+ </ul>
+ </div>
+ )}
+ {geo.firstPersonSignalIdeas?.length > 0 && (
+ <div style={{ gridColumn: "1 / -1" }}>
+ <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 700, marginBottom: 5 }}>FIRST-PERSON SIGNAL IDEAS</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+ {geo.firstPersonSignalIdeas.map((s, i) => <Chip key={i} label={s} color="#2e1065" textColor="#c4b5fd" />)}
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
+ ) : null}
+
+ </div>
+ );
+ })()}
  {briefResult && (
  <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
@@ -3741,6 +4192,391 @@ export default function BlogSEO() {
  </div>
  </div>
  )}
+
+ {/* ══ Images tab ══ */}
+ {writeSub === "images" && (
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>🖼️ Image Planner</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Hero concept, per-section image prompts, AI prompts for DALL·E / Midjourney, alt text and SEO filenames.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+ <input value={imgTopic} onChange={e => setImgTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runBlogImages()} placeholder={draftKw || outlineKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
+ <button onClick={runBlogImages} disabled={imgLoading || !imgTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: imgLoading || !imgTopic.trim() ? 0.5 : 1 }}>{imgLoading ? "⏳ Generating…" : "✨ Generate Image Plan"}</button>
+ </div>
+ {(draftKw || outlineKw) && !imgTopic && (
+ <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+ <span>💡 Pre-fill:</span>
+ {draftKw && <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setImgTopic(draftKw)}>{draftKw}</button>}
+ {outlineKw && outlineKw !== draftKw && <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setImgTopic(outlineKw)}>{outlineKw}</button>}
+ </div>
+ )}
+ {imgErr && <div style={{ ...S.err, marginBottom: 12 }}>{imgErr}</div>}
+ {imgResult && (
+ <>
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px", marginBottom: 12 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+ <span style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24" }}>🌟 Hero Image</span>
+ <span style={{ fontSize: 11, color: C.dim, background: C.muted, padding: "2px 8px", borderRadius: 4 }}>above the fold</span>
+ </div>
+ {imgResult.hero?.concept && <div style={{ fontSize: 13, color: C.dim, marginBottom: 10 }}>{imgResult.hero.concept}</div>}
+ {imgResult.hero?.aiImagePrompt && (
+ <div style={{ background: "#020817", borderRadius: 8, padding: "10px 14px", marginBottom: 8, position: "relative" }}>
+ <div style={{ fontSize: 10, color: "#4ade80", fontWeight: 700, marginBottom: 4 }}>AI IMAGE PROMPT (DALL·E / Midjourney)</div>
+ <div style={{ fontFamily: "monospace", fontSize: 12, color: "#86efac", paddingRight: 60, lineHeight: 1.5 }}>{imgResult.hero.aiImagePrompt}</div>
+ <button onClick={() => navigator.clipboard.writeText(imgResult.hero.aiImagePrompt)} style={{ position: "absolute", top: 10, right: 10, fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button>
+ </div>
+ )}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: imgResult.hero?.stockSearchTerms?.length > 0 ? 8 : 0 }}>
+ {imgResult.hero?.altText && <div><div style={{ fontSize: 10, color: C.muted, marginBottom: 3, fontWeight: 700 }}>ALT TEXT</div><div style={{ fontSize: 12, color: C.text }}>{imgResult.hero.altText}</div></div>}
+ {imgResult.hero?.filename && <div><div style={{ fontSize: 10, color: C.muted, marginBottom: 3, fontWeight: 700 }}>SEO FILENAME</div><div style={{ fontSize: 12, color: "#a5b4fc", fontFamily: "monospace" }}>{imgResult.hero.filename}</div></div>}
+ </div>
+ {imgResult.hero?.stockSearchTerms?.length > 0 && (
+ <div>
+ <div style={{ fontSize: 10, color: C.muted, marginBottom: 4, fontWeight: 700 }}>STOCK PHOTO SEARCH TERMS</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+ {imgResult.hero.stockSearchTerms.map((t, i) => <span key={i} style={{ fontSize: 11, padding: "2px 8px", background: C.muted, color: C.sub, borderRadius: 10 }}>{t}</span>)}
+ </div>
+ </div>
+ )}
+ </div>
+ {imgResult.sections?.length > 0 && (
+ <div style={{ marginBottom: 12 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Section Images</div>
+ {imgResult.sections.map((sec, i) => (
+ <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+ <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 4 }}>{sec.heading}</div>
+ {sec.concept && <div style={{ fontSize: 12, color: C.dim, marginBottom: 6 }}>{sec.concept}</div>}
+ {sec.aiImagePrompt && (
+ <div style={{ background: "#020817", borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: "#86efac", marginBottom: 6, position: "relative" }}>
+ {sec.aiImagePrompt}
+ <button onClick={() => navigator.clipboard.writeText(sec.aiImagePrompt)} style={{ position: "absolute", top: 6, right: 6, fontSize: 10, padding: "2px 6px", borderRadius: 4, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button>
+ </div>
+ )}
+ <div style={{ display: "flex", gap: 16 }}>
+ {sec.altText && <span style={{ fontSize: 11, color: C.dim }}><span style={{ color: C.muted, marginRight: 3 }}>alt:</span>{sec.altText}</span>}
+ {sec.filename && <span style={{ fontSize: 11, color: "#a5b4fc", fontFamily: "monospace" }}>{sec.filename}</span>}
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ {imgResult.infographicIdea && (
+ <div style={{ background: "#0c0a20", border: "1px solid #3730a3", borderRadius: 8, padding: "12px 14px", marginBottom: 12 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>💡 Infographic Idea</div>
+ <div style={{ fontSize: 13, color: C.text }}>{imgResult.infographicIdea}</div>
+ </div>
+ )}
+ {imgResult.generalTips?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "12px 14px" }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>General Tips</div>
+ {imgResult.generalTips.map((t, i) => <div key={i} style={{ fontSize: 12, color: C.dim, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: "#4ade80", flexShrink: 0 }}>•</span>{t}</div>)}
+ </div>
+ )}
+ </>
+ )}
+ </div>
+ </div>
+ )}
+
+ {/* ══ Repurpose tab ══ */}
+ {writeSub === "repurpose" && (
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>📣 Repurpose Content</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Turn your blog post into social content for Twitter/X, LinkedIn, Instagram, Email, Short Video and Pinterest — all AI-generated, ready to copy.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+ <div>
+ <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Blog Topic / Title</label>
+ <input value={repTopic} onChange={e => setRepTopic(e.target.value)} placeholder={draftKw || outlineKw || "What's the post about?"} style={{ ...S.input, width: "100%", boxSizing: "border-box" }} />
+ </div>
+ <div>
+ <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Key Takeaway (optional)</label>
+ <input value={repSummary} onChange={e => setRepSummary(e.target.value)} placeholder="Main message or conclusion…" style={{ ...S.input, width: "100%", boxSizing: "border-box" }} />
+ </div>
+ </div>
+ {(draftKw || outlineKw) && !repTopic && (
+ <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, alignItems: "center" }}>
+ <span>💡 Pre-fill:</span>
+ <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setRepTopic(draftKw || outlineKw)}>{draftKw || outlineKw}</button>
+ </div>
+ )}
+ <button onClick={runRepurpose} disabled={repLoading || !repTopic.trim()} style={{ ...S.btn("primary"), marginBottom: 14, opacity: repLoading || !repTopic.trim() ? 0.5 : 1 }}>{repLoading ? "⏳ Generating…" : "✨ Generate Content Pack"}</button>
+ {repErr && <div style={{ ...S.err, marginBottom: 12 }}>{repErr}</div>}
+ {repResult && (
+ <>
+ <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 14 }}>
+ {[["twitter","𝕏 Twitter"],["linkedin","LinkedIn"],["instagram","📸 Instagram"],["email","✉️ Email"],["shortVideo","🎬 Short Video"],["pinterest","📌 Pinterest"]].map(([k, lbl]) => (
+ <button key={k} onClick={() => setRepPlatform(k)} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 16, cursor: "pointer", background: repPlatform === k ? "#0d9488" : C.muted, color: repPlatform === k ? "#fff" : C.sub, border: repPlatform === k ? "1px solid #0d9488" : "1px solid transparent" }}>{lbl}</button>
+ ))}
+ </div>
+ {repPlatform === "twitter" && repResult.twitter && (
+ <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+ {repResult.twitter.singleTweet && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#60a5fa" }}>Single Tweet</span><button onClick={() => navigator.clipboard.writeText(repResult.twitter.singleTweet)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button></div>
+ <div style={{ fontSize: 14, color: C.text, lineHeight: 1.5 }}>{repResult.twitter.singleTweet}</div>
+ </div>
+ )}
+ {repResult.twitter.thread?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#60a5fa" }}>Thread ({repResult.twitter.thread.length} tweets)</span><button onClick={() => navigator.clipboard.writeText(repResult.twitter.thread.join("\n\n"))} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy All</button></div>
+ {repResult.twitter.thread.map((t, i) => <div key={i} style={{ padding: "8px 0", borderBottom: i < repResult.twitter.thread.length - 1 ? `1px solid ${C.border}` : "none", display: "flex", gap: 10 }}><span style={{ fontSize: 11, fontWeight: 700, color: C.dim, minWidth: 22 }}>{i+1}/</span><div style={{ fontSize: 13, color: C.text, flex: 1, lineHeight: 1.5 }}>{t}</div></div>)}
+ </div>
+ )}
+ </div>
+ )}
+ {repPlatform === "linkedin" && repResult.linkedin && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ {repResult.linkedin.hook && <div style={{ background: "#0a1628", borderRadius: 6, padding: "8px 12px", marginBottom: 10 }}><div style={{ fontSize: 10, color: "#60a5fa", fontWeight: 700, marginBottom: 3 }}>HOOK</div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{repResult.linkedin.hook}</div></div>}
+ <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}><button onClick={() => navigator.clipboard.writeText(repResult.linkedin.post || "")} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy Post</button></div>
+ <div style={{ fontSize: 13, color: C.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{repResult.linkedin.post}</div>
+ </div>
+ )}
+ {repPlatform === "instagram" && repResult.instagram && (
+ <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#f472b6" }}>Caption</span><button onClick={() => navigator.clipboard.writeText(repResult.instagram.caption || "")} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button></div>
+ <div style={{ fontSize: 13, color: C.text, lineHeight: 1.6 }}>{repResult.instagram.caption}</div>
+ </div>
+ {repResult.instagram.hashtags?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}><span style={{ fontSize: 11, fontWeight: 700, color: "#f472b6" }}>HASHTAGS</span><button onClick={() => navigator.clipboard.writeText(repResult.instagram.hashtags.map(h => `#${h}`).join(" "))} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy All</button></div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>{repResult.instagram.hashtags.map((h, i) => <span key={i} style={{ fontSize: 11, padding: "2px 8px", background: "#500724", color: "#fda4af", borderRadius: 10 }}>#{h}</span>)}</div>
+ </div>
+ )}
+ {repResult.instagram.storyIdeas?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#f472b6", marginBottom: 6 }}>STORY IDEAS</div>
+ {repResult.instagram.storyIdeas.map((s, i) => <div key={i} style={{ fontSize: 12, color: C.dim, display: "flex", gap: 8, marginBottom: 3 }}><span style={{ color: "#f472b6" }}>•</span>{s}</div>)}
+ </div>
+ )}
+ </div>
+ )}
+ {repPlatform === "email" && repResult.email && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ {repResult.email.subjectLines?.length > 0 && (
+ <div style={{ marginBottom: 12 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#34d399", marginBottom: 6 }}>SUBJECT LINES</div>
+ {repResult.email.subjectLines.map((s, i) => <div key={i} style={{ fontSize: 13, color: C.text, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", background: "#0a1a12", borderRadius: 6, marginBottom: 4 }}><span>{s}</span><button onClick={() => navigator.clipboard.writeText(s)} style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: C.muted, color: C.sub, border: "none", cursor: "pointer", flexShrink: 0 }}>Copy</button></div>)}
+ </div>
+ )}
+ {repResult.email.preheader && <div style={{ marginBottom: 10 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#34d399", marginBottom: 4 }}>PREHEADER</div><div style={{ fontSize: 12, color: C.dim, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", background: "#0a1a12", borderRadius: 6 }}><span>{repResult.email.preheader}</span><button onClick={() => navigator.clipboard.writeText(repResult.email.preheader)} style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: C.muted, color: C.sub, border: "none", cursor: "pointer", flexShrink: 0 }}>Copy</button></div></div>}
+ {repResult.email.teaser && <div><div style={{ fontSize: 11, fontWeight: 700, color: "#34d399", marginBottom: 4 }}>EMAIL TEASER</div><div style={{ fontSize: 13, color: C.text, lineHeight: 1.6 }}>{repResult.email.teaser}</div></div>}
+ </div>
+ )}
+ {repPlatform === "shortVideo" && repResult.shortVideo && (
+ <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+ {repResult.shortVideo.hookLine && <div style={{ background: "#0a0a1a", border: "1px solid #4c1d95", borderRadius: 10, padding: "14px 16px" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", marginBottom: 4 }}>HOOK LINE</div><div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{repResult.shortVideo.hookLine}</div></div>}
+ {repResult.shortVideo.scriptOutline?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", marginBottom: 8 }}>SCRIPT OUTLINE</div>
+ {repResult.shortVideo.scriptOutline.map((s, i) => <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa", minWidth: 22 }}>{i+1}.</span><span style={{ fontSize: 12, color: C.text }}>{s}</span></div>)}
+ </div>
+ )}
+ {repResult.shortVideo.caption && <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}><span style={{ fontSize: 11, fontWeight: 700, color: "#a78bfa" }}>VIDEO CAPTION</span><button onClick={() => navigator.clipboard.writeText(repResult.shortVideo.caption)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button></div><div style={{ fontSize: 13, color: C.text }}>{repResult.shortVideo.caption}</div></div>}
+ </div>
+ )}
+ {repPlatform === "pinterest" && repResult.pinterest && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
+ {repResult.pinterest.title && <div style={{ marginBottom: 10 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#f43f5e", marginBottom: 4 }}>PIN TITLE</div><div style={{ fontSize: 14, fontWeight: 600, color: C.text, display: "flex", justifyContent: "space-between" }}><span>{repResult.pinterest.title}</span><button onClick={() => navigator.clipboard.writeText(repResult.pinterest.title)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button></div></div>}
+ {repResult.pinterest.description && <div style={{ marginBottom: 10 }}><div style={{ fontSize: 11, fontWeight: 700, color: "#f43f5e", marginBottom: 4 }}>PIN DESCRIPTION</div><div style={{ fontSize: 13, color: C.text, lineHeight: 1.6, display: "flex", justifyContent: "space-between", gap: 8 }}><span>{repResult.pinterest.description}</span><button onClick={() => navigator.clipboard.writeText(repResult.pinterest.description)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer", flexShrink: 0 }}>Copy</button></div></div>}
+ {repResult.pinterest.boardSuggestions?.length > 0 && <div><div style={{ fontSize: 11, fontWeight: 700, color: "#f43f5e", marginBottom: 6 }}>BOARD SUGGESTIONS</div><div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>{repResult.pinterest.boardSuggestions.map((b, i) => <span key={i} style={{ fontSize: 11, padding: "2px 8px", background: "#4c0519", color: "#fda4af", borderRadius: 10 }}>{b}</span>)}</div></div>}
+ </div>
+ )}
+ </>
+ )}
+ </div>
+ </div>
+ )}
+
+ {/* ══ Tags & Schema tab ══ */}
+ {writeSub === "tags" && (
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>🏷️ Tags, Categories & Schema</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Shopify tags, blog categories, FAQ rich snippets and JSON-LD schema markup ready to paste into Shopify.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+ <input value={tagsTopic} onChange={e => setTagsTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runTagsSchema()} placeholder={outlineKw || draftKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
+ <button onClick={runTagsSchema} disabled={tagsLoading || !tagsTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: tagsLoading || !tagsTopic.trim() ? 0.5 : 1 }}>{tagsLoading ? "⏳ Generating…" : "✨ Generate Tags & Schema"}</button>
+ </div>
+ {(outlineKw || draftKw) && !tagsTopic && (
+ <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, alignItems: "center" }}>
+ <span>💡 Pre-fill:</span>
+ <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setTagsTopic(outlineKw || draftKw)}>{outlineKw || draftKw}</button>
+ </div>
+ )}
+ {tagsErr && <div style={{ ...S.err, marginBottom: 12 }}>{tagsErr}</div>}
+ {tagsResult && (
+ <>
+ <div style={{ display: "flex", gap: 4, marginBottom: 14 }}>
+ {[["tags","🏷️ Tags & Categories"],["faq","❓ FAQ"],["schema","🔁 Schema Code"]].map(([k, lbl]) => (
+ <button key={k} onClick={() => setTagsSchemaView(k)} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 16, cursor: "pointer", background: tagsSchemaView === k ? "#0d9488" : C.muted, color: tagsSchemaView === k ? "#fff" : C.sub, border: tagsSchemaView === k ? "1px solid #0d9488" : "1px solid transparent" }}>{lbl}</button>
+ ))}
+ </div>
+ {tagsSchemaView === "tags" && (
+ <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+ {tagsResult.readingLevel && <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, background: "#042f2e", color: "#5eead4", border: "1px solid #0d9488" }}>📖 {tagsResult.readingLevel} reading level</span>}
+ {tagsResult.contentType && <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, background: "#1e1b4b", color: "#a5b4fc", border: "1px solid #4f46e5" }}>📋 {tagsResult.contentType}</span>}
+ </div>
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#5eead4" }}>SHOPIFY TAGS</span><button onClick={() => navigator.clipboard.writeText((tagsResult.tags || []).join(", "))} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy All</button></div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>{(tagsResult.tags || []).map((t, i) => <span key={i} onClick={() => navigator.clipboard.writeText(t)} style={{ fontSize: 12, padding: "3px 10px", background: "#042f2e", color: "#5eead4", border: "1px solid #0d9488", borderRadius: 12, cursor: "pointer" }}>{t}</span>)}</div>
+ </div>
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#a78bfa" }}>CATEGORIES</span><button onClick={() => navigator.clipboard.writeText((tagsResult.categories || []).join(", "))} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy All</button></div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>{(tagsResult.categories || []).map((c, i) => <span key={i} style={{ fontSize: 12, padding: "3px 10px", background: "#1e1b4b", color: "#a5b4fc", border: "1px solid #4f46e5", borderRadius: 12 }}>{c}</span>)}</div>
+ </div>
+ {tagsResult.seriesIdeas?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>💡 Related Series Ideas</div>
+ {tagsResult.seriesIdeas.map((s, i) => <div key={i} style={{ fontSize: 12, color: C.dim, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: "#fbbf24" }}>→</span>{s}</div>)}
+ </div>
+ )}
+ </div>
+ )}
+ {tagsSchemaView === "faq" && (
+ <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+ {(tagsResult.faq || []).map((item, i) => (
+ <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+ <div style={{ fontSize: 13, fontWeight: 600, color: C.text, flex: 1 }}>Q: {item.question}</div>
+ <button onClick={() => navigator.clipboard.writeText(`Q: ${item.question}\nA: ${item.answer}`)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer", flexShrink: 0 }}>Copy</button>
+ </div>
+ <div style={{ fontSize: 13, color: C.dim, marginTop: 6, lineHeight: 1.6 }}>A: {item.answer}</div>
+ </div>
+ ))}
+ </div>
+ )}
+ {tagsSchemaView === "schema" && (
+ <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+ {tagsResult.faqSchema && (
+ <div>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#4ade80" }}>FAQ Schema (JSON-LD)</span><button onClick={() => navigator.clipboard.writeText(tagsResult.faqSchema)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button></div>
+ <pre style={{ background: "#020817", borderRadius: 8, padding: "12px 14px", fontSize: 11, color: "#86efac", overflow: "auto", margin: 0, lineHeight: 1.5 }}>{tagsResult.faqSchema}</pre>
+ </div>
+ )}
+ {tagsResult.articleSchema && (
+ <div>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}><span style={{ fontSize: 12, fontWeight: 700, color: "#60a5fa" }}>Article Schema (JSON-LD)</span><button onClick={() => navigator.clipboard.writeText(tagsResult.articleSchema)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }}>Copy</button></div>
+ <pre style={{ background: "#020817", borderRadius: 8, padding: "12px 14px", fontSize: 11, color: "#93c5fd", overflow: "auto", margin: 0, lineHeight: 1.5 }}>{tagsResult.articleSchema}</pre>
+ </div>
+ )}
+ </div>
+ )}
+ </>
+ )}
+ </div>
+ </div>
+ )}
+
+ {/* ══ SEO Score tab ══ */}
+ {writeSub === "seo" && (
+ <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+ <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>📊 SEO Score</div>
+ <div style={{ fontSize: 13, color: C.dim }}>Get a detailed SEO analysis — overall score, keyword optimisation, structure, readability, E-E-A-T, title suggestions and meta descriptions.</div>
+ </div>
+ <div style={{ padding: "18px 22px" }}>
+ <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+ <input value={seoTopic} onChange={e => setSeoTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runSeoScore()} placeholder={outlineKw || draftKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
+ <button onClick={runSeoScore} disabled={seoLoading || !seoTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: seoLoading || !seoTopic.trim() ? 0.5 : 1 }}>{seoLoading ? "⏳ Analysing…" : "📊 Get SEO Score"}</button>
+ </div>
+ <div style={{ marginBottom: 14 }}>
+ <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Paste blog content for deeper analysis (optional)</label>
+ <textarea value={seoContent} onChange={e => setSeoContent(e.target.value)} placeholder="Paste your draft text here for a more accurate score…" style={{ ...S.textarea, minHeight: 80 }} />
+ </div>
+ {(outlineKw || draftKw) && !seoTopic && (
+ <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, alignItems: "center" }}>
+ <span>💡 Pre-fill:</span>
+ <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setSeoTopic(outlineKw || draftKw)}>{outlineKw || draftKw}</button>
+ </div>
+ )}
+ {seoErr && <div style={{ ...S.err, marginBottom: 12 }}>{seoErr}</div>}
+ {seoResult && (() => {
+ const bd = seoResult.breakdown || {};
+ const cats = Object.values(bd);
+ return (
+ <>
+ {/* Score ring + grade */}
+ <div style={{ display: "flex", gap: 20, alignItems: "center", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: "18px 20px", marginBottom: 14 }}>
+ <div style={{ ...S.ring(seoResult.overallScore || 0), width: 80, height: 80, fontSize: 26, flexShrink: 0 }}>{seoResult.overallScore ?? "—"}</div>
+ <div style={{ flex: 1 }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+ <span style={{ fontSize: 22, fontWeight: 800, color: C.text }}>{seoResult.grade || "—"}</span>
+ <span style={{ fontSize: 12, color: C.dim }}>Overall SEO Score</span>
+ </div>
+ {seoResult.summary && <div style={{ fontSize: 13, color: C.dim, lineHeight: 1.5 }}>{seoResult.summary}</div>}
+ </div>
+ </div>
+ {/* Breakdown bars */}
+ {cats.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>Score Breakdown</div>
+ {cats.map((cat, i) => (
+ <div key={i} style={{ marginBottom: 14 }}>
+ <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+ <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{cat.label}</span>
+ <span style={{ fontSize: 14, fontWeight: 700, ...S.score(cat.score || 0) }}>{cat.score ?? "—"}/100</span>
+ </div>
+ <div style={{ height: 6, background: C.muted, borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
+ <div style={{ height: "100%", width: `${cat.score || 0}%`, background: (cat.score || 0) >= 75 ? C.green : (cat.score || 0) >= 50 ? C.yellow : C.red, borderRadius: 3, transition: "width .4s" }} />
+ </div>
+ {cat.issues?.length > 0 && cat.issues.map((iss, j) => <div key={j} style={{ fontSize: 11, color: "#fca5a5", display: "flex", gap: 6, marginBottom: 2 }}><span style={{ flexShrink: 0 }}>⚠</span>{iss}</div>)}
+ {cat.tips?.length > 0 && cat.tips.map((tip, j) => <div key={j} style={{ fontSize: 11, color: "#86efac", display: "flex", gap: 6, marginBottom: 2 }}><span style={{ flexShrink: 0 }}>→</span>{tip}</div>)}
+ </div>
+ ))}
+ </div>
+ )}
+ {/* Two-col: critical issues + quick wins */}
+ <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+ {seoResult.criticalIssues?.length > 0 && (
+ <div style={{ background: "#450a0a", border: "1px solid #7f1d1d", borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#fca5a5", marginBottom: 8 }}>🚨 Critical Issues</div>
+ {seoResult.criticalIssues.map((iss, i) => <div key={i} style={{ fontSize: 12, color: "#fca5a5", display: "flex", gap: 6, marginBottom: 4 }}><span style={{ flexShrink: 0 }}>•</span>{iss}</div>)}
+ </div>
+ )}
+ {seoResult.quickWins?.length > 0 && (
+ <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#86efac", marginBottom: 8 }}>⚡ Quick Wins</div>
+ {seoResult.quickWins.map((win, i) => <div key={i} style={{ fontSize: 12, color: "#86efac", display: "flex", gap: 6, marginBottom: 4 }}><span style={{ flexShrink: 0 }}>✓</span>{win}</div>)}
+ </div>
+ )}
+ </div>
+ {/* Passed checks */}
+ {seoResult.passedChecks?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#4ade80", marginBottom: 8 }}>✅ Passed Checks</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{seoResult.passedChecks.map((c, i) => <span key={i} style={{ fontSize: 11, padding: "2px 10px", background: "#052e16", color: "#86efac", border: "1px solid #166534", borderRadius: 12 }}>{c}</span>)}</div>
+ </div>
+ )}
+ {/* Title suggestions */}
+ {seoResult.titleSuggestions?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#a5b4fc", marginBottom: 8 }}>💡 Optimised Title Suggestions</div>
+ {seoResult.titleSuggestions.map((t, i) => <div key={i} style={{ fontSize: 13, color: C.text, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 8px", background: "#0a0a1a", borderRadius: 6, marginBottom: 4 }}><span>{t}</span><button onClick={() => { navigator.clipboard.writeText(t); setTitleKw(t); }} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer", flexShrink: 0 }}>Copy + Use</button></div>)}
+ </div>
+ )}
+ {/* Meta descriptions */}
+ {seoResult.metaDescriptions?.length > 0 && (
+ <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px" }}>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#5eead4", marginBottom: 8 }}>📝 Meta Description Options</div>
+ {seoResult.metaDescriptions.map((d, i) => <div key={i} style={{ fontSize: 13, color: C.text, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, padding: "6px 8px", background: "#020817", borderRadius: 6, marginBottom: 4 }}><span style={{ lineHeight: 1.5, flex: 1 }}>{d}</span><button onClick={() => navigator.clipboard.writeText(d)} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: C.muted, color: C.sub, border: "none", cursor: "pointer", flexShrink: 0 }}>Copy</button></div>)}
+ </div>
+ )}
+ </>
+ );
+ })()}
+ </div>
+ </div>
+ )}
+
  </> /* end advanced mode */
  )}
  </>
