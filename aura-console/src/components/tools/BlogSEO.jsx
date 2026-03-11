@@ -3319,19 +3319,71 @@ export default function BlogSEO() {
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
- <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
- <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={introKw} onChange={e => setIntroKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntro()} />
- <div style={{ flex: "0 0 auto" }}>
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginBottom: 12 }} placeholder="e.g. best running shoes for beginners" value={introKw} onChange={e => setIntroKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntro()} />
+ <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+ <div style={{ flex: 1, minWidth: 160 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Writing style</div>
- <select style={{ ...S.input, width: 180, flex: "unset" }} value={introStyle} onChange={e => setIntroStyle(e.target.value)}>
- {["PAS", "AIDA", "conversational", "storytelling", "direct"].map(s => <option key={s} value={s}>{s}</option>)}
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={introStyle} onChange={e => setIntroStyle(e.target.value)}>
+ <optgroup label="Copywriting formulas">
+ <option value="PAS">PAS — Problem, Agitate, Solve</option>
+ <option value="AIDA">AIDA — Attention, Interest, Desire, Action</option>
+ <option value="BAB">BAB — Before, After, Bridge</option>
+ <option value="4Ps">4Ps — Promise, Picture, Proof, Push</option>
+ </optgroup>
+ <optgroup label="Style">
+ <option value="conversational">Conversational</option>
+ <option value="storytelling">Storytelling / Narrative</option>
+ <option value="direct">Direct / To the point</option>
+ <option value="bold">Bold &amp; Provocative</option>
+ <option value="educational">Educational</option>
+ <option value="empathetic">Empathetic</option>
+ <option value="humorous">Humorous / Witty</option>
+ <option value="inspirational">Inspirational</option>
+ <option value="journalistic">Journalistic</option>
+ <option value="luxury">Luxury / Premium</option>
+ </optgroup>
+ <optgroup label="Hook type">
+ <option value="stat-hook">Stat hook — open with a surprising stat</option>
+ <option value="question-hook">Question hook — open with a question</option>
+ <option value="story-hook">Story hook — open with a micro-story</option>
+ <option value="bold-claim">Bold claim — open with a strong statement</option>
+ </optgroup>
  </select>
  </div>
- </div>
- <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
- <div style={{ flex: 1, minWidth: 220 }}>
- <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience (optional)</div>
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. beginner runners, Shopify store owners" value={introAud} onChange={e => setIntroAud(e.target.value)} />
+ <div style={{ flex: 1, minWidth: 160 }}>
+ <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(introAud) ? introAud : "__custom__"}
+ onChange={e => { if (e.target.value !== "__custom__") setIntroAud(e.target.value); }}>
+ <option value="">Any audience</option>
+ <option value="general readers">General readers</option>
+ <option value="beginners">Beginners</option>
+ <option value="intermediate">Intermediate</option>
+ <option value="advanced / experts">Advanced / Experts</option>
+ <optgroup label="Business">
+ <option value="e-commerce store owners">E-commerce store owners</option>
+ <option value="shopify merchants">Shopify merchants</option>
+ <option value="entrepreneurs">Entrepreneurs</option>
+ <option value="small business owners">Small business owners</option>
+ <option value="marketers">Marketers</option>
+ <option value="content creators">Content creators</option>
+ </optgroup>
+ <optgroup label="Demographics">
+ <option value="parents">Parents</option>
+ <option value="students">Students</option>
+ <option value="seniors">Seniors</option>
+ <option value="teens">Teens</option>
+ </optgroup>
+ <optgroup label="Interest">
+ <option value="fitness enthusiasts">Fitness enthusiasts</option>
+ <option value="tech enthusiasts">Tech enthusiasts</option>
+ <option value="budget shoppers">Budget shoppers</option>
+ <option value="luxury buyers">Luxury buyers</option>
+ </optgroup>
+ <option value="__custom__">Custom...</option>
+ </select>
+ {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(introAud)) && (
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={introAud} onChange={e => setIntroAud(e.target.value)} />
+ )}
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runIntro} disabled={introLoading || !introKw.trim()}>
