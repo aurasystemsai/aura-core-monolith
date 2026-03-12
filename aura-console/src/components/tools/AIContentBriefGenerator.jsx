@@ -18,7 +18,7 @@ const intentColors = {
  informational: { bg: "#0c1a2e", border: "#1e3a5f", text: "#60a5fa", label: "Informational" },
  commercial: { bg: "#1e1b4b", border: "#4338ca", text: "#a78bfa", label: "Commercial" },
  transactional: { bg: "#052e16", border: "#166534", text: "#4ade80", label: "Transactional" },
- navigational: { bg: "#1c0a00", border: "#7c2d12", text: "#fb923c", label: "Navigational" },
+ navigational: { bg: "#27272a", border: "#3f3f46", text: "#71717a", label: "Navigational" },
 };
 
 function Section({ title, children, action }) {

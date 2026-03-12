@@ -3768,7 +3768,7 @@ export default function BlogSEO() {
  CTR {ctrScore}/10
  </span>
  )}
- {powerWords.length > 0 && <span style={{ fontSize: 10, color: "#fb923c", padding: "2px 8px", borderRadius: 4, background: "#1c0a00" }}>⚡ {powerWords.join(", ")}</span>}
+ {powerWords.length > 0 && <span style={{ fontSize: 10, color: "#71717a", padding: "2px 8px", borderRadius: 4, background: "#27272a" }}>⚡ {powerWords.join(", ")}</span>}
  </div>
  {/* Note */}
  {note && <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>{note}</div>}

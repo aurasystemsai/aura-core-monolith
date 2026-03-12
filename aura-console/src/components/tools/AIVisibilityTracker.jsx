@@ -1142,32 +1142,32 @@ function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
  const tools = [
  {
  icon: "", label: "Write a Blog Post", sub: "Blog Draft Engine",
- section: "blog-draft-engine", color: "#818cf8", border: "#3730a3",
+ section: "blog-draft-engine", color: "#a5b4fc", border: "#4338ca",
  why: "Create content that answers this exact query so AI cites you",
  },
  {
  icon: "", label: "Create Content Brief", sub: "AI Content Brief Generator",
- section: "ai-content-brief-generator", color: "#34d399", border: "#065f46",
+ section: "ai-content-brief-generator", color: "#a5b4fc", border: "#4338ca",
  why: "Build a full keyword + structure brief to guide your content",
  },
  {
  icon: "", label: "Research Keywords", sub: "Keyword Research Suite",
- section: "keyword-research-suite", color: "#f59e0b", border: "#92400e",
+ section: "keyword-research-suite", color: "#a5b4fc", border: "#4338ca",
  why: "Find related search terms AI models associate with this topic",
  },
  {
  icon: "", label: "Get AI to Notice You", sub: "LLM Seeding Plan",
- section: "ai-visibility-tracker", color: "#a78bfa", border: "#4338ca",
+ section: "ai-visibility-tracker", color: "#a5b4fc", border: "#4338ca",
  why: "Find where to post content so ChatGPT & Perplexity pick you up",
  },
  {
  icon: "", label: "Score & Fix Content", sub: "Content Scoring & Optimization",
- section: "content-scoring-optimization", color: "#38bdf8", border: "#0369a1",
+ section: "content-scoring-optimization", color: "#a5b4fc", border: "#4338ca",
  why: "Check if your existing content is strong enough to earn citations",
  },
  {
  icon: "", label: "Steal Their Backlinks", sub: "Link Intersect & Outreach",
- section: "link-intersect-outreach", color: "#f472b6", border: "#9d174d",
+ section: "link-intersect-outreach", color: "#a5b4fc", border: "#4338ca",
  why: "Find sites linking to competitors but not you — and reach out",
  },
  ];
@@ -1679,7 +1679,7 @@ function SoVTab() {
  <div style={{ marginBottom: 18 }}>
  <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>AI Share of Voice</div>
  <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.6, marginBottom: 12 }}>
- Find out how often AI tools like <span style={{ color: "#c084fc" }}>ChatGPT</span>, <span style={{ color: "#34d399" }}>Perplexity</span>, and <span style={{ color: "#fbbf24" }}>Google AI</span> recommend your brand vs. competitors — and <strong style={{ color: "#fafafa" }}>exactly why</strong> they pick one over the other.
+ Find out how often AI tools like <span>ChatGPT</span>, <span>Perplexity</span>, and <span>Google AI</span> recommend your brand vs. competitors — and <strong style={{ color: "#fafafa" }}>exactly why</strong> they pick one over the other.
  </div>
  {/* How it works steps */}
  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 4 }}>

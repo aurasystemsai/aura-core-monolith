@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetch } from "../../api";
 
@@ -33,7 +33,7 @@ const S = {
  badgeGreen:{ background: "#14532d", color: "#86efac"},
  badgeYellow:{ background: "#713f12", color: "#fde68a"},
  badgeRed: { background: "#7f1d1d", color: "#fca5a5"},
- badgePurple:{ background: "#4c1d95", color: "#c4b5fd"},
+ badgePurple:{ background: "#1e1b4b", color: "#c4b5fd"},
  divider: { border: "none", borderTop: "1px solid #27272a", margin: "20px 0"},
  imageGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginTop: 16 },
  imageCard: { borderRadius: 10, overflow: "hidden", border: "1px solid #27272a", background: "#18181b"},
@@ -298,7 +298,7 @@ function ProductResult({ sub, data }) {
  ))}
  {data.bulletPoints?.length > 0 && <><hr style={S.divider} /><div style={S.resultLabel}>Bullet Points</div><ul style={{ color: "#d4d4d8", fontSize: 14, paddingLeft: 20 }}>{data.bulletPoints.map((b,i) => <li key={i}>{b}</li>)}</ul></>}
  {data.seoTitle && <><hr style={S.divider} /><div style={S.resultLabel}>SEO Title ({data.seoTitle.length} chars)</div><code style={{ color: "#a78bfa", fontSize: 14 }}>{data.seoTitle}</code></>}
- {data.metaDescription && <><div style={{ ...S.resultLabel, marginTop: 12 }}>Meta Description ({data.metaDescription.length} chars)</div><code style={{ color: "#6ee7b7", fontSize: 14 }}>{data.metaDescription}</code></>}
+ {data.metaDescription && <><div style={{ ...S.resultLabel, marginTop: 12 }}>Meta Description ({data.metaDescription.length} chars)</div><code style={{ color: "#a5b4fc", fontSize: 14 }}>{data.metaDescription}</code></>}
  </ResultBlock>
  );
 
@@ -334,7 +334,7 @@ function ProductResult({ sub, data }) {
  <ResultBlock label="FAQ Generation">
  {data.faqs?.map((faq, i) => (
  <div key={i} style={{ marginBottom: 14, padding: 14, background: "#09090b", borderRadius: 8 }}>
- <div style={{ fontWeight: 600, color: "#c4b5fd", marginBottom: 6 }}>Q: {faq.question}</div>
+ <div style={{ fontWeight: 600, color: "#d4d4d8", marginBottom: 6 }}>Q: {faq.question}</div>
  <div style={{ color: "#d4d4d8", fontSize: 14 }}>A: {faq.answer}</div>
  </div>
  ))}
@@ -451,7 +451,7 @@ function AdResult({ sub, data }) {
  <div style={{ fontSize: 14 }}>
  <div style={{ color: "#e4e4e7", marginBottom: 6 }}><strong>Primary:</strong> {v.primaryText}</div>
  <div style={{ color: "#a78bfa"}}><strong>Headline:</strong> {v.headline}</div>
- <div style={{ color: "#6ee7b7"}}><strong>Description:</strong> {v.description}</div>
+ <div style={{ color: "#d4d4d8"}}><strong>Description:</strong> {v.description}</div>
  <div style={{ color: "#fde68a", marginTop: 4 }}><strong>CTA:</strong> {v.callToAction}</div>
  </div>
  </div>
@@ -492,7 +492,7 @@ function AdResult({ sub, data }) {
  <div key={i} style={{ display: "flex", gap: 12, marginBottom: 10, padding: "10px 14px", background: "#09090b", borderRadius: 8 }}>
  <span style={{ ...S.badge, ...S.badgePurple, minWidth: 52, textAlign: "center"}}>{s.timestamp}</span>
  <div style={{ flex: 1, fontSize: 13 }}>
- <div style={{ color: "#6ee7b7"}}> {s.onScreen}</div>
+ <div style={{ color: "#d4d4d8"}}> {s.onScreen}</div>
  <div style={{ color: "#d4d4d8", marginTop: 4 }}> {s.voiceover}</div>
  </div>
  </div>
@@ -622,7 +622,7 @@ function SocialResult({ sub, data }) {
  <td style={{ padding: "8px 12px", color: "#a78bfa", fontWeight: 700 }}>{d.day}</td>
  <td style={{ padding: "8px 12px", color: "#71717a"}}>{d.date}</td>
  <td style={{ padding: "8px 12px"}}><span style={{ ...S.badge, ...S.badgePurple }}>{d.platform}</span></td>
- <td style={{ padding: "8px 12px", color: "#6ee7b7"}}>{d.contentPillar}</td>
+ <td style={{ padding: "8px 12px", color: "#d4d4d8"}}>{d.contentPillar}</td>
  <td style={{ padding: "8px 12px", color: "#d4d4d8", maxWidth: 300 }}>{d.caption?.slice(0, 100)}{d.caption?.length > 100 ? "": ""}</td>
  <td style={{ padding: "8px 12px", color: "#71717a"}}>{d.bestTimeToPost}</td>
  </tr>
@@ -638,7 +638,7 @@ function SocialResult({ sub, data }) {
  {data.hashtagSets?.map((set, i) => (
  <div key={i} style={{ marginBottom: 16, padding: 14, background: "#09090b", borderRadius: 8 }}>
  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
- <span style={{ fontWeight: 700, color: "#c4b5fd"}}>Set {set.setId}</span>
+ <span style={{ fontWeight: 700, color: "#d4d4d8"}}>Set {set.setId}</span>
  <CopyBtn text={set.tags?.join("")} />
  </div>
  {["mega","mid","niche"].map(tier => set[tier]?.length > 0 && (
@@ -1555,10 +1555,10 @@ function LandingPagesTab() {
  <ResultBlock label="Landing Page Copy">
  {result.headlines && result.headlines.map((h, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 14, marginBottom: 10 }}><div style={{ display: "flex", justifyContent: "space-between"}}><span style={{ color: "#f59e0b", fontSize: 16, fontWeight: 700 }}>{h.headline}</span><CopyBtn text={h.headline} /></div>{h.subheadline && <p style={{ color: "#a1a1aa", fontSize: 13, marginTop: 6 }}>{h.subheadline}</p>}<div style={{ display: "flex", gap: 6, marginTop: 6 }}><span style={{ ...S.badge, ...S.badgePurple }}>{h.type}</span><span style={{ ...S.badge, background: "#1c1917", color: "#d6d3d1"}}>{h.framework}</span></div></div>)}
  {result.sections && result.sections.map((s, i) => <div key={i} style={{ marginBottom: 14 }}><div style={{ ...S.resultLabel }}>{s.section}</div><div style={{ color: "#f59e0b", fontWeight: 600, marginBottom: 4 }}>{s.headline}</div><p style={{ color: "#d4d4d8", fontSize: 14 }}>{s.copy}</p></div>)}
- {result.primaryCTA && <div style={{ padding: 12, background: "#4c1d95", borderRadius: 8, marginBottom: 10 }}><div style={{ color: "#c4b5fd", fontWeight: 700, fontSize: 16 }}> {result.primaryCTA.button}</div>{result.primaryCTA.urgencyLine && <div style={{ color: "#f59e0b", fontSize: 12, marginTop: 4 }}>{result.primaryCTA.urgencyLine}</div>}</div>}
- {result.buttons && result.buttons.map((btn, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between"}}><span style={{ color: "#6ee7b7", fontWeight: 700, fontSize: 15 }}>[{btn.text}]</span><CopyBtn text={btn.text} /></div>{btn.subtext && <div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{btn.subtext}</div>}</div>)}
+ {result.primaryCTA && <div style={{ padding: 12, background: "#1e1b4b", borderRadius: 8, marginBottom: 10 }}><div style={{ color: "#c4b5fd", fontWeight: 700, fontSize: 16 }}> {result.primaryCTA.button}</div>{result.primaryCTA.urgencyLine && <div style={{ color: "#f59e0b", fontSize: 12, marginTop: 4 }}>{result.primaryCTA.urgencyLine}</div>}</div>}
+ {result.buttons && result.buttons.map((btn, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between"}}><span style={{ color: "#a5b4fc", fontWeight: 700, fontSize: 15 }}>[{btn.text}]</span><CopyBtn text={btn.text} /></div>{btn.subtext && <div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{btn.subtext}</div>}</div>)}
  {result.original && <><div style={S.resultLabel}>Original vs Variants (A/B)</div><div style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, borderLeft: "3px solid #71717a", marginBottom: 8 }}><span style={{ color: "#71717a", fontSize: 11 }}>CONTROL</span><div style={{ color: "#d4d4d8", fontSize: 14, marginTop: 4 }}>{result.original.headline}</div></div>{result.variants && result.variants.map((v, i) => <div key={i} style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, borderLeft: "3px solid #7c3aed", marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between"}}><span style={{ ...S.badge, ...S.badgePurple }}>{v.changeType}</span><CopyBtn text={v.headline} /></div><div style={{ color: "#d4d4d8", fontSize: 14, marginTop: 4 }}>{v.headline}</div><div style={{ color: "#71717a", fontSize: 12, marginTop: 4 }}>{v.hypothesis}</div></div>)}</>}
- {result.tiers && result.tiers.map((t, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between"}}><span style={{ ...S.badge, ...S.badgePurple }}>{t.tierName}</span>{t.mostPopularBadge && <span style={{ ...S.badge, ...S.badgeGreen }}>Most Popular</span>}</div><p style={{ color: "#a1a1aa", fontSize: 13, margin: "6px 0"}}>{t.tagline}</p><span style={{ color: "#6ee7b7", fontWeight: 600 }}>CTA: {t.cta}</span></div>)}
+ {result.tiers && result.tiers.map((t, i) => <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: 12, marginBottom: 8 }}><div style={{ display: "flex", justifyContent: "space-between"}}><span style={{ ...S.badge, ...S.badgePurple }}>{t.tierName}</span>{t.mostPopularBadge && <span style={{ ...S.badge, ...S.badgeGreen }}>Most Popular</span>}</div><p style={{ color: "#a1a1aa", fontSize: 13, margin: "6px 0"}}>{t.tagline}</p><span style={{ color: "#a5b4fc", fontWeight: 600 }}>CTA: {t.cta}</span></div>)}
  </ResultBlock>
  )}
  </div>
@@ -1670,8 +1670,8 @@ function EcomSpecialsTab() {
  </div>
  {result && (
  <ResultBlock label="E-com Copy Results">
- {result.bannerHeadline && <div style={{ padding: 16, background: "#4c1d95", borderRadius: 8, textAlign: "center", marginBottom: 12 }}><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{result.bannerHeadline}</div></div>}
- {result.heroHeadline && <div style={{ padding: 16, background: "#4c1d95", borderRadius: 8, textAlign: "center", marginBottom: 12 }}><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{result.heroHeadline}</div>{result.subheadline && <div style={{ color: "#c4b5fd", marginTop: 4 }}>{result.subheadline}</div>}</div>}
+ {result.bannerHeadline && <div style={{ padding: 16, background: "#1e1b4b", borderRadius: 8, textAlign: "center", marginBottom: 12 }}><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{result.bannerHeadline}</div></div>}
+ {result.heroHeadline && <div style={{ padding: 16, background: "#1e1b4b", borderRadius: 8, textAlign: "center", marginBottom: 12 }}><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{result.heroHeadline}</div>{result.subheadline && <div style={{ color: "#c4b5fd", marginTop: 4 }}>{result.subheadline}</div>}</div>}
  {result.emailSubject && <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 6 }}><span style={{ color: "#f59e0b"}}> {result.emailSubject}</span><CopyBtn text={result.emailSubject} /></div>}
  {result.emailSubjects && result.emailSubjects.map((e, i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 6 }}><span style={{ color: "#f59e0b"}}> Email {i + 1}: {e}</span><CopyBtn text={e} /></div>)}
  {result.smsText && <div style={{ padding: "10px 14px", background: "#09090b", borderRadius: 8, marginBottom: 6 }}><span style={{ ...S.badge, ...S.badgeGreen, marginRight: 8 }}>SMS</span><span style={{ color: "#d4d4d8", fontSize: 13 }}>{result.smsText}</span></div>}

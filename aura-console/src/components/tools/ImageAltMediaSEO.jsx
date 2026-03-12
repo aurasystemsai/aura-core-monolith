@@ -1,4 +1,4 @@
-ï»¿import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { ScoreRing, scoreColor as mozScoreColor, ErrorBox, MetricRow } from "../MozUI";
 
@@ -1091,8 +1091,8 @@ export default function ImageAltMediaSEO() {
  "de": { tone: "Direct, precise", formality: "Sie", punctuation: "Standard", numerals: "Arabic"},
  "en-GB": { tone: "Concise, UK spelling", formality: "Light formal", punctuation: "Standard", numerals: "Arabic"},
  "en-US": { tone: "Concise, US spelling", formality: "Neutral", punctuation: "Standard", numerals: "Arabic"},
- "ja": { tone: "Polite (ã§ã™/ã¾ã™)", formality: "Polite", punctuation: "Full-width where natural", numerals: "Arabic"},
- "ko": { tone: "Polite (ì²´)", formality: "Polite", punctuation: "Standard", numerals: "Arabic"},
+ "ja": { tone: "Polite (??/??)", formality: "Polite", punctuation: "Full-width where natural", numerals: "Arabic"},
+ "ko": { tone: "Polite (?)", formality: "Polite", punctuation: "Standard", numerals: "Arabic"},
  "zh": { tone: "Neutral, Mainland", formality: "Neutral", punctuation: "Full-width Chinese punctuation", numerals: "Arabic"},
  };
 
@@ -1218,7 +1218,7 @@ export default function ImageAltMediaSEO() {
  bottom: 100, 
  right: 24, 
  zIndex: 999999, 
- background: count > 0 && !aiProgress.show ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)": "rgba(71, 85, 105, 0.8)",
+ background: count > 0 && !aiProgress.show ? "#18181b": "rgba(71, 85, 105, 0.8)",
  padding: "16px 24px", 
  borderRadius: 16, 
  border: "2px solid "+ (count > 0 ? "#a855f7": "#71717a"),
@@ -1264,7 +1264,7 @@ export default function ImageAltMediaSEO() {
  bottom: 180, 
  right: 24, 
  zIndex: 999999, 
- background: hasShopifyImages && !shopifyPushProgress.show ? "linear-gradient(135deg, #10b981 0%, #059669 100%)": "rgba(71, 85, 105, 0.8)",
+ background: hasShopifyImages && !shopifyPushProgress.show ? "#10b981": "rgba(71, 85, 105, 0.8)",
  padding: "16px 24px", 
  borderRadius: 16, 
  border: "2px solid "+ (hasShopifyImages ? "#10b981": "#71717a"),
@@ -1302,7 +1302,7 @@ export default function ImageAltMediaSEO() {
  to { transform: scale(1); opacity: 1; }
  }
  `}</style>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5"}}>Keyboard Shortcuts</h3>
  <button onClick={() => setShowKeyboardHelp(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
@@ -1332,7 +1332,7 @@ export default function ImageAltMediaSEO() {
  const percentage = aiProgress.total ? Math.round((aiProgress.current / aiProgress.total) * 100) : 0;
  return (
  <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s"}}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #7c3aed", animation: "scaleIn 0.3s ease-out"}}>
+ <div style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #7c3aed", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ textAlign: "center", marginBottom: 24 }}>
  
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5"}}>AI Processing</h3>
@@ -1374,7 +1374,7 @@ export default function ImageAltMediaSEO() {
  
  return (
  <div onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ textAlign: "center", marginBottom: 24 }}>
  
  <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5"}}>AI Improvements Complete!</h3>
@@ -1485,7 +1485,7 @@ export default function ImageAltMediaSEO() {
  setAiResults(prev => ({ ...prev, show: true })); // Re-show modal on error
  }
  }}
- style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s"}}
+ style={{ background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s"}}
  onMouseEnter={e => { e.target.style.transform = "scale(1.02)"; e.target.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.5)"; }}
  onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = "0 4px 16px rgba(16, 185, 129, 0.4)"; }}
  >
@@ -1502,7 +1502,7 @@ export default function ImageAltMediaSEO() {
  
  return (
  <div onClick={() => setShopifyPushResults({ show: false, pushed: 0, failed: 0, errors: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: `2px solid ${shopifyPushResults.pushed > 0 ? "#10b981": "#ef4444"}`, animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: `2px solid ${shopifyPushResults.pushed > 0 ? "#10b981": "#ef4444"}`, animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ textAlign: "center", marginBottom: 24 }}>
  <div style={{ fontSize: 64, marginBottom: 16 }}>{shopifyPushResults.pushed > 0 ? "": ""}</div>
  <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5"}}>
@@ -1557,7 +1557,7 @@ export default function ImageAltMediaSEO() {
  
  return (
  <div onClick={() => setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: ''})} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #8b5cf6", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #8b5cf6", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ textAlign: "center", marginBottom: 24 }}>
  <div style={{ fontSize: 48, marginBottom: 16 }}>AI Generated</div>
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5"}}>Review Alt Text</h3>
@@ -1607,7 +1607,7 @@ export default function ImageAltMediaSEO() {
  setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: ''});
  showToast("Alt text approved - use 'Save'to apply");
  }}
- style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s"}}
+ style={{ background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s"}}
  onMouseEnter={e => { e.target.style.transform = "scale(1.02)"; e.target.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.5)"; }}
  onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = "0 4px 16px rgba(16, 185, 129, 0.4)"; }}
  >
@@ -1623,13 +1623,13 @@ export default function ImageAltMediaSEO() {
  if (!showDeleteModal) return null;
  return (
  <div onClick={() => setShowDeleteModal(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #ef4444", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #ef4444", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16, fontWeight: 700, color: "#ef4444"}}>!</div>
  <h3 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 16px 0", color: "#f4f4f5", textAlign: "center"}}>Confirm Deletion</h3>
  <p style={{ fontSize: 15, color: "#d4d4d8", marginBottom: 24, textAlign: "center"}}>Are you sure you want to delete {pendingDeleteIds.length} item(s)? This action cannot be undone.</p>
  <div style={{ display: "flex", gap: 12, justifyContent: "center"}}>
  <button onClick={() => setShowDeleteModal(false)} style={{ background: "#71717a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s"}}>Cancel</button>
- <button onClick={() => { /* handle delete */ setShowDeleteModal(false); setPendingDeleteIds([]); showToast("Deleted successfully"); }} style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(239, 68, 68, 0.3)", transition: "all 0.2s"}}>Delete {pendingDeleteIds.length} items</button>
+ <button onClick={() => { /* handle delete */ setShowDeleteModal(false); setPendingDeleteIds([]); showToast("Deleted successfully"); }} style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(239, 68, 68, 0.3)", transition: "all 0.2s"}}>Delete {pendingDeleteIds.length} items</button>
  </div>
  </div>
  </div>
@@ -1643,7 +1643,7 @@ export default function ImageAltMediaSEO() {
  
  return (
  <div onClick={() => setContextMenu(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1999 }}>
- <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: contextMenu.y, left: contextMenu.x, background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", border: "1px solid #52525b", minWidth: 200, animation: "scaleIn 0.15s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: contextMenu.y, left: contextMenu.x, background: "#18181b", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", border: "1px solid #52525b", minWidth: 200, animation: "scaleIn 0.15s ease-out"}}>
  {[
  { label: pinnedIds.includes(contextMenu.imageId) ? "Unpin": "Pin", action: () => { togglePin(contextMenu.imageId); setContextMenu(null); } },
  { label: "AI Rewrite", action: () => { handleAiRewriteSingle(img); setContextMenu(null); } },
@@ -1681,7 +1681,7 @@ export default function ImageAltMediaSEO() {
  if (!showComparison) return null;
  return (
  <div onClick={() => setShowComparison(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 900, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 900, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5"}}>Before/After Comparison</h3>
  <button onClick={() => setShowComparison(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
@@ -1712,7 +1712,7 @@ export default function ImageAltMediaSEO() {
  const previewItems = images.filter(img => selectedImageIds.includes(img.id)).slice(0, 10);
  return (
  <div onClick={() => setShowBulkPreview(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s", overflow: "auto"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 800, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 800, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5"}}>Bulk Preview ({selectedImageIds.length} items)</h3>
  <button onClick={() => setShowBulkPreview(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
@@ -1727,7 +1727,7 @@ export default function ImageAltMediaSEO() {
  return (
  <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#18181b", borderRadius: 10, border: "1px solid #52525b"}}>
  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 4 }}>
- {displayName}{displayName !== img.id ? ` Â· ID: ${img.id}` : ""}
+ {displayName}{displayName !== img.id ? ` · ID: ${img.id}` : ""}
  </div>
  <div style={{ fontSize: 13, color: "#e4e4e7"}}>Current: {img.altText || "(none)"}</div>
  </div>
@@ -1737,7 +1737,7 @@ export default function ImageAltMediaSEO() {
  </div>
  <div style={{ display: "flex", gap: 12, justifyContent: "flex-end"}}>
  <button onClick={() => setShowBulkPreview(false)} style={{ background: "#71717a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer"}}>Cancel</button>
- <button onClick={() => { handleBulkApply(); setShowBulkPreview(false); }} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)"}}>Apply to {selectedImageIds.length} items</button>
+ <button onClick={() => { handleBulkApply(); setShowBulkPreview(false); }} style={{ background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)"}}>Apply to {selectedImageIds.length} items</button>
  </div>
  </div>
  </div>
@@ -1748,7 +1748,7 @@ export default function ImageAltMediaSEO() {
  if (!showUndoHistory) return null;
  return (
  <div onClick={() => setShowUndoHistory(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "70vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "70vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5"}}>Undo History</h3>
  <button onClick={() => setShowUndoHistory(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
@@ -1777,7 +1777,7 @@ export default function ImageAltMediaSEO() {
  const presetColors = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#0ea5e9", "#ef4444"];
  return (
  <div onClick={() => setShowThemePanel(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s"}}>
- <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
+ <div onClick={e => e.stopPropagation()} style={{ background: "#18181b", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
  <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5"}}>Theme Customization</h3>
  <button onClick={() => setShowThemePanel(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
@@ -1803,7 +1803,7 @@ export default function ImageAltMediaSEO() {
  };
 
  const NotificationToast = ({ notification, onDismiss }) => (
- <div style={{ position: "fixed", top: 24 + (notification.index * 80), right: 24, background: notification.type === "achievement"? "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)": "linear-gradient(135deg, #6ee7b7 0%, #34d399 100%)", color: notification.type === "achievement"? "#78350f": "#064e3b", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid", borderColor: notification.type === "achievement"? "#fbbf24": "#10b981", boxShadow: "0 12px 32px rgba(0,0,0,0.3)", zIndex: 1600, maxWidth: 350, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "flex-start", gap: 12 }}>
+ <div style={{ position: "fixed", top: 24 + (notification.index * 80), right: 24, background: notification.type === "achievement"? "#1c0a00": "#052e16", color: notification.type === "achievement"? "#fbbf24": "#6ee7b7", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid", borderColor: notification.type === "achievement"? "#fbbf24": "#10b981", boxShadow: "0 12px 32px rgba(0,0,0,0.3)", zIndex: 1600, maxWidth: 350, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "flex-start", gap: 12 }}>
  <span style={{ fontSize: 14, fontWeight: 700 }}>{notification.title}</span>
  <div style={{ flex: 1 }}>
  <div style={{ fontWeight: 800, marginBottom: 4 }}>{notification.title}</div>
@@ -8228,10 +8228,10 @@ export default function ImageAltMediaSEO() {
  };
 
  return (
- <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", minHeight: "100vh", overflowX: "hidden"}}>
+ <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#18181b", minHeight: "100vh", overflowX: "hidden"}}>
  <FloatingAIButtonFallback />
  <FloatingShopifyPushButton />
- <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)"}}>
+ <div style={{ position: "sticky", top: 0, zIndex: 999, background: "#18181b", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
  <div>
  <h2 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#fff", letterSpacing: "-0.01em"}}>Image Alt & SEO Autopilot</h2>
@@ -8367,7 +8367,7 @@ export default function ImageAltMediaSEO() {
  {simulationResults?.length ? (
  <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
- <div style={{ fontWeight: 700 }}>Simulation ({simulationResults.length}) {simulationSummary?.hitRateAvg ? `Â· Hit rate ~${simulationSummary.hitRateAvg}%` : ''}</div>
+ <div style={{ fontWeight: 700 }}>Simulation ({simulationResults.length}) {simulationSummary?.hitRateAvg ? `· Hit rate ~${simulationSummary.hitRateAvg}%` : ''}</div>
  <button onClick={() => { setSimulationResults([]); setSimulationSummary(null); }} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer"}}>Clear</button>
  </div>
  {simulationSummary?.variants?.length ? (
@@ -8380,10 +8380,10 @@ export default function ImageAltMediaSEO() {
  <ul style={{ margin: 0, paddingLeft: 16 }}>
  {simulationResults.slice(0, 10).map((r, idx) => (
  <li key={`sim-${idx}`} style={{ marginBottom: 8 }}>
- <div style={{ fontWeight: 600 }}>{r.ok ? "OK": "Error"} Â· {r.meta?.url ? shortenUrl(r.meta.url) : 'Item'} {typeof r.hitRate === 'number'? `Â· Hit ${r.hitRate}%` : ''} {r.promptVariant ? `Â· ${r.promptVariant}` : ''}</div>
+ <div style={{ fontWeight: 600 }}>{r.ok ? "OK": "Error"} · {r.meta?.url ? shortenUrl(r.meta.url) : 'Item'} {typeof r.hitRate === 'number'? `· Hit ${r.hitRate}%` : ''} {r.promptVariant ? `· ${r.promptVariant}` : ''}</div>
  {r.error ? <div style={{ color: "#f87171"}}>{r.error}</div> : null}
  {r.result ? <div style={{ fontSize: 13 }}>Suggested: {r.result}</div> : null}
- {r.diff ? <div style={{ fontSize: 12, color: "#d4d4d8"}}>Î”len {r.diff.lengthDelta}; overlap {r.diff.overlap}</div> : null}
+ {r.diff ? <div style={{ fontSize: 12, color: "#d4d4d8"}}>?len {r.diff.lengthDelta}; overlap {r.diff.overlap}</div> : null}
  </li>
  ))}
  {simulationResults.length > 10 ? <li style={{ fontSize: 12, color: "#a1a1aa"}}>Showing first 10</li> : null}
@@ -8444,7 +8444,7 @@ export default function ImageAltMediaSEO() {
  </div>
  <div style={{ flex: 1 }}>
  <div style={{ fontWeight: 600, color: v.mismatch ? "#f97316": "#a3e635"}}>
- {v.mismatch ? "Mismatch": "Looks aligned"} Â· overlap {v.overlap}
+ {v.mismatch ? "Mismatch": "Looks aligned"} · overlap {v.overlap}
  </div>
  <div style={{ fontSize: 12, color: "#d4d4d8"}}>{v.url ? shortenUrl(v.url) : '(no url)'}</div>
  <div style={{ fontSize: 12, marginTop: 4 }}>{v.altText || '(none)'}</div>
@@ -8587,11 +8587,11 @@ export default function ImageAltMediaSEO() {
  <span>Showing {images.length} of {imageTotal} images</span>
  <span>Page {currentImagePage} / {totalImagePages}</span>
  <div style={{ display: "flex", gap: 8, alignItems: "center"}}>
- <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "linear-gradient(135deg, #e4e4e7 0%, #d4d4d8 100%)", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed": "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}> Prev</button>
+ <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "#27272a", color: "#e4e4e7", border: "1px solid #3f3f46", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed": "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}> Prev</button>
  <input name="jumpToPage"type="number"min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump"style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#09090b", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
  <span style={{ color: "#d4d4d8"}}>/</span>
  <span style={{ fontWeight: 700, color: "#a3e635"}}>{totalImagePages}</span>
- <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "linear-gradient(135deg, #e4e4e7 0%, #d4d4d8 100%)", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed": "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next </button>
+ <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "#27272a", color: "#e4e4e7", border: "1px solid #3f3f46", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed": "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next </button>
  </div>
  </div>
  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: "#a3e635"}}>
@@ -8600,7 +8600,7 @@ export default function ImageAltMediaSEO() {
  <button onClick={clearSelectedImages} aria-label="Clear selected images"disabled={!selectedImageIds.length} style={{ background: "#fafafa", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: !selectedImageIds.length ? "not-allowed": "pointer"}}>Clear selection</button>
  <button onClick={handlePushShopify} aria-label="Push selected alt text to Shopify"disabled={!selectedImageIds.length || shopifyPushing || loading} style={{ background: !selectedImageIds.length || shopifyPushing ? "#52525b": "#0ea5e9", color: "#fafafa", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing || loading) ? "not-allowed": "pointer"}}>{shopifyPushing ? "Pushing": "Push to Shopify"}</button>
  </div>
- <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)"}}>
+ <div style={{ marginBottom: 24, background: "#18181b", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
  <div style={{ fontWeight: 800, fontSize: 16, color: "#f4f4f5", display: "flex", alignItems: "center", gap: 8 }}>Bulk Update</div>
  <button onClick={() => setCollapsedSections(prev => ({ ...prev, bulk: !prev.bulk }))} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 20, cursor: "pointer"}}>{collapsedSections.bulk ? "": ""}</button>
@@ -8614,10 +8614,10 @@ export default function ImageAltMediaSEO() {
  onBlur={e => e.target.style.borderColor = "#71717a"}
  />
  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap"}}>
- <button onClick={handleBulkApply} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #10b981 0%, #059669 100%)": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed": "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)": "none", transition: "all 0.2s", transform: "translateY(0)"}} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
+ <button onClick={handleBulkApply} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "#10b981": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed": "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)": "none", transition: "all 0.2s", transform: "translateY(0)"}} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
  <button onClick={() => { if (selectedImageIds.length && bulkAltText.trim()) setShowBulkPreview(true); }} disabled={!selectedImageIds.length || !bulkAltText.trim()} style={{ background: "rgba(139, 92, 246, 0.2)", color: "#a78bfa", border: "1px solid #8b5cf6", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed": "pointer", transition: "all 0.2s"}}>Preview</button>
- <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update"disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed": "pointer", boxShadow: roleCanApprove ? "0 4px 12px rgba(245, 158, 11, 0.3)": "none", transition: "all 0.2s"}}>Request approval</button>
- <button onClick={handleUndo} aria-label="Undo last bulk or AI change"disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's': ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed": "pointer", boxShadow: undoBuffer.length ? "0 4px 12px rgba(245, 158, 11, 0.3)": "none", transition: "all 0.2s"}}>Undo ({undoBuffer.length})</button>
+ <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update"disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "#d97706": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed": "pointer", boxShadow: roleCanApprove ? "0 4px 12px rgba(245, 158, 11, 0.3)": "none", transition: "all 0.2s"}}>Request approval</button>
+ <button onClick={handleUndo} aria-label="Undo last bulk or AI change"disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's': ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "#d97706": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed": "pointer", boxShadow: undoBuffer.length ? "0 4px 12px rgba(245, 158, 11, 0.3)": "none", transition: "all 0.2s"}}>Undo ({undoBuffer.length})</button>
  {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '': ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
  <span style={{ fontSize: 11, color: "#a1a1aa"}}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo), Shift+Click (range select)</span>
  </div>
@@ -8651,7 +8651,7 @@ export default function ImageAltMediaSEO() {
  </div>
  ) : null}
 
- <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)"}}>
+ <div style={{ marginBottom: 24, background: "#18181b", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 16 }}>
  <div style={{ fontWeight: 800, fontSize: 16, color: "#f4f4f5", display: "flex", alignItems: "center", gap: 8 }}>Approval Queue <span style={{ background: "#7c3aed", color: "#fff", fontSize: 12, padding: "2px 10px", borderRadius: 999, fontWeight: 700 }}>{approvalQueue.length}</span></div>
  <div style={{ display: "flex", gap: 12, alignItems: "center"}}>
@@ -8724,8 +8724,8 @@ export default function ImageAltMediaSEO() {
  <ul style={{ margin: 0, paddingLeft: 16 }}>
  {actionLog.slice(-10).reverse().map((a, idx) => (
  <li key={`${a.ts}-${idx}`} style={{ fontSize: 12, color: "#d4d4d8", marginBottom: 4 }}>
- <span style={{ fontWeight: 700 }}>{a.action}</span> Â· {a.count || 0} Â· role {a.role} Â· {new Date(a.ts).toLocaleTimeString()}
- {a.label ? <> Â· {a.label}</> : null}
+ <span style={{ fontWeight: 700 }}>{a.action}</span> · {a.count || 0} · role {a.role} · {new Date(a.ts).toLocaleTimeString()}
+ {a.label ? <> · {a.label}</> : null}
  </li>
  ))}
  </ul>
@@ -8757,7 +8757,7 @@ export default function ImageAltMediaSEO() {
  </div>
  </div>
  {simpleMode && !selectedImageIds.length && filteredImages.length > 0 && (
- <div style={{ marginBottom: 16, background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", borderRadius: 16, padding: 20, border: "2px solid #8b5cf6", boxShadow: "0 8px 24px rgba(124, 58, 237, 0.3)"}}>
+ <div style={{ marginBottom: 16, background: "#18181b", borderRadius: 16, padding: 20, border: "2px solid #8b5cf6", boxShadow: "0 8px 24px rgba(124, 58, 237, 0.3)"}}>
  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
  
  <div style={{ flex: 1 }}>
@@ -8779,11 +8779,11 @@ export default function ImageAltMediaSEO() {
  </div>
  {loading && <SkeletonLoader count={5} height={140} />}
  {!loading && !filteredImages.length ? (
- <div style={{ textAlign: "center", padding: "80px 20px", background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, border: "2px solid #52525b"}}>
+ <div style={{ textAlign: "center", padding: "80px 20px", background: "#18181b", borderRadius: 20, border: "2px solid #52525b"}}>
  <div style={{ fontSize: 64, marginBottom: 16 }}>Image</div>
  <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f4f4f5", margin: "0 0 12px 0"}}>No images yet</h3>
  <p style={{ fontSize: 15, color: "#d4d4d8", marginBottom: 24 }}>Import from Shopify or create your first image alt text to get started.</p>
- <button onClick={handleImportShopify} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)"}}>Pull from Shopify</button>
+ <button onClick={handleImportShopify} style={{ background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)"}}>Pull from Shopify</button>
  </div>
  ) : null}
  <ul style={{ paddingLeft: 18 }} aria-busy={loading} aria-live="polite">
@@ -8800,7 +8800,7 @@ export default function ImageAltMediaSEO() {
  onMouseLeave={() => setHoveredImageId(null)}
  style={{ 
  marginBottom: 16, 
- background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #27272a 0%, #52525b 100%)": "rgba(15, 23, 42, 0.5)", 
+ background: selectedImageIds.includes(img.id) ? "#18181b": "rgba(15, 23, 42, 0.5)", 
  borderRadius: 16, 
  padding: 16, 
  border: selectedImageIds.includes(img.id) ? `2px solid ${accentColor}` : "1px solid #52525b", 
@@ -8836,7 +8836,7 @@ export default function ImageAltMediaSEO() {
  </div>
  <div style={{ flex: 1, minWidth: 0 }}>
  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
- <div><b>{displayName}</b>{displayName !== img.id ? <> Â· ID: {img.id}</> : null}</div>
+ <div><b>{displayName}</b>{displayName !== img.id ? <> · ID: {img.id}</> : null}</div>
  {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
  {img.url ? <a href={img.url} target="_blank"rel="noreferrer"style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline"}}>Open</a> : null}
  <span style={{ fontSize: 11, background: lint.status === "ok"? "#22c55e": lint.status === "missing"? "#ef4444": lint.status === "short"? "#f59e0b": "#0ea5e9", color: "#09090b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
@@ -8875,7 +8875,7 @@ export default function ImageAltMediaSEO() {
  onClick={() => handleAiRewriteSingle(img)}
  disabled={rewritingId === img.id || loading}
  style={{
- background: rewritingId === img.id ? "#52525b": "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+ background: rewritingId === img.id ? "#52525b": "#7c3aed",
  color: "#fff",
  border: "none",
  borderRadius: 10,
@@ -8900,7 +8900,7 @@ export default function ImageAltMediaSEO() {
  onClick={() => handlePushToShopify([img.id])}
  disabled={shopifyPushProgress.show}
  style={{
- background: shopifyPushProgress.show ? "#52525b": "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+ background: shopifyPushProgress.show ? "#52525b": "#10b981",
  color: "#fff",
  border: "none",
  borderRadius: 10,
@@ -9196,7 +9196,7 @@ export default function ImageAltMediaSEO() {
  </div>
  )}
  {error && (
- <div style={{ position: "fixed", top: 24, right: 24, background: "linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)", color: "#7f1d1d", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid #dc2626", boxShadow: "0 12px 32px rgba(220, 38, 38, 0.3)", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out"}} role="alert"aria-live="assertive">
+ <div style={{ position: "fixed", top: 24, right: 24, background: "#3b0a0a", color: "#f87171", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "1px solid #b91c1c", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out"}} role="alert"aria-live="assertive">
  <style>{`
  @keyframes slideInRight {
  from { transform: translateX(400px); opacity: 0; }
@@ -9214,19 +9214,19 @@ export default function ImageAltMediaSEO() {
  </button>
  </div>
  </div>
- <button onClick={() => setError("")} style={{ background: "transparent", border: "none", color: "#7f1d1d", fontSize: 18, cursor: "pointer", padding: 0 }}></button>
+ <button onClick={() => setError("")} style={{ background: "transparent", border: "none", color: "#f87171", fontSize: 18, cursor: "pointer", padding: 0 }}></button>
  </div>
  </div>
  )}
  {toast && (
- <div style={{ position: "fixed", top: 24, right: 24, background: "linear-gradient(135deg, #6ee7b7 0%, #34d399 100%)", color: "#064e3b", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid #10b981", boxShadow: "0 12px 32px rgba(16, 185, 129, 0.3)", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "center", gap: 12 }} role="status"aria-live="polite">
+ <div style={{ position: "fixed", top: 24, right: 24, background: "#052e16", color: "#6ee7b7", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "1px solid #10b981", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "center", gap: 12 }} role="status"aria-live="polite">
  <span style={{ fontSize: 14, fontWeight: 700 }}>Success</span>
  <span style={{ flex: 1 }}>{toast}</span>
  </div>
  )}
  {loading && (
- <div role="status"aria-live="polite"style={{ position: "fixed", top: 24, right: 24, background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", color: "#78350f", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid #fbbf24", boxShadow: "0 12px 32px rgba(251, 191, 36, 0.3)", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "center", gap: 12 }}>
- <div style={{ width: 16, height: 16, border: "2px solid #78350f", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite"}}>
+ <div role="status"aria-live="polite"style={{ position: "fixed", top: 24, right: 24, background: "#1c0a00", color: "#fb923c", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "1px solid #b45309", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "center", gap: 12 }}>
+ <div style={{ width: 16, height: 16, border: "2px solid #b45309", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite"}}>
  <style>{`
  @keyframes spin {
  to { transform: rotate(360deg); }
@@ -9248,7 +9248,7 @@ export default function ImageAltMediaSEO() {
  <NotificationToast key={notif.id} notification={notif} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} />
  ))}
 
- <div style={{ marginTop: 24, background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)"}}>
+ <div style={{ marginTop: 24, background: "#18181b", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)"}}>
  <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f4f4f5", display: "flex", alignItems: "center", gap: 8 }}>Batch Generate (JSON array)</div>
  <textarea name="batchInput"value={batchInput}
  onChange={e => setBatchInput(e.target.value)}
@@ -9315,7 +9315,7 @@ export default function ImageAltMediaSEO() {
  {r.result && <div><b>Alt:</b> {r.result}</div>}
  {r.meta?.url && <div><b>URL:</b> {r.meta.url}</div>}
  {(r.meta?.tone || r.meta?.verbosity) && (
- <div><b>Style:</b> {r.meta?.tone || "balanced"} Â· {r.meta?.verbosity || "balanced"}</div>
+ <div><b>Style:</b> {r.meta?.tone || "balanced"} · {r.meta?.verbosity || "balanced"}</div>
  )}
  {r.variants?.length ? (
  <div>
@@ -9359,11 +9359,11 @@ export default function ImageAltMediaSEO() {
  <ul style={{ paddingLeft: 18, margin: 0 }}>
  {runs.slice(-5).reverse().map(run => (
  <li key={run.id} style={{ marginBottom: 6, fontSize: 13 }}>
- <b>{run.total} items</b> Â· ok {run.ok} / err {run.errors} Â· {run.durationMs}ms Â· locale {run.locale} Â· safe {String(run.safeMode)}
- {run.tone || run.verbosity ? <> Â· {run.tone || 'balanced'} Â· {run.verbosity || 'balanced'}</> : null}
- {run.brandTerms ? <> Â· brand vocab</> : null}
- {run.chunkSize ? <> Â· chunk {run.chunkSize}</> : null}
- {typeof run.paceMs === 'number'&& run.paceMs > 0 ? <> Â· pace {run.paceMs}ms</> : null}
+ <b>{run.total} items</b> · ok {run.ok} / err {run.errors} · {run.durationMs}ms · locale {run.locale} · safe {String(run.safeMode)}
+ {run.tone || run.verbosity ? <> · {run.tone || 'balanced'} · {run.verbosity || 'balanced'}</> : null}
+ {run.brandTerms ? <> · brand vocab</> : null}
+ {run.chunkSize ? <> · chunk {run.chunkSize}</> : null}
+ {typeof run.paceMs === 'number'&& run.paceMs > 0 ? <> · pace {run.paceMs}ms</> : null}
  </li>
  ))}
  </ul>
@@ -9410,7 +9410,7 @@ export default function ImageAltMediaSEO() {
  { label: "Duplicates", value: analytics.duplicateAlts ?? 0, color: "#f59e0b"},
  { label: "Coverage", value: `${analytics.coveragePct ?? 0}%`, color: "#10b981"}
  ].map(stat => (
- <div key={stat.label} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 20, border: `2px solid ${stat.color}`, boxShadow: `0 4px 16px ${stat.color}33` }}>
+ <div key={stat.label} style={{ background: "#18181b", borderRadius: 16, padding: 20, border: `2px solid ${stat.color}`, boxShadow: `0 4px 16px ${stat.color}33` }}>
  <div style={{ fontSize: 28, fontWeight: 800, color: stat.color, marginBottom: 4 }}>{stat.value}</div>
  <div style={{ fontSize: 13, color: "#d4d4d8", fontWeight: 600 }}>{stat.label}</div>
  </div>
@@ -9542,17 +9542,17 @@ export default function ImageAltMediaSEO() {
  
  {activeTab === "ai-tools"&& (
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
- <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, background: "linear-gradient(90deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"}}>AI & Machine Learning Tools</h2>
+ <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, color: "#a5b4fc", background: "none"}}>AI & Machine Learning Tools</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Feature 1-2: AI Generation */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#8b5cf6"}}>AI Alt Text Generator</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Use GPT-4 Vision to automatically generate alt text for images</p>
- <button onClick={handleBulkAiGenerate} disabled={aiGenerating} style={{ width: "100%", background: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(139, 92, 246, 0.4)"}}>{aiGenerating ? "Generating...": "Generate for Missing Images"}</button>
+ <button onClick={handleBulkAiGenerate} disabled={aiGenerating} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(139, 92, 246, 0.4)"}}>{aiGenerating ? "Generating...": "Generate for Missing Images"}</button>
  </div>
  
  {/* Feature 3: Quality Scoring */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#10b981"}}>Quality Scores</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>ML-based quality assessment (0-100 score)</p>
  <div style={{ fontSize: 32, fontWeight: 800, color: "#10b981", textAlign: "center", marginBottom: 8 }}>
@@ -9562,14 +9562,14 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 4: Auto-Categorization */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b"}}>Auto-Categorization</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>AI automatically tags images by content</p>
  <div style={{ fontSize: 13, color: "#a1a1aa"}}>{Object.keys(autoCategories).length} categories detected</div>
  </div>
  
  {/* Feature 5: Sentiment Analysis */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#0ea5e9"}}>Sentiment Analysis</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Analyze tone of alt text (positive/neutral/negative)</p>
  <div style={{ display: "flex", gap: 12, justifyContent: "center"}}>
@@ -9580,7 +9580,7 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 6: Brand Voice */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ec4899"}}>Brand Voice Checker</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Ensure consistency with brand guidelines</p>
  <button onClick={checkBrandVoice} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check Brand Voice</button>
@@ -9588,7 +9588,7 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 7: Multi-Language Translation */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #4f46e5"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #4f46e5"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#4f46e5"}}>Translation (50+ Languages)</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-translate alt text</p>
  <select name="translateLocaleAnalytics"value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#18181b", color: "#e4e4e7", border: "1px solid #52525b", marginBottom: 12 }}>
@@ -9603,14 +9603,14 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 8: A/B Testing */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6"}}>A/B Test Variants</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Generate 3 alt text variations to test</p>
  <button onClick={() => { if (selectedImageIds[0]) generateAbTestVariants(selectedImageIds[0]); }} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Generate A/B Variants</button>
  </div>
  
  {/* Feature 11: OCR Integration */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f97316"}}>OCR Text Extraction</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Extract text from images</p>
  <button onClick={async () => { if (selectedImageIds[0]) { const img = images.find(i => i.id === selectedImageIds[0]); const text = await extractOcrText(img?.url || ""); showToast("OCR: "+ text.substring(0, 50)); } }} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Extract Text (OCR)</button>
@@ -9624,7 +9624,7 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Automation & Scheduling</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Feature 102: Scheduled Scans */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Scheduled Scans</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-scan for new images</p>
  <select name="automationSchedule"onChange={e => scheduleAutomation("scan", e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#18181b", color: "#e4e4e7", border: "1px solid #52525b"}}>
@@ -9637,7 +9637,7 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 103: Auto-Fix */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Auto-Fix</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Automatically fix quality issues</p>
  <button onClick={enableAutoFix} style={{ width: "100%", background: autoFixEnabled ? "#a1a1aa": "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>{autoFixEnabled ? "Enabled": "Enable Auto-Fix"}</button>
@@ -9651,21 +9651,21 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Advanced SEO Tools</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Feature 124: Keyword Density */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Keyword Density</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Analyze keyword usage across alt texts</p>
  <button onClick={() => { const density = analyzeKeywordDensity(images.map(i => i.altText).join("")); setKeywordDensity(density); showToast("Analyzed keyword density"); }} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze Keywords</button>
  </div>
  
  {/* Feature 125: Schema Markup */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Schema Markup</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Generate ImageObject schema for images</p>
  <button onClick={() => { if (selectedImageIds[0]) { const img = images.find(i => i.id === selectedImageIds[0]); const schema = generateSchemaMarkup(img); alert(JSON.stringify(schema, null, 2)); } }} style={{ width: "100%", background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Generate Schema</button>
  </div>
  
  {/* Feature 133: Core Web Vitals */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Core Web Vitals</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Track image impact on performance</p>
  <button onClick={checkCoreWebVitals} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check CWV</button>
@@ -9673,7 +9673,7 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 130-132: Social Media Previews */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Social Media Preview</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Open Graph, Twitter, Pinterest optimization</p>
  <div style={{ fontSize: 13 }}>Preview how images appear on social platforms</div>
@@ -9687,14 +9687,14 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Performance & Technical</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Feature 137: Virtual Scrolling */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Virtual Scrolling</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Handle 10,000+ images smoothly</p>
  <button onClick={enableVirtualScrolling} style={{ width: "100%", background: virtualScrolling ? "#a1a1aa": "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>{virtualScrolling ? "Enabled": "Enable"}</button>
  </div>
  
  {/* Feature 148: Memory Optimization */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Memory Optimization</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Reduce RAM usage</p>
  <button onClick={optimizeMemory} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize Now</button>
@@ -9708,7 +9708,7 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Achievements</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Achievements Only */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Your Achievements</h3>
  {achievements.length === 0 ? <div style={{ fontSize: 13, color: "#a1a1aa"}}>Keep optimizing to unlock achievements!</div> : achievements.map((ach, idx) => (
  <div key={idx} style={{ padding: "12px", background: "#18181b", borderRadius: 8, marginBottom: 8, border: "1px solid #ec4899"}}>
@@ -9725,7 +9725,7 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Integrations & Export</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Feature 40-41: CSV/Excel */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>CSV Export/Import</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Bulk import/export via spreadsheet</p>
  <button onClick={exportToCsv} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 8 }}>Export to CSV</button>
@@ -9740,7 +9740,7 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Accessibility & Compliance</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  {/* Feature 54: WCAG Compliance */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>WCAG 2.1/2.2 Compliance</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Validate against accessibility standards</p>
  <button onClick={calculateAccessibilityScore} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>Check Compliance</button>
@@ -9749,14 +9749,14 @@ export default function ImageAltMediaSEO() {
  </div>
  
  {/* Feature 56: Screen Reader Simulator */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Screen Reader Preview</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Hear how alt text sounds</p>
  <button onClick={() => { if (selectedImageIds[0]) { const img = images.find(i => i.id === selectedImageIds[0]); previewScreenReader(img?.altText || ""); } }} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Play Selected</button>
  </div>
  
  {/* Feature 63: Decorative Images */}
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Decorative Image Detector</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Suggest null alt text where appropriate</p>
  <button onClick={detectDecorativeImages} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Detect Decorative</button>
@@ -9769,10 +9769,10 @@ export default function ImageAltMediaSEO() {
  {/* AI V2 Tab */}
  {activeTab === "ai-v2"&& (
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
- <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, background: "linear-gradient(90deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"}}>AI & Machine Learning V2</h2>
+ <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, color: "#a5b4fc", background: "none"}}>AI & Machine Learning V2</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#8b5cf6"}}>GPT-4 Vision Analysis</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Use vision models for ultra-accurate image descriptions</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9782,55 +9782,55 @@ export default function ImageAltMediaSEO() {
  <button onClick={() => selectedImageIds[0] && handleGPT4Vision(selectedImageIds[0])} disabled={!gpt4VisionEnabled} style={{ width: "100%", background: gpt4VisionEnabled ? "#8b5cf6": "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: gpt4VisionEnabled ? "pointer": "not-allowed", marginTop: 12 }}>Analyze Selected Image</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#10b981"}}>Product Attribute Extraction</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-detect colors, materials, sizes</p>
  <button onClick={() => selectedImageIds[0] && extractProductAttributes(selectedImageIds[0])} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Extract Attributes</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#0ea5e9"}}>Scene Understanding</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Identify settings and contexts in photos</p>
  <button onClick={() => selectedImageIds[0] && analyzeScene(selectedImageIds[0])} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze Scene</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b"}}>Face Detection & Privacy</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Detect faces for privacy compliance</p>
  <button onClick={() => selectedImageIds[0] && detectFaces(selectedImageIds[0])} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Detect Faces</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ec4899"}}>Object Counting</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Count items in bundle/set images</p>
  <button onClick={() => selectedImageIds[0] && countObjects(selectedImageIds[0])} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Count Objects</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #4f46e5"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #4f46e5"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#4f46e5"}}>Logo Detection</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Identify brand logos in images</p>
  <button onClick={() => selectedImageIds[0] && detectLogos(selectedImageIds[0])} style={{ width: "100%", background: "#4f46e5", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Detect Logos</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6"}}>Text-to-Speech Preview</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Hear how alt text sounds when read aloud</p>
  <button onClick={() => { const img = images.find(i => i.id === selectedImageIds[0]); if (img) previewTextToSpeech(img.altText); }} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Play TTS</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f97316"}}>Color Palette Extraction</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Generate dominant color schemes</p>
  <button onClick={() => selectedImageIds[0] && extractColorPalette(selectedImageIds[0])} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Extract Palette</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#a855f7"}}>Image Similarity Clustering</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Group visually similar images</p>
  <button onClick={clusterSimilarImages} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Cluster Images</button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444"}}>Content Moderation</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Flag inappropriate or off-brand imagery</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9839,7 +9839,7 @@ export default function ImageAltMediaSEO() {
  </label>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#10b981"}}>Custom Model Training</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Train on your catalog for brand-specific descriptions</p>
  <button onClick={trainCustomModel} disabled={customModelTraining} style={{ width: "100%", background: customModelTraining ? "#52525b": "#10b981", color: customModelTraining ? "#a1a1aa": "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: customModelTraining ? "not-allowed": "pointer"}}>
@@ -9855,7 +9855,7 @@ export default function ImageAltMediaSEO() {
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>E-Commerce Enhancements</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Variant Image Sync</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-propagate alt text across product variants</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9863,12 +9863,12 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Enable Variant Sync</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Seasonal Content Rotation</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Schedule alt text changes for seasons/holidays</p>
  <button onClick={() => scheduleSeasonalContent('winter', 'Winter collection')} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Schedule Seasonal</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Sale Discount Mentions</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-add "on sale"during promotions</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9876,12 +9876,12 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Enable Sale Mentions</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Review Star Integration</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Mention "5-star rated"in alt text</p>
  <button onClick={() => selectedImageIds[0] && integrateReviewStars(selectedImageIds[0], 5)} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Add Review Stars</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>New Arrival Flags</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-tag new products</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9898,17 +9898,17 @@ export default function ImageAltMediaSEO() {
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Advanced Image Processing</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Background Removal</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>One-click background replacement</p>
  <button onClick={() => selectedImageIds[0] && removeBackground(selectedImageIds[0])} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Remove Background</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>AI Upscaling</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Enhance low-res images</p>
  <button onClick={() => selectedImageIds[0] && upscaleImage(selectedImageIds[0])} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Upscale 2x</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Compression Optimizer</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Reduce file size without quality loss</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9916,7 +9916,7 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Auto-optimize on upload</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Format Converter</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Convert to WebP/AVIF</p>
  <select name="formatConverterTarget"onChange={(e) => setFormatConverter({ targetFormat: e.target.value })} value={formatConverter.targetFormat} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #52525b", background: "#18181b", color: "#fff", marginBottom: 12 }}>
@@ -9926,12 +9926,12 @@ export default function ImageAltMediaSEO() {
  </select>
  <button onClick={() => selectedImageIds[0] && convertFormat(selectedImageIds[0], formatConverter.targetFormat)} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Convert Selected</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Smart Resize</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Content-aware resizing</p>
  <button onClick={() => selectedImageIds[0] && smartResizeImage(selectedImageIds[0], { width: 1200, height: 1200 })} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Smart Resize</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>360 Product View</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Special handling for 360 views</p>
  <button onClick={() => selectedImageIds[0] && enable360View(selectedImageIds[0])} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Enable 360 View</button>
@@ -9945,7 +9945,7 @@ export default function ImageAltMediaSEO() {
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>SEO Power Features</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Structured Data Generator</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Create Product schema automatically</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9953,7 +9953,7 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Auto-generate schema</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Google Lens Optimization</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Optimize for visual search</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9961,7 +9961,7 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Enable Lens optimization</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Alt Text Length Checker</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Ensure optimal 125-character sweet spot</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9969,12 +9969,12 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Real-time length validation</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Voice Search Optimization</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Natural language for Alexa/Siri</p>
  <button onClick={() => selectedImageIds[0] && optimizeVoiceSearch(selectedImageIds[0])} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize for Voice</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Broken Image Checker</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Find and fix 404 images</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -9992,14 +9992,14 @@ export default function ImageAltMediaSEO() {
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Security & Privacy</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Two-Factor Authentication</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Enhanced login security</p>
  <button onClick={enable2FA} disabled={twoFactorAuth} style={{ width: "100%", background: twoFactorAuth ? "#52525b": "#10b981", color: twoFactorAuth ? "#a1a1aa": "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: twoFactorAuth ? "not-allowed": "pointer"}}>
  {twoFactorAuth ? "2FA Enabled": "Enable 2FA"}
  </button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>PII Detection</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Flag personal information in alt text</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -10007,7 +10007,7 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Auto-detect PII</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>GDPR Compliance</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Data deletion & export for EU</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -10015,7 +10015,7 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>GDPR Mode</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Encrypted Backups</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Secure data backups</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -10032,7 +10032,7 @@ export default function ImageAltMediaSEO() {
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Mobile & Responsive</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Touch Gestures</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Swipe to navigate images</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -10040,17 +10040,17 @@ export default function ImageAltMediaSEO() {
  <span style={{ fontSize: 13 }}>Enable swipe gestures</span>
  </label>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Voice Input</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Dictate alt text on mobile</p>
  <button onClick={enableVoiceInput} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Enable Voice Input</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Camera Integration</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Upload from phone camera</p>
  <button onClick={openCamera} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Open Camera</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Mobile Shortcuts</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Quick actions from home screen</p>
  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}}>
@@ -10067,17 +10067,17 @@ export default function ImageAltMediaSEO() {
  <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px"}}>
  <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Data & Insights</h2>
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Machine Learning Insights</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Pattern recognition in successful alt text</p>
  <button onClick={generateMLInsights} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Generate ML Insights</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Predictive Suggestions</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>AI recommends next image to optimize</p>
  <button onClick={getPredictiveSuggestions} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Get Suggestions</button>
  </div>
- <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
+ <div style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Impact Forecasting</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Predict traffic increase from optimization</p>
  <button onClick={() => forecastImpact(10)} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Forecast Impact</button>
@@ -10117,7 +10117,7 @@ export default function ImageAltMediaSEO() {
  { name: "Image Authenticity", fn: () => scoreImageAuthenticity("img1"), desc: "Score original vs stock photo"},
  { name: "Brand Elements", fn: () => detectBrandElements("img1"), desc: "Detect logos and brand colors"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #7c3aed"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #7c3aed"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Run Analysis</button>
@@ -10155,7 +10155,7 @@ export default function ImageAltMediaSEO() {
  { name: "Character Budget", fn: () => optimizeCharacterBudget("twitter"), desc: "Optimize for platform character limits"},
  { name: "Localization Quality", fn: () => scoreLocalizationQuality("Alt text", "es-ES"), desc: "Score translation quality"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Run Tool</button>
@@ -10189,7 +10189,7 @@ export default function ImageAltMediaSEO() {
  { name: "Form Image Labels", fn: () => checkFormImageLabel("img1"), desc: "Check form image labels"},
  { name: "Image Map Describer", fn: () => describeImageMapArea("img1", []), desc: "Describe image map areas"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check Compliance</button>
@@ -10225,7 +10225,7 @@ export default function ImageAltMediaSEO() {
  { name: "Recipe Images", fn: () => optimizeRecipeImage("img1"), desc: "Optimize recipe image schema"},
  { name: "How-To Sequence", fn: () => optimizeHowToSequence("img1", 1), desc: "Optimize how-to step images"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize SEO</button>
@@ -10257,7 +10257,7 @@ export default function ImageAltMediaSEO() {
  { name: "Preload Hints", fn: () => generatePreloadHints(), desc: "Generate preload hints"},
  { name: "CDN Configuration", fn: () => optimizeCDNConfig("img1"), desc: "Optimize CDN configuration"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize Format</button>
@@ -10288,7 +10288,7 @@ export default function ImageAltMediaSEO() {
  { name: "Color Mode", fn: () => recommendColorMode("img1"), desc: "Recommend color vs B&W"},
  { name: "Color Blocking", fn: () => detectColorBlocking("img1"), desc: "Detect color blocking techniques"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ec4899"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze Color</button>
@@ -10322,7 +10322,7 @@ export default function ImageAltMediaSEO() {
  { name: "Group Shot Detection", fn: () => detectGroupShot("img1"), desc: "Detect group vs single product"},
  { name: "Zoom Quality", fn: () => scoreZoomQuality("img1"), desc: "Score image zoom quality"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze Photo</button>
@@ -10355,7 +10355,7 @@ export default function ImageAltMediaSEO() {
  { name: "Multiple Faces", fn: () => detectMultipleFaces("img1"), desc: "Detect multiple faces"},
  { name: "User-Generated", fn: () => classifyUserGenerated("img1"), desc: "Classify user-generated content"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Extract Intelligence</button>
@@ -10385,7 +10385,7 @@ export default function ImageAltMediaSEO() {
  { name: "Gallery Nav Pattern", fn: () => analyzeGalleryNavPattern("gallery1"), desc: "Analyze gallery navigation pattern"},
  { name: "Image Grouping", fn: () => detectImageGrouping(), desc: "Detect logical image grouping"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze Context</button>
@@ -10417,7 +10417,7 @@ export default function ImageAltMediaSEO() {
  { name: "Historical Alt Text", fn: () => generateAltHistory("img1"), desc: "Generate alt text history"},
  { name: "Rollback Alt Text", fn: () => rollbackAlt("img1", "v1"), desc: "Rollback to previous version"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Automate</button>
@@ -10445,7 +10445,7 @@ export default function ImageAltMediaSEO() {
  { name: "Multivariate Test", fn: () => generateMultivariate("img1"), desc: "Generate multivariate test combinations"},
  { name: "Test Significance", fn: () => scoreTestSignificance("test1"), desc: "Score test statistical significance"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Run Test</button>
@@ -10476,7 +10476,7 @@ export default function ImageAltMediaSEO() {
  { name: "Top Performers", fn: () => rankTopPerformingImages(), desc: "Rank top performing images"},
  { name: "Bottom Performers", fn: () => scoreBottomPerformers(), desc: "Identify underperforming images"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #eab308"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #eab308"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#eab308", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Track Performance</button>
@@ -10504,7 +10504,7 @@ export default function ImageAltMediaSEO() {
  { name: "Demographic Category", fn: () => categorizeByDemographic("img1"), desc: "Categorize by target demographic"},
  { name: "Image Hierarchy", fn: () => buildImageHierarchy(), desc: "Build image hierarchy (primary/secondary/tertiary)"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Categorize</button>
@@ -10530,7 +10530,7 @@ export default function ImageAltMediaSEO() {
  { name: "Testimonial Image", fn: () => optimizeTestimonialImage("img1"), desc: "Optimize testimonial images"},
  { name: "Packaging Dimensions", fn: () => describePackagingDimension("img1"), desc: "Describe packaging dimensions"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f97316"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize</button>
@@ -10561,7 +10561,7 @@ export default function ImageAltMediaSEO() {
  { name: "Unauthorized Usage", fn: () => detectUnauthorizedUsage("img1"), desc: "Detect unauthorized usage"},
  { name: "Watermark Removal Detection", fn: () => detectWatermarkRemoval("img1"), desc: "Detect watermark tampering"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check Rights</button>
@@ -10595,7 +10595,7 @@ export default function ImageAltMediaSEO() {
  { name: "Professional Quality", fn: () => validateProfessionalQuality("img1"), desc: "Validate professional quality standards"},
  { name: "Print Quality", fn: () => checkPrintQuality("img1"), desc: "Check print readiness"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#ef4444", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check Quality</button>
@@ -10627,7 +10627,7 @@ export default function ImageAltMediaSEO() {
  { name: "Horizontal Crop", fn: () => optimizeHorizontalCrop("img1"), desc: "Optimize for horizontal format"},
  { name: "Multi-Platform Crops", fn: () => generateMultiPlatformCrops("img1"), desc: "Generate crops for multiple platforms"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Apply Crop</button>
@@ -10663,7 +10663,7 @@ export default function ImageAltMediaSEO() {
  { name: "TikTok Shop", fn: () => optimizeTikTokShop("img1"), desc: "TikTok Shop optimization"},
  { name: "Snapchat Ads", fn: () => optimizeSnapchatAds("img1"), desc: "Snapchat Ads specs"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #3b82f6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #3b82f6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#3b82f6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize Platform</button>
@@ -10693,7 +10693,7 @@ export default function ImageAltMediaSEO() {
  { name: "Contextual Background", fn: () => scoreContextualBackground("img1"), desc: "Score contextual appropriateness"},
  { name: "Background Replacement", fn: () => suggestBackgroundReplacement("img1"), desc: "Suggest background alternatives"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze Background</button>
@@ -10721,7 +10721,7 @@ export default function ImageAltMediaSEO() {
  { name: "ICC Profile", fn: () => checkIccProfile("img1"), desc: "Check ICC color profile"},
  { name: "Privacy Scanner", fn: () => scanMetadataPrivacy("img1"), desc: "Scan for privacy issues in metadata"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Manage Metadata</button>
@@ -10752,7 +10752,7 @@ export default function ImageAltMediaSEO() {
  { name: "Regulatory Compliance", fn: () => checkRegulatoryCompliance("img1"), desc: "Check regulatory compliance"},
  { name: "Platform Policy", fn: () => validatePlatformPolicy("img1", "Instagram"), desc: "Validate platform policies"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #dc2626"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #dc2626"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#dc2626", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check Compliance</button>
@@ -10780,7 +10780,7 @@ export default function ImageAltMediaSEO() {
  { name: "Market Trends", fn: () => alignMarketTrend("img1"), desc: "Align with market trends"},
  { name: "Geo-Targeted", fn: () => optimizeGeoTargeted("img1"), desc: "Optimize for geo-targeting"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Localize</button>
@@ -10810,7 +10810,7 @@ export default function ImageAltMediaSEO() {
  { name: "Brand Consistency", fn: () => validateBrandConsistency(), desc: "Validate brand consistency"},
  { name: "Deduplication", fn: () => deduplicateImages(), desc: "Remove duplicate images"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Compare Images</button>
@@ -10838,7 +10838,7 @@ export default function ImageAltMediaSEO() {
  { name: "Orphaned Images", fn: () => findOrphanedImages(), desc: "Find orphaned images"},
  { name: "Purge Scheduler", fn: () => scheduleImagePurge(30), desc: "Schedule image purge"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Manage Assets</button>
@@ -10886,7 +10886,7 @@ export default function ImageAltMediaSEO() {
  { name: "OCR Text Extraction", fn: () => handleOCRExtraction("text-image.jpg"), desc: "Extract text from images via OCR"},
  { name: "Trend Terminology", fn: () => handleApplyTrendTerminology("minimalist dress"), desc: "Apply current trend terminology"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #a855f7"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Activate Feature</button>
@@ -10927,7 +10927,7 @@ export default function ImageAltMediaSEO() {
  { name: "Contrast Levels", fn: () => handleAnalyzeContrast("high-contrast.jpg"), desc: "Analyze image contrast"},
  { name: "Saturation Analysis", fn: () => handleAnalyzeSaturation("saturated.jpg"), desc: "Analyze color saturation"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #06b6d4"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Analyze</button>
@@ -10963,7 +10963,7 @@ export default function ImageAltMediaSEO() {
  { name: "Modifier Placement", fn: () => handleOptimizeModifierPlacement("dress beautiful red"), desc: "Optimize adjective placement"},
  { name: "Child Keyword Extraction", fn: () => handleExtractChildKeywords("shoes"), desc: "Extract child/related keywords"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #10b981"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Optimize SEO</button>
@@ -10999,7 +10999,7 @@ export default function ImageAltMediaSEO() {
  { name: "Sensory Language Balance", fn: () => handleBalanceSensoryLanguage("Bright soft fragrant"), desc: "Balance sensory language types"},
  { name: "Conciseness Scorer", fn: () => handleEnsureConciseness("Very really quite just actually basically"), desc: "Score and ensure conciseness"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Check Accessibility</button>
@@ -11040,7 +11040,7 @@ export default function ImageAltMediaSEO() {
  { name: "Comparison Accuracy", fn: () => handleVerifyComparisons("Better than competitors"), desc: "Verify comparison accuracy"},
  { name: "Legal Compliance Checker", fn: () => handleCheckLegalCompliance("Guaranteed to cure"), desc: "Check legal compliance"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#ef4444", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Validate Quality</button>
@@ -11096,7 +11096,7 @@ export default function ImageAltMediaSEO() {
  { name: "Update Frequency Recommender", fn: () => handleRecommendUpdateFrequency("img-1", "fashion"), desc: "Recommend update frequency"},
  { name: "Lifecycle Stage Tracker", fn: () => handleTrackLifecycleStage("img-1", "active"), desc: "Track image lifecycle stage"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
  <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer"}}>Toggle Feature</button>
@@ -11206,7 +11206,7 @@ export default function ImageAltMediaSEO() {
  desc: "Extract/edit EXIF data, GPS coordinates, copyright, strip PII",
  color: "#71717a"}
  ].map((feature, idx) => (
- <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: `2px solid ${feature.color}`, position: "relative", overflow: "hidden"}}>
+ <div key={idx} style={{ background: "#18181b", borderRadius: 16, padding: 24, border: `2px solid ${feature.color}`, position: "relative", overflow: "hidden"}}>
  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: feature.color }}>{feature.name}</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16, lineHeight: 1.6 }}>{feature.desc}</p>
  <button 
@@ -11235,7 +11235,7 @@ export default function ImageAltMediaSEO() {
  
  {/* Results Display Sections */}
  {imageSitemapData && (
- <div style={{ marginTop: 32, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
+ <div style={{ marginTop: 32, background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #14b8a6"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6"}}>Image Sitemap Generated</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12 }}>Total entries: <strong>{imageSitemapData.count}</strong></p>
  <textarea 
@@ -11247,7 +11247,7 @@ export default function ImageAltMediaSEO() {
  )}
  
  {brokenImagesList.length > 0 && (
- <div style={{ marginTop: 32, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
+ <div style={{ marginTop: 32, background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #ef4444"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444"}}>Broken Images Detected</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12 }}>Found <strong>{brokenImagesList.length}</strong> broken images:</p>
  <ul style={{ paddingLeft: 20, color: "#a1a1aa", fontSize: 13 }}>
@@ -11260,7 +11260,7 @@ export default function ImageAltMediaSEO() {
  )}
  
  {duplicateImagesList.length > 0 && (
- <div style={{ marginTop: 32, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
+ <div style={{ marginTop: 32, background: "#18181b", borderRadius: 16, padding: 24, border: "2px solid #f59e0b"}}>
  <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b"}}>Duplicate Images Found</h3>
  <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12 }}>Found <strong>{duplicateImagesList.length}</strong> duplicate groups:</p>
  <ul style={{ paddingLeft: 20, color: "#a1a1aa", fontSize: 13 }}>
@@ -11331,7 +11331,7 @@ export default function ImageAltMediaSEO() {
  <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced Analytics</h2>
  
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20, marginBottom: 32 }}>
- <div style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", borderRadius: 16, padding: 24, color: "#fff"}}>
+ <div style={{ background: "#7c3aed", borderRadius: 16, padding: 24, color: "#fff"}}>
  <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>Quality Trends</div>
  <div style={{ fontSize: 36, fontWeight: 700 }}> 12%</div>
  <button
@@ -11361,7 +11361,7 @@ export default function ImageAltMediaSEO() {
  </button>
  </div>
  
- <div style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", borderRadius: 16, padding: 24, color: "#fff"}}>
+ <div style={{ background: "#d97706", borderRadius: 16, padding: 24, color: "#fff"}}>
  <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>Sentiment Score</div>
  <div style={{ fontSize: 36, fontWeight: 700 }}>8.4/10</div>
  <button
@@ -11534,7 +11534,7 @@ export default function ImageAltMediaSEO() {
  console.log("Sitemap entries:", data);
  setNotifications([...notifications, { text: `Generated ${data.count} sitemap entries`, type: "success"}]);
  }}
- style={{ padding: 24, background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left"}}
+ style={{ padding: 24, background: "#7c3aed", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left"}}
  >
  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Generate Image Sitemap</div>
  <div style={{ fontSize: 13, opacity: 0.9 }}>Create SEO-optimized XML sitemap</div>
@@ -11568,7 +11568,7 @@ export default function ImageAltMediaSEO() {
  console.log("SEO Analysis:", data);
  alert(`SEO Score: ${data.seoScore}/100\nRecommendations: ${data.recommendations.length}`);
  }}
- style={{ padding: 24, background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left"}}
+ style={{ padding: 24, background: "#d97706", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left"}}
  >
  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>SEO Analysis</div>
  <div style={{ fontSize: 13, opacity: 0.9 }}>Analyze page SEO performance</div>
@@ -11873,7 +11873,7 @@ export default function ImageAltMediaSEO() {
  console.log(`${platform} optimized:`, data);
  alert(`Optimized for ${platform}: ${data.optimized}`);
  }}
- style={{ padding: 24, background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "center", fontSize: 16, fontWeight: 600 }}
+ style={{ padding: 24, background: "#7c3aed", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "center", fontSize: 16, fontWeight: 600 }}
  >
  Optimize for {platform}
  </button>
@@ -12558,8 +12558,8 @@ export default function ImageAltMediaSEO() {
  <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Anomaly Detection</h3>
  <div style={{ background: theme === "dark"? "#27272a": "#fafafa", borderRadius: 12, padding: 24 }}>
  {[
- { metric: "API Latency", value: "3,500ms", expected: "450ms", severity: "high", deviation: "6.2Ïƒ", causes: ["Database slow query", "High concurrent requests"] },
- { metric: "Error Rate", value: "8.5%", expected: "0.3%", severity: "critical", deviation: "12.4Ïƒ", causes: ["Third-party API outage"] }
+ { metric: "API Latency", value: "3,500ms", expected: "450ms", severity: "high", deviation: "6.2s", causes: ["Database slow query", "High concurrent requests"] },
+ { metric: "Error Rate", value: "8.5%", expected: "0.3%", severity: "critical", deviation: "12.4s", causes: ["Third-party API outage"] }
  ].map((anomaly, i) => (
  <div key={i} style={{ padding: 16, background: theme === "dark"? "#18181b": "#fff", borderRadius: 8, marginBottom: 12, borderLeft: `4px solid ${anomaly.severity === 'critical'? '#ef4444': '#f59e0b'}` }}>
  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -13194,7 +13194,7 @@ export default function ImageAltMediaSEO() {
  width: 56, 
  height: 56, 
  borderRadius: "50%", 
- background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", 
+ background: "#18181b", 
  border: "none", 
  color: "#fff", 
  fontSize: 24, 
