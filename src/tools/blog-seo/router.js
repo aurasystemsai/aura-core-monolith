@@ -1892,7 +1892,7 @@ router.post('/title/ctr-signals', (req, res) => {
     const tips = [];
     if (keywordPosition === 'not-found' && kLower) tips.push(`Include "${keyword}" in your title for keyword relevance`);
     if (keywordPosition === 'end' || keywordPosition === 'middle') tips.push('Move keyword closer to the start of the title for better CTR');
-    if (!hasYear) tips.push('Consider adding the current year for time-sensitive topics (e.g., "2025 Guide")');
+    if (!hasYear) tips.push(`Consider adding the current year for time-sensitive topics (e.g., "${new Date().getFullYear()} Guide")`);
     if (emotionType === 'neutral') tips.push('Add an emotional trigger word (best, ultimate, proven, avoid) to increase click appeal');
     if (foundMods.length === 0) tips.push('Add a power modifier like "guide", "checklist", "tips", or "how to"');
     if (!titleLengthOk) tips.push(titleLen < 40 ? 'Title is too short — aim for 50-60 characters' : 'Title exceeds 60 chars — may be truncated in SERPs');
@@ -3197,7 +3197,7 @@ Consider:
 - Is this topic time-sensitive or evergreen?
 - How quickly does info in this niche become outdated?
 - Year references that may now be stale
-- Whether "2024/2025" style content needs annual refresh
+- Whether "${new Date().getFullYear() - 1}/${new Date().getFullYear()}" style content needs annual refresh
 
 Return JSON ONLY:
 {
@@ -5393,7 +5393,7 @@ router.post('/content/statistics-curator', async (req, res) => {
     const { niche, topic } = req.body || {};
     const model = req.body.model || 'gpt-4o-mini';
     if (!niche) return res.status(400).json({ ok: false, error: 'Niche required' });
-    const prompt = `You are a linkbait content strategist. Curate SEO statistics and data points for creating link-worthy content: Niche: "${niche}", Topic: "${topic || niche}". Ahrefs technique: curating industry statistics is one of the easiest ways to earn backlinks. Return JSON: {"contentTitle":"\"X ${niche} Statistics [Current Year]\" (linkbait title)","metaDescription":"compelling 155-char meta for stats page","statCategories":[{"category":"stat category name","stats":[{"stat":"specific statistic with plausible number","source":"type of credible source to verify","yearRange":"2023-2024","linkability":"high|medium","verificationUrl":"type of URL to find this stat"}]}],"contentStructureTips":["4 tips for formatting stats pages for maximum backlinks"],"promotionStrategy":["4 outreach strategies for stats pages"],"updateSchedule":"how often to refresh statistics","estimatedBacklinkPotential":"low|medium|high","internalLinkingOpportunities":["3 ways to use stats page as hub for internal links"],"topActions":["3 immediate actions to create and promote this stats page"]}. Include 5-6 stat categories with 3-4 stats each.`;
+    const prompt = `You are a linkbait content strategist. Curate SEO statistics and data points for creating link-worthy content: Niche: "${niche}", Topic: "${topic || niche}". Ahrefs technique: curating industry statistics is one of the easiest ways to earn backlinks. Return JSON: {"contentTitle":"\"X ${niche} Statistics [Current Year]\" (linkbait title)","metaDescription":"compelling 155-char meta for stats page","statCategories":[{"category":"stat category name","stats":[{"stat":"specific statistic with plausible number","source":"type of credible source to verify","yearRange":"${new Date().getFullYear() - 1}-${new Date().getFullYear()}","linkability":"high|medium","verificationUrl":"type of URL to find this stat"}]}],"contentStructureTips":["4 tips for formatting stats pages for maximum backlinks"],"promotionStrategy":["4 outreach strategies for stats pages"],"updateSchedule":"how often to refresh statistics","estimatedBacklinkPotential":"low|medium|high","internalLinkingOpportunities":["3 ways to use stats page as hub for internal links"],"topActions":["3 immediate actions to create and promote this stats page"]}. Include 5-6 stat categories with 3-4 stats each.`;
     const completion = await getOpenAI().chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0].message.content);
     if (req.deductCredits) req.deductCredits({ model });
@@ -9498,7 +9498,8 @@ router.post('/ai/suggest-fields', aiLimiter, async (req, res) => {
     const { topic, field } = req.body || {};
     if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
     const fieldInstructions = { keywords: 'Return only the keywords fields.', audience: 'Return only the audience field.', niche: 'Return only the niche field.', all: 'Return all fields.' }[field] || 'Return all fields.';
-    const prompt = `You are an SEO and content strategy expert for Shopify e-commerce blogs. Given the blog topic or keyword below, suggest the best values for these form fields. ${fieldInstructions}\n\nTopic: "${topic}"\n\nReturn JSON with ALL of these keys (use null for any you cannot confidently suggest):\n{\n  "primaryKeyword": "the single most important target keyword (short, high-volume)",\n  "secondaryKeywords": ["3-5 supporting keyword phrases"],\n  "audience": "the most likely target audience in 3-6 words",\n  "niche": "the niche or industry in 1-3 words",\n  "relatedTopics": ["2-3 related blog topic ideas"],\n  "searchIntent": "informational|commercial|transactional|navigational"\n}`;
+    const currentYear = new Date().getFullYear();
+    const prompt = `You are an SEO and content strategy expert for Shopify e-commerce blogs. The current year is ${currentYear}. Given the blog topic or keyword below, suggest the best values for these form fields. ${fieldInstructions} IMPORTANT: When suggesting keywords, never include years older than ${currentYear - 1} — use ${currentYear} for time-sensitive keywords where a year is appropriate.\n\nTopic: "${topic}"\n\nReturn JSON with ALL of these keys (use null for any you cannot confidently suggest):\n{\n  "primaryKeyword": "the single most important target keyword (short, high-volume)",\n  "secondaryKeywords": ["3-5 supporting keyword phrases — if including a year, use ${currentYear} only"],\n  "audience": "the most likely target audience in 3-6 words",\n  "niche": "the niche or industry in 1-3 words",\n  "relatedTopics": ["2-3 related blog topic ideas"],\n  "searchIntent": "informational|commercial|transactional|navigational"\n}`;
     const completion = await getOpenAI().chat.completions.create({ model: req.body.model || 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.4, response_format: { type: 'json_object' } });
     const data = JSON.parse(completion.choices[0]?.message?.content || '{}');
     if (req.deductCredits) req.deductCredits({ model: req.body.model || 'gpt-4o-mini', action: 'seo-scan' });
