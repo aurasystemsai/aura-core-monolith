@@ -232,7 +232,7 @@ export default function SEOSiteCrawler() {
  {keywords.map((kw) => (
  <span key={kw} style={{ background: "#27272a", color: "#818cf8", borderRadius: 20, padding: "3px 12px", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
  {kw}
- <button onClick={() => removeKeyword(kw)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 14, padding: 0 }}>×</button>
+ <button onClick={() => removeKeyword(kw)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 14, padding: 0 }}>ï¿½</button>
  </span>
  ))}
  <input

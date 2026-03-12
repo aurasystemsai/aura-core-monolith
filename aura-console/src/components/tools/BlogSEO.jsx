@@ -3783,6 +3783,12 @@ export default function BlogSEO() {
  </div>
  );
  })}
+ {/* Next step */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!outlineKw) setOutlineKw(titleResult?.bestTitle || titleKw); setWriteSub("outline"); }}>📝 Create Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!draftKw) setDraftKw(titleResult?.bestTitle || titleKw); setWriteSub("draft"); }}>📄 Write Full Draft →</button>
+ </div>
  </div>
  )}
  </div>
@@ -3870,12 +3876,21 @@ export default function BlogSEO() {
  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "16px 18px", fontSize: 14, lineHeight: 1.8, color: C.text, maxHeight: 500, overflowY: "auto" }}
  dangerouslySetInnerHTML={{ __html: draftResult.content || draftResult.draft || "" }} />
  )}
- {/* Also */}
- <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
- <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Also:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(draftKw); setWriteSub("outline"); }}>📝 Generate Outline →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(draftKw); setWriteSub("intro"); }}>✍️ Rewrite Intro →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(draftKw); setWriteSub("titles"); }}>💡 More Title Ideas →</button>
+ {/* Continue to publish prep */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12 }}>
+ <div style={{ fontSize: 11, color: C.dim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Continue to publish prep</div>
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!imgTopic) setImgTopic(draftKw); setWriteSub("images"); }}>🖼️ Image Planner →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!repTopic) setRepTopic(draftKw); setWriteSub("repurpose"); }}>📣 Repurpose →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw); setWriteSub("tags"); }}>🏷️ Tags & Schema →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw); if (draftResult?.content && !seoContent) setSeoContent(draftResult.content); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ </div>
+ <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Edit:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(draftKw); setWriteSub("outline"); }}>📝 Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(draftKw); setWriteSub("intro"); }}>✍️ Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(draftKw); setWriteSub("titles"); }}>💡 Titles →</button>
+ </div>
  </div>
  </div>
  )}
@@ -4287,6 +4302,13 @@ export default function BlogSEO() {
  {imgResult.generalTips.map((t, i) => <div key={i} style={{ fontSize: 12, color: C.dim, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: "#4ade80", flexShrink: 0 }}>•</span>{t}</div>)}
  </div>
  )}
+ {/* Next step */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!repTopic) setRepTopic(draftKw || imgTopic); setWriteSub("repurpose"); }}>📣 Repurpose Content →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw || imgTopic); setWriteSub("tags"); }}>🏷️ Tags & Schema →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw || imgTopic); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ </div>
  </>
  )}
  </div>
@@ -4400,6 +4422,12 @@ export default function BlogSEO() {
  {repResult.pinterest.boardSuggestions?.length > 0 && <div><div style={{ fontSize: 11, fontWeight: 700, color: "#f43f5e", marginBottom: 6 }}>BOARD SUGGESTIONS</div><div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>{repResult.pinterest.boardSuggestions.map((b, i) => <span key={i} style={{ fontSize: 11, padding: "2px 8px", background: "#4c0519", color: "#fda4af", borderRadius: 10 }}>{b}</span>)}</div></div>}
  </div>
  )}
+ {/* Next step */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw || repTopic); setWriteSub("tags"); }}>🏷️ Tags & Schema →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw || repTopic); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ </div>
  </>
  )}
  </div>
@@ -4483,6 +4511,11 @@ export default function BlogSEO() {
  )}
  </div>
  )}
+ {/* Next step */}
+ <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+ <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(tagsTopic || draftKw); if (draftResult?.content && !seoContent) setSeoContent(draftResult.content); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ </div>
  </>
  )}
  </div>
