@@ -3284,7 +3284,7 @@ export default function BlogSEO() {
  setOutlineAud(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
  }
  })}>
- {sfLoading && sfLoadingKey === "outline-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Suggest Audience"}
+ {sfLoading && sfLoadingKey === "outline-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Topic or keyword</div>
@@ -3365,7 +3365,7 @@ export default function BlogSEO() {
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runOutline} disabled={outlineLoading || !outlineKw.trim()}>
- {outlineLoading ? <><span style={S.spinner} /> Generating outline...</> : "✨ Generate Outline"}
+ {outlineLoading ? <><span style={S.spinner} /> Generating outline...</> : `✨ Generate Outline · ${ACTION_COSTS['blog-outline']} cr`}
  </button>
  {outlineResult && (
  <div style={{ marginTop: 16 }}>
@@ -3483,7 +3483,7 @@ export default function BlogSEO() {
  setIntroAud(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
  }
  })}>
- {sfLoading && sfLoadingKey === "intro-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Suggest Audience"}
+ {sfLoading && sfLoadingKey === "intro-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
@@ -3555,7 +3555,7 @@ export default function BlogSEO() {
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runIntro} disabled={introLoading || !introKw.trim()}>
- {introLoading ? <><span style={S.spinner} /> Writing intro...</> : "✨ Write Intro"}
+ {introLoading ? <><span style={S.spinner} /> Writing intro...</> : `✨ Write Intro · ${ACTION_COSTS['email-gen']} cr`}
  </button>
  {introResult && (
  <div style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "14px 16px" }}>
@@ -3608,7 +3608,7 @@ export default function BlogSEO() {
  setTitleAudience(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
  }
  })}>
- {sfLoading && sfLoadingKey === "titles-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Fill Niche & Audience"}
+ {sfLoading && sfLoadingKey === "titles-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Niche & Audience · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Keyword or topic</div>
@@ -3691,7 +3691,7 @@ export default function BlogSEO() {
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runTitleIdeas} disabled={titleLoading || !titleKw.trim()}>
- {titleLoading ? <><span style={S.spinner} /> Generating titles...</> : "✨ Get Title Ideas"}
+ {titleLoading ? <><span style={S.spinner} /> Generating titles...</> : `✨ Get Title Ideas · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  {titleResult && (
  <div style={{ marginTop: 16 }}>
@@ -3794,7 +3794,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(draftKw, "draft-all", r => {
  if (r.niche) setDraftNiche(r.niche);
  })}>
- {sfLoading && sfLoadingKey === "draft-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Fill Niche"}
+ {sfLoading && sfLoadingKey === "draft-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Niche · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  </div>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
@@ -3839,7 +3839,7 @@ export default function BlogSEO() {
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runDraft} disabled={draftLoading || !draftKw.trim()}>
- {draftLoading ? <><span style={S.spinner} /> Writing full post...</> : "✨ Generate Draft"}
+ {draftLoading ? <><span style={S.spinner} /> Writing full post...</> : `✨ Generate Draft · ${ACTION_COSTS['blog-draft']} cr`}
  </button>
  {draftErr && <div style={{ ...S.err, marginTop: 10 }}>{draftErr}</div>}
  {draftResult && (
@@ -3887,7 +3887,7 @@ export default function BlogSEO() {
  if (r.secondaryKeywords?.length) setBriefSecondary(r.secondaryKeywords.join(", "));
  if (r.audience) setBriefAudience(r.audience);
  })}>
- {sfLoading && sfLoadingKey === "brief-all" ? <><span style={S.spinner} /> Suggesting...</> : "✨ AI Fill Fields"}
+ {sfLoading && sfLoadingKey === "brief-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Fields · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  </div>
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
@@ -3938,7 +3938,7 @@ export default function BlogSEO() {
  </div>
  </div>
  <button style={{ ...S.btn("primary"), width: "100%" }} onClick={runBrief} disabled={briefLoading || !briefTopic.trim()}>
- {briefLoading ? <><span style={S.spinner} /> Generating brief...</> : "✨ Generate Brief"}
+ {briefLoading ? <><span style={S.spinner} /> Generating brief...</> : `✨ Generate Brief · ${ACTION_COSTS['content-brief']} cr`}
  </button>
  {briefErr && <div style={{ ...S.err, marginTop: 10 }}>{briefErr}</div>}
  {briefResult && (() => {
@@ -4203,7 +4203,7 @@ export default function BlogSEO() {
  <div style={{ padding: "18px 22px" }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
  <input value={imgTopic} onChange={e => setImgTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runBlogImages()} placeholder={draftKw || outlineKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
- <button onClick={runBlogImages} disabled={imgLoading || !imgTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: imgLoading || !imgTopic.trim() ? 0.5 : 1 }}>{imgLoading ? "⏳ Generating…" : "✨ Generate Image Plan"}</button>
+ <button onClick={runBlogImages} disabled={imgLoading || !imgTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: imgLoading || !imgTopic.trim() ? 0.5 : 1 }}>{imgLoading ? "⏳ Generating…" : `✨ Generate Image Plan · ${ACTION_COSTS['email-gen']} cr`}</button>
  </div>
  {(draftKw || outlineKw) && !imgTopic && (
  <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
@@ -4304,7 +4304,7 @@ export default function BlogSEO() {
  <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setRepTopic(draftKw || outlineKw)}>{draftKw || outlineKw}</button>
  </div>
  )}
- <button onClick={runRepurpose} disabled={repLoading || !repTopic.trim()} style={{ ...S.btn("primary"), marginBottom: 14, opacity: repLoading || !repTopic.trim() ? 0.5 : 1 }}>{repLoading ? "⏳ Generating…" : "✨ Generate Content Pack"}</button>
+ <button onClick={runRepurpose} disabled={repLoading || !repTopic.trim()} style={{ ...S.btn("primary"), marginBottom: 14, opacity: repLoading || !repTopic.trim() ? 0.5 : 1 }}>{repLoading ? "⏳ Generating…" : `✨ Generate Content Pack · ${ACTION_COSTS['email-gen']} cr`}</button>
  {repErr && <div style={{ ...S.err, marginBottom: 12 }}>{repErr}</div>}
  {repResult && (
  <>
@@ -4403,7 +4403,7 @@ export default function BlogSEO() {
  <div style={{ padding: "18px 22px" }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
  <input value={tagsTopic} onChange={e => setTagsTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runTagsSchema()} placeholder={outlineKw || draftKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
- <button onClick={runTagsSchema} disabled={tagsLoading || !tagsTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: tagsLoading || !tagsTopic.trim() ? 0.5 : 1 }}>{tagsLoading ? "⏳ Generating…" : "✨ Generate Tags & Schema"}</button>
+ <button onClick={runTagsSchema} disabled={tagsLoading || !tagsTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: tagsLoading || !tagsTopic.trim() ? 0.5 : 1 }}>{tagsLoading ? "⏳ Generating…" : `✨ Generate Tags & Schema · ${ACTION_COSTS['email-gen']} cr`}</button>
  </div>
  {(outlineKw || draftKw) && !tagsTopic && (
  <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, alignItems: "center" }}>
@@ -4486,7 +4486,7 @@ export default function BlogSEO() {
  <div style={{ padding: "18px 22px" }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
  <input value={seoTopic} onChange={e => setSeoTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runSeoScore()} placeholder={outlineKw || draftKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
- <button onClick={runSeoScore} disabled={seoLoading || !seoTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: seoLoading || !seoTopic.trim() ? 0.5 : 1 }}>{seoLoading ? "⏳ Analysing…" : "📊 Get SEO Score"}</button>
+ <button onClick={runSeoScore} disabled={seoLoading || !seoTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: seoLoading || !seoTopic.trim() ? 0.5 : 1 }}>{seoLoading ? "⏳ Analysing…" : `📊 Get SEO Score · ${ACTION_COSTS['seo-scan']} cr`}</button>
  </div>
  <div style={{ marginBottom: 14 }}>
  <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Paste blog content for deeper analysis (optional)</label>

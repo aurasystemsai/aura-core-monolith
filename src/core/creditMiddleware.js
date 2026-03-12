@@ -75,7 +75,9 @@ function requireCredits(actionType = 'generic-ai', opts = {}) {
           if (deducted) return req.creditDeduction;
           deducted = true;
           const effectiveModel = meta.model || model;
-          const result = await creditLedger.deductCredits(shop, actionType, {
+          // Allow individual routes to specify their own action type (e.g. blog-draft costs more than seo-analysis)
+          const effectiveAction = meta.action || actionType;
+          const result = await creditLedger.deductCredits(shop, effectiveAction, {
             tool: req.baseUrl || req.path,
             model: effectiveModel,
             ...meta,
