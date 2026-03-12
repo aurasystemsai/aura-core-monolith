@@ -3751,14 +3751,7 @@ export default function BlogSEO() {
  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
  <div style={{ flex: 1 }}>
  <div style={{ fontSize: 14, color: C.text, fontWeight: isBest ? 700 : 400, lineHeight: 1.5 }}>
- {powerWords.length > 0
- ? title.split(new RegExp(`(${powerWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi')).map((part, pi) =>
- powerWords.some(w => w.toLowerCase() === part.toLowerCase())
- ? <mark key={pi} style={{ background: "#422006", color: "#fb923c", borderRadius: 3, padding: "0 2px" }}>{part}</mark>
- : part
- )
- : title
- }
+ {title}
  </div>
  </div>
  </div>
