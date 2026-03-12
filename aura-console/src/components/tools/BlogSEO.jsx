@@ -741,9 +741,9 @@ export default function BlogSEO() {
  const runIntro = useCallback(async () => {
  if (!introKw.trim()) return;
  setIntroLoading(true); setIntroResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introKw.trim(), style: introStyle, audience: introAud || undefined }) }); if (r.ok) setIntroResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introKw.trim(), style: introStyle, audience: introAud || undefined, outline: outlineResult || undefined }) }); if (r.ok) setIntroResult(r); } catch {}
  setIntroLoading(false);
- }, [introKw, introStyle, introAud]);
+ }, [introKw, introStyle, introAud, outlineResult]);
 
  const runTitleIdeas = useCallback(async () => {
  if (!titleKw.trim()) return;
@@ -756,11 +756,13 @@ export default function BlogSEO() {
  if (!draftKw.trim()) return;
  setDraftLoading(true); setDraftErr(""); setDraftResult(null);
  try {
- const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: draftKw.trim(), tone: draftTone, niche: draftNiche || undefined, wordCount: draftWordCount }) });
+ const outline = outlineResult?.sections?.length ? outlineResult.sections : undefined;
+ const selectedTitle = outlineResult?.title || undefined;
+ const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: draftKw.trim(), tone: draftTone, niche: draftNiche || undefined, wordCount: draftWordCount, outline, selectedTitle }) });
  if (r.ok) setDraftResult(r); else setDraftErr(r.error || "Draft generation failed");
  } catch(e) { setDraftErr(e.message); }
  setDraftLoading(false);
- }, [draftKw, draftTone, draftNiche, draftWordCount]);
+ }, [draftKw, draftTone, draftNiche, draftWordCount, outlineResult]);
 
  /* ─── Generate Article modal handlers ─── */
  const openGenModal = useCallback(() => {
@@ -1116,6 +1118,24 @@ export default function BlogSEO() {
  } catch(e) { setSeoErr(e.message); }
  setSeoLoading(false);
  }, [seoTopic, seoContent, outlineResult, outlineKw, outlineAud]);
+
+ /* ── Navigate between pipeline steps, auto-filling empty destination from best available topic ── */
+ const navigateTo = useCallback((tab) => {
+ const sharedTopic = outlineKw || titleKw || draftKw || introKw || briefPrimary || briefTopic;
+ if (sharedTopic) {
+ if (tab === "brief" && !briefTopic) setBriefTopic(sharedTopic);
+ if (tab === "titles" && !titleKw) setTitleKw(sharedTopic);
+ if (tab === "outline" && !outlineKw) setOutlineKw(sharedTopic);
+ if (tab === "intro" && !introKw) setIntroKw(sharedTopic);
+ if (tab === "draft" && !draftKw) setDraftKw(sharedTopic);
+ if (tab === "images" && !imgTopic) setImgTopic(sharedTopic);
+ if (tab === "repurpose" && !repTopic) setRepTopic(sharedTopic);
+ if (tab === "tags" && !tagsTopic) setTagsTopic(sharedTopic);
+ if (tab === "seo" && !seoTopic) setSeoTopic(sharedTopic);
+ }
+ setWriteSub(tab);
+ }, [outlineKw, titleKw, draftKw, introKw, briefPrimary, briefTopic,
+ imgTopic, repTopic, tagsTopic, seoTopic]);
 
  /* ── Optimize ── */
  const runOptimize = useCallback(async () => {
@@ -3025,7 +3045,7 @@ export default function BlogSEO() {
                 ["draft",   "5", "📄", "Draft",   !!draftResult],
               ].map(([key, num, icon, label, done], i, arr) => (
                 <React.Fragment key={key}>
-                  <button onClick={() => setWriteSub(key)} style={{
+                  <button onClick={() => navigateTo(key)} style={{
                     display: "flex", alignItems: "center", gap: 5,
                     padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
                     cursor: "pointer",
@@ -3054,7 +3074,7 @@ export default function BlogSEO() {
                 ["seo",     "9", "📊",  "SEO Score",     !!seoResult],
               ].map(([key, num, icon, label, done], i, arr) => (
                 <React.Fragment key={key}>
-                  <button onClick={() => setWriteSub(key)} style={{
+                  <button onClick={() => navigateTo(key)} style={{
                     display: "flex", alignItems: "center", gap: 5,
                     padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
                     cursor: "pointer",
