@@ -168,7 +168,7 @@ export default function BlogSEO() {
  const [briefResult, setBriefResult] = useState(null);
  const [briefLoading, setBriefLoading] = useState(false);
  const [briefErr, setBriefErr] = useState("");
- const [writeSub, setWriteSub] = useState("outline");
+ const [writeSub, setWriteSub] = useState("brief");
  const [writeMode, setWriteMode] = useState("beginner"); // "beginner" | "advanced"
  /* ── Advanced mode extra controls ── */
  const [draftTone, setDraftTone] = useState("conversational");
