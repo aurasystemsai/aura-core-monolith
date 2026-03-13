@@ -3290,7 +3290,10 @@ export default function BlogSEO() {
  {writeSub === "outline" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Blog Outline Generator</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>AI Blog Outline Generator</div>
+ <button onClick={() => setWriteSub("titles")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>AI builds a structured outline with H2/H3 sections, key points and suggested word counts.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
@@ -3472,9 +3475,9 @@ export default function BlogSEO() {
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(outlineKw); setWriteSub("titles"); }}>💡 Title Ideas →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(outlineKw); setWriteSub("intro"); }}>✍️ Write Intro →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(outlineKw); setWriteSub("draft"); }}>📄 Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setTitleKw(_kw); setWriteSub("titles"); }}>💡 Title Ideas →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setIntroKw(_kw); setWriteSub("intro"); }}>✍️ Write Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setDraftKw(_kw); if (outlineTone) setDraftTone(outlineTone); setWriteSub("draft"); }}>📄 Full Draft →</button>
  </div>
  </div>
  )}
@@ -3489,7 +3492,10 @@ export default function BlogSEO() {
  {writeSub === "intro" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Intro Paragraph Generator</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>AI Intro Paragraph Generator</div>
+ <button onClick={() => setWriteSub("outline")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>Write a compelling opening paragraph that hooks readers and sets the tone for your post.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
@@ -3613,7 +3619,10 @@ export default function BlogSEO() {
  {writeSub === "titles" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>AI Title Ideas</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>AI Title Ideas</div>
+ <button onClick={() => setWriteSub("brief")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>Generate {titleCount} click-worthy, SEO-optimised title variations with CTR scores, formulas and power word analysis.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
@@ -3802,6 +3811,7 @@ export default function BlogSEO() {
  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
  <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Full Blog Post Draft</div>
  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#1e1b4b", color: "#a5b4fc" }}>3 credits</span>
+ <button onClick={() => setWriteSub("intro")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer", marginLeft: "auto" }}>← Back</button>
  </div>
  <div style={{ fontSize: 13, color: C.dim }}>AI generates a complete {draftWordCount.toLocaleString()}+ word blog post ready to publish.</div>
  </div>
@@ -4243,7 +4253,10 @@ export default function BlogSEO() {
  {writeSub === "images" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>🖼️ Image Planner</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>🖼️ Image Planner</div>
+ <button onClick={() => setWriteSub("draft")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>Hero concept, per-section image prompts, AI prompts for DALL·E / Midjourney, alt text and SEO filenames.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
@@ -4337,7 +4350,10 @@ export default function BlogSEO() {
  {writeSub === "repurpose" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>📣 Repurpose Content</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>📣 Repurpose Content</div>
+ <button onClick={() => setWriteSub("images")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>Turn your blog post into social content for Twitter/X, LinkedIn, Instagram, Email, Short Video and Pinterest — all AI-generated, ready to copy.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
@@ -4456,7 +4472,10 @@ export default function BlogSEO() {
  {writeSub === "tags" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>🏷️ Tags, Categories & Schema</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>🏷️ Tags, Categories & Schema</div>
+ <button onClick={() => setWriteSub("repurpose")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>Shopify tags, blog categories, FAQ rich snippets and JSON-LD schema markup ready to paste into Shopify.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
@@ -4544,7 +4563,10 @@ export default function BlogSEO() {
  {writeSub === "seo" && (
  <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
  <div style={{ padding: "20px 22px 16px", borderBottom: `1px solid ${C.border}` }}>
- <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>📊 SEO Score</div>
+ <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+ <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>📊 SEO Score</div>
+ <button onClick={() => setWriteSub("tags")} style={{ fontSize: 11, color: C.dim, background: "none", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>← Back</button>
+ </div>
  <div style={{ fontSize: 13, color: C.dim }}>Get a detailed SEO analysis — overall score, keyword optimisation, structure, readability, E-E-A-T, title suggestions and meta descriptions.</div>
  </div>
  <div style={{ padding: "18px 22px" }}>
