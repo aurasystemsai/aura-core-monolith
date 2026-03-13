@@ -4209,14 +4209,32 @@ export default function BlogSEO() {
  </div>
  );
  })()}
- {briefResult && (
+ {briefResult && (() => {
+ const _b = typeof briefResult === "string" ? (() => { try { return JSON.parse(briefResult); } catch { return {}; } })() : (briefResult || {});
+ const _bestKw = _b?.keywordStrategy?.primary || briefPrimary || briefTopic;
+ return (
  <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(briefPrimary || briefTopic); setWriteSub("titles"); }}>💡 Generate Titles →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(briefPrimary || briefTopic); setWriteSub("outline"); }}>📝 Create Outline →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(briefPrimary || briefTopic); setWriteSub("draft"); }}>📄 Write Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
+ setTitleKw(_bestKw);
+ if (!titleNiche && briefTopic) setTitleNiche(briefTopic);
+ if (!titleAudience && briefAudience) setTitleAudience(briefAudience);
+ setWriteSub("titles");
+ }}>💡 Generate Titles →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
+ setOutlineKw(_bestKw);
+ if (briefAudience && (!outlineAud || outlineAud === "general readers")) setOutlineAud(briefAudience);
+ if (briefTone) setOutlineTone(briefTone);
+ setWriteSub("outline");
+ }}>📝 Create Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
+ setDraftKw(_bestKw);
+ if (briefTone) setDraftTone(briefTone);
+ setWriteSub("draft");
+ }}>📄 Write Full Draft →</button>
  </div>
- )}
+ );
+ })()}
  </div>
  </div>
  )}
