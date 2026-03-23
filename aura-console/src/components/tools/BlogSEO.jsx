@@ -3364,7 +3364,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(outlineKw, "outline-all", r => {
  if (r.audience) {
  const known = ["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
- setOutlineAud(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
+ { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setOutlineAud(_aud); setIntroAud(_aud); setTitleAudience(_aud); setBriefAudience(_aud); }
  }
  })}>
  {sfLoading && sfLoadingKey === "outline-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
@@ -3376,7 +3376,7 @@ export default function BlogSEO() {
  <div style={{ flex: "0 0 auto", minWidth: 190 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
  <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(outlineAud) ? outlineAud : "__custom__"}
- onChange={e => { if (e.target.value !== "__custom__") setOutlineAud(e.target.value); }}>
+ onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setOutlineAud(_v); setIntroAud(_v); setTitleAudience(_v); setBriefAudience(_v); } }}>
  <option value="general readers">General readers</option>
  <option value="beginners">Beginners</option>
  <option value="intermediate">Intermediate</option>
@@ -3404,7 +3404,7 @@ export default function BlogSEO() {
  <option value="__custom__">Custom...</option>
  </select>
  {(!["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(outlineAud)) && (
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={outlineAud === "general readers" ? "" : outlineAud} onChange={e => setOutlineAud(e.target.value)} />
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={outlineAud === "general readers" ? "" : outlineAud} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
  )}
  </div>
  </div>
@@ -3565,7 +3565,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(introKw, "intro-all", r => {
  if (r.audience) {
  const known = ["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
- setIntroAud(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
+ { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setOutlineAud(_aud); setIntroAud(_aud); setTitleAudience(_aud); setBriefAudience(_aud); }
  }
  })}>
  {sfLoading && sfLoadingKey === "intro-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
@@ -3606,7 +3606,7 @@ export default function BlogSEO() {
  <div style={{ flex: 1, minWidth: 160 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
  <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(introAud) ? introAud : "__custom__"}
- onChange={e => { if (e.target.value !== "__custom__") setIntroAud(e.target.value); }}>
+ onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setOutlineAud(_v); setIntroAud(_v); setTitleAudience(_v); setBriefAudience(_v); } }}>
  <option value="">Any audience</option>
  <option value="general readers">General readers</option>
  <option value="beginners">Beginners</option>
@@ -3635,7 +3635,7 @@ export default function BlogSEO() {
  <option value="__custom__">Custom...</option>
  </select>
  {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(introAud)) && (
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={introAud} onChange={e => setIntroAud(e.target.value)} />
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={introAud} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
  )}
  </div>
  </div>
@@ -3692,7 +3692,7 @@ export default function BlogSEO() {
  if (r.niche) setTitleNiche(r.niche);
  if (r.audience) {
  const known = ["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
- setTitleAudience(known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience);
+ { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setOutlineAud(_aud); setIntroAud(_aud); setTitleAudience(_aud); setBriefAudience(_aud); }
  }
  })}>
  {sfLoading && sfLoadingKey === "titles-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Niche & Audience · ${ACTION_COSTS['seo-scan']} cr`}
@@ -3715,7 +3715,7 @@ export default function BlogSEO() {
  <div style={{ flex: 1, minWidth: 180 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
  <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(titleAudience) ? titleAudience : titleAudience ? "__custom__" : ""}
- onChange={e => { if (e.target.value !== "__custom__") setTitleAudience(e.target.value); }}>
+ onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setOutlineAud(_v); setIntroAud(_v); setTitleAudience(_v); setBriefAudience(_v); } }}>
  <option value="">Any audience</option>
  <option value="general readers">General readers</option>
  <option value="beginners">Beginners</option>
@@ -3744,7 +3744,7 @@ export default function BlogSEO() {
  <option value="__custom__">Custom...</option>
  </select>
  {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(titleAudience)) && (
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={titleAudience} onChange={e => setTitleAudience(e.target.value)} />
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={titleAudience} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
  )}
  </div>
  </div>
@@ -3980,7 +3980,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(briefTopic, "brief-all", r => {
  if (r.primaryKeyword) setBriefPrimary(r.primaryKeyword);
  if (r.secondaryKeywords?.length) setBriefSecondary(r.secondaryKeywords.join(", "));
- if (r.audience) setBriefAudience(r.audience);
+ if (r.audience) { setOutlineAud(r.audience); setIntroAud(r.audience); setTitleAudience(r.audience); setBriefAudience(r.audience); }
  })}>
  {sfLoading && sfLoadingKey === "brief-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Fields · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
@@ -4019,11 +4019,11 @@ export default function BlogSEO() {
  <span style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px" }}>Audience</span>
  <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !briefTopic.trim() ? 0.4 : 1 }}
  disabled={!briefTopic.trim() || sfLoading}
- onClick={() => runSuggestFields(briefTopic, "brief-audience", r => { if (r.audience) setBriefAudience(r.audience); })}>
+ onClick={() => runSuggestFields(briefTopic, "brief-audience", r => { if (r.audience) { setOutlineAud(r.audience); setIntroAud(r.audience); setTitleAudience(r.audience); setBriefAudience(r.audience); } })}>
  {sfLoading && sfLoadingKey === "brief-audience" ? "..." : "✨ AI"}
  </button>
  </div>
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. Shopify store owners, beginners" value={briefAudience} onChange={e => setBriefAudience(e.target.value)} />
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. Shopify store owners, beginners" value={briefAudience} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Tone</div>
