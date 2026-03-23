@@ -3336,11 +3336,11 @@ export default function BlogSEO() {
  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
  {genShopSuggestions.map((kw, i) => (
  <button key={i} onClick={() => {
- if (writeSub === "outline") setOutlineKw(kw);
- else if (writeSub === "intro") setIntroKw(kw);
- else if (writeSub === "titles") setTitleKw(kw);
- else if (writeSub === "draft") setDraftKw(kw);
- else if (writeSub === "brief") setBriefTopic(kw);
+ setOutlineKw(kw);
+ setIntroKw(kw);
+ setTitleKw(kw);
+ setDraftKw(kw);
+ setBriefTopic(kw);
  }} style={{ background: "#27272a", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", fontSize: 12, color: "#d4d4d8", cursor: "pointer" }}>{kw}</button>
  ))}
  </div>
