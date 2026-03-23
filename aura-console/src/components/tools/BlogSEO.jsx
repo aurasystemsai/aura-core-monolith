@@ -3343,6 +3343,10 @@ export default function BlogSEO() {
  setTitleKw(kw);
  setDraftKw(kw);
  setBriefTopic(kw);
+ setImgTopic(kw);
+ setRepTopic(kw);
+ setTagsTopic(kw);
+ setSeoTopic(kw);
  }} style={{ background: "#27272a", border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", fontSize: 12, color: "#d4d4d8", cursor: "pointer" }}>{kw}</button>
  ))}
  </div>
@@ -4409,8 +4413,8 @@ export default function BlogSEO() {
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
- <input value={imgTopic} onChange={e => setImgTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runBlogImages()} placeholder={draftKw || outlineKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
- <button onClick={runBlogImages} disabled={imgLoading || !imgTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: imgLoading || !imgTopic.trim() ? 0.5 : 1 }}>{imgLoading ? "⏳ Generating…" : `✨ Generate Image Plan · ${ACTION_COSTS['email-gen']} cr`}</button>
+ <input value={imgTopic || draftKw || outlineKw || ""} onChange={e => setImgTopic(e.target.value)} onFocus={e => { if (!imgTopic && (draftKw || outlineKw)) setImgTopic(draftKw || outlineKw); }} onKeyDown={e => e.key === "Enter" && runBlogImages()} placeholder="Blog topic or primary keyword…" style={{ ...S.input, flex: 1 }} />
+ <button onClick={runBlogImages} disabled={imgLoading || !(imgTopic || draftKw || outlineKw).trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: imgLoading || !(imgTopic || draftKw || outlineKw).trim() ? 0.5 : 1 }}>{imgLoading ? "⏳ Generating…" : `✨ Generate Image Plan · ${ACTION_COSTS['email-gen']} cr`}</button>
  </div>
  {(draftKw || outlineKw) && !imgTopic && (
  <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
@@ -4507,7 +4511,7 @@ export default function BlogSEO() {
  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
  <div>
  <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Blog Topic / Title</label>
- <input value={repTopic} onChange={e => setRepTopic(e.target.value)} placeholder={draftKw || outlineKw || "What's the post about?"} style={{ ...S.input, width: "100%", boxSizing: "border-box" }} />
+ <input value={repTopic || draftKw || outlineKw || ""} onChange={e => setRepTopic(e.target.value)} onFocus={() => { if (!repTopic && (draftKw || outlineKw)) setRepTopic(draftKw || outlineKw); }} placeholder="What's the post about?" style={{ ...S.input, width: "100%", boxSizing: "border-box" }} />
  </div>
  <div>
  <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Key Takeaway (optional)</label>
@@ -4520,7 +4524,7 @@ export default function BlogSEO() {
  <button style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, border: "none", cursor: "pointer" }} onClick={() => setRepTopic(draftKw || outlineKw)}>{draftKw || outlineKw}</button>
  </div>
  )}
- <button onClick={runRepurpose} disabled={repLoading || !repTopic.trim()} style={{ ...S.btn("primary"), marginBottom: 14, opacity: repLoading || !repTopic.trim() ? 0.5 : 1 }}>{repLoading ? "⏳ Generating…" : `✨ Generate Content Pack · ${ACTION_COSTS['email-gen']} cr`}</button>
+ <button onClick={runRepurpose} disabled={repLoading || !(repTopic || draftKw || outlineKw).trim()} style={{ ...S.btn("primary"), marginBottom: 14, opacity: repLoading || !(repTopic || draftKw || outlineKw).trim() ? 0.5 : 1 }}>{repLoading ? "⏳ Generating…" : `✨ Generate Content Pack · ${ACTION_COSTS['email-gen']} cr`}</button>
  {repErr && <div style={{ ...S.err, marginBottom: 12 }}>{repErr}</div>}
  {repResult && (
  <>
@@ -4626,8 +4630,8 @@ export default function BlogSEO() {
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
- <input value={tagsTopic} onChange={e => setTagsTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runTagsSchema()} placeholder={outlineKw || draftKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
- <button onClick={runTagsSchema} disabled={tagsLoading || !tagsTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: tagsLoading || !tagsTopic.trim() ? 0.5 : 1 }}>{tagsLoading ? "⏳ Generating…" : `✨ Generate Tags & Schema · ${ACTION_COSTS['email-gen']} cr`}</button>
+ <input value={tagsTopic || outlineKw || draftKw || ""} onChange={e => setTagsTopic(e.target.value)} onFocus={() => { if (!tagsTopic && (outlineKw || draftKw)) setTagsTopic(outlineKw || draftKw); }} onKeyDown={e => e.key === "Enter" && runTagsSchema()} placeholder="Blog topic or primary keyword…" style={{ ...S.input, flex: 1 }} />
+ <button onClick={runTagsSchema} disabled={tagsLoading || !(tagsTopic || outlineKw || draftKw).trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: tagsLoading || !(tagsTopic || outlineKw || draftKw).trim() ? 0.5 : 1 }}>{tagsLoading ? "⏳ Generating…" : `✨ Generate Tags & Schema · ${ACTION_COSTS['email-gen']} cr`}</button>
  </div>
  {(outlineKw || draftKw) && !tagsTopic && (
  <div style={{ fontSize: 12, color: C.dim, marginBottom: 12, display: "flex", gap: 6, alignItems: "center" }}>
@@ -4716,8 +4720,8 @@ export default function BlogSEO() {
  </div>
  <div style={{ padding: "18px 22px" }}>
  <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
- <input value={seoTopic} onChange={e => setSeoTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && runSeoScore()} placeholder={outlineKw || draftKw || "Blog topic or primary keyword…"} style={{ ...S.input, flex: 1 }} />
- <button onClick={runSeoScore} disabled={seoLoading || !seoTopic.trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: seoLoading || !seoTopic.trim() ? 0.5 : 1 }}>{seoLoading ? "⏳ Analysing…" : `📊 Get SEO Score · ${ACTION_COSTS['seo-scan']} cr`}</button>
+ <input value={seoTopic || outlineKw || draftKw || ""} onChange={e => setSeoTopic(e.target.value)} onFocus={() => { if (!seoTopic && (outlineKw || draftKw)) setSeoTopic(outlineKw || draftKw); }} onKeyDown={e => e.key === "Enter" && runSeoScore()} placeholder="Blog topic or primary keyword…" style={{ ...S.input, flex: 1 }} />
+ <button onClick={runSeoScore} disabled={seoLoading || !(seoTopic || outlineKw || draftKw).trim()} style={{ ...S.btn("primary"), whiteSpace: "nowrap", opacity: seoLoading || !(seoTopic || outlineKw || draftKw).trim() ? 0.5 : 1 }}>{seoLoading ? "⏳ Analysing…" : `📊 Get SEO Score · ${ACTION_COSTS['seo-scan']} cr`}</button>
  </div>
  <div style={{ marginBottom: 14 }}>
  <label style={{ fontSize: 11, color: C.dim, display: "block", marginBottom: 4 }}>Paste blog content for deeper analysis (optional)</label>
