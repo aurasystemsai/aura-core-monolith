@@ -149,7 +149,7 @@ export default function BlogSEO() {
 
  /* ── Write / AI Create state ── */
  const [outlineKw, setOutlineKw] = useState("");
- const [outlineAud, setOutlineAud] = useState("general readers");
+ const [sharedAudience, setSharedAudience] = useState("");
  const [outlineResult, setOutlineResult] = useState(null);
  const [outlineLoading, setOutlineLoading] = useState(false);
  const [introKw, setIntroKw] = useState("");
@@ -177,13 +177,13 @@ export default function BlogSEO() {
  const [outlineTone, setOutlineTone] = useState("professional");
  const [outlineSections, setOutlineSections] = useState("medium"); // small|medium|large
  const [outlineViewRaw, setOutlineViewRaw] = useState(false);
- const [introAud, setIntroAud] = useState("");
+ 
  const [titleCount, setTitleCount] = useState(10);
  const [titleFormula, setTitleFormula] = useState("all");
  const [titleNiche, setTitleNiche] = useState("");
- const [titleAudience, setTitleAudience] = useState("");
+ 
  const [briefSecondary, setBriefSecondary] = useState("");
- const [briefAudience, setBriefAudience] = useState("");
+ 
  const [briefTone, setBriefTone] = useState("professional");
  /* ── AI field-suggest (shared across all sub-tabs) ── */
  const [sfLoading, setSfLoading] = useState(false);
@@ -736,23 +736,23 @@ export default function BlogSEO() {
  const runOutline = useCallback(async () => {
  if (!outlineKw.trim()) return;
  setOutlineLoading(true); setOutlineResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: outlineKw.trim(), audience: outlineAud, tone: outlineTone, sections: outlineSections }) }); if (r.ok) setOutlineResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/blog-outline`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: outlineKw.trim(), audience: sharedAudience, tone: outlineTone, sections: outlineSections }) }); if (r.ok) setOutlineResult(r); } catch {}
  setOutlineLoading(false);
- }, [outlineKw, outlineAud, outlineTone, outlineSections]);
+ }, [outlineKw, sharedAudience, outlineTone, outlineSections]);
 
  const runIntro = useCallback(async () => {
  if (!introKw.trim()) return;
  setIntroLoading(true); setIntroResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introKw.trim(), style: introStyle, audience: introAud || undefined, outline: outlineResult || undefined }) }); if (r.ok) setIntroResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/intro-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: introKw.trim(), style: introStyle, audience: sharedAudience || undefined, outline: outlineResult || undefined }) }); if (r.ok) setIntroResult(r); } catch {}
  setIntroLoading(false);
- }, [introKw, introStyle, introAud, outlineResult]);
+ }, [introKw, introStyle, sharedAudience, outlineResult]);
 
  const runTitleIdeas = useCallback(async () => {
  if (!titleKw.trim()) return;
  setTitleLoading(true); setTitleResult(null);
- try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleKw.trim(), count: titleCount, formula: titleFormula !== "all" ? titleFormula : undefined, niche: titleNiche || undefined, audience: titleAudience || undefined }) }); if (r.ok) setTitleResult(r); } catch {}
+ try { const r = await apiFetchJSON(`${API}/ai/title-ideas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: titleKw.trim(), count: titleCount, formula: titleFormula !== "all" ? titleFormula : undefined, niche: titleNiche || undefined, audience: sharedAudience || undefined }) }); if (r.ok) setTitleResult(r); } catch {}
  setTitleLoading(false);
- }, [titleKw, titleCount, titleFormula, titleNiche, titleAudience]);
+ }, [titleKw, titleCount, titleFormula, titleNiche, sharedAudience]);
 
  const runDraft = useCallback(async () => {
  if (!draftKw.trim()) return;
@@ -1060,11 +1060,11 @@ export default function BlogSEO() {
  setBriefLoading(true); setBriefErr(""); setBriefResult(null);
  try {
  const secondaryArr = briefSecondary.trim() ? briefSecondary.split(",").map(s => s.trim()).filter(Boolean) : undefined;
- const r = await apiFetchJSON(`${API}/ai/content-brief`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: briefTopic.trim(), primaryKeyword: briefPrimary.trim() || undefined, secondaryKeywords: secondaryArr, audience: briefAudience.trim() || undefined, tone: briefTone }) });
+ const r = await apiFetchJSON(`${API}/ai/content-brief`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: briefTopic.trim(), primaryKeyword: briefPrimary.trim() || undefined, secondaryKeywords: secondaryArr, audience: sharedAudience.trim() || undefined, tone: briefTone }) });
  if (r.ok) setBriefResult(r.structured || r.brief || r); else setBriefErr(r.error || "Brief generation failed");
  } catch(e) { setBriefErr(e.message); }
  setBriefLoading(false);
- }, [briefTopic, briefPrimary, briefSecondary, briefAudience, briefTone]);
+ }, [briefTopic, briefPrimary, briefSecondary, sharedAudience, briefTone]);
 
  /* ── AI Suggest Fields — auto-fill secondary form inputs from a topic ── */
  const runSuggestFields = useCallback(async (topic, key, applyFn) => {
@@ -1106,11 +1106,11 @@ export default function BlogSEO() {
  setTagsLoading(true); setTagsErr(""); setTagsResult(null);
  try {
  const outlineSections = Array.isArray(outlineResult?.sections) ? outlineResult.sections : [];
- const r = await apiFetchJSON(`${API}/ai/tags-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: tagsTopic.trim(), primaryKeyword: outlineKw || tagsTopic.trim(), outline: outlineSections, audience: outlineAud || undefined }) });
+ const r = await apiFetchJSON(`${API}/ai/tags-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: tagsTopic.trim(), primaryKeyword: outlineKw || tagsTopic.trim(), outline: outlineSections, audience: sharedAudience || undefined }) });
  if (r.ok) setTagsResult(r); else setTagsErr(r.error || "Tags & schema generation failed");
  } catch(e) { setTagsErr(e.message); }
  setTagsLoading(false);
- }, [tagsTopic, outlineResult, outlineKw, outlineAud]);
+ }, [tagsTopic, outlineResult, outlineKw, sharedAudience]);
 
  /* ── SEO Score ── */
  const runSeoScore = useCallback(async () => {
@@ -1118,11 +1118,11 @@ export default function BlogSEO() {
  setSeoLoading(true); setSeoErr(""); setSeoResult(null);
  try {
  const outlineSecs = Array.isArray(outlineResult?.sections) ? outlineResult.sections : [];
- const r = await apiFetchJSON(`${API}/ai/seo-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: seoTopic.trim(), content: seoContent.trim() || undefined, outline: outlineSecs, primaryKeyword: outlineKw || seoTopic.trim(), audience: outlineAud || undefined }) });
+ const r = await apiFetchJSON(`${API}/ai/seo-score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: seoTopic.trim(), content: seoContent.trim() || undefined, outline: outlineSecs, primaryKeyword: outlineKw || seoTopic.trim(), audience: sharedAudience || undefined }) });
  if (r.ok) setSeoResult(r); else setSeoErr(r.error || "SEO score generation failed");
  } catch(e) { setSeoErr(e.message); }
  setSeoLoading(false);
- }, [seoTopic, seoContent, outlineResult, outlineKw, outlineAud]);
+ }, [seoTopic, seoContent, outlineResult, outlineKw, sharedAudience]);
 
  /* ── Navigate between pipeline steps, auto-filling empty destination from best available topic ── */
  const navigateTo = useCallback((tab) => {
@@ -2133,7 +2133,6 @@ export default function BlogSEO() {
  )}
  </div>
  )}
-
 
  {/* ════════════════════════════
  POST CONTEXT BANNER
@@ -3364,7 +3363,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(outlineKw, "outline-all", r => {
  if (r.audience) {
  const known = ["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
- { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setOutlineAud(_aud); setIntroAud(_aud); setTitleAudience(_aud); setBriefAudience(_aud); }
+ { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setSharedAudience(_aud); }
  }
  })}>
  {sfLoading && sfLoadingKey === "outline-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
@@ -3375,8 +3374,8 @@ export default function BlogSEO() {
  <input style={{ ...S.input, flex: 1, minWidth: 220 }} placeholder="e.g. best running shoes for beginners" value={outlineKw} onChange={e => setOutlineKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runOutline()} />
  <div style={{ flex: "0 0 auto", minWidth: 190 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
- <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(outlineAud) ? outlineAud : "__custom__"}
- onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setOutlineAud(_v); setIntroAud(_v); setTitleAudience(_v); setBriefAudience(_v); } }}>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(sharedAudience) ? sharedAudience : "__custom__"}
+ onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setSharedAudience(_v); } }}>
  <option value="general readers">General readers</option>
  <option value="beginners">Beginners</option>
  <option value="intermediate">Intermediate</option>
@@ -3403,8 +3402,8 @@ export default function BlogSEO() {
  </optgroup>
  <option value="__custom__">Custom...</option>
  </select>
- {(!["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(outlineAud)) && (
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={outlineAud === "general readers" ? "" : outlineAud} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
+ {(!["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(sharedAudience)) && (
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={sharedAudience === "general readers" ? "" : sharedAudience} onChange={e => { setSharedAudience(e.target.value); }} />
  )}
  </div>
  </div>
@@ -3565,7 +3564,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(introKw, "intro-all", r => {
  if (r.audience) {
  const known = ["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
- { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setOutlineAud(_aud); setIntroAud(_aud); setTitleAudience(_aud); setBriefAudience(_aud); }
+ { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setSharedAudience(_aud); }
  }
  })}>
  {sfLoading && sfLoadingKey === "intro-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
@@ -3605,8 +3604,8 @@ export default function BlogSEO() {
  </div>
  <div style={{ flex: 1, minWidth: 160 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
- <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(introAud) ? introAud : "__custom__"}
- onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setOutlineAud(_v); setIntroAud(_v); setTitleAudience(_v); setBriefAudience(_v); } }}>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(sharedAudience) ? sharedAudience : "__custom__"}
+ onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setSharedAudience(_v); } }}>
  <option value="">Any audience</option>
  <option value="general readers">General readers</option>
  <option value="beginners">Beginners</option>
@@ -3634,8 +3633,8 @@ export default function BlogSEO() {
  </optgroup>
  <option value="__custom__">Custom...</option>
  </select>
- {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(introAud)) && (
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={introAud} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
+ {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(sharedAudience)) && (
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={sharedAudience} onChange={e => { setSharedAudience(e.target.value); }} />
  )}
  </div>
  </div>
@@ -3692,7 +3691,7 @@ export default function BlogSEO() {
  if (r.niche) setTitleNiche(r.niche);
  if (r.audience) {
  const known = ["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"];
- { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setOutlineAud(_aud); setIntroAud(_aud); setTitleAudience(_aud); setBriefAudience(_aud); }
+ { const _aud = known.includes(r.audience.toLowerCase()) ? r.audience.toLowerCase() : r.audience; setSharedAudience(_aud); }
  }
  })}>
  {sfLoading && sfLoadingKey === "titles-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Niche & Audience · ${ACTION_COSTS['seo-scan']} cr`}
@@ -3714,8 +3713,8 @@ export default function BlogSEO() {
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
  <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>Target audience</div>
- <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(titleAudience) ? titleAudience : titleAudience ? "__custom__" : ""}
- onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setOutlineAud(_v); setIntroAud(_v); setTitleAudience(_v); setBriefAudience(_v); } }}>
+ <select style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={["general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(sharedAudience) ? sharedAudience : sharedAudience ? "__custom__" : ""}
+ onChange={e => { if (e.target.value !== "__custom__") { const _v = e.target.value; setSharedAudience(_v); } }}>
  <option value="">Any audience</option>
  <option value="general readers">General readers</option>
  <option value="beginners">Beginners</option>
@@ -3743,8 +3742,8 @@ export default function BlogSEO() {
  </optgroup>
  <option value="__custom__">Custom...</option>
  </select>
- {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(titleAudience)) && (
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={titleAudience} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
+ {(!["","general readers","beginners","intermediate","advanced / experts","e-commerce store owners","shopify merchants","entrepreneurs","small business owners","marketers","content creators","parents","students","seniors","teens","fitness enthusiasts","tech enthusiasts","budget shoppers","luxury buyers"].includes(sharedAudience)) && (
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginTop: 6 }} placeholder="Describe your audience" value={sharedAudience} onChange={e => { setSharedAudience(e.target.value); }} />
  )}
  </div>
  </div>
@@ -3980,7 +3979,7 @@ export default function BlogSEO() {
  onClick={() => runSuggestFields(briefTopic, "brief-all", r => {
  if (r.primaryKeyword) setBriefPrimary(r.primaryKeyword);
  if (r.secondaryKeywords?.length) setBriefSecondary(r.secondaryKeywords.join(", "));
- if (r.audience) { setOutlineAud(r.audience); setIntroAud(r.audience); setTitleAudience(r.audience); setBriefAudience(r.audience); }
+ if (r.audience) { setSharedAudience(r.audience); }
  })}>
  {sfLoading && sfLoadingKey === "brief-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Fill Fields · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
@@ -4019,11 +4018,11 @@ export default function BlogSEO() {
  <span style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px" }}>Audience</span>
  <button style={{ fontSize: 10, background: "none", border: "none", color: "#a5b4fc", cursor: "pointer", padding: "0 2px", opacity: !briefTopic.trim() ? 0.4 : 1 }}
  disabled={!briefTopic.trim() || sfLoading}
- onClick={() => runSuggestFields(briefTopic, "brief-audience", r => { if (r.audience) { setOutlineAud(r.audience); setIntroAud(r.audience); setTitleAudience(r.audience); setBriefAudience(r.audience); } })}>
+ onClick={() => runSuggestFields(briefTopic, "brief-audience", r => { if (r.audience) { setSharedAudience(r.audience); } })}>
  {sfLoading && sfLoadingKey === "brief-audience" ? "..." : "✨ AI"}
  </button>
  </div>
- <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. Shopify store owners, beginners" value={briefAudience} onChange={e => { setOutlineAud(e.target.value); setIntroAud(e.target.value); setTitleAudience(e.target.value); setBriefAudience(e.target.value); }} />
+ <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} placeholder="e.g. Shopify store owners, beginners" value={sharedAudience} onChange={e => { setSharedAudience(e.target.value); }} />
  </div>
  <div style={{ flex: 1, minWidth: 180 }}>
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 6 }}>Tone</div>
@@ -4285,12 +4284,12 @@ export default function BlogSEO() {
  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
  setTitleKw(_bestKw);
  if (!titleNiche && briefTopic) setTitleNiche(briefTopic);
- if (!titleAudience && briefAudience) setTitleAudience(briefAudience);
+ if (!sharedAudience && sharedAudience) setSharedAudience(sharedAudience);
  setWriteSub("titles");
  }}>💡 Generate Titles →</button>
  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
  setOutlineKw(_bestKw);
- if (briefAudience && (!outlineAud || outlineAud === "general readers")) setOutlineAud(briefAudience);
+ if (sharedAudience && (!sharedAudience || sharedAudience === "general readers")) setSharedAudience(sharedAudience);
  if (briefTone) setOutlineTone(briefTone);
  setWriteSub("outline");
  }}>📝 Create Outline →</button>
