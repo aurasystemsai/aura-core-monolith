@@ -168,6 +168,8 @@ export default function BlogSEO() {
  const [briefResult, setBriefResult] = useState(null);
  const [briefLoading, setBriefLoading] = useState(false);
  const [briefErr, setBriefErr] = useState("");
+ const [selectedTitle, setSelectedTitle] = useState("");
+ const [selectedIntro, setSelectedIntro] = useState("");
  const [writeSub, setWriteSub] = useState("brief");
  const [writeMode, setWriteMode] = useState("beginner"); // "beginner" | "advanced"
  /* ── Advanced mode extra controls ── */
@@ -760,7 +762,7 @@ export default function BlogSEO() {
  try {
  const outline = outlineResult?.sections?.length ? outlineResult.sections : undefined;
  const selectedTitle = outlineResult?.title || undefined;
- const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: draftKw.trim(), tone: draftTone, niche: draftNiche || undefined, wordCount: draftWordCount, outline, selectedTitle }) });
+ const r = await apiFetchJSON(`${API}/ai/full-draft`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: draftKw.trim(), tone: draftTone, niche: draftNiche || undefined, wordCount: draftWordCount, introOverride: selectedIntro || undefined, outline, selectedTitle }) });
  if (r.ok) setDraftResult(r); else setDraftErr(r.error || "Draft generation failed");
  } catch(e) { setDraftErr(e.message); }
  setDraftLoading(false);
@@ -3477,6 +3479,13 @@ export default function BlogSEO() {
  <div style={{ fontSize: 11, color: "#818cf8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Suggested Title</div>
  <div style={{ fontSize: 14, fontWeight: 700, color: "#c7d2fe" }}>{outlineResult.title}</div>
  {outlineResult.metaDescription && <div style={{ fontSize: 12, color: "#a5b4fc", marginTop: 6, lineHeight: 1.5 }}>{outlineResult.metaDescription}</div>}
+ <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(outlineResult.title)}>Copy</button>
+ <button style={{ fontSize: 11, padding: "4px 14px", borderRadius: 7, border: `1px solid ${C.green}`, background: "transparent", color: C.green, cursor: "pointer", fontWeight: 600 }}
+ onClick={() => { setSelectedTitle(outlineResult.title); setIntroKw(outlineResult.title); setDraftKw(outlineResult.title); setTitleKw(outlineResult.title); setBriefTopic(outlineResult.title)}}>
+ ✓ Use this title
+ </button>
+ </div>
  </div>
  )}
 
@@ -3503,6 +3512,9 @@ export default function BlogSEO() {
  {sec.seoTip && (
  <div style={{ marginTop: 8, fontSize: 11, color: "#6ee7b7", borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>💡 {sec.seoTip}</div>
  )}
+ <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setIntroKw(sec.heading); setDraftKw(outlineKw || sec.heading)}}>→ Write intro from this</button>
+ </div>
  </div>
  ))}
 
@@ -3534,9 +3546,9 @@ export default function BlogSEO() {
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setTitleKw(_kw); setWriteSub("titles"); }}>💡 Title Ideas →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setIntroKw(_kw); setWriteSub("intro"); }}>✍️ Write Intro →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setDraftKw(_kw); if (outlineTone) setDraftTone(outlineTone); setWriteSub("draft"); }}>📄 Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setTitleKw(_kw)}}>💡 Title Ideas →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setIntroKw(_kw)}}>✍️ Write Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { const _kw = outlineResult?.title || outlineResult?.primaryKeyword || outlineKw; setDraftKw(_kw); if (outlineTone) setDraftTone(outlineTone)}}>📄 Full Draft →</button>
  </div>
  </div>
  )}
@@ -3570,6 +3582,13 @@ export default function BlogSEO() {
  {sfLoading && sfLoadingKey === "intro-all" ? <><span style={S.spinner} /> Suggesting...</> : `✨ AI Suggest Audience · ${ACTION_COSTS['seo-scan']} cr`}
  </button>
  </div>
+ {selectedIntro && (
+ <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", marginBottom: 12, fontSize: 12, color: "#6ee7b7" }}>
+ <div style={{ fontWeight: 600, marginBottom: 4 }}>✓ Intro selected — will be included in your draft:</div>
+ <div style={{ color: "#d1fae5", lineHeight: 1.6, fontSize: 12 }}>{selectedIntro.slice(0, 200)}{selectedIntro.length > 200 ? "…" : ""}</div>
+ <button style={{ marginTop: 6, fontSize: 11, background: "none", border: "1px solid #166534", borderRadius: 5, color: "#6ee7b7", cursor: "pointer", padding: "2px 8px" }} onClick={() => setSelectedIntro("")}>✕ Clear</button>
+ </div>
+ )}
  <div style={{ fontSize: 12, fontWeight: 600, color: C.sub, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 8 }}>Blog topic or keyword</div>
  <input style={{ ...S.input, width: "100%", boxSizing: "border-box", marginBottom: 12 }} placeholder="e.g. best running shoes for beginners" value={introKw} onChange={e => setIntroKw(e.target.value)} onKeyDown={e => e.key === "Enter" && runIntro()} />
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
@@ -3652,20 +3671,43 @@ export default function BlogSEO() {
  {intro.hookType && <span style={{ fontSize: 10, color: C.dim, background: C.muted, padding: "2px 8px", borderRadius: 4 }}>{intro.hookType}</span>}
  </div>
  <div style={{ fontSize: 13, color: C.text, lineHeight: 1.7 }}>{intro.text}</div>
- <button style={{ ...S.btn(), marginTop: 8, fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(intro.text || "")}>Copy</button>
+ <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(intro.text || "")}>Copy</button>
+ {selectedIntro === intro.text ? (
+ <span style={{ fontSize: 11, color: C.green, fontWeight: 700, padding: "3px 10px" }}>✓ Selected for Draft</span>
+ ) : (
+ <button style={{ fontSize: 11, padding: "4px 14px", borderRadius: 7, border: `1px solid ${C.green}`, background: "transparent", color: C.green, cursor: "pointer", fontWeight: 600 }}
+ onClick={() => { setSelectedIntro(intro.text || ""); setDraftKw(introKw || draftKw)}}>
+ ✓ Use in Draft
+ </button>
+ )}
+ </div>
  </div>
  ))}
  </div>
  ) : (
+ <div>
  <div style={{ fontSize: 13, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{introResult.intro || introResult.text || JSON.stringify(introResult)}</div>
+ <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(introResult.intro || introResult.text || "")}>Copy</button>
+ {selectedIntro === (introResult.intro || introResult.text) ? (
+ <span style={{ fontSize: 11, color: C.green, fontWeight: 700, padding: "3px 10px" }}>✓ Selected for Draft</span>
+ ) : (
+ <button style={{ fontSize: 11, padding: "4px 14px", borderRadius: 7, border: `1px solid ${C.green}`, background: "transparent", color: C.green, cursor: "pointer", fontWeight: 600 }}
+ onClick={() => { setSelectedIntro(introResult.intro || introResult.text || ""); setDraftKw(introKw || draftKw)}}>
+ ✓ Use in Draft
+ </button>
  )}
- {introResult.intros && <button style={{ ...S.btn("primary"), marginTop: 4, fontSize: 12 }} onClick={() => { const best = introResult.intros?.[introResult.recommended ?? 0]; navigator.clipboard?.writeText(best?.text || ""); }}>Copy Best Option</button>}
+ </div>
+ </div>
+ )}
+ {introResult.intros && <button style={{ ...S.btn("primary"), marginTop: 4, fontSize: 12 }} onClick={() => { const best = introResult.intros?.[introResult.recommended ?? 0]; navigator.clipboard?.writeText(best?.text || "")}}>Copy Best Option</button>}
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(introKw); setWriteSub("draft"); }}>📄 Write Full Draft →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(introKw); setWriteSub("titles"); }}>💡 Title Ideas →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(introKw); setWriteSub("outline"); }}>📝 Blog Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setDraftKw(introKw)}}>📄 Write Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(introKw)}}>💡 Title Ideas →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(introKw)}}>📝 Blog Outline →</button>
  </div>
  </div>
  )}
@@ -3811,8 +3853,9 @@ export default function BlogSEO() {
  const charOk = charCount >= 50 && charCount <= 65;
  const charWarn = charCount > 65 && charCount <= 75;
  const isBest = titleResult.bestTitle && title === titleResult.bestTitle;
+ const isSelected = selectedTitle === title;
  return (
- <div key={i} style={{ background: C.bg, border: `1.5px solid ${isBest ? C.indigo : C.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+ <div key={i} style={{ background: isSelected ? "#052e16" : C.bg, border: `1.5px solid ${isSelected ? C.green : isBest ? C.indigo : C.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
  {/* Row 1: title + badges */}
  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
  <div style={{ flex: 1 }}>
@@ -3839,12 +3882,16 @@ export default function BlogSEO() {
  {/* Note */}
  {note && <div style={{ fontSize: 11, color: C.dim, lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>{note}</div>}
  {/* Actions */}
- <div style={{ display: "flex", gap: 6 }}>
+ <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
  <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard?.writeText(title)}>Copy</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setDraftKw(title); setWriteSub("draft"); }}>Use in Full Draft →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setOutlineKw(title); setWriteSub("outline"); }}>Use in Outline →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setIntroKw(title); setWriteSub("intro"); }}>✍️ Write Intro →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => { setBriefTopic(title); setBriefPrimary(titleKw); setWriteSub("brief"); }}>📋 Content Brief →</button>
+ {isSelected ? (
+ <span style={{ fontSize: 11, color: C.green, fontWeight: 700, padding: "3px 10px" }}>✓ Selected</span>
+ ) : (
+ <button style={{ fontSize: 11, padding: "4px 14px", borderRadius: 7, border: `1px solid ${C.green}`, background: "transparent", color: C.green, cursor: "pointer", fontWeight: 600 }}
+ onClick={() => { setSelectedTitle(title); setOutlineKw(title); setIntroKw(title); setDraftKw(title); setBriefTopic(title); setBriefPrimary(titleKw)}}>
+ ✓ Use this title
+ </button>
+ )}
  </div>
  </div>
  );
@@ -3852,8 +3899,8 @@ export default function BlogSEO() {
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!outlineKw) setOutlineKw(titleResult?.bestTitle || titleKw); setWriteSub("outline"); }}>📝 Create Outline →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!draftKw) setDraftKw(titleResult?.bestTitle || titleKw); setWriteSub("draft"); }}>📄 Write Full Draft →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!outlineKw) setOutlineKw(titleResult?.bestTitle || titleKw)}}>📝 Create Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!draftKw) setDraftKw(titleResult?.bestTitle || titleKw)}}>📄 Write Full Draft →</button>
  </div>
  </div>
  )}
@@ -3946,16 +3993,16 @@ export default function BlogSEO() {
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12 }}>
  <div style={{ fontSize: 11, color: C.dim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Continue to publish prep</div>
  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
- <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!imgTopic) setImgTopic(draftKw); setWriteSub("images"); }}>🖼️ Image Planner →</button>
- <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!repTopic) setRepTopic(draftKw); setWriteSub("repurpose"); }}>📣 Repurpose →</button>
- <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw); setWriteSub("tags"); }}>🏷️ Tags & Schema →</button>
- <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw); if (draftResult?.content && !seoContent) setSeoContent(draftResult.content); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!imgTopic) setImgTopic(draftKw)}}>🖼️ Image Planner →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!repTopic) setRepTopic(draftKw)}}>📣 Repurpose →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw)}}>🏷️ Tags & Schema →</button>
+ <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 14px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw); if (draftResult?.content && !seoContent) setSeoContent(draftResult.content)}}>📊 SEO Score →</button>
  </div>
  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Edit:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(draftKw); setWriteSub("outline"); }}>📝 Outline →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(draftKw); setWriteSub("intro"); }}>✍️ Intro →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(draftKw); setWriteSub("titles"); }}>💡 Titles →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setOutlineKw(draftKw)}}>📝 Outline →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setIntroKw(draftKw)}}>✍️ Intro →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { setTitleKw(draftKw)}}>💡 Titles →</button>
  </div>
  </div>
  </div>
@@ -4284,19 +4331,14 @@ export default function BlogSEO() {
  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
  setTitleKw(_bestKw);
  if (!titleNiche && briefTopic) setTitleNiche(briefTopic);
- if (!sharedAudience && sharedAudience) setSharedAudience(sharedAudience);
- setWriteSub("titles");
  }}>💡 Generate Titles →</button>
  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
  setOutlineKw(_bestKw);
- if (sharedAudience && (!sharedAudience || sharedAudience === "general readers")) setSharedAudience(sharedAudience);
  if (briefTone) setOutlineTone(briefTone);
- setWriteSub("outline");
  }}>📝 Create Outline →</button>
  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => {
  setDraftKw(_bestKw);
  if (briefTone) setDraftTone(briefTone);
- setWriteSub("draft");
  }}>📄 Write Full Draft →</button>
  </div>
  );
@@ -4391,9 +4433,9 @@ export default function BlogSEO() {
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!repTopic) setRepTopic(draftKw || imgTopic); setWriteSub("repurpose"); }}>📣 Repurpose Content →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw || imgTopic); setWriteSub("tags"); }}>🏷️ Tags & Schema →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw || imgTopic); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!repTopic) setRepTopic(draftKw || imgTopic)}}>📣 Repurpose Content →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw || imgTopic)}}>🏷️ Tags & Schema →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw || imgTopic)}}>📊 SEO Score →</button>
  </div>
  </>
  )}
@@ -4513,8 +4555,8 @@ export default function BlogSEO() {
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw || repTopic); setWriteSub("tags"); }}>🏷️ Tags & Schema →</button>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw || repTopic); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!tagsTopic) setTagsTopic(draftKw || repTopic)}}>🏷️ Tags & Schema →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(draftKw || repTopic)}}>📊 SEO Score →</button>
  </div>
  </>
  )}
@@ -4604,7 +4646,7 @@ export default function BlogSEO() {
  {/* Next step */}
  <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
  <span style={{ fontSize: 11, color: C.dim, flexShrink: 0 }}>Next step:</span>
- <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(tagsTopic || draftKw); if (draftResult?.content && !seoContent) setSeoContent(draftResult.content); setWriteSub("seo"); }}>📊 SEO Score →</button>
+ <button style={{ ...S.btn(), fontSize: 11, padding: "4px 12px" }} onClick={() => { if (!seoTopic) setSeoTopic(tagsTopic || draftKw); if (draftResult?.content && !seoContent) setSeoContent(draftResult.content)}}>📊 SEO Score →</button>
  </div>
  </>
  )}
@@ -6769,7 +6811,7 @@ export default function BlogSEO() {
  {opp.anchorText && <div style={{ fontSize:11, color:"#a78bfa", marginTop:2 }}>Anchor: "{opp.anchorText}"</div>}
  {opp.importance && <div style={{ fontSize:10, color:"#71717a", marginTop:1 }}>{opp.importance}</div>}
  </div>
- <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => { navigator.clipboard.writeText(opp.anchorText || opp.url || ""); showToast("Copied!"); }}>Copy</button>
+ <button style={{ ...S.btn(), fontSize:10, padding:"3px 10px", flexShrink:0 }} onClick={() => { navigator.clipboard.writeText(opp.anchorText || opp.url || ""); showToast("Copied!")}}>Copy</button>
  </div>
  ))}
  {oppsList.length > 5 && <div style={{ fontSize:11, color:"#71717a" }}>+{oppsList.length - 5} more — see Internal Links section</div>}
@@ -6933,7 +6975,7 @@ export default function BlogSEO() {
  ════════════════════════════ */}
  {showGenModal && (
  <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
- onClick={e => { if(e.target === e.currentTarget) setShowGenModal(false); }}>
+ onClick={e => { if(e.target === e.currentTarget) setShowGenModal(false)}}>
  <div style={{ background:"#18181b", border:"1px solid #3f3f46", borderRadius:16, padding:"28px 28px 24px", width:"100%", maxWidth:520, maxHeight:"90vh", overflowY:"auto", position:"relative", boxShadow:"0 24px 80px rgba(0,0,0,0.7)", color:"#fafafa" }}>
  <button onClick={() => setShowGenModal(false)} style={{ position:"absolute", top:14, right:16, background:"#27272a", border:"1px solid #3f3f46", color:"#a1a1aa", cursor:"pointer", fontSize:16, lineHeight:1, borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center" }}></button>
 
