@@ -731,8 +731,30 @@ export default function BlogSEO() {
  if (!seedKw.trim()) return;
  setKwLoading(true); setKwErr(""); setKwResult(null);
  try {
- const r = await apiFetchJSON(`${API}/keywords/research`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: seedKw.trim(), niche: kwNiche.trim() || undefined }) });
- if (r.ok) setKwResult(r); else setKwErr(r.error || "Research failed");
+ const r = await apiFetchJSON(`${API}/ai/keyword-research`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seedKeyword: seedKw.trim(), niche: kwNiche.trim() || undefined }) });
+ if (r.ok) {
+   // Normalize structured response → shape the render code expects
+   const s = r.structured || {};
+   const allKeywords = (s.clusters || []).flatMap(c =>
+     (c.keywords || []).map(kw => ({
+       keyword: kw.keyword,
+       volume: kw.estimatedVolume ?? '—',
+       difficulty: typeof kw.difficulty === 'number' ? kw.difficulty : (kw.difficulty === 'high' ? 70 : kw.difficulty === 'medium' ? 40 : 20),
+       intent: kw.intent || c.intent || '—',
+       priority: kw.priority,
+     }))
+   );
+   const firstCluster = s.clusters?.[0];
+   const primaryKw = firstCluster?.keywords?.find(k => k.priority === 'high') || firstCluster?.keywords?.[0];
+   setKwResult({
+     primaryKeyword: primaryKw ? { keyword: primaryKw.keyword, intent: firstCluster?.intent } : null,
+     keywords: allKeywords,
+     clusters: s.clusters || [],
+     longTailKeywords: s.longTailKeywords || [],
+     questionsToAnswer: s.questionsToAnswer || [],
+     contentIdeas: s.contentIdeas || [],
+   });
+ } else { setKwErr(r.error || "Research failed"); }
  } catch(e) { setKwErr(e.message); }
  setKwLoading(false);
  }, [seedKw, kwNiche]);
@@ -2925,6 +2947,41 @@ export default function BlogSEO() {
  ))}
  </tbody>
  </table>
+ )}
+ {/* Long-tail keywords */}
+ {kwResult.longTailKeywords?.length > 0 && (
+ <div style={{ marginTop: 16 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Long-tail Keywords</div>
+ <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+ {kwResult.longTailKeywords.map((kw, i) => (
+ <span key={i} style={{ fontSize: 12, padding: "3px 10px", background: "#1e1b4b", color: "#a5b4fc", borderRadius: 10, border: "1px solid #3730a3" }}>{kw}</span>
+ ))}
+ </div>
+ </div>
+ )}
+ {/* Questions to answer */}
+ {kwResult.questionsToAnswer?.length > 0 && (
+ <div style={{ marginTop: 16 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Questions to Answer</div>
+ {kwResult.questionsToAnswer.map((q, i) => (
+ <div key={i} style={{ fontSize: 13, color: C.sub, padding: "4px 0", borderBottom: `1px solid ${C.border}` }}>❓ {q}</div>
+ ))}
+ </div>
+ )}
+ {/* Content ideas */}
+ {kwResult.contentIdeas?.length > 0 && (
+ <div style={{ marginTop: 16 }}>
+ <div style={{ fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Content Ideas</div>
+ {kwResult.contentIdeas.map((idea, i) => (
+ <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0", borderBottom: `1px solid ${C.border}` }}>
+ <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 8, background: C.muted, color: C.sub, whiteSpace: "nowrap", marginTop: 2 }}>{idea.type}</span>
+ <div>
+ <div style={{ fontSize: 13, color: C.text }}>{idea.title}</div>
+ {idea.targetKeyword && <div style={{ fontSize: 11, color: C.dim, marginTop: 2 }}>Target: {idea.targetKeyword}</div>}
+ </div>
+ </div>
+ ))}
+ </div>
  )}
  </div>
  )}
