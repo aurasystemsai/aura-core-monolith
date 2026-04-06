@@ -1727,7 +1727,7 @@ export default function ImageAltMediaSEO() {
  return (
  <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#18181b", borderRadius: 10, border: "1px solid #52525b"}}>
  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 4 }}>
- {displayName}{displayName !== img.id ? ` · ID: ${img.id}` : ""}
+ {displayName}{displayName !== img.id ? ` ï¿½ ID: ${img.id}` : ""}
  </div>
  <div style={{ fontSize: 13, color: "#e4e4e7"}}>Current: {img.altText || "(none)"}</div>
  </div>
@@ -3439,25 +3439,70 @@ export default function ImageAltMediaSEO() {
  const handleAiGenerate = async (imageId) => {
  setAiGenerating(true);
  try {
- const res = await fetch(`/api/image-alt-media-seo/ai/generate-alt`, {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ imageId, model: "gpt-4-vision"})
+ const img = images.find(i => i.id === imageId);
+ if (!img) throw new Error('Image not found');
+ const payload = {
+ input: resolveAlt(img) || 'Product image',
+ url: img.url,
+ productTitle: img.productTitle || img.productName || img.title || img.product?.title || undefined,
+ locale, tone, verbosity,
+ keywords: keywords || undefined,
+ brandTerms: brandTerms || undefined,
+ safeMode,
+ variantCount: 1,
+ };
+ const { data } = await fetchJson('/api/image-alt-media-seo/ai/generate-alt', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify(payload),
  });
- const { data } = await res.json();
- return data.altText;
+ return data.result || data.raw || data.altText || '';
  } finally {
  setAiGenerating(false);
  }
  };
  
  const handleBulkAiGenerate = async () => {
- const missingIds = filteredImages.filter(img => !img.altText).map(img => img.id);
- for (const id of missingIds) {
- const alt = await handleAiGenerate(id);
- await handleUpdateAltText(id, alt);
+ if (!ensureWriter('bulk generate')) return;
+ const missing = filteredImages.filter(img => !resolveAlt(img));
+ if (!missing.length) { showToast('No images with missing alt text'); return; }
+ setAiProgress({ show: true, current: 0, total: missing.length, status: 'Generating alt text for missing images...' });
+ setError('');
+ try {
+ const items = missing.map(img => ({
+ input: resolveAlt(img) || 'Product image',
+ url: img.url,
+ productTitle: img.productTitle || img.productName || img.title || img.product?.title || undefined,
+ locale, tone, verbosity,
+ keywords: keywords || undefined,
+ brandTerms: brandTerms || undefined,
+ safeMode,
+ variantCount: 1,
+ }));
+ const { data } = await fetchJson('/api/image-alt-media-seo/ai/batch-generate', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ items, locale, safeMode, keywords, brandTerms, tone, verbosity, variantCount: 1 }),
+ });
+ const updates = (data.results || []).map((r, idx) => {
+ const id = missing[idx]?.id;
+ const altText = r.result || r.raw || r.altText || '';
+ return id && altText ? { id, altText } : null;
+ }).filter(Boolean);
+ if (updates.length) {
+ await fetchJson('/api/image-alt-media-seo/images/bulk-update', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ items: updates }),
+ });
+ await fetchImages();
+ showToast(`Generated alt text for ${updates.length} images`);
  }
- showToast(`Generated alt text for ${missingIds.length} images`);
+ } catch (err) {
+ setError(err.message || 'Bulk generate failed');
+ } finally {
+ setAiProgress({ show: false, current: 0, total: 0, status: '' });
+ }
  };
  
  const calculateQualityScore = (img) => {
@@ -3493,12 +3538,25 @@ export default function ImageAltMediaSEO() {
  };
  
  const generateAbTestVariants = async (imageId) => {
- const variants = [];
- for (let i = 0; i < 3; i++) {
- const alt = await handleAiGenerate(imageId);
- variants.push({ variant: `V${i+1}`, altText: alt });
+ const img = images.find(i => i.id === imageId);
+ if (!img) return;
+ try {
+ const { data } = await fetchJson('/api/image-alt-media-seo/ai/generate-alt', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ input: resolveAlt(img) || 'Product image',
+ url: img.url,
+ productTitle: img.productTitle || img.productName || img.title || img.product?.title || undefined,
+ locale, tone, verbosity, keywords: keywords || undefined, brandTerms: brandTerms || undefined, safeMode,
+ variantCount: 3,
+ }),
+ });
+ const abVariants = (data.variants || []).map((v, i) => ({ variant: `V${i + 1}`, altText: v.altText || v.result || '' }));
+ setAbTestVariants(prev => ({ ...prev, [imageId]: abVariants }));
+ } catch (err) {
+ setError(err.message || 'A/B variant generation failed');
  }
- setAbTestVariants(prev => ({ ...prev, [imageId]: variants }));
  };
  
  
@@ -8367,7 +8425,7 @@ export default function ImageAltMediaSEO() {
  {simulationResults?.length ? (
  <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b"}}>
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
- <div style={{ fontWeight: 700 }}>Simulation ({simulationResults.length}) {simulationSummary?.hitRateAvg ? `· Hit rate ~${simulationSummary.hitRateAvg}%` : ''}</div>
+ <div style={{ fontWeight: 700 }}>Simulation ({simulationResults.length}) {simulationSummary?.hitRateAvg ? `ï¿½ Hit rate ~${simulationSummary.hitRateAvg}%` : ''}</div>
  <button onClick={() => { setSimulationResults([]); setSimulationSummary(null); }} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer"}}>Clear</button>
  </div>
  {simulationSummary?.variants?.length ? (
@@ -8380,7 +8438,7 @@ export default function ImageAltMediaSEO() {
  <ul style={{ margin: 0, paddingLeft: 16 }}>
  {simulationResults.slice(0, 10).map((r, idx) => (
  <li key={`sim-${idx}`} style={{ marginBottom: 8 }}>
- <div style={{ fontWeight: 600 }}>{r.ok ? "OK": "Error"} · {r.meta?.url ? shortenUrl(r.meta.url) : 'Item'} {typeof r.hitRate === 'number'? `· Hit ${r.hitRate}%` : ''} {r.promptVariant ? `· ${r.promptVariant}` : ''}</div>
+ <div style={{ fontWeight: 600 }}>{r.ok ? "OK": "Error"} ï¿½ {r.meta?.url ? shortenUrl(r.meta.url) : 'Item'} {typeof r.hitRate === 'number'? `ï¿½ Hit ${r.hitRate}%` : ''} {r.promptVariant ? `ï¿½ ${r.promptVariant}` : ''}</div>
  {r.error ? <div style={{ color: "#f87171"}}>{r.error}</div> : null}
  {r.result ? <div style={{ fontSize: 13 }}>Suggested: {r.result}</div> : null}
  {r.diff ? <div style={{ fontSize: 12, color: "#d4d4d8"}}>?len {r.diff.lengthDelta}; overlap {r.diff.overlap}</div> : null}
@@ -8444,7 +8502,7 @@ export default function ImageAltMediaSEO() {
  </div>
  <div style={{ flex: 1 }}>
  <div style={{ fontWeight: 600, color: v.mismatch ? "#f97316": "#a3e635"}}>
- {v.mismatch ? "Mismatch": "Looks aligned"} · overlap {v.overlap}
+ {v.mismatch ? "Mismatch": "Looks aligned"} ï¿½ overlap {v.overlap}
  </div>
  <div style={{ fontSize: 12, color: "#d4d4d8"}}>{v.url ? shortenUrl(v.url) : '(no url)'}</div>
  <div style={{ fontSize: 12, marginTop: 4 }}>{v.altText || '(none)'}</div>
@@ -8724,8 +8782,8 @@ export default function ImageAltMediaSEO() {
  <ul style={{ margin: 0, paddingLeft: 16 }}>
  {actionLog.slice(-10).reverse().map((a, idx) => (
  <li key={`${a.ts}-${idx}`} style={{ fontSize: 12, color: "#d4d4d8", marginBottom: 4 }}>
- <span style={{ fontWeight: 700 }}>{a.action}</span> · {a.count || 0} · role {a.role} · {new Date(a.ts).toLocaleTimeString()}
- {a.label ? <> · {a.label}</> : null}
+ <span style={{ fontWeight: 700 }}>{a.action}</span> ï¿½ {a.count || 0} ï¿½ role {a.role} ï¿½ {new Date(a.ts).toLocaleTimeString()}
+ {a.label ? <> ï¿½ {a.label}</> : null}
  </li>
  ))}
  </ul>
@@ -8836,7 +8894,7 @@ export default function ImageAltMediaSEO() {
  </div>
  <div style={{ flex: 1, minWidth: 0 }}>
  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
- <div><b>{displayName}</b>{displayName !== img.id ? <> · ID: {img.id}</> : null}</div>
+ <div><b>{displayName}</b>{displayName !== img.id ? <> ï¿½ ID: {img.id}</> : null}</div>
  {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
  {img.url ? <a href={img.url} target="_blank"rel="noreferrer"style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline"}}>Open</a> : null}
  <span style={{ fontSize: 11, background: lint.status === "ok"? "#22c55e": lint.status === "missing"? "#ef4444": lint.status === "short"? "#f59e0b": "#0ea5e9", color: "#09090b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
@@ -9315,7 +9373,7 @@ export default function ImageAltMediaSEO() {
  {r.result && <div><b>Alt:</b> {r.result}</div>}
  {r.meta?.url && <div><b>URL:</b> {r.meta.url}</div>}
  {(r.meta?.tone || r.meta?.verbosity) && (
- <div><b>Style:</b> {r.meta?.tone || "balanced"} · {r.meta?.verbosity || "balanced"}</div>
+ <div><b>Style:</b> {r.meta?.tone || "balanced"} ï¿½ {r.meta?.verbosity || "balanced"}</div>
  )}
  {r.variants?.length ? (
  <div>
@@ -9359,11 +9417,11 @@ export default function ImageAltMediaSEO() {
  <ul style={{ paddingLeft: 18, margin: 0 }}>
  {runs.slice(-5).reverse().map(run => (
  <li key={run.id} style={{ marginBottom: 6, fontSize: 13 }}>
- <b>{run.total} items</b> · ok {run.ok} / err {run.errors} · {run.durationMs}ms · locale {run.locale} · safe {String(run.safeMode)}
- {run.tone || run.verbosity ? <> · {run.tone || 'balanced'} · {run.verbosity || 'balanced'}</> : null}
- {run.brandTerms ? <> · brand vocab</> : null}
- {run.chunkSize ? <> · chunk {run.chunkSize}</> : null}
- {typeof run.paceMs === 'number'&& run.paceMs > 0 ? <> · pace {run.paceMs}ms</> : null}
+ <b>{run.total} items</b> ï¿½ ok {run.ok} / err {run.errors} ï¿½ {run.durationMs}ms ï¿½ locale {run.locale} ï¿½ safe {String(run.safeMode)}
+ {run.tone || run.verbosity ? <> ï¿½ {run.tone || 'balanced'} ï¿½ {run.verbosity || 'balanced'}</> : null}
+ {run.brandTerms ? <> ï¿½ brand vocab</> : null}
+ {run.chunkSize ? <> ï¿½ chunk {run.chunkSize}</> : null}
+ {typeof run.paceMs === 'number'&& run.paceMs > 0 ? <> ï¿½ pace {run.paceMs}ms</> : null}
  </li>
  ))}
  </ul>
