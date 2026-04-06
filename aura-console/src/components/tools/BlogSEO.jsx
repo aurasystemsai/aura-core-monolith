@@ -303,7 +303,7 @@ export default function BlogSEO() {
  const [optErr, setOptErr] = useState("");
 
  /* ── AI Chat state ── */
- const [chatMessages, setChatMessages] = useState([{ role: "assistant", text: "Hi! I am your SEO expert assistant. Ask me anything about blog SEO, keywords, rankings or content strategy." }]);
+ const [chatMessages, setChatMessages] = useState([{ role: "assistant", content: "Hi! I'm your SEO expert assistant. Ask me anything about blog SEO, keywords, rankings or content strategy." }]);
  const [chatInput, setChatInput] = useState("");
  const [chatLoading, setChatLoading] = useState(false);
  const chatEndRef = useRef(null);
@@ -1201,12 +1201,12 @@ export default function BlogSEO() {
  const msg = chatInput.trim();
  if (!msg || chatLoading) return;
  setChatInput("");
- setChatMessages(p => [...p, { role: "user", text: msg }]);
+ setChatMessages(p => [...p, { role: "user", content: msg }]);
  setChatLoading(true);
  try {
  const r = await apiFetchJSON(`${API}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: msg, context: scanResult ? { url: scanResult.url, score: scanResult.scored?.overall, issues: (scanResult.scored?.issues || []).slice(0, 5).map(i => i.msg) } : undefined }) });
- setChatMessages(p => [...p, { role: "assistant", text: r.ok ? (r.reply || r.message || "Done") : (r.error || "Error") }]);
- } catch(e) { setChatMessages(p => [...p, { role: "assistant", text: "Network error. Please try again." }]); }
+ setChatMessages(p => [...p, { role: "assistant", content: r.ok ? (r.reply || r.message || "Done") : (r.error || "Error") }]);
+ } catch(e) { setChatMessages(p => [...p, { role: "assistant", content: "Network error. Please try again." }]); }
  setChatLoading(false);
  }, [chatInput, chatLoading, scanResult]);
 
@@ -5882,7 +5882,7 @@ export default function BlogSEO() {
  lineHeight: 1.65,
  whiteSpace: "pre-wrap"
  }}>
- {msg.content}
+ {msg.content || msg.text}
  </div>
  </div>
  ))}
