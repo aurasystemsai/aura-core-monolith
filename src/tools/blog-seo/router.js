@@ -9344,8 +9344,11 @@ router.post('/ai/generate-cover-image', async (req, res) => {
       } catch (_) { /* fall through to DALL-E */ }
     }
 
-    // 2. Fall back to DALL-E — explicitly forbid all text/letters
-    const finalPrompt = prompt || `Professional photography style cover image for a blog post about "${keyword || title}". High quality, visually compelling, clean modern aesthetic. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS, NO TYPOGRAPHY anywhere in the image. Pure visual only.`;
+    // 2. Fall back to DALL-E — explicitly forbid all text/letters and enforce photorealism
+    const subjectCtx = keyword || title || '';
+    const finalPrompt = prompt
+      ? `${prompt}\n\nIMPORTANT STYLE REQUIREMENTS: Ultra-realistic professional DSLR photography. NOT a cartoon. NOT an illustration. NOT anime. NOT a drawing. NOT CGI. Real photographic style only. The subject must accurately match: "${subjectCtx}". ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS anywhere in the image.`
+      : `Professional photography style cover image for a blog post about "${subjectCtx}". High quality, visually compelling, clean modern aesthetic. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS, NO TYPOGRAPHY anywhere in the image. Pure visual only.`;
     const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024', '4:3': '1024x1024' };
     const img = await getOpenAI().images.generate({
       model: 'dall-e-3',

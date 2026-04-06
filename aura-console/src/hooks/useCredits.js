@@ -30,6 +30,7 @@ export const ACTION_COSTS = {
  'schema-gen': 1,
  'keyword-research': 2,
  'rank-check': 1,
+ 'image-gen': 10,
  'churn-predict': 2,
  'pricing-optimize': 2,
  'ad-copy': 2,
