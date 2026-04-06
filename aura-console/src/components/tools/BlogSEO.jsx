@@ -1204,7 +1204,7 @@ export default function BlogSEO() {
  setChatMessages(p => [...p, { role: "user", content: msg }]);
  setChatLoading(true);
  try {
- const r = await apiFetchJSON(`${API}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: msg, context: scanResult ? { url: scanResult.url, score: scanResult.scored?.overall, issues: (scanResult.scored?.issues || []).slice(0, 5).map(i => i.msg) } : undefined }) });
+ const r = await apiFetchJSON(`${API}/ai/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [...chatMessages.filter(m => m.role !== 'assistant' || chatMessages.indexOf(m) > 0).map(m => ({ role: m.role, content: m.content })), { role: "user", content: msg }] }) });
  setChatMessages(p => [...p, { role: "assistant", content: r.ok ? (r.reply || r.message || "Done") : (r.error || "Error") }]);
  } catch(e) { setChatMessages(p => [...p, { role: "assistant", content: "Network error. Please try again." }]); }
  setChatLoading(false);
