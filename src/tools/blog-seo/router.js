@@ -9319,19 +9319,23 @@ router.get('/ai/shop-keywords', async (req, res) => {
 router.post('/ai/generate-cover-image', async (req, res) => {
   try {
     const { title, prompt, ratio, keyword } = req.body || {};
-    if (!title && !prompt) return res.status(400).json({ ok: false, error: 'title or prompt required' });
+    if (!title && !prompt && !keyword) return res.status(400).json({ ok: false, error: 'title, keyword, or prompt required' });
 
-    // 1. Try Unsplash first — fast, free, professional real photos, no garbled text
+    // 1. Always try Unsplash first — real photos, no hallucinations
+    //    Use keyword when available (most reliable), fall back to title
     const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
-    if (unsplashKey && !prompt) {
+    const searchSubject = (keyword || title || '').slice(0, 60);
+    if (unsplashKey && searchSubject) {
       try {
-        const searchQuery = encodeURIComponent((keyword || title || '').slice(0, 60));
-        const uRes = await fetch(`https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=5&orientation=landscape&content_filter=high`, {
+        const searchQuery = encodeURIComponent(searchSubject);
+        const uRes = await fetch(`https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=10&orientation=landscape&content_filter=high`, {
           headers: { Authorization: `Client-ID ${unsplashKey}` },
         });
         if (uRes.ok) {
           const uData = await uRes.json();
-          const photo = uData.results?.[0];
+          // Pick a random one from top 5 so repeated calls vary
+          const pool = uData.results?.slice(0, 5) || [];
+          const photo = pool[Math.floor(Math.random() * pool.length)];
           if (photo?.urls?.regular) {
             return res.json({
               ok: true,
@@ -9344,16 +9348,16 @@ router.post('/ai/generate-cover-image', async (req, res) => {
       } catch (_) { /* fall through to DALL-E */ }
     }
 
-    // 2. Fall back to DALL-E — build a clean photorealistic prompt; ignore the evocative
-    //    blog-images prose prompt (it reads like Midjourney copy and pushes DALL-E to illustrate)
-    const subjectCtx = keyword || title || (prompt ? prompt.slice(0, 80) : '');
-    const finalPrompt = `Canon EOS R5 DSLR photograph, 85mm lens, natural light. Subject: ${subjectCtx}. Shot on a real ski slope, real people, real gear. Photojournalism quality. Ultra-sharp, hyper-realistic. NO cartoon. NO illustration. NO CGI. NO anime. NO drawing. NO digital art. NOT stylized. ABSOLUTELY NO TEXT OR WORDS in the image.`;
+    // 2. Fall back to DALL-E — use keyword/title only, never the raw aiImagePrompt
+    //    (Midjourney-style prose pushes DALL-E to illustrate instead of photograph)
+    const subjectCtx = keyword || title || '';
+    const finalPrompt = `Professional stock photograph for a blog about "${subjectCtx}". Real people, real products, real setting. Shot with a DSLR camera. Clean composition, sharp focus, commercial quality. Absolutely NO text, NO words, NO letters anywhere in the image. NOT a cartoon, NOT an illustration, NOT CGI.`;
     const sizeMap = { '1:1': '1024x1024', '16:9': '1792x1024', '4:3': '1024x1024' };
     const img = await getOpenAI().images.generate({
       model: 'dall-e-3',
       prompt: finalPrompt,
       n: 1,
-      size: sizeMap[ratio] || '1024x1024',
+      size: sizeMap[ratio] || '1792x1024',
       quality: 'standard',
     });
     const imageUrl = img.data[0]?.url;
