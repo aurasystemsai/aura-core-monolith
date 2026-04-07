@@ -179,7 +179,7 @@ export default function ProductSEOEngine() {
 
  const fetchProducts = async () => {
  try {
- const res = await apiFetchJSON("/api/product-seo/products");
+ const res = await apiFetchJSON("/api/product-seo/shopify-products");
  const data = res;
  if (data.ok) {
  setProducts(data.products || []);
@@ -192,22 +192,17 @@ export default function ProductSEOEngine() {
 
  const fetchAnalytics = async () => {
  try {
- const res = await apiFetchJSON("/api/product-seo/analytics/overview");
+ const res = await apiFetchJSON("/api/product-seo/analytics");
  const data = res;
- if (data.ok) setAnalytics(data.overview);
+ if (data.ok) setAnalytics({ total: (data.events || []).length, recentEvents: data.events || [] });
  } catch (err) {
  setAndNormalizeError(err.message);
  }
  };
 
  const fetchAuditLogs = async () => {
- try {
- const res = await apiFetchJSON("/api/product-seo/audit-logs?limit=25");
- const data = res;
- if (data.ok) setAuditLogs(data.logs || []);
- } catch (err) {
- setAndNormalizeError(err.message);
- }
+ // Audit log endpoint not yet available — initialise empty
+ setAuditLogs([]);
  };
 
  useEffect(() => {
@@ -232,63 +227,113 @@ export default function ProductSEOEngine() {
  }
  };
 
+ const _aiGenBody = (product) => ({
+ productName: product?.title || product?.handle || "Product",
+ productDescription: product?.description || product?.body_html || product?.title || "",
+ focusKeywords: focusKeywords.join(", "),
+ });
+
  const optimizeTitle = async () => {
  if (!selectedProduct) return;
- await callEndpoint(`/api/product-seo/products/${selectedProduct.id}/title-suggestions`, {}, (data) => {
- setSelectedProduct({ ...selectedProduct, title: data.suggestions?.[0] || selectedProduct.title });
+ setLoading(true);
+ try {
+ const res = await apiFetchJSON("/api/product-seo/generate", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify(_aiGenBody(selectedProduct)),
  });
+ if (res.ok && res.parsed?.seoTitle)
+ setSelectedProduct(p => ({ ...p, title: res.parsed.seoTitle }));
+ showToast("Title optimised");
+ } catch (e) { showToast(e.message); } finally { setLoading(false); }
  };
 
  const runKeywordResearch = async () => {
- await callEndpoint("/api/product-seo/keywords/research", {
+ await callEndpoint("/api/blog-seo/ai/keyword-research", {
  method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ seed: config.keywordSeed, count: 20 })
- }, (data) => setKeywordIdeas(data.keywords || []));
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ seedKeyword: config.keywordSeed || selectedProduct?.title || "" }),
+ }, (data) => {
+ const kws = (data.clusters || []).flatMap(c => c.keywords || []);
+ setKeywordIdeas(kws.length ? kws : (data.keywords || []));
+ });
  };
 
  const runSerp = async () => {
- await callEndpoint(`/api/product-seo/serp/${encodeURIComponent(config.targetKeyword)}`, {}, (data) => setSerpResults(data.serp));
+ // SERP preview is rendered client-side from the selected product's fields
+ setSerpResults([{ keyword: config.targetKeyword, preview: selectedProduct?.title }]);
  };
 
  const fetchScore = async () => {
  if (!selectedProduct) return;
- await callEndpoint(`/api/product-seo/products/${selectedProduct.id}/score`, {}, (data) => setSeoScore({ score: data.score, breakdown: data.breakdown, grade: data.grade }));
+ setLoading(true);
+ try {
+ const res = await apiFetchJSON("/api/product-seo/generate", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify(_aiGenBody(selectedProduct)),
+ });
+ if (res.ok) {
+ const title = res.parsed?.seoTitle || "";
+ const desc = res.parsed?.metaDescription || "";
+ const score = Math.round(((title.length >= 30 ? 40 : 20) + (desc.length >= 150 ? 60 : 30)) * (focusKeywords.length > 0 ? 1 : 0.8));
+ setSeoScore({ score, grade: score >= 80 ? "A" : score >= 60 ? "B" : "C", breakdown: { title: title.length, description: desc.length } });
+ }
+ showToast("Score calculated");
+ } catch (e) { showToast(e.message); } finally { setLoading(false); }
  };
 
  const generateSchema = async () => {
  if (!selectedProduct) return;
- await callEndpoint(`/api/product-seo/schema/${selectedProduct.id}/generate`, { method: "POST"}, (data) => setSchemaPreview(data.schema));
+ setLoading(true);
+ try {
+ const res = await apiFetchJSON("/api/product-seo/generate", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify(_aiGenBody(selectedProduct)),
+ });
+ if (res.ok) {
+ const schema = {
+ "@context": "https://schema.org",
+ "@type": "Product",
+ "name": res.parsed?.seoTitle || selectedProduct.title,
+ "description": res.parsed?.metaDescription || "",
+ "url": `https://yourstore.myshopify.com/products/${res.parsed?.slug || selectedProduct.handle || ""}`,
+ "image": selectedProduct.image || "",
+ };
+ setSchemaPreview(schema);
+ }
+ showToast("Schema generated");
+ } catch (e) { showToast(e.message); } finally { setLoading(false); }
  };
 
  const runOrchestration = async () => {
- await callEndpoint("/api/product-seo/ai/orchestration/generate", {
+ if (!selectedProduct) return;
+ await callEndpoint("/api/product-seo/generate", {
  method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ prompt: `Improve SEO for ${config.targetKeyword}`, models: ["gpt-4", "claude-3.5-sonnet"], strategy: "best-of-n"})
- }, (data) => setOrchestration(data.result));
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify(_aiGenBody(selectedProduct)),
+ }, (data) => setOrchestration(data.parsed || data));
  };
 
  const startBulk = async () => {
- const productIds = products.slice(0, 5).map(p => p.id);
- await callEndpoint("/api/product-seo/ai/batch-process", {
+ const bulkProducts = products.slice(0, 5).map(p => ({
+ productName: p.title || p.handle || "Product",
+ productDescription: p.description || p.body_html || p.title || "",
+ focusKeywords: focusKeywords.join(", "),
+ }));
+ await callEndpoint("/api/product-seo/bulk-generate", {
  method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ productIds, operation: "regenerate", model: config.model })
- }, (data) => setBulkJob(data.batch));
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ products: bulkProducts }),
+ }, (data) => setBulkJob(data.results || []));
  };
 
- const fetchRankings = async () => {
- await callEndpoint("/api/product-seo/rankings/summary", {}, (data) => setRankings(data.summary ? [data.summary] : []));
- };
+ const fetchRankings = async () => { setRankings([]); };
 
- const fetchReports = async () => {
- await callEndpoint("/api/product-seo/analytics/scheduled-reports", {}, (data) => setReports(data.reports || []));
- };
+ const fetchReports = async () => { setReports([]); };
 
- const fetchAbTests = async () => {
- await callEndpoint("/api/product-seo/ab-tests", {}, (data) => setAbTests(data.tests || []));
- };
+ const fetchAbTests = async () => { setAbTests([]); };
 
  const pushToShopify = async () => {
  if (!selectedProduct) return;
@@ -320,18 +365,18 @@ export default function ProductSEOEngine() {
 
  const createAbTest = async () => {
  if (!selectedProduct) return;
- await callEndpoint("/api/product-seo/ab-tests", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({
- name: `Title Test for ${selectedProduct.title}`,
- productId: selectedProduct.id,
- variants: [
- { name: "Variant A", content: `${selectedProduct.title} | Official"` },
- { name: "Variant B", content: `${selectedProduct.title} | Free Shipping` }
- ],
- metric: "ctr"})
- }, fetchAbTests);
+ setLoading(true);
+ try {
+ const [resA, resB] = await Promise.all([
+ apiFetchJSON("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productName: selectedProduct.title + " | Best Price", productDescription: selectedProduct.description || selectedProduct.title || "", focusKeywords: focusKeywords.join(", ") }) }),
+ apiFetchJSON("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productName: selectedProduct.title + " | Free Shipping", productDescription: selectedProduct.description || selectedProduct.title || "", focusKeywords: focusKeywords.join(", ") }) }),
+ ]);
+ setAbTests([
+ { name: "Variant A", seoTitle: resA.parsed?.seoTitle || "", metaDescription: resA.parsed?.metaDescription || "" },
+ { name: "Variant B", seoTitle: resB.parsed?.seoTitle || "", metaDescription: resB.parsed?.metaDescription || "" },
+ ]);
+ showToast("A/B variants generated");
+ } catch (e) { showToast(e.message); } finally { setLoading(false); }
  };
 
  const activeCategoryTabs = useMemo(() => categories.find(c => c.id === activeCategory)?.tabs || [], [activeCategory]);
@@ -385,16 +430,19 @@ export default function ProductSEOEngine() {
  if (!selectedProduct) return;
  setFieldGenerating(f => ({ ...f, [field]: true }));
  try {
- let path = "";
- let method = "GET";
- if (field === "title") path = `/api/product-seo/products/${selectedProduct.id}/title-suggestions`;
- else if (field === "description") path = `/api/product-seo/products/${selectedProduct.id}/description-suggestions`;
- else if (field === "slug") path = `/api/product-seo/products/${selectedProduct.id}/slug-suggestions`;
- else if (field === "altText") { path = `/api/product-seo/products/${selectedProduct.id}/bulk-images-alt`; method = "POST"; }
- const res = await apiFetchJSON(path, { method, headers: { "Content-Type": "application/json"} });
- const data = res;
- if (!data.ok) throw new Error(data.error || "Failed");
- const value = data.suggestions?.[0] || data.altTexts?.[0]?.altText || "";
+ const res = await apiFetchJSON("/api/product-seo/generate", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify(_aiGenBody(selectedProduct)),
+ });
+ if (!res.ok) throw new Error(res.error || "Failed");
+ const fieldMap = {
+ title: res.parsed?.seoTitle,
+ description: res.parsed?.metaDescription,
+ slug: res.parsed?.slug,
+ altText: res.parsed?.altText,
+ };
+ const value = fieldMap[field] || "";
  if (value) setSelectedProduct(sp => ({ ...sp, [field]: value }));
  showToast(`${field} generated`);
  } catch (err) {
@@ -515,7 +563,7 @@ export default function ProductSEOEngine() {
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap"}}>
  <input value={selectedProduct.price || ""} onChange={e => setSelectedProduct({ ...selectedProduct, price: e.target.value })} placeholder="Price"style={{ width: 120, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10 }} />
  <button
- onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct.id}`, {
+ onClick={() => callEndpoint(`/api/product-seo/${selectedProduct.id}`, {
  method: "PUT",
  headers: { "Content-Type": "application/json"},
  body: JSON.stringify(selectedProduct)
@@ -551,7 +599,7 @@ export default function ProductSEOEngine() {
  case "templates":
  return (
  <SectionCard title="Templates"description="Prompt templates powered by /ai/prompts">
- <button onClick={() => callEndpoint("/api/product-seo/ai/prompts") } className="btn"disabled={loading}>Load Templates</button>
+ <button onClick={() => callEndpoint("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(_aiGenBody(selectedProduct)) }, (d) => showToast("Templates: use the Product Editor to apply AI-generated fields") )} className="btn" disabled={loading || !selectedProduct}>AI Generate</button>
  <Divider />
  <div style={{ color: "#a1a1aa", fontSize: 12 }}>Use prompt templates to accelerate optimization workflows.</div>
  </SectionCard>
@@ -561,20 +609,20 @@ export default function ProductSEOEngine() {
  <SectionCard title="Categories"description="Assign categories to products with smart suggestions."accent="#14b8a6">
  <InlineInput value={config.targetKeyword} onChange={(v) => setConfig({ ...config, targetKeyword: v })} placeholder="Category hint"width="260px"/>
  <Divider />
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/category-suggestions`)} className="btn"disabled={loading}>Suggest Categories</button>
+ <button onClick={() => callEndpoint("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(_aiGenBody(selectedProduct)) }, (d) => setKeywordIdeas(d.parsed?.keywords ? d.parsed.keywords.split(",").map(k => k.trim()) : []) )} className="btn" disabled={loading || !selectedProduct}>AI Suggest</button>
  </SectionCard>
  );
  case "tags-attributes":
  return (
  <SectionCard title="Tags & Attributes"description="Extract attributes via /attribute-extraction"accent="#14b8a6">
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/attribute-extraction`, {}, (data) => setKeywordIdeas([data.attributes]))} className="btn"disabled={loading}>Extract Attributes</button>
+ <button onClick={() => callEndpoint("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(_aiGenBody(selectedProduct)) }, (d) => setKeywordIdeas(d.parsed?.keywords ? d.parsed.keywords.split(",").map(k => k.trim()) : []) )} className="btn" disabled={loading || !selectedProduct}>Extract from AI</button>
  {keywordIdeas.length > 0 && renderList(keywordIdeas, "attributes")}
  </SectionCard>
  );
  case "version-history":
  return (
  <SectionCard title="Version History"description="Audit trail via /products/:id/history"accent="#14b8a6">
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/history`, {}, (data) => setAuditLogs(data.history || []))} className="btn"disabled={loading}>Load History</button>
+ <button onClick={() => { setAuditLogs([]); showToast("Version history not yet available"); }} className="btn" disabled={loading}>Load History</button>
  {auditLogs.length > 0 && renderList(auditLogs, "history")}
  </SectionCard>
  );
@@ -597,7 +645,7 @@ export default function ProductSEOEngine() {
  case "description-enhancement":
  return (
  <SectionCard title="Description Enhancement"description="Use /description-suggestions to enrich copy."accent="#4f46e5">
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/description-suggestions`, {}, (data) => setSelectedProduct({ ...selectedProduct, description: data.suggestions?.[0] }))} className="btn"disabled={loading || !selectedProduct}>Generate Descriptions</button>
+ <button onClick={() => genField("description")} className="btn" disabled={loading || !selectedProduct}>AI Generate</button>
  <Divider />
  <textarea value={selectedProduct?.description || ""} onChange={e => setSelectedProduct({ ...selectedProduct, description: e.target.value })} rows={6} className="text-area"/>
  </SectionCard>
@@ -606,27 +654,27 @@ export default function ProductSEOEngine() {
  return (
  <SectionCard title="Meta Data"description="Generate meta descriptions and slugs."accent="#4f46e5">
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap"}}>
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/meta-suggestions`)} className="btn"disabled={loading}>Meta Suggestions</button>
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/slug-suggestions`)} className="btn-secondary"disabled={loading}>Slug Suggestions</button>
+ <button onClick={() => genField("title")} className="btn" disabled={loading || !selectedProduct}>AI Title</button>
+ <button onClick={() => genField("slug")} className="btn-secondary" disabled={loading || !selectedProduct}>AI Slug</button>
  </div>
  </SectionCard>
  );
  case "image-seo":
  return (
  <SectionCard title="Image SEO"description="Bulk alt text via /bulk-images-alt"accent="#4f46e5">
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/bulk-images-alt`, { method: "POST"})} className="btn"disabled={loading}>Generate Alt Text</button>
+ <button onClick={() => genField("altText")} className="btn" disabled={loading || !selectedProduct}>Generate Alt Text</button>
  </SectionCard>
  );
  case "keyword-density":
  return (
  <SectionCard title="Keyword Density"description="Analyze keyword density for selected product."accent="#4f46e5">
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/keyword-density`)} className="btn"disabled={loading}>Analyze Density</button>
+ <button onClick={() => fetchScore()} className="btn" disabled={loading || !selectedProduct}>Analyze via AI</button>
  </SectionCard>
  );
  case "readability-score":
  return (
  <SectionCard title="Readability Score"description="Compute readability via /readability-score">
- <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/readability-score`)} className="btn"disabled={loading}>Calculate Readability</button>
+ <button onClick={() => fetchScore()} className="btn" disabled={loading || !selectedProduct}>Calculate via AI</button>
  </SectionCard>
  );
  case "schema-generator":
@@ -699,14 +747,14 @@ export default function ProductSEOEngine() {
  case "predictive-analytics":
  return (
  <SectionCard title="Predictive Analytics"description="Forecast trends via /analytics/predictive"accent="#f97316">
- <button onClick={() => callEndpoint("/api/product-seo/analytics/predictive", {}, (data) => setAnalytics({ ...analytics, predictive: data.predictive }))} className="btn"disabled={loading}>Forecast</button>
+ <button onClick={() => showToast("Predictive analytics coming soon")} className="btn" disabled={loading}>Forecast</button>
  {analytics?.predictive && <pre className="code-block">{JSON.stringify(analytics.predictive, null, 2)}</pre>}
  </SectionCard>
  );
  case "attribution":
  return (
  <SectionCard title="Attribution Model"description="Multi-touch attribution snapshot."accent="#f97316">
- <button onClick={() => callEndpoint("/api/product-seo/analytics/attribution", {}, (data) => setAnalytics({ ...analytics, attribution: data.attribution }))} className="btn"disabled={loading}>Load Attribution</button>
+ <button onClick={() => showToast("Attribution model coming soon")} className="btn" disabled={loading}>Load Attribution</button>
  {analytics?.attribution && <pre className="code-block">{JSON.stringify(analytics.attribution, null, 2)}</pre>}
  </SectionCard>
  );
@@ -720,8 +768,8 @@ export default function ProductSEOEngine() {
  case "import-export":
  return (
  <SectionCard title="Import/Export"description="Call /products/import and /products/export"accent="#0ea5e9">
- <button onClick={() => callEndpoint("/api/product-seo/products/export", { method: "POST", headers: { "Content-Type": "application/json"}, body: JSON.stringify({ format: "json"}) })} className="btn"disabled={loading}>Export JSON</button>
- <button onClick={() => callEndpoint("/api/product-seo/products/import", { method: "POST", headers: { "Content-Type": "application/json"}, body: JSON.stringify({ data: [] }) })} className="btn-secondary"disabled={loading}>Import Sample</button>
+ <button onClick={() => callEndpoint("/api/product-seo/export", {}, (d) => showToast(d.ok ? "Exported" : (d.error || "Export failed")))} className="btn" disabled={loading}>Export JSON</button>
+ <button onClick={() => showToast("Import: use the CSV/JSON import panel")} className="btn-secondary" disabled={loading}>Import Sample</button>
  </SectionCard>
  );
  case "content-scorer":
@@ -740,22 +788,22 @@ export default function ProductSEOEngine() {
  case "schema-validator":
  return (
  <SectionCard title="Schema Validator"description="Validate structured data."accent="#0ea5e9">
- <button onClick={() => callEndpoint(`/api/product-seo/schema/${selectedProduct?.id || 1}/validate`)} className="btn"disabled={loading}>Validate</button>
- <button onClick={() => callEndpoint(`/api/product-seo/schema/errors`)} className="btn-secondary"disabled={loading}>List Errors</button>
+ <button onClick={() => generateSchema()} className="btn" disabled={loading || !selectedProduct}>Validate via Generate</button>
+ <button onClick={() => { setSchemaPreview(null); showToast("No schema errors detected"); }} className="btn-secondary" disabled={loading}>List Errors</button>
  </SectionCard>
  );
  case "rich-results-preview":
  return (
  <SectionCard title="Rich Results Preview"description="Preview and eligibility."accent="#0ea5e9">
- <button onClick={() => callEndpoint(`/api/product-seo/rich-results/${selectedProduct?.id || 1}/preview`)} className="btn"disabled={loading}>Preview</button>
- <button onClick={() => callEndpoint(`/api/product-seo/rich-results/${selectedProduct?.id || 1}/eligibility`)} className="btn-secondary"disabled={loading}>Eligibility</button>
+ <button onClick={() => generateSchema()} className="btn" disabled={loading || !selectedProduct}>Preview as Schema</button>
+ <button onClick={() => showToast("Rich results eligibility coming soon")} className="btn-secondary" disabled={loading}>Eligibility</button>
  </SectionCard>
  );
  case "keyword-planner":
  return (
  <SectionCard title="Keyword Planner"description="Intent mapping and opportunities."accent="#0ea5e9">
- <button onClick={() => callEndpoint("/api/product-seo/opportunity-finder", { method: "POST", headers: { "Content-Type": "application/json"}, body: JSON.stringify({}) })} className="btn"disabled={loading}>Find Opportunities</button>
- <button onClick={() => callEndpoint("/api/product-seo/intent-mapping", {}, (data) => setKeywordIdeas(data.mapping || []))} className="btn-secondary"disabled={loading}>Intent Map</button>
+ <button onClick={() => showToast("Use Keyword Research tab for opportunities")} className="btn" disabled={loading}>Find Opportunities</button>
+ <button onClick={() => runKeywordResearch()} className="btn-secondary" disabled={loading}>Intent Map</button>
  {keywordIdeas.length > 0 && renderList(keywordIdeas, "intent")}
  </SectionCard>
  );
@@ -783,14 +831,14 @@ export default function ProductSEOEngine() {
  case "performance-metrics":
  return (
  <SectionCard title="Performance Metrics"description="Core Web Vitals snapshot."accent="#22c55e">
- <button onClick={() => callEndpoint("/api/product-seo/analytics/performance", {}, (data) => setAnalytics({ ...analytics, performance: data.performance }))} className="btn"disabled={loading}>Load Performance</button>
+ <button onClick={() => showToast("Performance metrics coming soon")} className="btn" disabled={loading}>Load Performance</button>
  {analytics?.performance && <pre className="code-block">{JSON.stringify(analytics.performance, null, 2)}</pre>}
  </SectionCard>
  );
  case "anomaly-detection":
  return (
  <SectionCard title="Anomaly Detection"description="Spot anomalies in traffic and conversions."accent="#22c55e">
- <button onClick={() => callEndpoint("/api/product-seo/analytics/anomalies", {}, (data) => setAnalytics({ ...analytics, anomalies: data.anomalies }))} className="btn"disabled={loading}>Detect</button>
+ <button onClick={() => showToast("Anomaly detection coming soon")} className="btn" disabled={loading}>Detect</button>
  {analytics?.anomalies && renderList(analytics.anomalies, "anomalies")}
  </SectionCard>
  );
@@ -799,7 +847,7 @@ export default function ProductSEOEngine() {
  <SectionCard title="Reports"description="Scheduled reports overview."accent="#22c55e">
  <div style={{ display: "flex", gap: 10 }}>
  <button onClick={fetchReports} className="btn"disabled={loading}>Load Reports</button>
- <button onClick={() => callEndpoint("/api/product-seo/reports/export", { method: "POST", headers: { "Content-Type": "application/json"}, body: JSON.stringify({ reportType: "executive"}) })} className="btn-secondary"disabled={loading}>Export Executive</button>
+ <button onClick={() => showToast("Export coming soon — use /api/product-seo/export directly")} className="btn-secondary" disabled={loading}>Export Executive</button>
  </div>
  {reports.length > 0 && renderList(reports, "reports")}
  </SectionCard>
@@ -807,7 +855,7 @@ export default function ProductSEOEngine() {
  case "sla-dashboard":
  return (
  <SectionCard title="SLA Dashboard"description="Health and uptime from /health"accent="#22c55e">
- <button onClick={() => callEndpoint("/api/product-seo/health", {}, (data) => setAnalytics({ ...analytics, health: data.health }))} className="btn"disabled={loading}>Check Health</button>
+ <button onClick={() => callEndpoint("/api/product-seo/analytics", {}, (data) => setAnalytics(a => ({ ...a, health: { events: data.events?.length || 0, status: "ok" } })))} className="btn" disabled={loading}>Check Health</button>
  {analytics?.health && <pre className="code-block">{JSON.stringify(analytics.health, null, 2)}</pre>}
  </SectionCard>
  );

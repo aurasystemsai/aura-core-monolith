@@ -526,7 +526,7 @@ function App() {
  {activeSection === "tools"&& project && <ToolsList />}
 
  {/* -- SEO & Content -- */}
- {activeSection === "product-seo"&& <ProductSeoEngine />}
+ {activeSection === "product-seo"&& <ProductSEOEngine />}
  {activeSection === "blog-seo"&& <ErrorBoundary key="blog-seo"><BlogSEO /></ErrorBoundary>}
  {activeSection === "blog-draft-engine"&& <BlogDraftEngine />}
  {activeSection === "weekly-blog-content-engine"&& <WeeklyBlogContentEngine />}

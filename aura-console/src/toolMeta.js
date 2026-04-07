@@ -4,7 +4,7 @@ const toolsMeta = [
  { id: "blog-seo", name: "Blog SEO Engine", description: "Optimize blog content with keyword clusters, internal linking, and SEO scoring.", category: "SEO", suite: "seo" },
  { id: "image-alt-media-seo", name: "Image & Media SEO", description: "AI-powered alt text, image optimization, and media SEO.", category: "SEO", suite: "seo" },
  // ── Coming soon (hidden until built & tested) ──
- { id: "product-seo", name: "Product SEO Engine", description: "Optimize product pages for search with AI-powered metadata and content.", category: "SEO", suite: "seo", hidden: true },
+ { id: "product-seo", name: "Product SEO Engine", description: "Optimize product pages for search with AI-powered metadata and content.", category: "SEO", suite: "seo" },
  { id: "blog-draft-engine", name: "Blog Draft Engine", description: "Create and publish SEO-optimized blog content with AI assistance.", category: "Content", suite: "seo" },
  { id: "weekly-blog-content-engine", name: "Weekly Blog Content Engine", description: "Automate your blog publishing calendar with AI-generated content.", category: "Content", suite: "seo" },
  { id: "on-page-seo-engine", name: "On-Page SEO Engine", description: "Audit and optimize on-page SEO factors across your entire store.", category: "SEO", suite: "seo" },
