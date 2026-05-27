@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { apiFetchJSON } from "../../api";
 import { KDCell, AuthorityBadge, MozTabs, ScoreBar, ErrorBox } from "../MozUI";
 
@@ -422,7 +422,7 @@ function CompetitorsTab() {
  if (!domain.trim()) return;
  setLoading(true); setError(null); setResult(null);
  try {
- const res = await apiFetchJSON(`${API}/competitor/analyze`, { method: "POST", body: JSON.stringify({ domain: domain.trim() }) });
+ const res = await apiFetchJSON(`${API}/competitor/add`, { method: "POST", body: JSON.stringify({ domain: domain.trim() }) });
  if (!res.ok) throw new Error(res.error || "Competitor analysis failed");
  setResult(res);
  } catch (e) { setError(e.message); }
@@ -623,7 +623,7 @@ function ClustersTab() {
  if (kws.length < 2) return;
  setLoading(true); setError(null); setResult(null);
  try {
- const res = await apiFetchJSON(`${API}/clustering/cluster`, { method: "POST", body: JSON.stringify({ keywords: kws }) });
+ const res = await apiFetchJSON(`${API}/cluster/create`, { method: "POST", body: JSON.stringify({ keywords: kws }) });
  if (!res.ok) throw new Error(res.error || "Clustering failed");
  setResult(res);
  } catch (e) { setError(e.message); }
@@ -688,7 +688,7 @@ function OpportunitiesTab() {
  if (!keyword.trim()) return;
  setLoading(true); setError(null); setResult(null);
  try {
- const res = await apiFetchJSON(`${API}/opportunity/score`, { method: "POST", body: JSON.stringify({ keyword: keyword.trim() }) });
+ const res = await apiFetchJSON(`${API}/scoring/score-keyword`, { method: "POST", body: JSON.stringify({ keyword: keyword.trim() }) });
  if (!res.ok) throw new Error(res.error || "Scoring failed");
  setResult(res);
  } catch (e) { setError(e.message); }
@@ -702,7 +702,7 @@ function OpportunitiesTab() {
  const results = [];
  for (const kw of kws.slice(0, 20)) {
  try {
- const res = await apiFetchJSON(`${API}/opportunity/score`, { method: "POST", body: JSON.stringify({ keyword: kw }) });
+ const res = await apiFetchJSON(`${API}/scoring/score-keyword`, { method: "POST", body: JSON.stringify({ keyword: kw }) });
  results.push({ keyword: kw, ...(res.ok ? res : {}) });
  } catch { results.push({ keyword: kw }); }
  }
@@ -792,9 +792,9 @@ function RankTrackingTab() {
  if (!keyword.trim()) return;
  setLoading(true); setError(null); setResult(null);
  try {
- const res = await apiFetchJSON(`${API}/rank/track`, {
+ const res = await apiFetchJSON(`${API}/tracking/start`, {
  method: "POST",
- body: JSON.stringify({ keyword: keyword.trim(), domain: trackDomain.trim() || undefined }),
+ body: JSON.stringify({ keywords: [keyword.trim()], domain: trackDomain.trim() || undefined }),
  });
  if (!res.ok) throw new Error(res.error || "Rank tracking failed");
  setResult(res);
@@ -881,9 +881,9 @@ function ContentGapsTab() {
  const competitorList = competitors.split(/[\n,]+/).map((c) => c.trim()).filter(Boolean);
  setLoading(true); setError(null); setResult(null);
  try {
- const res = await apiFetchJSON(`${API}/content-gap/analyze`, {
+ const res = await apiFetchJSON(`${API}/gap/analyze`, {
  method: "POST",
- body: JSON.stringify({ domain: domain.trim(), competitors: competitorList }),
+ body: JSON.stringify({ yourDomain: domain.trim(), competitorDomains: competitorList }),
  });
  if (!res.ok) throw new Error(res.error || "Content gap analysis failed");
  setResult(res);

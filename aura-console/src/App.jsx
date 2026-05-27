@@ -23,7 +23,7 @@ const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
 const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
 const Reports = lazy(() => import("./components/Reports.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
-const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
+const InternalLinkOptimizer = lazy(() => import("./components/tools/InternalLinkOptimizer"));
 const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
 const AllTools = lazy(() => import("./components/AllTools.jsx"));
 const MainSuite = lazy(() => import("./components/tools/MainSuite.jsx"));

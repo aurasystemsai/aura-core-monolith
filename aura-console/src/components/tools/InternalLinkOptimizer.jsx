@@ -45,10 +45,10 @@ export default function InternalLinkOptimizer() {
     setError("");
     setResult("");
     try {
-      const res = await fetch("/api/internal-link-optimizer/ai/generate", {
+      const res = await fetch("/api/internal-link-optimizer/ai/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input }),
+        body: JSON.stringify({ pageContent: input }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Generation failed");
