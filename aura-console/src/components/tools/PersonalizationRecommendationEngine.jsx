@@ -16,43 +16,25 @@ const S = {
 };
 
 const TABS = [
-  { id: "suggest",  label: "AI Suggestions" },
-  { id: "saved",    label: "Saved Rules" },
+  { id: "suggest",   label: "AI Suggestions" },
+  { id: "saved",     label: "Saved Rules" },
+  { id: "abtests",   label: "A/B Tracker" },
   { id: "analytics", label: "Analytics" },
-  { id: "guide",    label: "Personalisation Guide" },
+  { id: "guide",     label: "Personalisation Guide" },
 ];
 
-const PLACEMENT_TYPES = [
-  "Homepage hero",
-  "Product detail page",
-  "Cart page",
-  "Post-checkout upsell",
-  "Email — win-back",
-  "Email — post-purchase",
-  "Email — browse abandon",
-  "Loyalty portal",
-  "Search results",
-];
-
+const PLACEMENT_TYPES = ["Homepage hero", "Product detail page", "Cart page", "Post-checkout upsell", "Email — win-back", "Email — post-purchase", "Email — browse abandon", "Loyalty portal", "Search results"];
 const SAMPLE_DESCRIPTIONS = [
-  { label: "Homepage for new visitor",   desc: "Recommend products for first-time visitors who haven't browsed specific categories yet. Mix of bestsellers and trending items." },
-  { label: "Cart page upsell",           desc: "Customer has a skincare cleanser in cart (£29). Recommend complementary products they're likely to add before checkout." },
-  { label: "Post-purchase cross-sell",   desc: "Customer just bought a gym bag. Recommend accessories and related products for a follow-up email sent 3 days after purchase." },
-  { label: "Win-back email",             desc: "Customer purchased twice in 2023 but hasn't bought in 6 months. Recommend products likely to re-engage them based on past purchases." },
-  { label: "High-value segment",         desc: "VIP customer with 8 purchases and £600 LTV. Recommend new arrivals and premium products they haven't seen yet." },
-  { label: "Browse abandonment",         desc: "Customer viewed the leather wallet product page 3 times without purchasing. Create a personalised recommendation to close the sale." },
+  { label: "Homepage for new visitor",    desc: "Recommend products for first-time visitors who haven't browsed specific categories yet. Mix of bestsellers and trending items." },
+  { label: "Cart page upsell",            desc: "Customer has a skincare cleanser in cart (£29). Recommend complementary products they're likely to add before checkout." },
+  { label: "Post-purchase cross-sell",    desc: "Customer just bought a gym bag. Recommend accessories and related products for a follow-up email sent 3 days after purchase." },
+  { label: "Win-back email",              desc: "Customer purchased twice in 2023 but hasn't bought in 6 months. Recommend products likely to re-engage them based on past purchases." },
+  { label: "High-value segment",          desc: "VIP customer with 8 purchases and £600 LTV. Recommend new arrivals and premium products they haven't seen yet." },
+  { label: "Browse abandonment",          desc: "Customer viewed the leather wallet product page 3 times without purchasing. Create a personalised recommendation to close the sale." },
 ];
+const STRATEGY_TYPES = ["Collaborative Filtering", "Content-Based", "Popularity-Based", "Recently Viewed", "Frequently Bought Together", "Customers Also Bought", "New Arrivals", "Price Point Match"];
 
-const STRATEGY_TYPES = [
-  "Collaborative Filtering",
-  "Content-Based",
-  "Popularity-Based",
-  "Recently Viewed",
-  "Frequently Bought Together",
-  "Customers Also Bought",
-  "New Arrivals",
-  "Price Point Match",
-];
+const EMPTY_AB = { testName: "", placement: "Cart page", variantA: "", variantB: "", algorithm: "Collaborative Filtering", metric: "CVR", status: "Running", winner: "", cvrA: "", cvrB: "", notes: "" };
 
 export default function PersonalizationRecommendationEngine() {
   const [tab, setTab]           = useState("suggest");
@@ -68,23 +50,29 @@ export default function PersonalizationRecommendationEngine() {
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
-  useEffect(() => { loadSuggestions(); }, []);
+  const [abTests, setAbTests]   = useState([]);
+  const [abForm, setAbForm]     = useState(EMPTY_AB);
+  const [abSaving, setAbSaving] = useState(false);
+  const [showAbForm, setShowAbForm] = useState(false);
+
+  const STATUS_OPTIONS = ["Running", "Paused", "Completed"];
+  const METRIC_OPTIONS = ["CVR", "CTR", "AOV", "RPV", "Revenue"];
+
+  useEffect(() => { loadSuggestions(); loadAbTests(); }, []);
 
   const loadSuggestions = async () => {
-    try {
-      const r = await apiFetchJSON(`${API}/recommendations`);
-      setSuggestions(r.recommendations || (Array.isArray(r) ? r : []));
-    } catch {}
+    try { const r = await apiFetchJSON(`${API}/recommendations`); setSuggestions(r.recommendations || (Array.isArray(r) ? r : [])); } catch {}
   };
 
   const loadAnalytics = async () => {
     if (analytics) return;
     setAnalyticsLoading(true);
-    try {
-      const r = await apiFetchJSON(`${API}/analytics`);
-      if (r.ok !== false) setAnalytics(r);
-    } catch {}
+    try { const r = await apiFetchJSON(`${API}/analytics`); if (r.ok !== false) setAnalytics(r); } catch {}
     setAnalyticsLoading(false);
+  };
+
+  const loadAbTests = async () => {
+    try { const r = await apiFetchJSON(`${API}/ab-tests`); if (r.ok) setAbTests(r.abTests || []); } catch {}
   };
 
   useEffect(() => { if (tab === "analytics") loadAnalytics(); }, [tab]);
@@ -93,10 +81,7 @@ export default function PersonalizationRecommendationEngine() {
     if (!description.trim()) return;
     setLoading(true); setError(""); setResult(null);
     try {
-      const r = await apiFetchJSON(`${API}/ai/suggest`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: `Placement: ${placement}\nStrategy: ${strategy}\n\n${description}` }),
-      });
+      const r = await apiFetchJSON(`${API}/ai/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ description: `Placement: ${placement}\nStrategy: ${strategy}\n\n${description}` }) });
       if (!r.ok && r.error) throw new Error(r.error);
       setResult(r.recommendation || r.result || "");
     } catch (e) { setError(e.message); }
@@ -107,22 +92,33 @@ export default function PersonalizationRecommendationEngine() {
     if (!result) return;
     setSaving(true);
     try {
-      await apiFetchJSON(`${API}/recommendations`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: `${placement} — ${strategy}`, description, recommendation: result, placement, strategy, createdAt: new Date().toISOString() }),
-      });
-      loadSuggestions();
-      setResult(null);
-      setDesc("");
+      await apiFetchJSON(`${API}/recommendations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: `${placement} — ${strategy}`, description, recommendation: result, placement, strategy, createdAt: new Date().toISOString() }) });
+      loadSuggestions(); setResult(null); setDesc("");
     } catch (e) { setError(e.message); }
     setSaving(false);
   };
 
   const deleteRecommendation = async (id) => {
+    try { await apiFetchJSON(`${API}/recommendations/${id}`, { method: "DELETE" }); setSuggestions(p => p.filter(r => r.id !== id)); } catch {}
+  };
+
+  const saveAbTest = async () => {
+    if (!abForm.testName.trim()) return;
+    setAbSaving(true);
     try {
-      await apiFetchJSON(`${API}/recommendations/${id}`, { method: "DELETE" });
-      setSuggestions(p => p.filter(r => r.id !== id));
-    } catch {}
+      const r = await apiFetchJSON(`${API}/ab-tests`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...abForm, createdAt: new Date().toISOString() }) });
+      if (r.ok) { loadAbTests(); setAbForm(EMPTY_AB); setShowAbForm(false); }
+    } catch (e) { setError(e.message); }
+    setAbSaving(false);
+  };
+
+  const deleteAbTest = async (id) => {
+    try { await apiFetchJSON(`${API}/ab-tests/${id}`, { method: "DELETE" }); setAbTests(p => p.filter(t => t.id !== id)); } catch {}
+  };
+
+  const updateAbStatus = async (id, status) => {
+    try { await apiFetchJSON(`${API}/ab-tests/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); } catch {}
+    setAbTests(p => p.map(t => t.id === id ? { ...t, status } : t));
   };
 
   const analyticsKeys = analytics ? Object.entries(analytics).filter(([k, v]) => k !== "ok" && typeof v !== "object") : [];
@@ -131,15 +127,27 @@ export default function PersonalizationRecommendationEngine() {
     <div style={S.page}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Personalisation & Recommendations</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
-          AI-powered product recommendation strategies for every placement and customer segment. Build a personalisation engine that drives measurable revenue lift.
-        </p>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>AI-powered product recommendation strategies for every placement and customer segment. Build a personalisation engine that drives measurable revenue lift.</p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Saved Rules",  value: suggestions.length,                                color: "#818cf8" },
+          { label: "A/B Tests",    value: abTests.length,                                   color: "#fbbf24" },
+          { label: "Running Tests",value: abTests.filter(t => t.status === "Running").length, color: "#4ade80" },
+          { label: "Placements",   value: [...new Set(suggestions.map(s => s.placement))].length, color: "#a1a1aa" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
-      {/* ── AI SUGGESTIONS ── */}
+      {/* AI SUGGESTIONS */}
       {tab === "suggest" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
@@ -148,31 +156,23 @@ export default function PersonalizationRecommendationEngine() {
               <div>
                 <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Placement</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {PLACEMENT_TYPES.map(p => (
-                    <button key={p} style={{ ...S.btn(p === placement ? "primary" : null), fontSize: 11, padding: "4px 10px" }} onClick={() => setPlacement(p)}>{p}</button>
-                  ))}
+                  {PLACEMENT_TYPES.map(p => <button key={p} style={{ ...S.btn(p === placement ? "primary" : null), fontSize: 11, padding: "4px 10px" }} onClick={() => setPlacement(p)}>{p}</button>)}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Algorithm</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {STRATEGY_TYPES.map(s => (
-                    <button key={s} style={{ ...S.btn(s === strategy ? "primary" : null), fontSize: 11, padding: "4px 10px" }} onClick={() => setStrategy(s)}>{s}</button>
-                  ))}
+                  {STRATEGY_TYPES.map(s => <button key={s} style={{ ...S.btn(s === strategy ? "primary" : null), fontSize: 11, padding: "4px 10px" }} onClick={() => setStrategy(s)}>{s}</button>)}
                 </div>
               </div>
             </div>
             <textarea style={{ ...S.ta, minHeight: 110 }} value={description} onChange={e => setDesc(e.target.value)} placeholder="Describe the customer context, segment, or scenario for this recommendation…" />
             <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button style={S.btn("primary")} onClick={generate} disabled={loading || !description.trim()}>
-                {loading ? "Generating…" : "AI Generate Recommendation"}
-              </button>
+              <button style={S.btn("primary")} onClick={generate} disabled={loading || !description.trim()}>{loading ? "Generating…" : "AI Generate Recommendation"}</button>
               <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setDesc(""); setResult(null); }}>Clear</button>
             </div>
           </div>
-
           {loading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
-
           {result && !loading && (
             <div style={S.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -185,15 +185,12 @@ export default function PersonalizationRecommendationEngine() {
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(result)}>Copy</button>
-                  <button style={{ ...S.btn("green"), fontSize: 11, padding: "5px 10px" }} onClick={saveRecommendation} disabled={saving}>
-                    {saving ? "Saving…" : "Save Rule"}
-                  </button>
+                  <button style={{ ...S.btn("green"), fontSize: 11, padding: "5px 10px" }} onClick={saveRecommendation} disabled={saving}>{saving ? "Saving…" : "Save Rule"}</button>
                 </div>
               </div>
               <pre style={S.pre}>{result}</pre>
             </div>
           )}
-
           <div style={S.card}>
             <div style={S.sectionTitle}>Quick Start Examples</div>
             {SAMPLE_DESCRIPTIONS.map(({ label, desc }) => (
@@ -209,7 +206,7 @@ export default function PersonalizationRecommendationEngine() {
         </div>
       )}
 
-      {/* ── SAVED RULES ── */}
+      {/* SAVED RULES */}
       {tab === "saved" && (
         <div style={{ marginTop: 20 }}>
           <div style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>{suggestions.length} saved recommendation rule{suggestions.length !== 1 ? "s" : ""}</div>
@@ -240,11 +237,114 @@ export default function PersonalizationRecommendationEngine() {
         </div>
       )}
 
-      {/* ── ANALYTICS ── */}
+      {/* A/B TRACKER */}
+      {tab === "abtests" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{abTests.length} A/B tests · {abTests.filter(t => t.status === "Running").length} running</div>
+            <button style={S.btn("primary")} onClick={() => setShowAbForm(p => !p)}>{showAbForm ? "Cancel" : "+ New A/B Test"}</button>
+          </div>
+          {showAbForm && (
+            <div style={S.card}>
+              <div style={S.sectionTitle}>New A/B Test</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Test Name *</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={abForm.testName} onChange={e => setAbForm(p => ({ ...p, testName: e.target.value }))} placeholder="Homepage hero — algo comparison" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Placement</label>
+                  <select style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none", width: "100%" }} value={abForm.placement} onChange={e => setAbForm(p => ({ ...p, placement: e.target.value }))}>
+                    {PLACEMENT_TYPES.map(p => <option key={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Primary Metric</label>
+                  <select style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none", width: "100%" }} value={abForm.metric} onChange={e => setAbForm(p => ({ ...p, metric: e.target.value }))}>
+                    {METRIC_OPTIONS.map(m => <option key={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Variant A (Control)</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={abForm.variantA} onChange={e => setAbForm(p => ({ ...p, variantA: e.target.value }))} placeholder="Popularity-Based" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Variant B (Treatment)</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={abForm.variantB} onChange={e => setAbForm(p => ({ ...p, variantB: e.target.value }))} placeholder="Collaborative Filtering" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Status</label>
+                  <select style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none", width: "100%" }} value={abForm.status} onChange={e => setAbForm(p => ({ ...p, status: e.target.value }))}>
+                    {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>CVR Variant A (%)</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} type="number" value={abForm.cvrA} onChange={e => setAbForm(p => ({ ...p, cvrA: e.target.value }))} placeholder="3.2" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>CVR Variant B (%)</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} type="number" value={abForm.cvrB} onChange={e => setAbForm(p => ({ ...p, cvrB: e.target.value }))} placeholder="4.1" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Winner (if concluded)</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={abForm.winner} onChange={e => setAbForm(p => ({ ...p, winner: e.target.value }))} placeholder="B" />
+                </div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Notes</label>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={abForm.notes} onChange={e => setAbForm(p => ({ ...p, notes: e.target.value }))} placeholder="Observations, hypotheses, or conclusions…" />
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button style={S.btn("primary")} onClick={saveAbTest} disabled={abSaving || !abForm.testName.trim()}>{abSaving ? "Saving…" : "Save Test"}</button>
+                <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setAbForm(EMPTY_AB)}>Clear</button>
+              </div>
+            </div>
+          )}
+          {abTests.length === 0 ? (
+            <EmptyState icon="🧪" title="No A/B tests tracked" description="Log A/B tests here to track what recommendation strategies win for each placement." />
+          ) : (
+            abTests.map(t => (
+              <div key={t.id} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{t.testName}</span>
+                      <span style={{ background: t.status === "Running" ? "#052e16" : t.status === "Completed" ? "#1e1b4b" : "#27272a", color: t.status === "Running" ? "#4ade80" : t.status === "Completed" ? "#818cf8" : "#71717a", borderRadius: 5, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>{t.status}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6 }}>{t.placement} · Metric: {t.metric}</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 12, marginBottom: 4 }}>
+                      <div style={{ background: "#09090b", borderRadius: 8, padding: "8px 12px" }}>
+                        <div style={{ color: "#52525b", fontSize: 10, textTransform: "uppercase", fontWeight: 700 }}>Variant A (Control)</div>
+                        <div style={{ color: "#e4e4e7", fontWeight: 600 }}>{t.variantA || "—"}</div>
+                        {t.cvrA && <div style={{ color: "#fbbf24" }}>{t.metric}: {t.cvrA}%</div>}
+                      </div>
+                      <div style={{ background: "#09090b", borderRadius: 8, padding: "8px 12px" }}>
+                        <div style={{ color: "#52525b", fontSize: 10, textTransform: "uppercase", fontWeight: 700 }}>Variant B (Treatment)</div>
+                        <div style={{ color: "#e4e4e7", fontWeight: 600 }}>{t.variantB || "—"}</div>
+                        {t.cvrB && <div style={{ color: t.cvrB > t.cvrA ? "#4ade80" : "#f87171" }}>{t.metric}: {t.cvrB}%</div>}
+                      </div>
+                    </div>
+                    {t.winner && <div style={{ fontSize: 12, color: "#4ade80", fontWeight: 700 }}>Winner: Variant {t.winner}</div>}
+                    {t.notes && <div style={{ fontSize: 11, color: "#52525b", marginTop: 4 }}>{t.notes}</div>}
+                    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                      {STATUS_OPTIONS.filter(s => s !== t.status).map(s => (
+                        <button key={s} style={{ ...S.btn(), fontSize: 10, padding: "2px 8px" }} onClick={() => updateAbStatus(t.id, s)}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px", flexShrink: 0, marginLeft: 12 }} onClick={() => deleteAbTest(t.id)}>Delete</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ANALYTICS */}
       {tab === "analytics" && (
         <div style={{ marginTop: 20 }}>
           {analyticsLoading && <div style={{ textAlign: "center", padding: 40 }}><Spinner size={36} /></div>}
-
           {analyticsKeys.length > 0 && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
               {analyticsKeys.map(([k, v]) => (
@@ -255,17 +355,16 @@ export default function PersonalizationRecommendationEngine() {
               ))}
             </div>
           )}
-
           <div style={S.card}>
             <div style={S.sectionTitle}>Personalisation Revenue Impact</div>
             <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 16 }}>Industry benchmarks for personalisation lift across placements:</p>
             {[
-              { placement: "Homepage recommendations",      uplift: "+7-15% CVR",    mechanism: "Surfacing relevant products for returning visitors reduces bounce rate and increases product discovery." },
-              { placement: "Product page cross-sell",       uplift: "+15-25% AOV",   mechanism: "\"Frequently bought together\" and \"Complete the look\" shown at point of intent drives bundle purchases." },
-              { placement: "Cart page upsell",              uplift: "+10-20% AOV",   mechanism: "Pre-checkout recommendations add incremental value when purchase intent is highest." },
-              { placement: "Post-purchase email",           uplift: "+8-18% repeat", mechanism: "Product recommendations sent 3-7 days after purchase (before the \"honeymoon period\" ends) drive the fastest second purchase." },
-              { placement: "Win-back email",                uplift: "+12-22% reactivation", mechanism: "Personalised product recommendations outperform generic discount emails for lapsed customers." },
-              { placement: "Browse abandonment",            uplift: "+5-12% recovery",    mechanism: "Showing the exact viewed item plus similar alternatives within 1 hour recovers 5-12% of non-purchasers." },
+              { placement: "Homepage recommendations",  uplift: "+7-15% CVR",        mechanism: "Surfacing relevant products for returning visitors reduces bounce rate and increases product discovery." },
+              { placement: "Product page cross-sell",   uplift: "+15-25% AOV",        mechanism: "'Frequently bought together' and 'Complete the look' shown at point of intent drives bundle purchases." },
+              { placement: "Cart page upsell",          uplift: "+10-20% AOV",        mechanism: "Pre-checkout recommendations add incremental value when purchase intent is highest." },
+              { placement: "Post-purchase email",       uplift: "+8-18% repeat",      mechanism: "Product recommendations sent 3-7 days after purchase drive the fastest second purchase." },
+              { placement: "Win-back email",            uplift: "+12-22% reactivation", mechanism: "Personalised product recommendations outperform generic discount emails for lapsed customers." },
+              { placement: "Browse abandonment",        uplift: "+5-12% recovery",    mechanism: "Showing the viewed item plus similar alternatives within 1 hour recovers 5-12% of non-purchasers." },
             ].map(({ placement, uplift, mechanism }) => (
               <div key={placement} style={S.row}>
                 <div style={{ flex: 1 }}>
@@ -276,7 +375,6 @@ export default function PersonalizationRecommendationEngine() {
               </div>
             ))}
           </div>
-
           <div style={S.card}>
             <div style={S.sectionTitle}>Algorithm Performance Comparison</div>
             {[
@@ -298,35 +396,31 @@ export default function PersonalizationRecommendationEngine() {
         </div>
       )}
 
-      {/* ── GUIDE ── */}
+      {/* GUIDE */}
       {tab === "guide" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
             <div style={S.sectionTitle}>Personalisation Excellence Framework</div>
             {[
-              { t: "Relevance beats novelty — always",        d: "The best recommendation is not the newest product or the most profitable SKU — it's the most relevant one for that specific customer at that moment. Optimise for relevance score, not margin." },
-              { t: "Context is everything: same product, different placement, different result", d: "\"Frequently bought together\" on a product page converts at 12%. The same widget on the homepage converts at 3%. Placement context determines performance more than algorithm choice." },
-              { t: "Cold start: what to do with no data",     d: "For new visitors (no history): show bestsellers in their browsed category. For new products: show to customers with similar taste profiles. Popularity is always your fallback — it's better than random." },
-              { t: "The 3-second test for recommendation quality", d: "Show a recommendation to someone unfamiliar with the customer. Ask 'Does this make sense for this person?' If they hesitate, your algorithm is failing. Recommendations should feel obvious in hindsight." },
-              { t: "Diversity prevents filter bubbles",       d: "If you only recommend the same category they just bought, you miss cross-sell opportunities and it feels monotonous. Include 70% highly relevant + 20% complementary + 10% surprise/discovery items." },
-              { t: "Test everything — incrementally",        d: "Never launch a personalisation change without an A/B test. A recommendation that looks great in theory can reduce revenue by 5% in practice. Test one variable at a time: algorithm, placement, count, presentation." },
+              { t: "Relevance beats novelty — always",       d: "The best recommendation is not the newest product or the most profitable SKU — it's the most relevant one for that specific customer at that moment. Optimise for relevance score, not margin." },
+              { t: "Context is everything: same product, different placement, different result", d: "'Frequently bought together' on a product page converts at 12%. The same widget on the homepage converts at 3%. Placement context determines performance more than algorithm choice." },
+              { t: "Cold start: what to do with no data",    d: "For new visitors: show bestsellers in their browsed category. For new products: show to customers with similar taste profiles. Popularity is always your fallback — it's better than random." },
+              { t: "Diversity prevents filter bubbles",      d: "If you only recommend the same category they just bought, you miss cross-sell opportunities. Include 70% highly relevant + 20% complementary + 10% surprise/discovery items." },
+              { t: "Test everything — incrementally",        d: "Never launch a personalisation change without an A/B test. A recommendation that looks great in theory can reduce revenue by 5% in practice. Test one variable at a time." },
+              { t: "Measure incrementality, not correlation", d: "Recommenders show popular items to customers already likely to buy. True lift = what customers bought because of the recommendation, not what they would have bought anyway. Use holdout groups." },
             ].map(({ t, d }) => (
               <div key={t} style={S.row}>
                 <span style={{ color: "#4f46e5", flexShrink: 0 }}>🎯</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div>
-                  <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div>
-                </div>
+                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
               </div>
             ))}
           </div>
-
           <div style={S.card}>
             <div style={S.sectionTitle}>Implementation Maturity Roadmap</div>
             {[
-              { stage: "Level 1 — Manual Curation",         desc: "Manually select featured products by page. Staff picks, bestsellers, curated collections. No data. Works up to ~$10k/month revenue.", color: "#27272a" },
-              { stage: "Level 2 — Rule-Based",              desc: "\"Frequently bought together\" computed from order history. Category-based \"you might also like\". Simple purchase-based cross-sell in email.", color: "#1e3a5f" },
-              { stage: "Level 3 — Behavioural",             desc: "Recommendations personalised by browsing history, session data, and real-time signals. Browse abandonment and cart page algorithms.", color: "#1e1b4b" },
+              { stage: "Level 1 — Manual Curation",           desc: "Manually select featured products by page. Staff picks, bestsellers, curated collections. No data. Works up to ~$10k/month revenue.", color: "#27272a" },
+              { stage: "Level 2 — Rule-Based",                desc: "'Frequently bought together' computed from order history. Category-based 'you might also like'. Simple purchase-based cross-sell in email.", color: "#1e3a5f" },
+              { stage: "Level 3 — Behavioural",               desc: "Recommendations personalised by browsing history, session data, and real-time signals. Browse abandonment and cart page algorithms.", color: "#1e1b4b" },
               { stage: "Level 4 — Predictive Personalisation", desc: "ML-driven collaborative filtering, LTV-aware promotion, real-time recommendation scores, and individualised pricing and offers.", color: "#052e16" },
             ].map(({ stage, desc, color }) => (
               <div key={stage} style={{ background: color, border: "1px solid #27272a", borderRadius: 8, padding: "12px 16px", marginBottom: 8 }}>

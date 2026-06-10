@@ -19,7 +19,8 @@ const S = {
 const TABS = [
   { id: "create",    label: "Create Workflow" },
   { id: "active",    label: "Active Workflows" },
-  { id: "templates", label: "Workflow Templates" },
+  { id: "ai",        label: "AI Builder" },
+  { id: "templates", label: "Templates" },
   { id: "guide",     label: "Process Guide" },
 ];
 
@@ -29,54 +30,19 @@ const URGENCY        = ["Low (7 days)", "Normal (3 days)", "High (24 hours)", "C
 const STATUS_COLORS  = { pending: "#fbbf24", approved: "#4ade80", rejected: "#f87171", draft: "#71717a", escalated: "#c084fc" };
 
 const WORKFLOW_TEMPLATES = [
-  {
-    name: "Blog Content Approval",
-    type: "Content Approval",
-    desc: "Two-stage approval: Editor review then Marketing Manager sign-off. 3-day SLA.",
-    steps: ["Writer submits draft", "Editor reviews for quality/accuracy (48h)", "Marketing Manager approves/rejects (24h)", "Published if approved"],
-    mode: "Sequential (ordered chain)",
-    urgency: "Normal (3 days)",
-  },
-  {
-    name: "High-Value Discount Approval",
-    type: "Discount Approval",
-    desc: "Discounts >20% require Finance and Marketing approval before publishing.",
-    steps: ["Team member submits discount request with business case", "Marketing Manager approves alignment with strategy (24h)", "Finance approves margin impact (24h)", "Applied if both approve"],
-    mode: "Parallel (all must approve)",
-    urgency: "High (24 hours)",
-  },
-  {
-    name: "Refund Over £500",
-    type: "Refund Approval",
-    desc: "Large refunds need Operations or Account Manager approval before processing.",
-    steps: ["Support agent flags refund request", "Operations Manager reviews case (4h)", "Processes if approved; escalates to Director if rejected"],
-    mode: "Single approver",
-    urgency: "High (24 hours)",
-  },
-  {
-    name: "Major Campaign Launch",
-    type: "Campaign Launch",
-    desc: "All major campaigns (>£1000 budget) need multi-team sign-off before launch.",
-    steps: ["Marketing creates brief + estimated spend", "Finance approves budget (48h)", "Creative Director approves assets (24h)", "CMO or founder final sign-off (24h)", "Launch approved"],
-    mode: "Sequential (ordered chain)",
-    urgency: "Normal (3 days)",
-  },
-  {
-    name: "Pricing Change",
-    type: "Pricing Change",
-    desc: "Any price change >5% requires Finance and Product approval. Protects margins.",
-    steps: ["Request submitted with justification and competitive data", "Finance reviews margin impact (24h)", "Product Manager reviews positioning (24h)", "Apply change if both approve"],
-    mode: "Parallel (all must approve)",
-    urgency: "Normal (3 days)",
-  },
-  {
-    name: "New Product Launch Checklist",
-    type: "New Product Launch",
-    desc: "Full cross-functional sign-off before any new product goes live in Shopify.",
-    steps: ["Product Manager submits launch brief", "Operations confirms inventory is ready (48h)", "Marketing confirms content + SEO ready (48h)", "Tech confirms product page + variants configured (24h)", "Founder final approval (24h)"],
-    mode: "Sequential (ordered chain)",
-    urgency: "Normal (3 days)",
-  },
+  { name: "Blog Content Approval", type: "Content Approval", desc: "Two-stage approval: Editor review then Marketing Manager sign-off. 3-day SLA.", steps: ["Writer submits draft", "Editor reviews for quality/accuracy (48h)", "Marketing Manager approves/rejects (24h)", "Published if approved"], mode: "Sequential (ordered chain)", urgency: "Normal (3 days)" },
+  { name: "High-Value Discount Approval", type: "Discount Approval", desc: "Discounts >20% require Finance and Marketing approval before publishing.", steps: ["Team member submits discount request with business case", "Marketing Manager approves alignment with strategy (24h)", "Finance approves margin impact (24h)", "Applied if both approve"], mode: "Parallel (all must approve)", urgency: "High (24 hours)" },
+  { name: "Refund Over £500", type: "Refund Approval", desc: "Large refunds need Operations or Account Manager approval before processing.", steps: ["Support agent flags refund request", "Operations Manager reviews case (4h)", "Processes if approved; escalates to Director if rejected"], mode: "Single approver", urgency: "High (24 hours)" },
+  { name: "Major Campaign Launch", type: "Campaign Launch", desc: "All major campaigns (>£1000 budget) need multi-team sign-off before launch.", steps: ["Marketing creates brief + estimated spend", "Finance approves budget (48h)", "Creative Director approves assets (24h)", "CMO or founder final sign-off (24h)", "Launch approved"], mode: "Sequential (ordered chain)", urgency: "Normal (3 days)" },
+  { name: "Pricing Change", type: "Pricing Change", desc: "Any price change >5% requires Finance and Product approval. Protects margins.", steps: ["Request submitted with justification and competitive data", "Finance reviews margin impact (24h)", "Product Manager reviews positioning (24h)", "Apply change if both approve"], mode: "Parallel (all must approve)", urgency: "Normal (3 days)" },
+  { name: "New Product Launch Checklist", type: "New Product Launch", desc: "Full cross-functional sign-off before any new product goes live in Shopify.", steps: ["Product Manager submits launch brief", "Operations confirms inventory is ready (48h)", "Marketing confirms content + SEO ready (48h)", "Tech confirms product page + variants configured (24h)", "Founder final approval (24h)"], mode: "Sequential (ordered chain)", urgency: "Normal (3 days)" },
+];
+
+const AI_SCENARIOS = [
+  { label: "Blog sign-off",          desc: "We need a content approval workflow for all blog posts. Writer submits, editor reviews within 48 hours, marketing manager has final sign-off. Content must be brand-safe and SEO-optimised before publishing." },
+  { label: "Large refund approval",  desc: "Any refund over £300 needs manager approval before processing. Must complete within 4 hours of the customer request to maintain CSAT." },
+  { label: "Price change workflow",  desc: "Any product price change of more than 10% needs approval from finance (margin review) and the product manager (positioning review). Both must approve before the change is applied in Shopify." },
+  { label: "Campaign launch",        desc: "New marketing campaigns with budgets over £2,000 need: marketing brief review, finance budget sign-off, and CEO final approval. All must be completed before the campaign launch date." },
 ];
 
 export default function CollaborationApprovalWorkflows() {
@@ -92,14 +58,16 @@ export default function CollaborationApprovalWorkflows() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [search, setSearch]             = useState("");
 
+  // AI Builder
+  const [aiDesc, setAiDesc]     = useState("");
+  const [aiResult, setAiResult] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
   useEffect(() => { loadWorkflows(); }, []);
 
   const loadWorkflows = async () => {
     setLoading(true);
-    try {
-      const r = await apiFetchJSON(`${API}/workflows`);
-      if (r.ok) setWorkflows(r.workflows || []);
-    } catch (e) { /* silently ignore */ }
+    try { const r = await apiFetchJSON(`${API}/workflows`); if (r.ok) setWorkflows(r.workflows || []); } catch {}
     setLoading(false);
   };
 
@@ -108,10 +76,7 @@ export default function CollaborationApprovalWorkflows() {
     if (!form.approvers.trim()) { setError("At least one approver is required"); return; }
     setSaving(true); setError("");
     try {
-      const r = await apiFetchJSON(`${API}/workflows`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, status: "draft", createdAt: new Date().toISOString() }),
-      });
+      const r = await apiFetchJSON(`${API}/workflows`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, status: "draft", createdAt: new Date().toISOString() }) });
       if (!r.ok) throw new Error(r.error || "Save failed");
       setWorkflows(p => [r.workflow || { ...form, id: Date.now(), status: "draft", createdAt: new Date().toISOString() }, ...p]);
       setForm({ name: "", type: "Content Approval", mode: "Sequential (ordered chain)", urgency: "Normal (3 days)", approvers: "", description: "", steps: "" });
@@ -120,21 +85,44 @@ export default function CollaborationApprovalWorkflows() {
     setSaving(false);
   };
 
-  const updateStatus = async (id, status) => {
+  const generateWithAI = async (override) => {
+    const desc = (override || aiDesc).trim();
+    if (!desc) return;
+    setAiLoading(true); setAiResult(null); setError("");
     try {
-      await apiFetchJSON(`${API}/workflows/${id}/status`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      setWorkflows(p => p.map(w => w.id === id ? { ...w, status } : w));
+      const r = await apiFetchJSON(`${API}/ai/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ description: desc }) });
+      if (!r.ok && r.error) throw new Error(r.error);
+      setAiResult(r.workflow || r.result || "");
     } catch (e) { setError(e.message); }
+    setAiLoading(false);
+  };
+
+  const applyAiResult = () => {
+    if (!aiResult) return;
+    if (typeof aiResult === "object") {
+      setForm(p => ({
+        ...p,
+        name: aiResult.name || aiResult.title || p.name,
+        type: aiResult.type || p.type,
+        mode: aiResult.approvalMode || aiResult.mode || p.mode,
+        urgency: aiResult.urgency || p.urgency,
+        steps: Array.isArray(aiResult.steps) ? aiResult.steps.join("\n") : aiResult.steps || p.steps,
+        description: aiResult.description || aiResult.desc || p.description,
+      }));
+    } else if (typeof aiResult === "string") {
+      const titleMatch = aiResult.match(/(?:name|title|workflow)[:：]\s*(.+)/i);
+      setForm(p => ({ ...p, description: aiResult.slice(0, 500), name: titleMatch?.[1]?.trim() || p.name }));
+    }
+    setTab("create");
+  };
+
+  const updateStatus = async (id, status) => {
+    try { await apiFetchJSON(`${API}/workflows/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); } catch {}
+    setWorkflows(p => p.map(w => w.id === id ? { ...w, status } : w));
   };
 
   const deleteWorkflow = async (id) => {
-    try {
-      await apiFetchJSON(`${API}/workflows/${id}`, { method: "DELETE" });
-      setWorkflows(p => p.filter(w => w.id !== id));
-    } catch (e) { setError(e.message); }
+    try { await apiFetchJSON(`${API}/workflows/${id}`, { method: "DELETE" }); setWorkflows(p => p.filter(w => w.id !== id)); } catch (e) { setError(e.message); }
   };
 
   const applyTemplate = (tpl) => {
@@ -152,81 +140,69 @@ export default function CollaborationApprovalWorkflows() {
     <div style={S.page}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Collaboration & Approval Workflows</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
-          Build structured approval chains for content, campaigns, discounts, refunds, and pricing changes. Eliminate ad-hoc decisions, ensure accountability, and maintain brand standards at scale.
-        </p>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Build structured approval chains for content, campaigns, discounts, refunds, and pricing changes. Eliminate ad-hoc decisions, ensure accountability, and maintain brand standards at scale.</p>
       </div>
 
-      {workflows.length > 0 && (
-        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-          {[
-            { label: "Total",    val: workflows.length,                                  color: "#71717a" },
-            { label: "Active",   val: workflows.filter(w => w.status === "pending").length,  color: "#fbbf24" },
-            { label: "Approved", val: workflows.filter(w => w.status === "approved").length, color: "#4ade80" },
-            { label: "Draft",    val: workflows.filter(w => w.status === "draft").length,    color: "#a1a1aa" },
-          ].map(({ label, val, color }) => (
-            <div key={label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
-              <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color }}>{val}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Total",    val: workflows.length,                                      color: "#71717a" },
+          { label: "Active",   val: workflows.filter(w => w.status === "pending").length,  color: "#fbbf24" },
+          { label: "Approved", val: workflows.filter(w => w.status === "approved").length, color: "#4ade80" },
+          { label: "Draft",    val: workflows.filter(w => w.status === "draft").length,    color: "#a1a1aa" },
+        ].map(({ label, val, color }) => (
+          <div key={label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color }}>{val}</div>
+          </div>
+        ))}
+      </div>
 
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
-      {/* ── CREATE WORKFLOW ── */}
+      {/* CREATE WORKFLOW */}
       {tab === "create" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
             <div style={S.sectionTitle}>Workflow Details</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Workflow Name *</label>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Blog Post Approval" />
-              </div>
+              {[{ k: "name", label: "Workflow Name *", ph: "e.g. Blog Post Approval" }].map(f => (
+                <div key={f.k}>
+                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>{f.label}</label>
+                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form[f.k]} onChange={e => set(f.k, e.target.value)} placeholder={f.ph} />
+                </div>
+              ))}
               <div>
                 <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Type</label>
-                <select style={{ ...S.select, width: "100%" }} value={form.type} onChange={e => set("type", e.target.value)}>
-                  {WORKFLOW_TYPES.map(t => <option key={t}>{t}</option>)}
-                </select>
+                <select style={{ ...S.select, width: "100%" }} value={form.type} onChange={e => set("type", e.target.value)}>{WORKFLOW_TYPES.map(t => <option key={t}>{t}</option>)}</select>
               </div>
               <div>
                 <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Approval Mode</label>
-                <select style={{ ...S.select, width: "100%" }} value={form.mode} onChange={e => set("mode", e.target.value)}>
-                  {APPROVAL_MODES.map(m => <option key={m}>{m}</option>)}
-                </select>
+                <select style={{ ...S.select, width: "100%" }} value={form.mode} onChange={e => set("mode", e.target.value)}>{APPROVAL_MODES.map(m => <option key={m}>{m}</option>)}</select>
               </div>
               <div>
                 <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Urgency / SLA</label>
-                <select style={{ ...S.select, width: "100%" }} value={form.urgency} onChange={e => set("urgency", e.target.value)}>
-                  {URGENCY.map(u => <option key={u}>{u}</option>)}
-                </select>
+                <select style={{ ...S.select, width: "100%" }} value={form.urgency} onChange={e => set("urgency", e.target.value)}>{URGENCY.map(u => <option key={u}>{u}</option>)}</select>
               </div>
             </div>
-
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Approvers * (names or email, comma-separated)</label>
               <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.approvers} onChange={e => set("approvers", e.target.value)} placeholder="Sarah (Marketing Manager), finance@company.com" />
             </div>
-
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Description</label>
               <textarea style={{ ...S.ta, minHeight: 60 }} value={form.description} onChange={e => set("description", e.target.value)} placeholder="What does this workflow approve and when should it be used?" />
             </div>
-
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Approval Steps (one per line)</label>
               <textarea style={{ ...S.ta, minHeight: 90 }} value={form.steps} onChange={e => set("steps", e.target.value)} placeholder={"Step 1: Creator submits draft\nStep 2: Editor reviews (24h)\nStep 3: Manager approves (24h)\nStep 4: Published"} />
             </div>
-
             <button style={S.btn("primary")} onClick={saveWorkflow} disabled={saving}>{saving ? "Saving…" : "Create Workflow"}</button>
           </div>
         </div>
       )}
 
-      {/* ── ACTIVE WORKFLOWS ── */}
+      {/* ACTIVE WORKFLOWS */}
       {tab === "active" && (
         <div style={{ marginTop: 20 }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
@@ -236,7 +212,6 @@ export default function CollaborationApprovalWorkflows() {
             ))}
             <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadWorkflows}>Refresh</button>
           </div>
-
           {loading ? (
             <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>
           ) : filtered.length === 0 ? (
@@ -274,7 +249,60 @@ export default function CollaborationApprovalWorkflows() {
         </div>
       )}
 
-      {/* ── WORKFLOW TEMPLATES ── */}
+      {/* AI BUILDER */}
+      {tab === "ai" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Describe Your Process</div>
+            <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 14 }}>Tell the AI what needs approval, who should approve it, and any SLA requirements. The AI will design the right workflow structure with steps and approval mode.</p>
+            <textarea style={{ ...S.ta, minHeight: 120 }} value={aiDesc} onChange={e => setAiDesc(e.target.value)} placeholder="e.g. We need a workflow for approving discount codes. Any discount above 20% must be approved by the marketing manager and finance director before it can be published. We need this done within 24 hours…" />
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button style={S.btn("primary")} onClick={() => generateWithAI()} disabled={aiLoading || !aiDesc.trim()}>{aiLoading ? "Designing…" : "AI Design Workflow"}</button>
+              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setAiDesc(""); setAiResult(null); }}>Clear</button>
+            </div>
+          </div>
+
+          {!aiDesc && !aiResult && (
+            <div style={S.card}>
+              <div style={S.sectionTitle}>Example Scenarios — Click to Load</div>
+              {AI_SCENARIOS.map(({ label, desc }) => (
+                <div key={label} style={S.row}>
+                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => { setAiDesc(desc); generateWithAI(desc); }}>Generate</button>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#818cf8", marginBottom: 2 }}>{label}</div>
+                    <div style={{ fontSize: 12, color: "#71717a" }}>{desc.slice(0, 110)}…</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {aiLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
+
+          {aiResult && !aiLoading && (
+            <div style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={S.sectionTitle}>AI-Designed Workflow</div>
+                <button style={S.btn("primary")} onClick={applyAiResult}>Apply to Form →</button>
+              </div>
+              {typeof aiResult === "object" ? (
+                <div>
+                  {Object.entries(aiResult).filter(([k]) => k !== "ok").map(([k, v]) => (
+                    <div key={k} style={S.row}>
+                      <span style={{ fontSize: 11, color: "#52525b", textTransform: "capitalize", minWidth: 90, fontWeight: 700, flexShrink: 0 }}>{k.replace(/([A-Z])/g, " $1").trim()}</span>
+                      <span style={{ fontSize: 13, color: "#a1a1aa" }}>{Array.isArray(v) ? v.map((s, i) => `${i + 1}. ${s}`).join(" · ") : String(v)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <pre style={S.pre}>{String(aiResult)}</pre>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TEMPLATES */}
       {tab === "templates" && (
         <div style={{ marginTop: 20 }}>
           <p style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>Pre-built approval workflows for common business scenarios. Apply a template to auto-fill the creation form.</p>
@@ -303,7 +331,7 @@ export default function CollaborationApprovalWorkflows() {
         </div>
       )}
 
-      {/* ── PROCESS GUIDE ── */}
+      {/* PROCESS GUIDE */}
       {tab === "guide" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
@@ -318,20 +346,16 @@ export default function CollaborationApprovalWorkflows() {
             ].map(({ t, d }) => (
               <div key={t} style={S.row}>
                 <span style={{ color: "#4f46e5", flexShrink: 0 }}>✅</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div>
-                  <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div>
-                </div>
+                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
               </div>
             ))}
           </div>
-
           <div style={S.card}>
             <div style={S.sectionTitle}>Approval Mode Reference</div>
             {[
               { mode: "Single approver",                desc: "One person approves. Fastest. Best for operational decisions where one role owns the outcome." },
               { mode: "Sequential (ordered chain)",     desc: "Each approver must review in order. Best when later approvers depend on earlier feedback (e.g., editor then manager)." },
-              { mode: "Parallel (all must approve)",    desc: "All approvers work simultaneously. Best for cross-functional sign-off where everyone is independent (e.g., Finance + Legal + Marketing)." },
+              { mode: "Parallel (all must approve)",    desc: "All approvers work simultaneously. Best for cross-functional sign-off where everyone is independent." },
               { mode: "Majority vote",                  desc: "More than 50% must approve. Best for committee decisions where one blocker shouldn't stop the whole process." },
               { mode: "Any one of approvers",           desc: "First approver to respond decides. Best for redundancy — ensures approvals don't block when one approver is unavailable." },
             ].map(({ mode, desc }) => (
