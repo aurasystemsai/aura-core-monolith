@@ -1,102 +1,303 @@
-﻿import React, { useState } from "react";
-import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
-import BackButton from "./BackButton";
+﻿import React, { useState, useCallback, useEffect } from "react";
+import { apiFetchJSON } from "../../api";
+import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
+
+const API = "/api/social-media-analytics-listening";
+
+const S = {
+  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
+  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
+  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
+  input: { flex: 1, minWidth: 220, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
+  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
+  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
+  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+  badge: (c) => ({ display: "inline-block", borderRadius: 5, padding: "2px 9px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: c === "pos" ? "#052e16" : c === "neg" ? "#3f1315" : c === "neu" ? "#27272a" : "#1e1b4b", color: c === "pos" ? "#4ade80" : c === "neg" ? "#f87171" : c === "neu" ? "#a1a1aa" : "#818cf8" }),
+};
+
+const TABS = [
+  { id: "listen",    label: "Social Listening" },
+  { id: "saved",     label: "Saved Analyses" },
+  { id: "platforms", label: "Platform Guide" },
+  { id: "strategy",  label: "Content Strategy" },
+];
 
 export default function SocialMediaAnalyticsListening() {
- const [query, setQuery] = useState("");
- const [result, setResult] = useState(null);
- const [loading, setLoading] = useState(false);
- const [error, setError] = useState("");
- const [history, setHistory] = useState([]);
- const [darkMode, setDarkMode] = useState(false);
- const [showOnboarding, setShowOnboarding] = useState(false);
+  const [tab, setTab]         = useState("listen");
+  const [query, setQuery]     = useState("");
+  const [result, setResult]   = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+  const [analyses, setAnalyses] = useState([]);
+  const [history, setHistory]   = useState([]);
 
- const handleAnalyze = async () => {
- setLoading(true);
- setError("");
- setResult(null);
- try {
- const res = await fetch("/api/social-media-analytics-listening/analyze", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ query })
- });
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setResult(data.result);
- setHistory(prev => [{ query, result: data.result }, ...prev].slice(0, 10));
- } catch (err) {
- setError(err.message);
- } finally {
- setLoading(false);
- }
- };
+  const fetchAnalyses = useCallback(async () => {
+    try {
+      const r = await apiFetchJSON(`${API}/analyses`);
+      if (r.ok) setAnalyses(r.analyses || []);
+    } catch {}
+  }, []);
 
- const onboardingContent = (
- <div style={{ padding: 24, background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Social Media Analytics & Listening</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>Analyze brand mentions and sentiment</li>
- <li>Track trends, engagement, and competitors</li>
- <li>Export, share, and review analysis history</li>
- <li>Accessible, secure, and fully compliant</li>
- </ul>
- <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Get Started</button>
- </div>
- );
+  useEffect(() => { fetchAnalyses(); }, [fetchAnalyses]);
 
- return (
- <div style={{
- 
- margin: "40px auto",
- background: darkMode ? "#18181b": "#fff",
- borderRadius: 18,
- boxShadow: "0 2px 24px #0002",
- padding: 36,
- color: darkMode ? "#a3e635": "#09090b",
- fontFamily: 'Inter, sans-serif',
- transition: "background 0.3s, color 0.3s"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Social Media Analytics & Listening</h2>
- <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode"style={{ background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{darkMode ? "Light": "Dark"} Mode</button>
- </div>
- <BackButton />
- <div style={{ marginBottom: 10, color: darkMode ? "#a3e635": "#0ea5e9", fontWeight: 600 }}>
- <span role="img"aria-label="social"></span>Analyze brand mentions, sentiment, and trends.
- </div>
- <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide": "Show"} Onboarding</button>
- {showOnboarding && onboardingContent}
- <input
- value={query}
- onChange={e => setQuery(e.target.value)}
- type="text"style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555": "1px solid #ccc", marginBottom: 18, background: darkMode ? "#09090b": "#fff", color: darkMode ? "#a3e635": "#09090b"}}
- placeholder="Describe your social analytics or listening question..."aria-label="Social analytics query input"/>
- <button onClick={handleAnalyze} disabled={loading || !query} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing...": "Analyze"}</button>
- {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
- {result && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635": "#09090b"}}>
- <div style={{ fontWeight: 600, marginBottom: 4 }}>Analysis Result:</div>
- <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word"}}>{JSON.stringify(result, null, 2)}</pre>
- </div>
- )}
- {history.length > 0 && (
- <div style={{ marginTop: 24, background: darkMode ? "#52525b": "#f4f4f5", borderRadius: 12, padding: 18 }}>
- <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
- <ul style={{ paddingLeft: 18 }}>
- {history.map((h, i) => (
- <li key={i} style={{ marginBottom: 10 }}>
- <div><b>Query:</b> {h.query}</div>
- <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "...": ""}</div>
- </li>
- ))}
- </ul>
- </div>
- )}
- <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635": "#71717a", textAlign: "center"}}>
- <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai"style={{ color: darkMode ? "#a3e635": "#0ea5e9", textDecoration: "underline"}}>Contact Support</a></span>
- </div>
- </div>
- );
+  const analyze = async () => {
+    if (!query.trim()) return;
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetchJSON(`${API}/ai/analyze`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      if (!r.ok) throw new Error(r.error || "Analysis failed");
+      setResult(r.analysis || r.result || "");
+      setHistory(p => [{ query, result: r.analysis || r.result, ts: new Date().toISOString() }, ...p].slice(0, 10));
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  const saveAnalysis = async () => {
+    if (!result || !query) return;
+    try {
+      await apiFetchJSON(`${API}/analyses`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, result }),
+      });
+      fetchAnalyses();
+    } catch {}
+  };
+
+  const deleteAnalysis = async (id) => {
+    try { await apiFetchJSON(`${API}/analyses/${id}`, { method: "DELETE" }); fetchAnalyses(); } catch {}
+  };
+
+  const SUGGESTED_QUERIES = [
+    "Analyse Instagram engagement trends for beauty brands in 2024 — what content formats are outperforming?",
+    "What are the best-performing TikTok content types for e-commerce stores selling fitness products?",
+    "Compare organic vs paid social performance benchmarks for Shopify stores",
+    "What hashtag strategies are working for small fashion brands on Instagram?",
+    "How should a Shopify home decor brand use Pinterest to drive organic traffic?",
+  ];
+
+  return (
+    <div style={S.page}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Social Media Analytics & Listening</h1>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>AI-powered social intelligence — analyse brand mentions, sentiment trends, platform performance, competitor activity, and content strategy for your Shopify store across all major social platforms.</p>
+      </div>
+
+      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+
+      <ErrorBox message={error} />
+
+      {/* LISTENING */}
+      {tab === "listen" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Ask a Social Media Question</div>
+            <textarea style={{ ...S.ta, minHeight: 120, marginBottom: 10 }} value={query} onChange={e => setQuery(e.target.value)} placeholder="E.g. 'Analyse social listening for [brand], identify key sentiment drivers, top platforms, trending topics, competitor share of voice…'" />
+            <div style={{ display: "flex", gap: 8 }}>
+              <button style={S.btn("primary")} onClick={analyze} disabled={loading || !query.trim()}>{loading ? "Analysing…" : "Analyse"}</button>
+              {result && <button style={{ ...S.btn("green"), fontSize: 11, padding: "6px 12px" }} onClick={saveAnalysis}>Save Analysis</button>}
+            </div>
+          </div>
+
+          {/* Suggested queries */}
+          {!result && !loading && (
+            <div style={S.card}>
+              <div style={S.sectionTitle}>Suggested Queries</div>
+              {SUGGESTED_QUERIES.map((q, i) => (
+                <div key={i} style={S.row}>
+                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => setQuery(q)}>Use</button>
+                  <span style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.5 }}>{q}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {loading && <div style={{ textAlign: "center", padding: 40 }}><Spinner size={36} /><div style={{ color: "#71717a", marginTop: 12, fontSize: 13 }}>Analysing social media data…</div></div>}
+
+          {result && !loading && (
+            <div style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={S.sectionTitle}>Analysis Result</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(typeof result === "string" ? result : JSON.stringify(result, null, 2))}>Copy</button>
+                  <button style={{ ...S.btn("green"), fontSize: 11, padding: "5px 10px" }} onClick={saveAnalysis}>Save</button>
+                </div>
+              </div>
+              <pre style={S.pre}>{typeof result === "string" ? result : JSON.stringify(result, null, 2)}</pre>
+            </div>
+          )}
+
+          {history.length > 0 && (
+            <div style={S.card}>
+              <div style={S.sectionTitle}>Recent Queries</div>
+              {history.map((h, i) => (
+                <div key={i} style={{ ...S.row, alignItems: "center" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, color: "#e4e4e7" }}>{h.query.slice(0, 100)}{h.query.length > 100 ? "…" : ""}</div>
+                    <div style={{ fontSize: 11, color: "#52525b" }}>{new Date(h.ts).toLocaleString()}</div>
+                  </div>
+                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(h.query); setResult(h.result); }}>Load</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* SAVED */}
+      {tab === "saved" && (
+        <div style={{ marginTop: 20 }}>
+          {analyses.length === 0 ? (
+            <EmptyState icon="💾" title="No saved analyses yet" description="Run an analysis and click 'Save' to keep it here for reference." />
+          ) : (
+            <div style={S.card}>
+              <div style={S.sectionTitle}>Saved Analyses ({analyses.length})</div>
+              {analyses.map((a, i) => (
+                <div key={i} style={{ ...S.row, alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7", marginBottom: 2 }}>{a.query?.slice(0, 80) || `Analysis #${i + 1}`}</div>
+                    <div style={{ fontSize: 12, color: "#71717a" }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}</div>
+                    {a.result && <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4, lineHeight: 1.5 }}>{String(a.result).slice(0, 150)}{String(a.result).length > 150 ? "…" : ""}</div>}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(a.query || ""); setResult(a.result); setTab("listen"); }}>View</button>
+                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteAnalysis(a.id)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* PLATFORM GUIDE */}
+      {tab === "platforms" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+            {[
+              {
+                platform: "Instagram",
+                icon: "📸",
+                bestFor: "Visual products, lifestyle, fashion, beauty",
+                topFormats: ["Reels (highest reach)", "Stories (engagement)", "Carousels (saves)"],
+                postFreq: "4-7× per week",
+                bestTime: "Tues-Fri 9am-11am local",
+                engBenchmark: "1-5% (Reels can hit 10%+)",
+              },
+              {
+                platform: "TikTok",
+                icon: "🎵",
+                bestFor: "Viral reach, Gen Z/Millennial, demos, unboxing",
+                topFormats: ["Short tutorials (15-60s)", "Behind the scenes", "Trending sounds"],
+                postFreq: "1-3× per day",
+                bestTime: "6-10pm local",
+                engBenchmark: "3-9% average",
+              },
+              {
+                platform: "Pinterest",
+                icon: "📌",
+                bestFor: "Home decor, fashion, food, DIY, evergreen content",
+                topFormats: ["Idea Pins", "Rich Pins with product data", "Infographics"],
+                postFreq: "15-25 pins/day",
+                bestTime: "8-11pm local",
+                engBenchmark: "Impressions > saves > clicks",
+              },
+              {
+                platform: "Facebook",
+                icon: "👥",
+                bestFor: "35+ demographic, community building, ads",
+                topFormats: ["Videos (native)", "Facebook Live", "Groups", "Reels"],
+                postFreq: "1-2× per day",
+                bestTime: "1-4pm Wed/Thur",
+                engBenchmark: "0.5-2% organic",
+              },
+              {
+                platform: "Twitter/X",
+                icon: "🐦",
+                bestFor: "Brand voice, customer service, trending topics",
+                topFormats: ["Threads", "Polls", "Real-time commentary"],
+                postFreq: "3-5× per day",
+                bestTime: "Weekdays 8am-4pm",
+                engBenchmark: "0.02-0.09%",
+              },
+              {
+                platform: "YouTube",
+                icon: "▶️",
+                bestFor: "Long-form education, product reviews, brand authority",
+                topFormats: ["How-to (10+ min)", "Product reviews", "Shorts"],
+                postFreq: "1-2× per week",
+                bestTime: "Thur/Fri afternoons",
+                engBenchmark: "4-6% likes to views",
+              },
+            ].map(({ platform, icon, bestFor, topFormats, postFreq, bestTime, engBenchmark }) => (
+              <div key={platform} style={S.card}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 22 }}>{icon}</span>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fafafa" }}>{platform}</div>
+                </div>
+                <div style={{ fontSize: 12, color: "#71717a", marginBottom: 10 }}><strong style={{ color: "#a1a1aa" }}>Best for:</strong> {bestFor}</div>
+                <div style={{ marginBottom: 8 }}>
+                  <div style={S.sectionTitle}>Top Formats</div>
+                  {topFormats.map(f => <div key={f} style={{ fontSize: 12, color: "#e4e4e7", padding: "3px 0" }}>• {f}</div>)}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+                  <div style={{ background: "#09090b", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10, color: "#52525b", textTransform: "uppercase" }}>Post Freq.</div>
+                    <div style={{ fontSize: 12, color: "#4f46e5", fontWeight: 700 }}>{postFreq}</div>
+                  </div>
+                  <div style={{ background: "#09090b", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10, color: "#52525b", textTransform: "uppercase" }}>Eng. Rate</div>
+                    <div style={{ fontSize: 12, color: "#4ade80", fontWeight: 700 }}>{engBenchmark}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* STRATEGY */}
+      {tab === "strategy" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Social Content Pillars for E-Commerce</div>
+            {[
+              { pillar: "Education (30%)", d: "How-to videos, product guides, tips and tricks. Builds authority and saves/shares. E.g. '5 ways to style our linen shirt'." },
+              { pillar: "Inspiration (25%)", d: "Lifestyle imagery, aspirational content, user scenarios. High engagement, drives desire. E.g. beautiful product-in-context photography." },
+              { pillar: "Entertainment (20%)", d: "Trending formats, relatable content, brand personality. Drives new followers and shares. E.g. joining relevant TikTok trends." },
+              { pillar: "Social Proof (15%)", d: "Customer reviews, UGC reposts, before/after content. Builds trust and drives conversions. E.g. resharing tagged customer posts." },
+              { pillar: "Promotion (10%)", d: "Product launches, sales, discounts, events. Keep promotional content to max 10% to avoid audience fatigue." },
+            ].map(({ pillar, d }) => (
+              <div key={pillar} style={S.row}>
+                <div style={{ minWidth: 160, fontWeight: 700, fontSize: 13, color: "#e4e4e7" }}>{pillar}</div>
+                <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{d}</div>
+              </div>
+            ))}
+          </div>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Social Listening KPIs to Track Weekly</div>
+            {[
+              ["Brand mention volume",    "Total mentions across all platforms", "#4f46e5"],
+              ["Net Sentiment Score",     "% positive − % negative mentions",    "#4ade80"],
+              ["Share of Voice",          "Your mentions ÷ industry total × 100", "#818cf8"],
+              ["Engagement Rate",         "Interactions ÷ reach × 100",           "#0ea5e9"],
+              ["Response Time",           "Avg time to respond to mentions",      "#fbbf24"],
+              ["Virality Rate",           "Shares ÷ impressions × 100",           "#f87171"],
+            ].map(([kpi, def, color]) => (
+              <div key={kpi} style={{ ...S.row, alignItems: "center" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{kpi}</div>
+                  <div style={{ fontSize: 12, color: "#71717a" }}>{def}</div>
+                </div>
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
-
-
