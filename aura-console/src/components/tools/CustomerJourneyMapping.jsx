@@ -174,25 +174,3 @@ export default function CustomerJourneyMapping() {
     </div>
   );
 }
-
- return (
- <div style={S.page}>
- <div style={S.card}>
- <h2 style={S.title}>Customer Journey Mapping</h2>
- <p style={S.desc}>
- Visualize and optimize every step of your customer\u2019s experience from
- first touch to loyal advocate.
- </p>
- <span style={S.badge}>Coming Soon</span>
- <ul style={S.list}>
- {FEATURES.map((f) => (
- <li key={f} style={S.item}>
- {f}
- </li>
- ))}
- </ul>
- </div>
- </div>
- );
-}
-

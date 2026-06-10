@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { apiFetchJSON } from "../../api";
 import { MozTabs, MozCard, ScoreRing, MetricRow, SortableTable, ErrorBox, EmptyState, Spinner } from "../MozUI";
 
@@ -25,10 +25,10 @@ function CheckRow({ label, value, status, detail }) {
   return (
     <div>
       <div style={S.row}>
-        <span style={{ ...S.badge(status), flexShrink: 0, marginTop: 1 }}>{status === "pass" ? "✓" : status === "fail" ? "✗" : "!"}</span>
+        <span style={{ ...S.badge(status), flexShrink: 0, marginTop: 1 }}>{status === "pass" ? "âœ“" : status === "fail" ? "âœ—" : "!"}</span>
         <span style={{ flex: 1, color: "#e4e4e7" }}>{label}</span>
         <span style={{ color: "#a1a1aa", fontSize: 12, maxWidth: 280, textAlign: "right", wordBreak: "break-word" }}>{value}</span>
-        {detail && <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 14, padding: 0, flexShrink: 0 }}>{open ? "▲" : "▼"}</button>}
+        {detail && <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 14, padding: 0, flexShrink: 0 }}>{open ? "â–²" : "â–¼"}</button>}
       </div>
       {open && detail && <div style={{ padding: "8px 12px 8px 32px", background: "#0d0d10", fontSize: 12, color: "#a1a1aa", lineHeight: 1.6, borderBottom: "1px solid #1f1f22" }}>{detail}</div>}
     </div>
@@ -44,13 +44,13 @@ function CWVGauge({ label, value, unit, thresholds, description }) {
     <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 12, padding: "16px 20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: "#71717a" }}>{label}</span>
-        <span style={{ fontSize: 24, fontWeight: 800, color: colors[status] }}>{value != null ? `${value}${unit}` : "—"}</span>
+        <span style={{ fontSize: 24, fontWeight: 800, color: colors[status] }}>{value != null ? `${value}${unit}` : "â€”"}</span>
       </div>
       <div style={{ height: 8, borderRadius: 4, background: "#27272a", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: colors[status], transition: "width 0.6s" }} />
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-        <span style={{ fontSize: 10, color: "#22c55e" }}>Good ≤{good}{unit}</span>
+        <span style={{ fontSize: 10, color: "#22c55e" }}>Good â‰¤{good}{unit}</span>
         <span style={{ fontSize: 10, color: colors[status], fontWeight: 700, textTransform: "uppercase" }}>{status === "unknown" ? "No data" : status === "good" ? "Good" : status === "needs" ? "Needs Work" : "Poor"}</span>
         <span style={{ fontSize: 10, color: "#ef4444" }}>Poor >{poor}{unit}</span>
       </div>
@@ -66,12 +66,12 @@ function IssueCard({ sev, title, detail, fix }) {
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <span style={S.badge(sev === "critical" ? "fail" : sev === "warning" ? "warn" : "info")}>{sev}</span>
         <span style={{ fontWeight: 700, fontSize: 13, color: "#e4e4e7", flex: 1 }}>{title}</span>
-        <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 13 }}>{open ? "▲" : "▼"}</button>
+        <button onClick={() => setOpen(o => !o)} style={{ background: "none", border: "none", color: "#52525b", cursor: "pointer", fontSize: 13 }}>{open ? "â–²" : "â–¼"}</button>
       </div>
       {open && (
         <div style={{ marginTop: 8 }}>
           <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.6, marginBottom: fix ? 8 : 0 }}>{detail}</div>
-          {fix && <div style={{ fontSize: 13, color: "#818cf8", fontWeight: 600 }}>→ Fix: {fix}</div>}
+          {fix && <div style={{ fontSize: 13, color: "#818cf8", fontWeight: 600 }}>â†’ Fix: {fix}</div>}
         </div>
       )}
     </div>
@@ -135,13 +135,13 @@ export default function TechnicalSEOAuditor() {
     try {
       log("Starting comprehensive audit...");
       const [main, cwv, crawl, img, schm, sitemap, mob] = await Promise.allSettled([
-        apiFetchJSON(`${API}/ai/audit`, body({})).then(r => { log("✓ AI audit complete"); return r; }),
-        apiFetchJSON(`${API}/cwv-assess`, body({})).then(r => { log("✓ Core Web Vitals assessed"); return r; }),
-        apiFetchJSON(`${API}/crawl-audit`, body({})).then(r => { log("✓ Crawlability checked"); return r; }),
-        apiFetchJSON(`${API}/image-audit`, body({})).then(r => { log("✓ Image audit done"); return r; }),
-        apiFetchJSON(`${API}/schema-validate`, body({})).then(r => { log("✓ Schema validated"); return r; }),
-        apiFetchJSON(`${API}/sitemap-hreflang`, body({})).then(r => { log("✓ Sitemap/hreflang checked"); return r; }),
-        apiFetchJSON(`${API}/mobile-check`, body({})).then(r => { log("✓ Mobile check done"); return r; }),
+        apiFetchJSON(`${API}/ai/audit`, body({})).then(r => { log("âœ“ AI audit complete"); return r; }),
+        apiFetchJSON(`${API}/cwv-assess`, body({})).then(r => { log("âœ“ Core Web Vitals assessed"); return r; }),
+        apiFetchJSON(`${API}/crawl-audit`, body({})).then(r => { log("âœ“ Crawlability checked"); return r; }),
+        apiFetchJSON(`${API}/image-audit`, body({})).then(r => { log("âœ“ Image audit done"); return r; }),
+        apiFetchJSON(`${API}/schema-validate`, body({})).then(r => { log("âœ“ Schema validated"); return r; }),
+        apiFetchJSON(`${API}/sitemap-hreflang`, body({})).then(r => { log("âœ“ Sitemap/hreflang checked"); return r; }),
+        apiFetchJSON(`${API}/mobile-check`, body({})).then(r => { log("âœ“ Mobile check done"); return r; }),
       ]);
 
       if (main.status === "fulfilled" && main.value?.ok) setMainAudit(main.value);
@@ -192,12 +192,12 @@ export default function TechnicalSEOAuditor() {
   const hasResults = !!mainAudit;
 
   const actionItems = [];
-  if (pd.title === "missing" || !pd.title) actionItems.push({ sev: "critical", title: "Missing page title", detail: "The page has no <title> tag. Titles are critical for ranking and CTR.", fix: "Add a unique, descriptive <title> tag between 50–60 characters." });
-  if (!pd.https) actionItems.push({ sev: "critical", title: "Site not on HTTPS", detail: "HTTPS is a confirmed Google ranking signal and required for Shopify checkout security.", fix: "Enable SSL in Shopify Settings → Domains." });
+  if (pd.title === "missing" || !pd.title) actionItems.push({ sev: "critical", title: "Missing page title", detail: "The page has no <title> tag. Titles are critical for ranking and CTR.", fix: "Add a unique, descriptive <title> tag between 50â€“60 characters." });
+  if (!pd.https) actionItems.push({ sev: "critical", title: "Site not on HTTPS", detail: "HTTPS is a confirmed Google ranking signal and required for Shopify checkout security.", fix: "Enable SSL in Shopify Settings â†’ Domains." });
   if (!pd.hasCanonical) actionItems.push({ sev: "warning", title: "No canonical tag", detail: "Without a canonical, Google may index duplicate URLs independently.", fix: "Add <link rel='canonical' href='...'> to all pages." });
   if (!pd.hasViewport) actionItems.push({ sev: "critical", title: "No viewport meta tag", detail: "Missing viewport breaks mobile rendering and Google's Mobile-First Index.", fix: "Add <meta name='viewport' content='width=device-width, initial-scale=1'>." });
-  if (!pd.hasSchema) actionItems.push({ sev: "warning", title: "No structured data", detail: "Structured data enables rich results in Google — reviews, prices, FAQs.", fix: "Add JSON-LD schema markup using the Schema Rich Results Engine." });
-  if (pd.metaDescription === "missing" || !pd.metaDescription) actionItems.push({ sev: "warning", title: "Missing meta description", detail: "Google uses meta descriptions for snippet text and they influence CTR.", fix: "Write a compelling 150–160 character meta description for each page." });
+  if (!pd.hasSchema) actionItems.push({ sev: "warning", title: "No structured data", detail: "Structured data enables rich results in Google â€” reviews, prices, FAQs.", fix: "Add JSON-LD schema markup using the Schema Rich Results Engine." });
+  if (pd.metaDescription === "missing" || !pd.metaDescription) actionItems.push({ sev: "warning", title: "Missing meta description", detail: "Google uses meta descriptions for snippet text and they influence CTR.", fix: "Write a compelling 150â€“160 character meta description for each page." });
   if (pd.pageSizeKB > 1000) actionItems.push({ sev: "warning", title: `Large page size (${pd.pageSizeKB}KB)`, detail: "Pages over 1MB take longer to load, hurting rankings and conversions.", fix: "Minimise HTML, compress images, defer non-critical scripts." });
   if (pd.inlineStyles > 20) actionItems.push({ sev: "warning", title: `High inline styles count (${pd.inlineStyles})`, detail: "Excessive inline styles bloat HTML and prevent CSS caching.", fix: "Move styles to external CSS files." });
   if (cwvData && cwvData.lcp > 2.5) actionItems.push({ sev: cwvData.lcp > 4 ? "critical" : "warning", title: `Slow LCP: ${cwvData.lcp}s`, detail: "Largest Contentful Paint is a Core Web Vitals metric. LCP > 4s = Poor.", fix: "Optimise hero images, use a CDN, preload critical assets." });
@@ -214,10 +214,10 @@ export default function TechnicalSEOAuditor() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={S.title}>Technical SEO Auditor</h1>
-        <p style={S.sub}>Comprehensive technical SEO analysis — Core Web Vitals, crawlability, on-page, images, schema &amp; mobile. Screaming Frog–level depth, AI-powered.</p>
+        <p style={S.sub}>Comprehensive technical SEO analysis â€” Core Web Vitals, crawlability, on-page, images, schema &amp; mobile. Screaming Frogâ€“level depth, AI-powered.</p>
         <div style={S.inputRow}>
           <input style={S.input} value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && runAudit()} placeholder="https://yourstore.myshopify.com" />
-          <button style={S.btn("primary")} onClick={runAudit} disabled={running}>{running ? "Auditing…" : "Run Full Audit"}</button>
+          <button style={S.btn("primary")} onClick={runAudit} disabled={running}>{running ? "Auditingâ€¦" : "Run Full Audit"}</button>
           {hasResults && <button style={S.btn()} onClick={exportReport}>Export JSON</button>}
         </div>
         {running && (
@@ -232,7 +232,7 @@ export default function TechnicalSEOAuditor() {
       {notify && <div style={{ background: "#052e16", border: "1px solid #166534", borderRadius: 8, padding: "8px 16px", fontSize: 13, color: "#4ade80", marginBottom: 12 }}>{notify}</div>}
 
       {!hasResults && !running && (
-        <EmptyState icon="🔬" title="Run a full technical audit" description="Enter your Shopify store URL above to scan for crawl errors, Core Web Vitals issues, broken images, missing schema, mobile problems, and 50+ other technical SEO checks." />
+        <EmptyState icon="ðŸ”¬" title="Run a full technical audit" description="Enter your Shopify store URL above to scan for crawl errors, Core Web Vitals issues, broken images, missing schema, mobile problems, and 50+ other technical SEO checks." />
       )}
 
       {hasResults && (
@@ -244,7 +244,7 @@ export default function TechnicalSEOAuditor() {
             <div style={{ marginTop: 20 }}>
               <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 20 }}>
                 <div style={{ ...S.card, textAlign: "center", minWidth: 160 }}>
-                  <div style={{ fontSize: 64, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{healthScore ?? "—"}</div>
+                  <div style={{ fontSize: 64, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{healthScore ?? "â€”"}</div>
                   <div style={{ fontSize: 13, color: "#71717a", marginTop: 4 }}>Health Score</div>
                   <div style={{ height: 8, background: "#27272a", borderRadius: 4, overflow: "hidden", marginTop: 12 }}>
                     <div style={{ height: "100%", width: `${healthScore ?? 0}%`, background: scoreColor, borderRadius: 4, transition: "width 0.6s" }} />
@@ -260,10 +260,10 @@ export default function TechnicalSEOAuditor() {
                       { label: "Title", value: pd.title ? `${pd.title.length} chars` : "Missing", ok: !!pd.title },
                       { label: "Meta Desc", value: pd.metaDescription ? `${pd.metaDescription.length} chars` : "Missing", ok: !!pd.metaDescription },
                       { label: "H1 Tag", value: pd.h1 || "Missing", ok: !!pd.h1 },
-                      { label: "Page Size", value: pd.pageSizeKB ? `${pd.pageSizeKB} KB` : "—", ok: pd.pageSizeKB < 1000 },
-                      { label: "Images", value: pd.imageCount ?? "—", ok: true },
-                      { label: "Images w/ Alt", value: pd.imagesWithAlt != null ? `${pd.imagesWithAlt}/${pd.imageCount}` : "—", ok: pd.imagesWithAlt === pd.imageCount },
-                      { label: "HTTP Status", value: pd.statusCode || "—", ok: pd.statusCode === 200 },
+                      { label: "Page Size", value: pd.pageSizeKB ? `${pd.pageSizeKB} KB` : "â€”", ok: pd.pageSizeKB < 1000 },
+                      { label: "Images", value: pd.imageCount ?? "â€”", ok: true },
+                      { label: "Images w/ Alt", value: pd.imagesWithAlt != null ? `${pd.imagesWithAlt}/${pd.imageCount}` : "â€”", ok: pd.imagesWithAlt === pd.imageCount },
+                      { label: "HTTP Status", value: pd.statusCode || "â€”", ok: pd.statusCode === 200 },
                       { label: "Sitemap", value: pd.hasSitemap ? "Found" : "Not found", ok: pd.hasSitemap },
                     ].map(({ label, value, ok }) => (
                       <div key={label} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -308,7 +308,7 @@ export default function TechnicalSEOAuditor() {
               {auditText && (
                 <div style={{ ...S.card, marginTop: 16 }}>
                   <div style={S.sectionTitle}>AI Analysis</div>
-                  <div style={{ fontSize: 13, lineHeight: 1.8, color: "#e4e4e7", whiteSpace: "pre-wrap" }}>{auditText.slice(0, 2000)}{auditText.length > 2000 ? "\n\n[…see full report in individual tabs]" : ""}</div>
+                  <div style={{ fontSize: 13, lineHeight: 1.8, color: "#e4e4e7", whiteSpace: "pre-wrap" }}>{auditText.slice(0, 2000)}{auditText.length > 2000 ? "\n\n[â€¦see full report in individual tabs]" : ""}</div>
                 </div>
               )}
 
@@ -330,18 +330,18 @@ export default function TechnicalSEOAuditor() {
           {tab === "cwv" && (
             <div style={{ marginTop: 20 }}>
               <div style={S.card}>
-                <div style={S.sectionTitle}>Core Web Vitals — Google Page Experience Signals</div>
+                <div style={S.sectionTitle}>Core Web Vitals â€” Google Page Experience Signals</div>
                 <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 20 }}>CWV are direct Google ranking factors (since 2021). All three metrics (LCP, INP, CLS) must score "Good" to pass the Page Experience assessment.</p>
                 {cwvData ? (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 16 }}>
-                    <CWVGauge label="Largest Contentful Paint (LCP)" value={cwvData.lcp} unit="s" thresholds={[2.5, 4]} description="Measures loading performance. Should be ≤ 2.5s for the main page content to render." />
+                    <CWVGauge label="Largest Contentful Paint (LCP)" value={cwvData.lcp} unit="s" thresholds={[2.5, 4]} description="Measures loading performance. Should be â‰¤ 2.5s for the main page content to render." />
                     <CWVGauge label="Interaction to Next Paint (INP)" value={cwvData.inp} unit="ms" thresholds={[200, 500]} description="Measures overall responsiveness. Replaced FID in March 2024 as a Core Web Vital." />
                     <CWVGauge label="Cumulative Layout Shift (CLS)" value={cwvData.cls} unit="" thresholds={[0.1, 0.25]} description="Measures visual stability. Unexpected layout shifts frustrate users and hurt conversions." />
                     <CWVGauge label="First Contentful Paint (FCP)" value={cwvData.fcp} unit="s" thresholds={[1.8, 3]} description="First rendering of any DOM content (text, image, canvas, SVG)." />
                     <CWVGauge label="Time to First Byte (TTFB)" value={cwvData.ttfb} unit="ms" thresholds={[800, 1800]} description="Server response time before the browser receives the first byte of content." />
                     <CWVGauge label="Total Blocking Time (TBT)" value={cwvData.tbt} unit="ms" thresholds={[200, 600]} description="Sum of blocking periods between FCP and TTI. Lab proxy for INP." />
                   </div>
-                ) : <EmptyState icon="⚡" title="No CWV data" description="Run the audit from Overview to assess Core Web Vitals." />}
+                ) : <EmptyState icon="âš¡" title="No CWV data" description="Run the audit from Overview to assess Core Web Vitals." />}
 
                 {cwvData?.report && (
                   <div style={{ ...S.pre, marginTop: 20 }}>{cwvData.report}</div>
@@ -379,17 +379,17 @@ export default function TechnicalSEOAuditor() {
                     { label: "Has sitemap.xml", value: pd.hasSitemap ? "Found" : "Not detected", status: pd.hasSitemap ? "pass" : "warn", detail: "A sitemap helps Google discover and crawl all your pages efficiently." },
                     { label: "Canonical tag", value: pd.hasCanonical ? "Present" : "Missing", status: pd.hasCanonical ? "pass" : "warn", detail: "Canonical tags prevent duplicate content issues from URL parameters and pagination." },
                     { label: "Meta robots", value: pd.hasRobotsMeta ? "Present" : "Not found", status: pd.hasRobotsMeta ? "pass" : "info", detail: "Meta robots can control indexability per-page. Ensure pages you want indexed don't have noindex." },
-                    { label: "HTTP status", value: String(pd.statusCode || "—"), status: pd.statusCode === 200 ? "pass" : "fail", detail: "Pages must return 200 OK. Redirect chains or 4xx/5xx errors block indexing." },
+                    { label: "HTTP status", value: String(pd.statusCode || "â€”"), status: pd.statusCode === 200 ? "pass" : "fail", detail: "Pages must return 200 OK. Redirect chains or 4xx/5xx errors block indexing." },
                   ].map(c => <CheckRow key={c.label} {...c} />)}
                 </div>
                 <div style={{ marginTop: 20 }}>
                   <div style={S.sectionTitle}>Shopify Crawl Budget Tips</div>
                   {[
                     "Block /collections?sort_by=, ?variant=, and ?page= parameters in robots.txt to save crawl budget.",
-                    "Use canonical tags on all paginated collection pages (page 2, 3, …) pointing to page 1.",
-                    "Shopify auto-generates /products/ and /collections/ duplicates — use canonical to consolidate.",
+                    "Use canonical tags on all paginated collection pages (page 2, 3, â€¦) pointing to page 1.",
+                    "Shopify auto-generates /products/ and /collections/ duplicates â€” use canonical to consolidate.",
                     "Ensure your sitemap.xml excludes noindex pages. Shopify may include 404 redirects.",
-                    "Check for orphan pages (not linked from navigation or internal links) — Googlebot may not find them.",
+                    "Check for orphan pages (not linked from navigation or internal links) â€” Googlebot may not find them.",
                     "Limit redirects to 1 hop maximum. Redirect chains waste crawl budget.",
                   ].map((tip, i) => (
                     <div key={i} style={{ ...S.row }}>
@@ -414,20 +414,20 @@ export default function TechnicalSEOAuditor() {
               <div style={S.card}>
                 <div style={S.sectionTitle}>Title &amp; Meta Tags</div>
                 {[
-                  { label: "Page Title", value: pd.title || "Missing", status: pd.title ? (pd.title.length < 10 ? "warn" : pd.title.length > 70 ? "warn" : "pass") : "fail", detail: `Current length: ${pd.title?.length ?? 0} chars. Ideal: 50–60 chars. Google truncates at ~580px width.` },
-                  { label: "Meta Description", value: pd.metaDescription || "Missing", status: pd.metaDescription ? (pd.metaDescription.length < 120 ? "warn" : pd.metaDescription.length > 160 ? "warn" : "pass") : "warn", detail: `Current length: ${pd.metaDescription?.length ?? 0} chars. Ideal: 140–160 chars.` },
+                  { label: "Page Title", value: pd.title || "Missing", status: pd.title ? (pd.title.length < 10 ? "warn" : pd.title.length > 70 ? "warn" : "pass") : "fail", detail: `Current length: ${pd.title?.length ?? 0} chars. Ideal: 50â€“60 chars. Google truncates at ~580px width.` },
+                  { label: "Meta Description", value: pd.metaDescription || "Missing", status: pd.metaDescription ? (pd.metaDescription.length < 120 ? "warn" : pd.metaDescription.length > 160 ? "warn" : "pass") : "warn", detail: `Current length: ${pd.metaDescription?.length ?? 0} chars. Ideal: 140â€“160 chars.` },
                   { label: "H1 Tag", value: pd.h1 || "Missing", status: pd.h1 ? "pass" : "fail", detail: "Each page should have exactly one H1. It's the primary topic signal to search engines." },
-                  { label: "H2 Count", value: String(pd.h2Count ?? "—"), status: pd.h2Count > 0 ? "pass" : "warn", detail: "H2s structure your content. Each H2 should target a semantic sub-topic." },
-                  { label: "H3 Count", value: String(pd.h3Count ?? "—"), status: "info", detail: "H3s provide additional content hierarchy. Use for FAQ and step-by-step content." },
+                  { label: "H2 Count", value: String(pd.h2Count ?? "â€”"), status: pd.h2Count > 0 ? "pass" : "warn", detail: "H2s structure your content. Each H2 should target a semantic sub-topic." },
+                  { label: "H3 Count", value: String(pd.h3Count ?? "â€”"), status: "info", detail: "H3s provide additional content hierarchy. Use for FAQ and step-by-step content." },
                 ].map(c => <CheckRow key={c.label} {...c} />)}
               </div>
               <div style={S.card}>
                 <div style={S.sectionTitle}>Content Quality Signals</div>
                 {[
-                  { label: "Inline Styles Count", value: String(pd.inlineStyles ?? "—"), status: pd.inlineStyles > 20 ? "warn" : "pass", detail: "High inline style count bloats HTML and makes caching less efficient." },
-                  { label: "Image Count", value: String(pd.imageCount ?? "—"), status: "info", detail: "Total images detected on page." },
-                  { label: "Images with Alt", value: pd.imagesWithAlt != null ? `${pd.imagesWithAlt} / ${pd.imageCount}` : "—", status: pd.imagesWithAlt === pd.imageCount ? "pass" : pd.imagesWithAlt > 0 ? "warn" : "fail", detail: "All images should have descriptive alt attributes for accessibility and image SEO." },
-                  { label: "Page HTML Size", value: pd.pageSizeKB ? `${pd.pageSizeKB} KB` : "—", status: pd.pageSizeKB < 500 ? "pass" : pd.pageSizeKB < 1000 ? "warn" : "fail", detail: "Large HTML payload increases load time. Ideal: under 500KB total HTML." },
+                  { label: "Inline Styles Count", value: String(pd.inlineStyles ?? "â€”"), status: pd.inlineStyles > 20 ? "warn" : "pass", detail: "High inline style count bloats HTML and makes caching less efficient." },
+                  { label: "Image Count", value: String(pd.imageCount ?? "â€”"), status: "info", detail: "Total images detected on page." },
+                  { label: "Images with Alt", value: pd.imagesWithAlt != null ? `${pd.imagesWithAlt} / ${pd.imageCount}` : "â€”", status: pd.imagesWithAlt === pd.imageCount ? "pass" : pd.imagesWithAlt > 0 ? "warn" : "fail", detail: "All images should have descriptive alt attributes for accessibility and image SEO." },
+                  { label: "Page HTML Size", value: pd.pageSizeKB ? `${pd.pageSizeKB} KB` : "â€”", status: pd.pageSizeKB < 500 ? "pass" : pd.pageSizeKB < 1000 ? "warn" : "fail", detail: "Large HTML payload increases load time. Ideal: under 500KB total HTML." },
                 ].map(c => <CheckRow key={c.label} {...c} />)}
               </div>
               <div style={S.card}>
@@ -443,7 +443,7 @@ export default function TechnicalSEOAuditor() {
                   { label: "Internal links from blog posts to product/collection pages", check: null },
                 ].map(({ label, check }) => (
                   <div key={label} style={S.row}>
-                    <span style={S.badge(check === true ? "pass" : check === false ? "fail" : "info")}>{check === true ? "✓" : check === false ? "✗" : "?"}</span>
+                    <span style={S.badge(check === true ? "pass" : check === false ? "fail" : "info")}>{check === true ? "âœ“" : check === false ? "âœ—" : "?"}</span>
                     <span style={{ fontSize: 13, color: "#e4e4e7" }}>{label}</span>
                   </div>
                 ))}
@@ -460,22 +460,22 @@ export default function TechnicalSEOAuditor() {
                   <div style={S.pre}>{imageData.report}</div>
                 ) : (
                   <div style={{ marginBottom: 16 }}>
-                    <CheckRow label="Total Images" value={String(pd.imageCount ?? "—")} status="info" detail="All img elements found on the page." />
-                    <CheckRow label="Images with Alt Text" value={pd.imagesWithAlt != null ? `${pd.imagesWithAlt} / ${pd.imageCount}` : "—"} status={pd.imagesWithAlt === pd.imageCount ? "pass" : "warn"} detail="Missing alt text harms both accessibility and image search ranking." />
+                    <CheckRow label="Total Images" value={String(pd.imageCount ?? "â€”")} status="info" detail="All img elements found on the page." />
+                    <CheckRow label="Images with Alt Text" value={pd.imagesWithAlt != null ? `${pd.imagesWithAlt} / ${pd.imageCount}` : "â€”"} status={pd.imagesWithAlt === pd.imageCount ? "pass" : "warn"} detail="Missing alt text harms both accessibility and image search ranking." />
                   </div>
                 )}
                 <div style={S.sectionTitle}>Image Optimisation Checklist</div>
                 {[
-                  { t: "Use WebP or AVIF format — up to 80% smaller than JPEG/PNG with same quality", tip: "Shopify automatically serves WebP to supported browsers via the CDN." },
+                  { t: "Use WebP or AVIF format â€” up to 80% smaller than JPEG/PNG with same quality", tip: "Shopify automatically serves WebP to supported browsers via the CDN." },
                   { t: "Compress product images to under 100KB per image", tip: "Use TinyPNG, Squoosh, or ImageOptim before uploading to Shopify." },
-                  { t: "Add keyword-rich alt text to every product image", tip: "Example: 'navy blue merino wool crew neck jumper size medium' — not 'product_image_1'." },
+                  { t: "Add keyword-rich alt text to every product image", tip: "Example: 'navy blue merino wool crew neck jumper size medium' â€” not 'product_image_1'." },
                   { t: "Set image width and height attributes to prevent CLS", tip: "Modern Shopify themes typically do this. Check your custom theme." },
                   { t: "Use lazy loading (loading='lazy') for below-fold images", tip: "Modern Shopify themes include this. Critical for LCP on long pages." },
                   { t: "Use image CDN for non-Shopify hosted images", tip: "Shopify CDN is automatic for uploaded images. Avoid external image hosting." },
                   { t: "Name image files descriptively before uploading", tip: "e.g. red-leather-wallet-front.jpg not IMG_5892.jpg." },
                 ].map(({ t, tip }) => (
                   <div key={t} style={{ ...S.row }}>
-                    <span style={{ color: "#4ade80", fontSize: 14, flexShrink: 0 }}>→</span>
+                    <span style={{ color: "#4ade80", fontSize: 14, flexShrink: 0 }}>â†’</span>
                     <div>
                       <div style={{ fontSize: 13, color: "#e4e4e7" }}>{t}</div>
                       <div style={{ fontSize: 12, color: "#52525b", marginTop: 2 }}>{tip}</div>
@@ -494,19 +494,19 @@ export default function TechnicalSEOAuditor() {
                 {schemaData?.report ? (
                   <div style={S.pre}>{schemaData.report}</div>
                 ) : (
-                  <CheckRow label="Structured data" value={pd.hasSchema ? "Detected" : "None found"} status={pd.hasSchema ? "pass" : "warn"} detail="Structured data (JSON-LD) enables rich results — reviews, prices, FAQs — in Google Search." />
+                  <CheckRow label="Structured data" value={pd.hasSchema ? "Detected" : "None found"} status={pd.hasSchema ? "pass" : "warn"} detail="Structured data (JSON-LD) enables rich results â€” reviews, prices, FAQs â€” in Google Search." />
                 )}
                 <div style={{ marginTop: 16 }}>
                   <div style={S.sectionTitle}>Recommended Schema for Shopify</div>
                   {[
                     { type: "Product", priority: "Critical", desc: "Enables price, availability, and star-rating rich results on product pages. Essential for e-commerce." },
-                    { type: "BreadcrumbList", priority: "High", desc: "Shows breadcrumb navigation in SERPs — improves CTR and helps users understand site structure." },
-                    { type: "Organization", priority: "High", desc: "Tells Google about your brand — logo, social profiles, contact info. Helps branded search results." },
+                    { type: "BreadcrumbList", priority: "High", desc: "Shows breadcrumb navigation in SERPs â€” improves CTR and helps users understand site structure." },
+                    { type: "Organization", priority: "High", desc: "Tells Google about your brand â€” logo, social profiles, contact info. Helps branded search results." },
                     { type: "FAQPage", priority: "Medium", desc: "Displays expandable FAQ accordions in SERPs for informational and product pages." },
-                    { type: "Article / BlogPosting", priority: "Medium", desc: "Enables article rich results for blog posts — date, author, featured image." },
-                    { type: "Review / AggregateRating", priority: "Medium", desc: "Shows star ratings in SERPs on product pages — significantly improves CTR." },
+                    { type: "Article / BlogPosting", priority: "Medium", desc: "Enables article rich results for blog posts â€” date, author, featured image." },
+                    { type: "Review / AggregateRating", priority: "Medium", desc: "Shows star ratings in SERPs on product pages â€” significantly improves CTR." },
                     { type: "HowTo", priority: "Low", desc: "Step-by-step guide results with images. Good for tutorial blog content." },
-                    { type: "VideoObject", priority: "Low", desc: "Rich results for embedded YouTube/Vimeo product videos — thumbnail, duration." },
+                    { type: "VideoObject", priority: "Low", desc: "Rich results for embedded YouTube/Vimeo product videos â€” thumbnail, duration." },
                   ].map(({ type, priority, desc }) => (
                     <div key={type} style={S.row}>
                       <span style={{ ...S.badge(priority === "Critical" ? "fail" : priority === "High" ? "warn" : "info"), flexShrink: 0 }}>{priority}</span>
@@ -533,8 +533,8 @@ export default function TechnicalSEOAuditor() {
                   {[
                     { label: "Viewport meta tag", value: pd.hasViewport ? "Set" : "Missing", status: pd.hasViewport ? "pass" : "fail", detail: "The viewport meta tag tells mobile browsers how to scale the page. Google penalises pages without it." },
                     { label: "Responsive design", value: "Check required", status: "info", detail: "Use browser DevTools to test at 375px (iPhone SE), 390px (iPhone 14), and 414px widths." },
-                    { label: "Touch targets ≥ 48px", value: "Check required", status: "info", detail: "Buttons and links must be at least 48×48px for comfortable tapping on mobile." },
-                    { label: "Font size ≥ 16px", value: "Check required", status: "info", detail: "Anything below 16px may be zoomed in by iOS Safari, breaking layout." },
+                    { label: "Touch targets â‰¥ 48px", value: "Check required", status: "info", detail: "Buttons and links must be at least 48Ã—48px for comfortable tapping on mobile." },
+                    { label: "Font size â‰¥ 16px", value: "Check required", status: "info", detail: "Anything below 16px may be zoomed in by iOS Safari, breaking layout." },
                     { label: "No horizontal scroll", value: "Check required", status: "info", detail: "Content wider than the viewport forces horizontal scrolling and fails mobile usability." },
                   ].map(c => <CheckRow key={c.label} {...c} />)}
                 </div>
@@ -542,15 +542,15 @@ export default function TechnicalSEOAuditor() {
                   <div style={S.sectionTitle}>Shopify Mobile Optimisation</div>
                   {[
                     "Test your store using Google's Mobile-Friendly Test (search.google.com/test/mobile-friendly).",
-                    "Enable AMP for blog posts if your theme supports it — faster mobile loading.",
+                    "Enable AMP for blog posts if your theme supports it â€” faster mobile loading.",
                     "Check that pop-ups and interstitials don't cover content on mobile (Google penalty risk).",
-                    "Optimise checkout for mobile — large touch targets, autofill support, Apple Pay / Google Pay.",
+                    "Optimise checkout for mobile â€” large touch targets, autofill support, Apple Pay / Google Pay.",
                     "Reduce app JavaScript that blocks the main thread on mobile devices.",
-                    "Test on real devices — iOS Safari and Android Chrome render differently.",
+                    "Test on real devices â€” iOS Safari and Android Chrome render differently.",
                     "Use Google Search Console's 'Mobile Usability' report for page-level mobile issues.",
                   ].map((tip, i) => (
                     <div key={i} style={S.row}>
-                      <span style={{ color: "#52525b", fontSize: 12, flexShrink: 0 }}>•</span>
+                      <span style={{ color: "#52525b", fontSize: 12, flexShrink: 0 }}>â€¢</span>
                       <span style={{ fontSize: 13, color: "#a1a1aa" }}>{tip}</span>
                     </div>
                   ))}
@@ -570,7 +570,7 @@ export default function TechnicalSEOAuditor() {
                   )}
                 </div>
                 {actionItems.length === 0 ? (
-                  <EmptyState icon="✅" title="No major issues found" description="Your site passed all the checks we could verify. Continue monitoring regularly." />
+                  <EmptyState icon="âœ…" title="No major issues found" description="Your site passed all the checks we could verify. Continue monitoring regularly." />
                 ) : (
                   <>
                     {["critical", "warning", "info"].map(sev => {
@@ -578,7 +578,7 @@ export default function TechnicalSEOAuditor() {
                       if (!items.length) return null;
                       return (
                         <div key={sev}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{sev} — {items.length} issue{items.length !== 1 ? "s" : ""}</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{sev} â€” {items.length} issue{items.length !== 1 ? "s" : ""}</div>
                           {items.map((item, i) => <IssueCard key={i} {...item} />)}
                         </div>
                       );
@@ -599,7 +599,7 @@ export default function TechnicalSEOAuditor() {
                   ].map(({ q, items, color }) => (
                     <div key={q} style={{ background: "#09090b", border: `1px solid ${color}33`, borderRadius: 10, padding: "14px 16px" }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color, marginBottom: 8 }}>{q}</div>
-                      {items.map(it => <div key={it} style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 4 }}>• {it}</div>)}
+                      {items.map(it => <div key={it} style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 4 }}>â€¢ {it}</div>)}
                     </div>
                   ))}
                 </div>
@@ -613,7 +613,7 @@ export default function TechnicalSEOAuditor() {
               <div style={S.card}>
                 <div style={S.sectionTitle}>Audit History</div>
                 {history.length === 0 ? (
-                  <EmptyState icon="📋" title="No audit history yet" description="Completed audits will appear here for trend tracking." />
+                  <EmptyState icon="ðŸ“‹" title="No audit history yet" description="Completed audits will appear here for trend tracking." />
                 ) : (
                   <div>
                     {history.map((h, i) => (
@@ -621,7 +621,7 @@ export default function TechnicalSEOAuditor() {
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>{h.site || h.url || "Unknown URL"}</div>
                           <div style={{ fontSize: 12, color: "#52525b", marginTop: 2 }}>{h.timestamp ? new Date(h.timestamp).toLocaleString() : ""}</div>
-                          {h.auditReport && <div style={{ fontSize: 12, color: "#71717a", marginTop: 4, lineHeight: 1.5 }}>{h.auditReport.slice(0, 150)}…</div>}
+                          {h.auditReport && <div style={{ fontSize: 12, color: "#71717a", marginTop: 4, lineHeight: 1.5 }}>{h.auditReport.slice(0, 150)}â€¦</div>}
                         </div>
                         <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(h, null, 2))} style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }}>Copy</button>
                       </div>
@@ -651,186 +651,6 @@ export default function TechnicalSEOAuditor() {
               <button style={S.btn("primary")} onClick={sendChat} disabled={chatLoading}>Ask</button>
             </div>
           </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-  const fetchHistory = async () => {
-    try {
-      const res = await apiFetchJSON("/api/technical-seo-auditor/history");
-      if (res.ok) setHistory(res.history || []);
-    } catch {}
-  };
-
-  const handleRun = async () => {
-    setLoading(true); setError(""); setResponse("");
-    try {
-      const res = await apiFetchJSON("/api/technical-seo-auditor/ai/audit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site: input }),
-      });
-      if (!res.ok) throw new Error(res.error || "Unknown error");
-      setResponse(res.auditReport || "No report generated");
-      await apiFetch("/api/technical-seo-auditor/history", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site: input, report: res.auditReport }),
-      });
-      fetchHistory();
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
-  };
-
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    try {
-      await apiFetch("/api/technical-seo-auditor/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback }),
-      });
-      setFeedback("");
-      setNotification("Feedback sent � thank you!");
-      setTimeout(() => setNotification(""), 3000);
-    } catch (err) { setError(err.message); }
-  };
-
-  const handleShare = () => {
-    if (!response) return;
-    const url = `${window.location.origin}?tool=technical-seo-auditor&site=${encodeURIComponent(input)}`;
-    setReportUrl(url);
-    navigator.clipboard?.writeText(url);
-    setNotification("Link copied to clipboard");
-    setTimeout(() => setNotification(""), 3000);
-  };
-
-  function parseScore(report) {
-    const m = report.match(/overall[^:]*:\s*?(\d{1,3})/i) || report.match(/score[^:]*:\s*?(\d{1,3})/i);
-    return m ? Math.min(100, parseInt(m[1])) : null;
-  }
-  function countIssues(report, level) {
-    const pattern = level === "critical" ? /critical/gi : level === "warning" ? /warning/gi : /\binfo\b/gi;
-    return (report.match(pattern) || []).length;
-  }
-
-  useEffect(() => { fetchHistory(); }, []);
-
-  const TABS = [
-    { id: "audit", label: "Audit Report" },
-    { id: "history", label: `History${history.length ? ` (${history.length})` : ""}` },
-    { id: "feedback", label: "Feedback" },
-  ];
-
-  const histCols = [
-    { key: "site", label: "Site", render: (v) => <span style={{ color: "#fafafa", fontWeight: 500 }}>{v || ""}</span> },
-    { key: "auditReport", label: "Summary", render: (v) => <span style={{ color: "#a1a1aa", fontSize: 12 }}>{(v || "").slice(0, 100)}{(v || "").length > 100 ? "…" : ""}</span> },
-  ];
-
-  return (
-    <div style={{ background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',sans-serif", padding: "28px 32px" }}>
-      <ToolHeader
-        title="Technical SEO Auditor"
-        description="AI-powered technical SEO analysis — crawl issues, Core Web Vitals, structured data, and more"
-        inputValue={input}
-        onInputChange={setInput}
-        onRun={handleRun}
-        loading={loading}
-        inputPlaceholder="Enter site URL (e.g. yourstore.com)"
-        buttonLabel="Audit Site"
-      />
-      {error && <ErrorBox message={error} />}
-      {notification && (
-        <div style={{ background: "#1a2a1a", border: "1px solid #16a34a", borderRadius: 10, padding: "10px 16px", fontSize: 13, color: "#86efac", marginBottom: 16 }}>
-          {notification}
-        </div>
-      )}
-      {loading && <div style={{ textAlign: "center", padding: 48 }}><Spinner size={40} /></div>}
-      {!loading && (
-        <>
-          <MozTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
-          {activeTab === "audit" && (
-            <div style={{ marginTop: 24 }}>
-              {response ? (
-                <>
-                  {(() => {
-                    const score = parseScore(response);
-                    const critical = countIssues(response, "critical");
-                    const warnings = countIssues(response, "warning");
-                    const infos = countIssues(response, "info");
-                    return (
-                      <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 24 }}>
-                        {score != null && (
-                          <MozCard noPad>
-                            <div style={{ padding: 24, textAlign: "center" }}>
-                              <ScoreRing score={score} size={100} label="SEO Score" />
-                            </div>
-                          </MozCard>
-                        )}
-                        <div style={{ flex: 1 }}>
-                          <MetricRow
-                            metrics={[
-                              { value: critical, label: "Critical Issues", color: critical > 0 ? "#e03e40" : undefined },
-                              { value: warnings, label: "Warnings", color: warnings > 0 ? "#f5c842" : undefined },
-                              { value: infos, label: "Info", color: "#71717a" },
-                            ]}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  <MozCard
-                    title="Audit Report"
-                    action={
-                      <button
-                        onClick={handleShare}
-                        style={{ background: "#27272a", border: "1px solid #3f3f46", color: "#fafafa", borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                      >Share</button>
-                    }
-                  >
-                    <div style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.7, color: "#e4e4e7" }}>{response}</div>
-                  </MozCard>
-                  {reportUrl && (
-                    <div style={{ background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, padding: "10px 16px", fontSize: 12, color: "#71717a", marginTop: 12 }}>
-                      Shareable link: <span style={{ color: "#818cf8" }}>{reportUrl}</span>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <EmptyState icon="🔍" title="Enter a site URL to audit" description="The AI will analyse technical SEO issues including crawlability, page speed, structured data, and Core Web Vitals" />
-              )}
-            </div>
-          )}
-          {activeTab === "history" && (
-            <div style={{ marginTop: 24 }}>
-              <MozCard title="Audit History">
-                {history.length === 0 ? (
-                  <EmptyState icon="📋" title="No audit history yet" description="Run your first audit to see results here" />
-                ) : (
-                  <SortableTable columns={histCols} rows={history} emptyText="No history" />
-                )}
-              </MozCard>
-            </div>
-          )}
-          {activeTab === "feedback" && (
-            <div style={{ marginTop: 24 }}>
-              <MozCard title="Send Feedback">
-                <textarea
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  rows={4}
-                  style={{ width: "100%", background: "#0d0d10", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 14 }}
-                  placeholder="Share your feedback or suggestions..."
-                />
-                <button
-                  onClick={handleFeedback}
-                  style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-                >Send Feedback</button>
-              </MozCard>
-            </div>
-          )}
         </>
       )}
     </div>

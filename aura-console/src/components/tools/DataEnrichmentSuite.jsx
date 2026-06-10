@@ -224,25 +224,3 @@ export default function DataEnrichmentSuite() {
     </div>
   );
 }
-
- return (
- <div style={S.page}>
- <div style={S.card}>
- <h2 style={S.title}>Data Enrichment Suite</h2>
- <p style={S.desc}>
- Fill gaps in your data by enriching customer and product records with
- verified information from external sources.
- </p>
- <span style={S.badge}>Coming Soon</span>
- <ul style={S.list}>
- {FEATURES.map((f) => (
- <li key={f} style={S.item}>
- {f}
- </li>
- ))}
- </ul>
- </div>
- </div>
- );
-}
-

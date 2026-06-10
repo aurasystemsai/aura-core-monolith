@@ -207,25 +207,3 @@ export default function CustomerSegmentationEngine() {
     </div>
   );
 }
-
- return (
- <div style={S.page}>
- <div style={S.card}>
- <h2 style={S.title}>Customer Segmentation Engine</h2>
- <p style={S.desc}>
- Automatically group your customers into actionable segments based on
- behavior, value, and engagement patterns.
- </p>
- <span style={S.badge}>Coming Soon</span>
- <ul style={S.list}>
- {FEATURES.map((f) => (
- <li key={f} style={S.item}>
- {f}
- </li>
- ))}
- </ul>
- </div>
- </div>
- );
-}
-
