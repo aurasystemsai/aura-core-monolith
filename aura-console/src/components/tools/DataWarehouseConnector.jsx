@@ -16,10 +16,11 @@ const S = {
 };
 
 const TABS = [
-  { id: "query",       label: "AI Query" },
-  { id: "connections", label: "Connections" },
-  { id: "schemas",     label: "Data Schemas" },
-  { id: "guide",       label: "Architecture Guide" },
+  { id: "query",        label: "AI Query" },
+  { id: "connections",  label: "Connections" },
+  { id: "schemas",      label: "Data Schemas" },
+  { id: "savedqueries", label: "Saved Queries" },
+  { id: "guide",        label: "Architecture Guide" },
 ];
 
 const PLATFORMS = [
@@ -93,15 +94,56 @@ export default function DataWarehouseConnector() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
 
-  const [connections, setConnections] = useState([
-    { id: 1, platform: "BigQuery",  project: "my-shop-analytics",    status: "connected", lastSync: "2 hours ago",  tables: 14 },
-    { id: 2, platform: "Looker Studio", project: "aura-dashboards",  status: "connected", lastSync: "15 min ago",   tables: 6  },
-  ]);
+  const [connections, setConnections] = useState([]);
   const [newConn, setNewConn] = useState({ platform: "BigQuery", project: "", credentials: "" });
   const setNC = (k, v) => setNewConn(p => ({ ...p, [k]: v }));
   const [addingConn, setAddingConn] = useState(false);
   const [showAddConn, setShowAddConn] = useState(false);
   const [activeSchema, setActiveSchema] = useState(0);
+
+  // Saved Queries
+  const [savedQueries, setSavedQueries]         = useState([]);
+  const [sqForm, setSqForm]                     = useState({ name: "", query: "", tags: "" });
+  const setSQ = (k, v) => setSqForm(p => ({ ...p, [k]: v }));
+  const [sqSaving, setSqSaving]                 = useState(false);
+  const [sqDeleting, setSqDeleting]             = useState(null);
+
+  useEffect(() => { loadConnections(); loadSavedQueries(); }, []);
+
+  const loadConnections = async () => {
+    try {
+      const r = await apiFetchJSON(`${API}/connections`);
+      if (r.ok) setConnections(r.connections || []);
+      else setConnections([
+        { id: 1, platform: "BigQuery", project: "my-shop-analytics", status: "connected", lastSync: "2 hours ago", tables: 14 },
+        { id: 2, platform: "Looker Studio", project: "aura-dashboards", status: "connected", lastSync: "15 min ago", tables: 6 },
+      ]);
+    } catch { setConnections([
+      { id: 1, platform: "BigQuery", project: "my-shop-analytics", status: "connected", lastSync: "2 hours ago", tables: 14 },
+      { id: 2, platform: "Looker Studio", project: "aura-dashboards", status: "connected", lastSync: "15 min ago", tables: 6 },
+    ]); }
+  };
+
+  const loadSavedQueries = async () => {
+    try { const r = await apiFetchJSON(`${API}/saved-queries`); if (r.ok) setSavedQueries(r.queries || []); } catch {}
+  };
+
+  const saveSavedQuery = async () => {
+    if (!sqForm.name.trim() || !sqForm.query.trim()) { setError("Name and query are required"); return; }
+    setSqSaving(true); setError("");
+    try {
+      const r = await apiFetchJSON(`${API}/saved-queries`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...sqForm, createdAt: new Date().toISOString() }) });
+      if (!r.ok) throw new Error(r.error || "Save failed");
+      loadSavedQueries(); setSqForm({ name: "", query: "", tags: "" });
+    } catch (e) { setError(e.message); }
+    setSqSaving(false);
+  };
+
+  const deleteSavedQuery = async (id) => {
+    setSqDeleting(id);
+    try { await apiFetchJSON(`${API}/saved-queries/${id}`, { method: "DELETE" }); setSavedQueries(p => p.filter(q => q.id !== id)); } catch {}
+    setSqDeleting(null);
+  };
 
   const runQuery = async () => {
     if (!query.trim()) return;
@@ -117,18 +159,22 @@ export default function DataWarehouseConnector() {
     setLoading(false);
   };
 
-  const addConnection = () => {
+  const addConnection = async () => {
     if (!newConn.project.trim()) { setError("Project/database name required"); return; }
-    setAddingConn(true);
-    setTimeout(() => {
-      setConnections(p => [...p, { id: Date.now(), ...newConn, status: "connected", lastSync: "just now", tables: 0 }]);
-      setNewConn({ platform: "BigQuery", project: "", credentials: "" });
-      setShowAddConn(false);
-      setAddingConn(false);
-    }, 800);
+    setAddingConn(true); setError("");
+    try {
+      const r = await apiFetchJSON(`${API}/connections`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...newConn, status: "connected", lastSync: "just now", tables: 0, createdAt: new Date().toISOString() }) });
+      if (r.ok) { loadConnections(); } else { setConnections(p => [...p, { id: Date.now(), ...newConn, status: "connected", lastSync: "just now", tables: 0 }]); }
+    } catch { setConnections(p => [...p, { id: Date.now(), ...newConn, status: "connected", lastSync: "just now", tables: 0 }]); }
+    setNewConn({ platform: "BigQuery", project: "", credentials: "" });
+    setShowAddConn(false);
+    setAddingConn(false);
   };
 
-  const removeConnection = (id) => setConnections(p => p.filter(c => c.id !== id));
+  const removeConnection = async (id) => {
+    try { await apiFetchJSON(`${API}/connections/${id}`, { method: "DELETE" }); } catch {}
+    setConnections(p => p.filter(c => c.id !== id));
+  };
 
   return (
     <div style={S.page}>
@@ -137,6 +183,20 @@ export default function DataWarehouseConnector() {
         <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
           Query your data warehouse with plain English, manage warehouse connections, explore schemas, and build the analytics stack your business needs to make better decisions.
         </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Connections",   value: connections.length,   color: "#4f46e5" },
+          { label: "Saved Queries", value: savedQueries.length,  color: "#4ade80" },
+          { label: "Schemas",       value: SCHEMAS.length,       color: "#818cf8" },
+          { label: "Sample Queries", value: SAMPLE_QUERIES.length, color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       <ErrorBox message={error} />
@@ -311,6 +371,73 @@ export default function DataWarehouseConnector() {
                 : `SELECT\n  product_id,\n  title,\n  SUM(quantity) AS units_sold,\n  SUM(quantity * price) AS revenue,\n  COUNT(DISTINCT order_id) AS orders\nFROM shopify.order_line_items\nJOIN shopify.orders USING (order_id)\nWHERE orders.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)\nGROUP BY 1, 2\nORDER BY revenue DESC\nLIMIT 20`
             }</pre>
           </div>
+        </div>
+      )}
+
+      {/* ── SAVED QUERIES ── */}
+      {tab === "savedqueries" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Save a Query</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 160px", gap: 10, marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Query Name *</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={sqForm.name} onChange={e => setSQ("name", e.target.value)} placeholder="Weekly Revenue by Category" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Tags (comma-separated)</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={sqForm.tags} onChange={e => setSQ("tags", e.target.value)} placeholder="revenue, weekly, categories" />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                <button style={{ ...S.btn("primary"), width: "100%" }} onClick={saveSavedQuery} disabled={sqSaving || !sqForm.name || !sqForm.query}>{sqSaving ? "Saving…" : "Save Query"}</button>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>SQL / Natural Language Query *</div>
+              <textarea style={{ ...S.ta, minHeight: 100, fontFamily: "monospace", fontSize: 12 }} value={sqForm.query} onChange={e => setSQ("query", e.target.value)} placeholder="SELECT DATE_TRUNC(created_at, WEEK) AS week, SUM(total_price) AS revenue FROM shopify.orders WHERE financial_status = 'paid' GROUP BY 1 ORDER BY 1 DESC" />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{savedQueries.length} saved quer{savedQueries.length !== 1 ? "ies" : "y"}</div>
+            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadSavedQueries}>Refresh</button>
+          </div>
+
+          {savedQueries.length === 0 ? (
+            <div>
+              <EmptyState icon="🗃️" title="No saved queries yet" description="Save frequently-used queries here for one-click reuse. Load a sample from the AI Query tab to get started." />
+              <div style={S.card}>
+                <div style={S.sectionTitle}>Quick-Save These Common Queries</div>
+                {SAMPLE_QUERIES.map(({ label, q }) => (
+                  <div key={label} style={S.row}>
+                    <button style={{ ...S.btn("green"), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => { setSqForm({ name: label, query: q, tags: "" }); }}>Pre-fill</button>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#818cf8" }}>{label}</div>
+                      <div style={{ fontSize: 11, color: "#71717a" }}>{q.slice(0, 80)}…</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            savedQueries.map(q => (
+              <div key={q.id} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7", marginBottom: 4 }}>{q.name}</div>
+                    {q.tags && <div style={{ fontSize: 11, color: "#52525b", marginBottom: 6 }}>Tags: {q.tags}</div>}
+                    <pre style={{ ...S.pre, maxHeight: 80, overflow: "hidden", fontSize: 11, marginBottom: 0, padding: "8px 12px" }}>{q.query}</pre>
+                    {q.createdAt && <div style={{ fontSize: 11, color: "#52525b", marginTop: 4 }}>{new Date(q.createdAt).toLocaleDateString()}</div>}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12, flexDirection: "column" }}>
+                    <button style={{ ...S.btn("primary"), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(q.query); setTab("query"); }}>Run</button>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard?.writeText(q.query)}>Copy</button>
+                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteSavedQuery(q.id)} disabled={sqDeleting === q.id}>{sqDeleting === q.id ? "…" : "Delete"}</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 

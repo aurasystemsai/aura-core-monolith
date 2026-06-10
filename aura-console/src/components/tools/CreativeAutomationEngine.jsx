@@ -17,10 +17,11 @@ const S = {
 };
 
 const TABS = [
-  { id: "generate", label: "Generate" },
-  { id: "abtest",   label: "A/B Test Planner" },
-  { id: "library",  label: "Creative Library" },
-  { id: "guide",    label: "Creative Strategy" },
+  { id: "generate",   label: "Generate" },
+  { id: "abtest",     label: "A/B Test Planner" },
+  { id: "library",    label: "Creative Library" },
+  { id: "brandvoice", label: "Brand Voice" },
+  { id: "guide",      label: "Creative Strategy" },
 ];
 
 const CREATIVE_TYPES = ["Ad Copy", "Email Subject Lines", "Social Caption", "Product Description", "Video Script Hook", "Blog Title", "Landing Page Headline", "CTA Variants", "Push Notification", "SMS Copy"];
@@ -58,9 +59,37 @@ export default function CreativeAutomationEngine() {
   const [deleting, setDeleting]     = useState(null);
   const [filterType, setFilterType] = useState("all");
 
+  // Brand Voices
+  const [brandVoices, setBrandVoices]       = useState([]);
+  const [bvForm, setBvForm]                 = useState({ name: "", tone: "", dos: "", donts: "", example: "", keywords: "" });
+  const setBV = (k, v) => setBvForm(p => ({ ...p, [k]: v }));
+  const [bvSaving, setBvSaving]             = useState(false);
+  const [bvDeleting, setBvDeleting]         = useState(null);
+
   const [error, setError] = useState("");
 
-  useEffect(() => { loadCreatives(); }, []);
+  useEffect(() => { loadCreatives(); loadBrandVoices(); }, []);
+
+  const loadBrandVoices = async () => {
+    try { const r = await apiFetchJSON(`${API}/brand-voices`); if (r.ok) setBrandVoices(r.voices || []); } catch {}
+  };
+
+  const saveBrandVoice = async () => {
+    if (!bvForm.name.trim()) { setError("Voice name is required"); return; }
+    setBvSaving(true); setError("");
+    try {
+      const r = await apiFetchJSON(`${API}/brand-voices`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...bvForm, createdAt: new Date().toISOString() }) });
+      if (!r.ok) throw new Error(r.error || "Save failed");
+      loadBrandVoices(); setBvForm({ name: "", tone: "", dos: "", donts: "", example: "", keywords: "" });
+    } catch (e) { setError(e.message); }
+    setBvSaving(false);
+  };
+
+  const deleteBrandVoice = async (id) => {
+    setBvDeleting(id);
+    try { await apiFetchJSON(`${API}/brand-voices/${id}`, { method: "DELETE" }); setBrandVoices(p => p.filter(v => v.id !== id)); } catch {}
+    setBvDeleting(null);
+  };
 
   const loadCreatives = async () => {
     setLibLoading(true);
@@ -136,20 +165,19 @@ export default function CreativeAutomationEngine() {
         </p>
       </div>
 
-      {creatives.length > 0 && (
-        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>Saved Creatives</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#4f46e5" }}>{creatives.length}</div>
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Saved Creatives",  value: creatives.length,    color: "#4f46e5" },
+          { label: "Brand Voices",     value: brandVoices.length,  color: "#4ade80" },
+          { label: "Creative Types",   value: CREATIVE_TYPES.length, color: "#818cf8" },
+          { label: "A/B Angles",       value: AB_ANGLES.length,    color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
           </div>
-          {[...new Set(creatives.map(c => c.type))].slice(0, 3).map(t => (
-            <div key={t} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
-              <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>{t}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#818cf8" }}>{creatives.filter(c => c.type === t).length}</div>
-            </div>
-          ))}
-        </div>
-      )}
+        ))}
+      </div>
 
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
@@ -315,6 +343,90 @@ export default function CreativeAutomationEngine() {
                   <div style={{ display: "flex", gap: 6, flexShrink: 0, flexDirection: "column", alignItems: "flex-end" }}>
                     <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard?.writeText(c.content || "")}>Copy</button>
                     <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteCreative(c.id)} disabled={deleting === c.id}>{deleting === c.id ? "…" : "Delete"}</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ── BRAND VOICE ── */}
+      {tab === "brandvoice" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Create Brand Voice Profile</div>
+            <p style={{ fontSize: 13, color: "#71717a", marginBottom: 12, lineHeight: 1.6 }}>Define how your brand communicates. These profiles are referenced by the AI when generating creative — ensuring every output sounds like you, not generic AI.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Profile Name *</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={bvForm.name} onChange={e => setBV("name", e.target.value)} placeholder="Main Brand Voice" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Tone Words (comma-separated)</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={bvForm.tone} onChange={e => setBV("tone", e.target.value)} placeholder="bold, direct, empowering, no-nonsense" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Keywords / Vocabulary</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={bvForm.keywords} onChange={e => setBV("keywords", e.target.value)} placeholder="Words to use: elevate, discover, transform" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Example Phrase</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={bvForm.example} onChange={e => setBV("example", e.target.value)} placeholder="e.g. Run further. Recover faster. Feel the difference." />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#52525b", marginBottom: 4 }}>Always Do</div>
+                <textarea style={{ ...S.ta, minHeight: 70 }} value={bvForm.dos} onChange={e => setBV("dos", e.target.value)} placeholder="Use active voice. Speak to outcomes. Be specific with numbers. Use 'you' to address the reader directly." />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#52525b", marginBottom: 4 }}>Never Do</div>
+                <textarea style={{ ...S.ta, minHeight: 70 }} value={bvForm.donts} onChange={e => setBV("donts", e.target.value)} placeholder="Never use corporate jargon. Don't use passive voice. Avoid vague claims ('great quality')." />
+              </div>
+            </div>
+            <button style={S.btn("primary")} onClick={saveBrandVoice} disabled={bvSaving || !bvForm.name}>{bvSaving ? "Saving…" : "Save Brand Voice Profile"}</button>
+          </div>
+
+          <div style={{ fontSize: 13, color: "#71717a", marginBottom: 12 }}>{brandVoices.length} brand voice profile{brandVoices.length !== 1 ? "s" : ""} saved</div>
+
+          {brandVoices.length === 0 ? (
+            <div>
+              <EmptyState icon="🗣️" title="No brand voice profiles yet" description="Define your brand voice to ensure AI-generated content sounds consistent and authentic." />
+              <div style={S.card}>
+                <div style={S.sectionTitle}>Brand Voice Examples</div>
+                {[
+                  { name: "Athletic / Empowerment",  tone: "Bold, direct, motivating",      ex: "You were built for this. Now prove it.", dos: "Use short punchy sentences. Appeal to achievement.", donts: "Never sound passive or hesitant." },
+                  { name: "Premium / Luxury",         tone: "Refined, aspirational, expert", ex: "Crafted for those who demand the extraordinary.", dos: "Use sensory language. Evoke exclusivity.", donts: "Avoid discounts, urgency, or price mentions." },
+                  { name: "Friendly / Conversational", tone: "Warm, honest, accessible",    ex: "Because you deserve skincare that actually works.", dos: "Use 'you' and 'we'. Keep it natural.", donts: "No jargon, no hype, no over-promising." },
+                  { name: "Expert / Educational",      tone: "Authoritative, clear, helpful", ex: "Here's exactly what the data says about recovery nutrition.", dos: "Back claims with data. Teach, don't sell.", donts: "No fluff or filler sentences." },
+                ].map(v => (
+                  <div key={v.name} style={S.row}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#818cf8", marginBottom: 2 }}>{v.name}</div>
+                      <div style={{ fontSize: 12, color: "#71717a" }}>Tone: {v.tone} · Example: <em>"{v.ex}"</em></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            brandVoices.map(v => (
+              <div key={v.id} style={{ ...S.card, borderLeft: "3px solid #4f46e5" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#e4e4e7", marginBottom: 4 }}>{v.name}</div>
+                    {v.tone && <div style={{ fontSize: 12, color: "#818cf8", marginBottom: 4 }}>Tone: {v.tone}</div>}
+                    {v.example && <div style={{ fontSize: 13, color: "#a1a1aa", fontStyle: "italic", marginBottom: 6 }}>"{v.example}"</div>}
+                    <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                      {v.dos && <div style={{ fontSize: 11, color: "#4ade80" }}>✓ {v.dos.slice(0, 80)}</div>}
+                      {v.donts && <div style={{ fontSize: 11, color: "#f87171" }}>✗ {v.donts.slice(0, 80)}</div>}
+                    </div>
+                    {v.keywords && <div style={{ fontSize: 11, color: "#52525b", marginTop: 4 }}>Keywords: {v.keywords}</div>}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12 }}>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => setBrandVoice(v.tone || v.name)}>Use in Generate</button>
+                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteBrandVoice(v.id)} disabled={bvDeleting === v.id}>{bvDeleting === v.id ? "…" : "Delete"}</button>
                   </div>
                 </div>
               </div>

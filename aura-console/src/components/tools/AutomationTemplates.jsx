@@ -17,10 +17,30 @@ const S = {
 };
 
 const TABS = [
-  { id: "browse",  label: "Template Gallery" },
-  { id: "custom",  label: "AI Builder" },
-  { id: "saved",   label: "My Templates" },
-  { id: "guide",   label: "Automation Guide" },
+  { id: "browse",   label: "Template Gallery" },
+  { id: "custom",   label: "AI Builder" },
+  { id: "saved",    label: "My Templates" },
+  { id: "prompts",  label: "Prompt Library" },
+  { id: "guide",    label: "Automation Guide" },
+];
+
+const PROMPT_LIBRARY = [
+  { cat: "email",     label: "Post-purchase win-back (30d)",       prompt: "Design a 3-email win-back sequence for customers who haven't purchased in 30 days. First email: curiosity-led. Second: social proof. Third: best-ever offer. Include subject lines and preview text." },
+  { cat: "email",     label: "VIP birthday campaign",              prompt: "Build an automated birthday email flow for VIP customers (>3 orders). Send 7 days before birthday with exclusive early-access offer. Day-of email with gift + discount. Day after with last chance." },
+  { cat: "email",     label: "Browse abandonment nurture",         prompt: "Create a 2-touch browse abandonment email sequence. Trigger: viewed product page but didn't add to cart. Email 1 (24hr): show the browsed product with social proof. Email 2 (72hr): show related best-sellers." },
+  { cat: "email",     label: "New subscriber welcome series",       prompt: "Write a 4-email welcome series for new email subscribers (non-purchasers). Day 1: brand story. Day 3: product hero. Day 7: social proof/reviews. Day 14: first-purchase incentive. Include subject lines." },
+  { cat: "email",     label: "Post-delivery review request",        prompt: "Create a 2-email review request automation. Email 1 (5 days after delivery): photo review request with the product name in subject. Email 2 (12 days): follow-up if no review submitted." },
+  { cat: "retention", label: "Loyalty tier upgrade trigger",        prompt: "Design an automation triggered when a customer crosses the VIP spend threshold (e.g. £500 lifetime). Email + optional SMS with tier upgrade celebration, exclusive perks list, and personalised product recommendations." },
+  { cat: "retention", label: "Subscription renewal reminder",       prompt: "Build a subscription renewal reminder sequence: 30 days before renewal (heads-up), 7 days before (review your plan), day of renewal (confirmation + what's new), 3 days after failed payment (recovery)." },
+  { cat: "retention", label: "At-risk customer save (60d inactive)", prompt: "Design a churn-save automation for customers showing at-risk signals: 60 days no purchase + declining email engagement. 3-touch sequence with escalating offers. Final email includes pause option." },
+  { cat: "retention", label: "Post-refund recovery campaign",        prompt: "Create an automation triggered when a customer refund is processed. Email 1 (day of refund): empathy + alternatives. Email 2 (7 days later): address likely objection. Email 3 (14 days): best offer to try again." },
+  { cat: "seo",       label: "New content distribution workflow",    prompt: "Build an automation that triggers when a new blog post is published: auto-generate 3 social posts (Instagram, LinkedIn, Twitter/X), create email newsletter teaser, internal linking check with top 5 related posts." },
+  { cat: "seo",       label: "Product page update reminder",         prompt: "Design a quarterly product page health check automation: flag pages with >6 months without content update, pages with declining click-through rate, and pages missing schema markup." },
+  { cat: "ops",       label: "Inventory reorder alert workflow",     prompt: "Create an automation triggered when stock falls below reorder threshold. Alert operations team (email + Slack), generate draft PO for top supplier, send back-in-stock signup form to last 100 customers who viewed the product." },
+  { cat: "ops",       label: "New order ops notification",           prompt: "Build an automation for high-value orders (>£200): Slack alert to operations team with order details, flag for priority fulfilment, customer email with estimated delivery window and personal thank-you." },
+  { cat: "ops",       label: "Monthly performance review automation", prompt: "Design a monthly automated performance pack: pull revenue, orders, AOV, new vs returning customer ratio, top 10 SKUs, and refund rate. Send formatted PDF summary to leadership team on 1st of each month." },
+  { cat: "social",    label: "User-generated content (UGC) hunt",    prompt: "Build a UGC collection automation: 14 days after delivery, request photo/video review with hashtag. Auto-curate submissions, send DM to top contributors with product discount as thank-you, re-post top UGC to Instagram Stories." },
+  { cat: "social",    label: "Product launch social campaign",       prompt: "Create a product launch automation sequence: teaser post (T-7), announcement (T-3), launch day (T-0, 4 posts across platforms), day 2 social proof compilation, day 7 results roundup and testimonials." },
 ];
 
 const GALLERY = [
@@ -52,6 +72,8 @@ export default function AutomationTemplates() {
   const [saveError, setSaveError]     = useState("");
   const [saveSuccess, setSaveSuccess] = useState("");
   const [deleting, setDeleting]       = useState(null);
+
+  const [promptCat, setPromptCat] = useState("all");
 
   useEffect(() => { loadSaved(); }, []);
 
@@ -287,6 +309,34 @@ export default function AutomationTemplates() {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {/* PROMPT LIBRARY */}
+      {tab === "prompts" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+            {["all", "email", "retention", "seo", "ops", "social"].map(cat => (
+              <button key={cat} style={{ ...S.btn(promptCat === cat ? "primary" : null), fontSize: 11, padding: "5px 10px", textTransform: "capitalize" }} onClick={() => setPromptCat(cat)}>{cat === "all" ? "All Prompts" : cat}</button>
+            ))}
+          </div>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>
+              {PROMPT_LIBRARY.filter(p => promptCat === "all" || p.cat === promptCat).length} ready-to-use automation prompts
+            </div>
+            {PROMPT_LIBRARY.filter(p => promptCat === "all" || p.cat === promptCat).map(({ cat, label, prompt }) => (
+              <div key={label} style={S.row}>
+                <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={S.badge(cat)}>{cat}</span>
+                  <button style={{ ...S.btn("primary"), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(prompt); setTab("custom"); }}>Load & Build</button>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7", marginBottom: 3 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{prompt.slice(0, 160)}{prompt.length > 160 ? "…" : ""}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

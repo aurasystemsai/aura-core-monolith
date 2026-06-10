@@ -22,10 +22,11 @@ const S = {
 };
 
 const TABS = [
-  { id: "analyse",    label: "Brand Analysis" },
-  { id: "benchmark",  label: "Competitor Benchmark" },
-  { id: "framework",  label: "Brand Framework" },
-  { id: "guide",      label: "Strategy Guide" },
+  { id: "analyse",   label: "Brand Analysis" },
+  { id: "benchmark", label: "Competitor Benchmark" },
+  { id: "framework", label: "Brand Framework" },
+  { id: "audits",    label: "Brand Audits" },
+  { id: "guide",     label: "Strategy Guide" },
 ];
 
 const SAMPLE_BRANDS = ["Gymshark", "Allbirds", "Glossier", "MVMT Watches", "Dollar Shave Club", "Warby Parker", "Casper"];
@@ -66,6 +67,37 @@ export default function BrandIntelligenceLayer() {
   const [analysisHistory, setAnalysisHistory] = useState([]);
   const [selectedArchetype, setSelectedArchetype] = useState(null);
 
+  // Brand Audits
+  const [audits, setAudits]             = useState([]);
+  const [auditForm, setAuditForm]       = useState({ brandName: "", date: new Date().toISOString().split("T")[0], clarity: 70, visual: 70, tone: 70, proof: 60, content: 65, cx: 70, positioning: 65, notes: "" });
+  const setAF = (k, v) => setAuditForm(p => ({ ...p, [k]: v }));
+  const [auditSaving, setAuditSaving]   = useState(false);
+  const [auditDeleting, setAuditDeleting] = useState(null);
+
+  useEffect(() => { loadAudits(); }, []);
+
+  const loadAudits = async () => {
+    try { const r = await apiFetchJSON(`${API}/audits`); if (r.ok) setAudits(r.audits || []); } catch {}
+  };
+
+  const saveAudit = async () => {
+    if (!auditForm.brandName.trim()) { setError("Brand name is required"); return; }
+    setAuditSaving(true); setError("");
+    const overall = Math.round([auditForm.clarity, auditForm.visual, auditForm.tone, auditForm.proof, auditForm.content, auditForm.cx, auditForm.positioning].reduce((a, b) => a + Number(b), 0) / 7);
+    try {
+      const r = await apiFetchJSON(`${API}/audits`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...auditForm, overall, createdAt: new Date().toISOString() }) });
+      if (!r.ok) throw new Error(r.error || "Save failed");
+      loadAudits(); setAuditForm(p => ({ ...p, brandName: "", notes: "" }));
+    } catch (e) { setError(e.message); }
+    setAuditSaving(false);
+  };
+
+  const deleteAudit = async (id) => {
+    setAuditDeleting(id);
+    try { await apiFetchJSON(`${API}/audits/${id}`, { method: "DELETE" }); setAudits(p => p.filter(a => a.id !== id)); } catch {}
+    setAuditDeleting(null);
+  };
+
   const analyse = async (overrideBrand) => {
     const target = (overrideBrand || brand).trim();
     if (!target) return;
@@ -102,6 +134,20 @@ export default function BrandIntelligenceLayer() {
         <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
           AI-powered brand health analysis, competitive benchmarking, and brand positioning framework. Understand and strengthen your brand's position in the market.
         </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Competitors Tracked", value: competitors.filter(c => !c.isPrimary).length, color: "#4f46e5" },
+          { label: "Brand Audits",        value: audits.length,                                 color: "#4ade80" },
+          { label: "Analyses Run",        value: analysisHistory.length,                        color: "#818cf8" },
+          { label: "Archetypes",          value: ARCHETYPE_PROFILES.length,                     color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       <ErrorBox message={error} />
@@ -321,6 +367,94 @@ export default function BrandIntelligenceLayer() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── BRAND AUDITS ── */}
+      {tab === "audits" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Record Brand Health Snapshot</div>
+            <p style={{ fontSize: 13, color: "#71717a", marginBottom: 12 }}>Score your brand across 7 dimensions today. Run monthly to track brand health over time.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Brand Name *</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={auditForm.brandName} onChange={e => setAF("brandName", e.target.value)} placeholder="Your Store / Brand" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Audit Date</div>
+                <input type="date" style={{ ...S.input, width: "100%", boxSizing: "border-box", colorScheme: "dark" }} value={auditForm.date} onChange={e => setAF("date", e.target.value)} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Overall Score (auto)</div>
+                <div style={{ ...S.input, width: "100%", boxSizing: "border-box", background: "#09090b", display: "flex", alignItems: "center" }}>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: "#4ade80" }}>
+                    {Math.round([auditForm.clarity, auditForm.visual, auditForm.tone, auditForm.proof, auditForm.content, auditForm.cx, auditForm.positioning].reduce((a, b) => a + Number(b), 0) / 7)}
+                  </span>
+                  <span style={{ fontSize: 11, color: "#71717a", marginLeft: 4 }}>/100</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              {[
+                { k: "clarity",     label: "Brand Clarity" },
+                { k: "visual",      label: "Visual Consistency" },
+                { k: "tone",        label: "Tone of Voice" },
+                { k: "proof",       label: "Social Proof" },
+                { k: "content",     label: "Content Quality" },
+                { k: "cx",          label: "Customer Experience" },
+                { k: "positioning", label: "Market Positioning" },
+              ].map(({ k, label }) => (
+                <div key={k} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <div style={{ fontSize: 11, color: "#a1a1aa" }}>{label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: Number(auditForm[k]) >= 70 ? "#4ade80" : Number(auditForm[k]) >= 50 ? "#fbbf24" : "#f87171" }}>{auditForm[k]}</div>
+                  </div>
+                  <input type="range" min="0" max="100" value={auditForm[k]} onChange={e => setAF(k, e.target.value)} style={{ width: "100%", accentColor: "#4f46e5", cursor: "pointer" }} />
+                </div>
+              ))}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Audit Notes</div>
+              <textarea style={{ ...S.ta, minHeight: 60 }} value={auditForm.notes} onChange={e => setAF("notes", e.target.value)} placeholder="Key observations, priority improvements, context for this audit period…" />
+            </div>
+            <button style={S.btn("primary")} onClick={saveAudit} disabled={auditSaving || !auditForm.brandName}>{auditSaving ? "Saving…" : "Save Brand Audit"}</button>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{audits.length} brand audit{audits.length !== 1 ? "s" : ""} recorded</div>
+            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadAudits}>Refresh</button>
+          </div>
+
+          {audits.length === 0 ? (
+            <EmptyState icon="📊" title="No brand audits recorded" description="Run your first brand health audit above. Monthly audits give you trend data to track brand improvement over time." />
+          ) : (
+            audits.map(a => (
+              <div key={a.id} style={{ ...S.card, borderLeft: `3px solid ${a.overall >= 70 ? "#4ade80" : a.overall >= 50 ? "#fbbf24" : "#f87171"}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: a.overall >= 70 ? "#4ade80" : a.overall >= 50 ? "#fbbf24" : "#f87171" }}>{a.overall}</div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{a.brandName}</div>
+                        <div style={{ fontSize: 12, color: "#71717a" }}>{a.date || new Date(a.createdAt).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {[["clarity","Clarity"], ["visual","Visual"], ["tone","Tone"], ["proof","Proof"], ["content","Content"], ["cx","CX"], ["positioning","Position"]].map(([k, l]) => (
+                        <div key={k} style={{ background: "#09090b", borderRadius: 4, padding: "3px 8px", textAlign: "center" }}>
+                          <div style={{ fontSize: 9, color: "#52525b" }}>{l}</div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: Number(a[k]) >= 70 ? "#4ade80" : Number(a[k]) >= 50 ? "#fbbf24" : "#f87171" }}>{a[k]}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {a.notes && <div style={{ fontSize: 12, color: "#71717a", marginTop: 6 }}>{a.notes}</div>}
+                  </div>
+                  <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px", flexShrink: 0, marginLeft: 12 }} onClick={() => deleteAudit(a.id)} disabled={auditDeleting === a.id}>{auditDeleting === a.id ? "…" : "Delete"}</button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 

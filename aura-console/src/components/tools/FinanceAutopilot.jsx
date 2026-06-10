@@ -19,6 +19,7 @@ const TABS = [
   { id: "dashboard", label: "KPI Dashboard" },
   { id: "automate",  label: "AI Autopilot" },
   { id: "tax",       label: "Tax & Reconciliation" },
+  { id: "budget",    label: "Budget Tracker" },
   { id: "guide",     label: "Finance Guide" },
 ];
 
@@ -77,9 +78,37 @@ export default function FinanceAutopilot() {
   const [checklist, setChecklist] = useState(TAX_CHECKLIST_ITEMS.map((item, i) => ({ ...item, id: i })));
   const [reconcileNotes, setReconcileNotes] = useState("");
 
+  // Budget Tracker
+  const [budgets, setBudgets]             = useState([]);
+  const [budgetForm, setBudgetForm]       = useState({ name: "", category: "Marketing", budgeted: "", actual: "", period: new Date().toISOString().slice(0, 7) });
+  const setBF = (k, v) => setBudgetForm(p => ({ ...p, [k]: v }));
+  const [budgetSaving, setBudgetSaving]   = useState(false);
+  const [budgetDeleting, setBudgetDeleting] = useState(null);
+
   const [error, setError] = useState("");
 
-  useEffect(() => { loadAutomations(); }, []);
+  useEffect(() => { loadAutomations(); loadBudgets(); }, []);
+
+  const loadBudgets = async () => {
+    try { const r = await apiFetchJSON(`${API}/budgets`); if (r.ok) setBudgets(r.budgets || []); } catch {}
+  };
+
+  const saveBudget = async () => {
+    if (!budgetForm.name.trim() || !budgetForm.budgeted) { setError("Name and budget amount are required"); return; }
+    setBudgetSaving(true); setError("");
+    try {
+      const r = await apiFetchJSON(`${API}/budgets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...budgetForm, createdAt: new Date().toISOString() }) });
+      if (!r.ok) throw new Error(r.error || "Save failed");
+      loadBudgets(); setBudgetForm(p => ({ ...p, name: "", budgeted: "", actual: "" }));
+    } catch (e) { setError(e.message); }
+    setBudgetSaving(false);
+  };
+
+  const deleteBudget = async (id) => {
+    setBudgetDeleting(id);
+    try { await apiFetchJSON(`${API}/budgets/${id}`, { method: "DELETE" }); setBudgets(p => p.filter(b => b.id !== id)); } catch {}
+    setBudgetDeleting(null);
+  };
 
   const loadAutomations = async () => {
     try {
@@ -141,6 +170,20 @@ export default function FinanceAutopilot() {
         <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
           Live KPI calculator, AI-powered P&L and cash flow automation, tax & reconciliation tracker. Run a tight financial operation without a full-time finance team.
         </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Saved Automations", value: automations.length,                                color: "#4f46e5" },
+          { label: "Budget Lines",      value: budgets.length,                                    color: "#4ade80" },
+          { label: "Tax Tasks Done",    value: checklist.filter(i => i.done).length,              color: "#818cf8" },
+          { label: "Tax Tasks Total",   value: checklist.length,                                  color: "#52525b" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       <ErrorBox message={error} />
@@ -320,6 +363,119 @@ export default function FinanceAutopilot() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── BUDGET TRACKER ── */}
+      {tab === "budget" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Add Budget Line</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 140px 1fr 1fr 140px", gap: 10, marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Line Item Name *</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.name} onChange={e => setBF("name", e.target.value)} placeholder="Facebook Ads Spend" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Category</div>
+                <select style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none", width: "100%" }} value={budgetForm.category} onChange={e => setBF("category", e.target.value)}>
+                  {["Marketing", "Inventory / COGS", "Operations", "Technology", "Staffing", "Fulfilment", "Legal / Finance", "Other"].map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Budgeted (£) *</div>
+                <input type="number" style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.budgeted} onChange={e => setBF("budgeted", e.target.value)} placeholder="5000" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Actual Spend (£)</div>
+                <input type="number" style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.actual} onChange={e => setBF("actual", e.target.value)} placeholder="4230" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Period (YYYY-MM)</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.period} onChange={e => setBF("period", e.target.value)} placeholder="2024-01" />
+              </div>
+            </div>
+            <button style={S.btn("primary")} onClick={saveBudget} disabled={budgetSaving || !budgetForm.name || !budgetForm.budgeted}>{budgetSaving ? "Saving…" : "Add Budget Line"}</button>
+          </div>
+
+          {budgets.length > 0 && (() => {
+            const totalBudgeted = budgets.reduce((s, b) => s + (parseFloat(b.budgeted) || 0), 0);
+            const totalActual   = budgets.reduce((s, b) => s + (parseFloat(b.actual) || 0), 0);
+            const variance      = totalBudgeted - totalActual;
+            return (
+              <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+                {[
+                  { label: "Total Budgeted", value: `£${totalBudgeted.toLocaleString()}`,    color: "#818cf8" },
+                  { label: "Total Actual",   value: `£${totalActual.toLocaleString()}`,       color: totalActual > totalBudgeted ? "#f87171" : "#4ade80" },
+                  { label: "Variance",       value: `${variance >= 0 ? "+" : ""}£${Math.abs(variance).toLocaleString()}`, color: variance >= 0 ? "#4ade80" : "#f87171" },
+                  { label: "Budget Lines",   value: budgets.length,                           color: "#fbbf24" },
+                ].map(s => (
+                  <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
+                    <div style={{ fontSize: 10, color: "#71717a", textTransform: "uppercase", fontWeight: 700 }}>{s.label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{budgets.length} budget line{budgets.length !== 1 ? "s" : ""}</div>
+            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadBudgets}>Refresh</button>
+          </div>
+
+          {budgets.length === 0 ? (
+            <div>
+              <EmptyState icon="📊" title="No budget lines yet" description="Add your first budget line above to start tracking spend vs budget." />
+              <div style={S.card}>
+                <div style={S.sectionTitle}>Recommended Budget Structure</div>
+                {[
+                  { cat: "Marketing",        pct: "15–25%", desc: "Paid social, Google Ads, influencer, email tools" },
+                  { cat: "Inventory/COGS",   pct: "40–55%", desc: "Product cost, packaging, raw materials" },
+                  { cat: "Fulfilment",       pct: "8–15%",  desc: "Shipping, 3PL fees, returns processing" },
+                  { cat: "Technology",       pct: "3–6%",   desc: "Shopify, apps, analytics, automation" },
+                  { cat: "Staffing",         pct: "10–20%", desc: "FTE, contractors, freelancers" },
+                  { cat: "Operations",       pct: "5–10%",  desc: "Office, utilities, insurance, admin" },
+                  { cat: "Legal/Finance",    pct: "1–3%",   desc: "Accountant, legal, banking fees" },
+                ].map(({ cat, pct, desc }) => (
+                  <div key={cat} style={{ display: "grid", gridTemplateColumns: "160px 80px 1fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 12, alignItems: "center" }}>
+                    <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{cat}</span>
+                    <span style={{ color: "#818cf8", fontWeight: 700, textAlign: "right" }}>{pct}</span>
+                    <span style={{ color: "#71717a" }}>{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            budgets.map(b => {
+              const over   = parseFloat(b.actual) > parseFloat(b.budgeted);
+              const pct    = b.budgeted ? Math.min(Math.round((parseFloat(b.actual || 0) / parseFloat(b.budgeted)) * 100), 120) : 0;
+              return (
+                <div key={b.id} style={{ ...S.card, borderLeft: `3px solid ${over ? "#f87171" : "#4ade80"}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{b.name}</span>
+                        <span style={{ background: "#27272a", color: "#71717a", padding: "2px 8px", borderRadius: 4, fontSize: 11 }}>{b.category}</span>
+                        {b.period && <span style={{ fontSize: 11, color: "#52525b" }}>{b.period}</span>}
+                      </div>
+                      <div style={{ display: "flex", gap: 16, marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, color: "#71717a" }}>Budget: <strong style={{ color: "#e4e4e7" }}>£{parseFloat(b.budgeted || 0).toLocaleString()}</strong></span>
+                        {b.actual && <span style={{ fontSize: 13, color: "#71717a" }}>Actual: <strong style={{ color: over ? "#f87171" : "#4ade80" }}>£{parseFloat(b.actual).toLocaleString()}</strong></span>}
+                        {b.actual && <span style={{ fontSize: 13, fontWeight: 700, color: over ? "#f87171" : "#4ade80" }}>{pct}%</span>}
+                      </div>
+                      {b.actual && (
+                        <div style={{ height: 4, background: "#27272a", borderRadius: 2 }}>
+                          <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: over ? "#f87171" : "#4f46e5", borderRadius: 2 }} />
+                        </div>
+                      )}
+                    </div>
+                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px", flexShrink: 0, marginLeft: 12 }} onClick={() => deleteBudget(b.id)} disabled={budgetDeleting === b.id}>{budgetDeleting === b.id ? "…" : "Delete"}</button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 
