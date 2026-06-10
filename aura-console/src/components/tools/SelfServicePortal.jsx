@@ -17,10 +17,11 @@ const S = {
 };
 
 const TABS = [
-  { id: "ai",       label: "AI Assistant" },
-  { id: "faq",      label: "FAQ Builder" },
-  { id: "requests", label: "Request Manager" },
-  { id: "guide",    label: "Portal Guide" },
+  { id: "ai",         label: "AI Assistant" },
+  { id: "faq",        label: "FAQ Builder" },
+  { id: "requests",   label: "Request Manager" },
+  { id: "automations", label: "CS Automations" },
+  { id: "guide",      label: "Portal Guide" },
 ];
 
 const FAQ_CATEGORIES = ["Orders & Tracking", "Returns & Refunds", "Shipping", "Product Questions", "Account & Billing", "Technical Support"];
@@ -197,21 +198,19 @@ export default function SelfServicePortal() {
         </p>
       </div>
 
-      {(requests.length > 0 || faqs.length > 0) && (
-        <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-          {[
-            { label: "FAQ Articles",    val: faqs.length,      color: "#818cf8" },
-            { label: "Open Requests",   val: openCount,        color: "#fbbf24" },
-            { label: "Resolved",        val: resolvedCount,    color: "#4ade80" },
-            { label: "Total Requests",  val: requests.length,  color: "#71717a" },
-          ].map(({ label, val, color }) => (
-            <div key={label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
-              <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color }}>{val}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "FAQ Articles",   val: faqs.length,      color: "#818cf8" },
+          { label: "Open Requests",  val: openCount,        color: "#fbbf24" },
+          { label: "Resolved",       val: resolvedCount,    color: "#4ade80" },
+          { label: "Total Requests", val: requests.length,  color: "#71717a" },
+        ].map(({ label, val, color }) => (
+          <div key={label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color }}>{val}</div>
+          </div>
+        ))}
+      </div>
 
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
@@ -390,6 +389,94 @@ export default function SelfServicePortal() {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {/* ── CS AUTOMATIONS ── */}
+      {tab === "automations" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Self-Service Automation Blueprints</div>
+            <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 14 }}>
+              Pre-built automation flows you can implement to reduce CS ticket volume. Each blueprint includes the trigger, logic, and expected deflection rate.
+            </p>
+            {[
+              {
+                title: "Order Status Auto-Reply",
+                trigger: "Customer emails ‘where is my order’ keywords",
+                logic: "Detect order enquiry intent → look up order by email → send personalised tracking link + carrier ETA",
+                deflection: "35-45%",
+                effort: "Low",
+                color: "#4ade80",
+              },
+              {
+                title: "Return Request Self-Service",
+                trigger: "Customer submits return form or emails return intent",
+                logic: "Check return eligibility → auto-approve if within policy → generate prepaid label → update order status",
+                deflection: "25-35%",
+                effort: "Medium",
+                color: "#818cf8",
+              },
+              {
+                title: "FAQ Deflection Bot",
+                trigger: "Any inbound message before human assignment",
+                logic: "Match message to FAQ knowledge base → reply with top 3 matching answers → offer human escalation if unresolved",
+                deflection: "20-30%",
+                effort: "Low",
+                color: "#fbbf24",
+              },
+              {
+                title: "Post-Purchase Check-In",
+                trigger: "3 days after delivery confirmation",
+                logic: "Send automated satisfaction check → if negative sentiment, escalate to CS queue → if positive, request review",
+                deflection: "10-15% (proactive resolution)",
+                effort: "Low",
+                color: "#60a5fa",
+              },
+              {
+                title: "Subscription / Account Management",
+                trigger: "Customer emails about subscription changes, pauses, or cancellations",
+                logic: "Detect intent → surface self-service account management link → log action in request manager if unresolved",
+                deflection: "15-20%",
+                effort: "Medium",
+                color: "#f97316",
+              },
+            ].map(({ title, trigger, logic, deflection, effort, color }) => (
+              <div key={title} style={{ padding: "14px 0", borderBottom: "1px solid #1f1f22" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{title}</div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <span style={{ background: "#27272a", color: "#a1a1aa", padding: "2px 8px", borderRadius: 4, fontSize: 11 }}>{effort} effort</span>
+                    <span style={{ background: "#052e16", color, padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>{deflection} deflection</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: "#71717a", marginBottom: 4 }}><strong style={{ color: "#a1a1aa" }}>Trigger:</strong> {trigger}</div>
+                <div style={{ fontSize: 12, color: "#71717a" }}><strong style={{ color: "#a1a1aa" }}>Logic:</strong> {logic}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Deflection Rate Calculator</div>
+            <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 10 }}>
+              Estimate your monthly CS hours saved by implementing self-service automation. Adjust inputs to match your store.
+            </p>
+            {[
+              { label: "Monthly CS tickets", val: "1,200", note: "Your current volume" },
+              { label: "Avg handle time",     val: "8 min", note: "Minutes per ticket" },
+              { label: "Target deflection",   val: "50%",   note: "Achievable with 3+ automations" },
+              { label: "Hours saved / month", val: "80 hrs", note: "At 50% deflection + 8 min avg" },
+              { label: "Cost saved / month",  val: "~£1,600", note: "At £20/hr CS cost" },
+            ].map(({ label, val, note }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1f1f22" }}>
+                <span style={{ fontSize: 13, color: "#a1a1aa" }}>{label}</span>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: "#4f46e5" }}>{val}</span>
+                  <div style={{ fontSize: 11, color: "#52525b" }}>{note}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

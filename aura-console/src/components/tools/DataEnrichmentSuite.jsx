@@ -20,6 +20,7 @@ const TABS = [
   { id: "profiler",  label: "Data Profiler" },
   { id: "enrich",    label: "AI Enrich" },
   { id: "mapping",   label: "Field Mapping" },
+  { id: "history",   label: "Enrichment History" },
   { id: "guide",     label: "Data Quality Guide" },
 ];
 
@@ -59,13 +60,37 @@ export default function DataEnrichmentSuite() {
   const [newMapping, setNewMapping] = useState({ sourceField: "", targetField: "", fieldType: "Text", transform: "" });
   const nm = (k, v) => setNewMapping(p => ({ ...p, [k]: v }));
 
-  useEffect(() => { loadMappings(); }, []);
+  // Enrichment History
+  const [enrichHistory, setEnrichHistory]   = useState([]);
+  const [histDeleting, setHistDeleting]     = useState(null);
+
+  useEffect(() => { loadMappings(); loadHistory(); }, []);
 
   const loadMappings = async () => {
     try {
       const r = await apiFetchJSON(`${API}/mappings`);
       if (r.ok) setMappings(r.mappings || []);
     } catch (e) { /* ignore */ }
+  };
+
+  const loadHistory = async () => {
+    try { const r = await apiFetchJSON(`${API}/history`); if (r.ok) setEnrichHistory(r.history || []); } catch {}
+  };
+
+  const saveEnrichToHistory = async (action, result) => {
+    try {
+      await apiFetchJSON(`${API}/history`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, summary: typeof result === "string" ? result.slice(0, 200) : JSON.stringify(result).slice(0, 200), ranAt: new Date().toISOString() }),
+      });
+      loadHistory();
+    } catch {}
+  };
+
+  const deleteHistory = async (id) => {
+    setHistDeleting(id);
+    try { await apiFetchJSON(`${API}/history/${id}`, { method: "DELETE" }); setEnrichHistory(p => p.filter(h => h.id !== id)); } catch {}
+    setHistDeleting(null);
   };
 
   const runProfile = async () => {
@@ -114,6 +139,7 @@ export default function DataEnrichmentSuite() {
       });
       if (!r.ok && r.error) throw new Error(r.error);
       setEnrichResult(r.result || r);
+      saveEnrichToHistory(action, r.result || r);
     } catch (e) { setError(e.message); }
     setEnriching(false);
   };
@@ -146,6 +172,20 @@ export default function DataEnrichmentSuite() {
         <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
           Profile your data for completeness and quality issues, use AI to enrich and classify records, and map fields between data sources. Turn raw store data into structured, actionable intelligence.
         </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Datasets Profiled", value: profileResult ? 1 : 0,   color: "#4f46e5" },
+          { label: "Field Mappings",    value: mappings.length,          color: "#4ade80" },
+          { label: "Enrichment Runs",   value: enrichHistory.length,     color: "#818cf8" },
+          { label: "Enrich Actions",    value: ENRICH_ACTIONS.length,    color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       <ErrorBox message={error} />
@@ -330,6 +370,38 @@ export default function DataEnrichmentSuite() {
                 </div>
               ))}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ── ENRICHMENT HISTORY ── */}
+      {tab === "history" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{enrichHistory.length} enrichment run{enrichHistory.length !== 1 ? "s" : ""} recorded</div>
+            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadHistory}>Refresh</button>
+          </div>
+
+          {enrichHistory.length === 0 ? (
+            <EmptyState icon="📊" title="No enrichment history yet" description="Run an AI enrichment action from the AI Enrich tab. Each run is automatically recorded here." />
+          ) : (
+            enrichHistory.map((h, i) => (
+              <div key={h.id || i} style={{ ...S.card, display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7", marginBottom: 4 }}>{h.action}</div>
+                  {h.summary && <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5, marginBottom: 4 }}>{h.summary}</div>}
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {h.ranAt && <span style={{ fontSize: 11, color: "#52525b" }}>{new Date(h.ranAt).toLocaleString()}</span>}
+                    <span style={{ background: "#052e16", color: "#4ade80", padding: "1px 7px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>success</span>
+                  </div>
+                </div>
+                <button
+                  style={{ ...S.btn("danger"), fontSize: 10, padding: "3px 8px", flexShrink: 0 }}
+                  onClick={() => deleteHistory(h.id)}
+                  disabled={histDeleting === h.id}
+                >{histDeleting === h.id ? "…" : "✕"}</button>
+              </div>
+            ))
           )}
         </div>
       )}

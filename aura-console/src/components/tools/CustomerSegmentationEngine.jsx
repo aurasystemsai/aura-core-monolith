@@ -141,6 +141,21 @@ export default function CustomerSegmentationEngine() {
           Group customers into actionable segments using RFM analysis, AI bulk classification, and behavioural patterns. Target the right customers with the right message at the right time.
         </p>
       </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Segments Defined", value: savedLists.length,                                               color: "#4f46e5" },
+          { label: "Customers Tagged", value: savedLists.reduce((a, s) => a + (Number(s.count) || 0), 0), color: "#4ade80" },
+          { label: "RFM Scores Run",   value: segmentResult ? 1 : 0,                                          color: "#818cf8" },
+          { label: "Bulk Classified",  value: classifyResult ? 1 : 0,                                         color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 

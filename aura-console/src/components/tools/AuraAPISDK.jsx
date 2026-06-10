@@ -17,10 +17,104 @@ const S = {
 };
 
 const TABS = [
-  { id: "reference", label: "API Reference" },
-  { id: "console",   label: "API Console" },
-  { id: "snippets",  label: "Code Snippets" },
+  { id: "reference",  label: "API Reference" },
+  { id: "console",    label: "API Console" },
+  { id: "snippets",   label: "Code Snippets" },
+  { id: "recipes",    label: "Integration Recipes" },
   { id: "quickstart", label: "Quick Start" },
+];
+
+const INTEGRATION_RECIPES = [
+  {
+    name: "Shopify → BigQuery daily sync",
+    category: "Data",
+    stack: "Shopify Webhooks + AURA + BigQuery",
+    description: "Trigger AURA's data warehouse connector to push new orders, customers, and products to BigQuery every day at 6am using a cron job.",
+    steps: [
+      "Set up BigQuery connection in Data Warehouse Connector tab",
+      "Configure webhook: POST /api/data-warehouse-connector/sync",
+      "Schedule a cron job (GitHub Actions or Cloud Scheduler) to call it daily",
+      "Validate using GET /api/data-warehouse-connector/connections",
+    ],
+    code: `// GitHub Actions workflow (runs daily at 6am)
+steps:
+  - name: Sync to BigQuery
+    run: |
+      curl -X POST $AURA_URL/api/data-warehouse-connector/sync \\
+        -H "Authorization: Bearer $SESSION_TOKEN" \\
+        -H "x-shopify-shop-domain: $SHOP_DOMAIN" \\
+        -H "Content-Type: application/json" \\
+        -d '{"target": "bigquery", "tables": ["orders", "customers"]}'`,
+  },
+  {
+    name: "Auto-generate weekly blog post",
+    category: "Content",
+    stack: "AURA + Zapier + Shopify Blog",
+    description: "Every Monday, trigger AURA to generate a SEO-optimised blog post from your top keyword, then automatically publish it to Shopify via Zapier.",
+    steps: [
+      "POST /api/weekly-blog-content-engine/generate with topic and targetKeyword",
+      "Zapier: watch for blog post response from AURA webhook",
+      "Zapier: create Shopify blog post with generated title and content",
+      "AURA: track new post URL in rank tracker",
+    ],
+    code: `// POST to generate a blog post
+const blog = await fetch('/api/weekly-blog-content-engine/generate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', ...authHeaders },
+  body: JSON.stringify({
+    topic: 'running shoes for beginners',
+    targetKeyword: 'best running shoes 2025',
+    wordCount: 1200,
+  }),
+});
+const { content, title, metaDescription } = await blog.json();`,
+  },
+  {
+    name: "Churn detection → Klaviyo campaign",
+    category: "Retention",
+    stack: "AURA + Klaviyo + Shopify Flow",
+    description: "Daily: query AURA's churn prediction endpoint for at-risk customers, then push them into a Klaviyo win-back segment automatically.",
+    steps: [
+      "GET /api/churn-prediction-playbooks/customers?risk=high",
+      "Loop through at-risk customers",
+      "POST each email to Klaviyo List API (or custom property update)",
+      "Klaviyo Flow: trigger win-back sequence when list property = true",
+    ],
+    code: `// Get high-risk customers
+const { customers } = await apiFetch('/api/churn-prediction-playbooks/customers?risk=high');
+
+// Push to Klaviyo
+for (const customer of customers) {
+  await fetch('https://a.klaviyo.com/api/v2/list/LIST_ID/members', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ profiles: [{ email: customer.email }] }),
+  });
+}`,
+  },
+  {
+    name: "New review → SEO & social automation",
+    category: "SEO & Social",
+    stack: "AURA + Make (Integromat)",
+    description: "When a 5-star review is submitted, AURA auto-generates a social proof social post, and updates the product schema markup with the new review.",
+    steps: [
+      "Make: watch for new Shopify review (or Yotpo webhook)",
+      "POST /api/review-ugc-engine/social-proof with review data",
+      "POST /api/schema-rich-results/generate to refresh product schema",
+      "Optionally: POST /api/social-scheduler-content-engine/posts to queue social post",
+    ],
+    code: `// Generate social proof post from review
+const post = await fetch('/api/review-ugc-engine/social-proof', {
+  method: 'POST',
+  headers: { ...authHeaders, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    reviewText: review.body,
+    rating: review.rating,
+    productName: review.product_title,
+    platform: 'Instagram',
+  }),
+});`,
+  },
 ];
 
 const API_GROUPS = [
@@ -213,6 +307,20 @@ export default function AuraAPISDK() {
         </p>
       </div>
 
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "API Endpoints",       value: API_GROUPS.reduce((a, g) => a + g.endpoints.length, 0), color: "#4f46e5" },
+          { label: "API Groups",          value: API_GROUPS.length,                                       color: "#4ade80" },
+          { label: "Console Requests",    value: consoleHistory.length,                                   color: "#818cf8" },
+          { label: "Integration Recipes", value: INTEGRATION_RECIPES.length,                             color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
@@ -369,6 +477,47 @@ export default function AuraAPISDK() {
   "code": "INSUFFICIENT_CREDITS"   // optional machine-readable error code
 }`}</pre>
           </div>
+        </div>
+      )}
+
+      {/* ── INTEGRATION RECIPES ── */}
+      {tab === "recipes" && (
+        <div style={{ marginTop: 20 }}>
+          <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 16 }}>
+            Pre-built integration blueprints for common AURA workflows. Copy the code, fill in your credentials, and deploy.
+          </p>
+          {INTEGRATION_RECIPES.map((recipe, i) => (
+            <div key={i} style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ background: "#1e1b4b", color: "#818cf8", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>{recipe.category}</span>
+                    <span style={{ fontSize: 12, color: "#52525b" }}>{recipe.stack}</span>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#e4e4e7" }}>{recipe.name}</div>
+                  <div style={{ fontSize: 13, color: "#71717a", marginTop: 4, lineHeight: 1.5 }}>{recipe.description}</div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <div style={S.sectionTitle}>Steps</div>
+                {recipe.steps.map((step, j) => (
+                  <div key={j} style={{ display: "flex", gap: 10, padding: "5px 0", borderBottom: "1px solid #1f1f22" }}>
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{j + 1}</div>
+                    <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>{step}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={S.sectionTitle}>Code</div>
+                  <button style={{ ...S.btn(), fontSize: 10, padding: "3px 8px" }} onClick={() => navigator.clipboard?.writeText(recipe.code)}>Copy</button>
+                </div>
+                <pre style={S.pre}>{recipe.code}</pre>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
