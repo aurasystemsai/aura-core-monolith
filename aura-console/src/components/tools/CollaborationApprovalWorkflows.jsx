@@ -1,646 +1,235 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
-import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
+﻿import React, { useState } from "react";
+import { apiFetchJSON } from "../../api";
+import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
-const STORAGE_KEY = "collab-approvals:draft";
-const WORKFLOW_PRESETS = [
- { id: "multi-approver", name: "Multi-approver", badge: "dev", workflow: "Submit ->Manager approves ->Legal signs ->Notify Slack #approvals"},
- { id: "deal-desk", name: "Deal Desk", badge: "dev", workflow: "AE submits >Deal Desk review >Finance signoff >Salesforce update"},
- { id: "content", name: "Content QA", badge: "dev", workflow: "Draft ->Editor review ->Brand QA ->Publish ->Retro"}
+const API = "/api/collaboration-approval-workflows";
+
+const S = {
+  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
+  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
+  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
+  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
+  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
+  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+  stepNode: { background: "#1e1b4b", border: "1px solid #3730a3", borderRadius: 8, padding: "6px 14px", fontSize: 12, color: "#c7d2fe", fontWeight: 600, whiteSpace: "nowrap" },
+  arrow: { fontSize: 16, color: "#52525b", flexShrink: 0, alignSelf: "center" },
+};
+
+const TABS = [
+  { id: "builder",  label: "Workflow Builder" },
+  { id: "ai",       label: "AI Generate" },
+  { id: "history",  label: "History" },
+  { id: "guide",    label: "Approval Guide" },
 ];
 
-export default function CollaborationApprovalWorkflows() {
- const [workflow, setWorkflow] = useState("");
- const [result, setResult] = useState(null);
- const [loading, setLoading] = useState(false);
- const [error, setError] = useState("");
- const [history, setHistory] = useState([]);
- // Dark mode enforced, no toggle
- const [showOnboarding, setShowOnboarding] = useState(false);
- const [env, setEnv] = useState("dev");
- const [draftStatus, setDraftStatus] = useState("idle");
- const [lastSavedAt, setLastSavedAt] = useState(null);
- const [preflightIssues, setPreflightIssues] = useState([]);
- const [preflightTrace, setPreflightTrace] = useState([]);
- const [confirmationNote, setConfirmationNote] = useState("");
- const [selectedPreset, setSelectedPreset] = useState("multi-approver");
- const [lastBuiltSnapshot, setLastBuiltSnapshot] = useState(null);
- const [role] = useState(() => {
- if (typeof window === "undefined") return "admin";
- return window.__AURA_USER?.role || window.localStorage.getItem("aura-role") || "admin";
- });
- const [accessRequested, setAccessRequested] = useState(false);
- const [dirtySinceSave, setDirtySinceSave] = useState(false);
- const [undoStack, setUndoStack] = useState([]);
- const [redoStack, setRedoStack] = useState([]);
- const [showCommandPalette, setShowCommandPalette] = useState(false);
+const PRESETS = [
+  {
+    id: "multi-approver",
+    name: "Multi-Approver Sign-off",
+    category: "Legal / Finance",
+    workflow: "Submit → Manager reviews → Legal signs → Finance approves → Notify Slack #approvals → Archive",
+    description: "Standard multi-stakeholder sign-off for contracts, budgets, and legal agreements.",
+  },
+  {
+    id: "deal-desk",
+    name: "Deal Desk",
+    category: "Sales",
+    workflow: "AE submits quote → Deal Desk reviews → Finance discount check → VP signs → Salesforce update → Customer notified",
+    description: "Sales deal approval with discount gates and CRM auto-update.",
+  },
+  {
+    id: "content-qa",
+    name: "Content QA Pipeline",
+    category: "Marketing",
+    workflow: "Draft submitted → Editor review → Brand QA → Legal check → Publish → Analytics tag → Retro review",
+    description: "Full content approval chain from draft to live publication.",
+  },
+  {
+    id: "vendor-onboard",
+    name: "Vendor Onboarding",
+    category: "Operations",
+    workflow: "Application → Procurement review → Legal vetting → Security scan → Finance terms → IT provisioning → Welcome",
+    description: "New supplier or vendor onboarding with compliance and security gates.",
+  },
+  {
+    id: "product-launch",
+    name: "Product Launch",
+    category: "Product",
+    workflow: "Brief → Design sign-off → Engineering review → QA pass → Marketing ready → CEO/founder → Launch → Monitor",
+    description: "Full product or feature launch approval with multi-department gates.",
+  },
+  {
+    id: "refund-auth",
+    name: "Refund Authorisation",
+    category: "Customer Service",
+    workflow: "CS raise request → Reason validated → Amount check (>£200 → manager) → Approve → Process refund → Log",
+    description: "Conditional refund approval with value-based routing.",
+  },
+];
 
- const goBackToSuite = () => {
- if (typeof window !== "undefined"&& typeof window.__AURA_TO_SUITE === "function") {
- window.__AURA_TO_SUITE("workflows");
- }
- };
-
- const handleManualSave = () => {
- if (typeof window === "undefined") return;
- window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
- workflow,
- env,
- confirmationNote,
- selectedPreset,
- lastSavedAt: Date.now()
- }));
- setDraftStatus("saved");
- setLastSavedAt(Date.now());
- setDirtySinceSave(false);
- };
-
- const runPreflight = () => {
- const issues = [];
- const trace = [];
- const record = (status, detail) => trace.push({ status, detail });
- const normalized = (workflow || "").trim();
- const steps = normalized.split(/->|>/).map(s => s.trim()).filter(Boolean);
- const lower = normalized.toLowerCase();
-
- record("pass", `Env: ${env.toUpperCase()}`);
- if (env === "prod"&& !confirmationNote.trim()) {
- issues.push("Add a prod confirmation note (who approved, intent).");
- record("fail", "Prod mode requires a confirmation note.");
- } else if (env === "prod") {
- record("pass", "Prod note present.");
- }
-
- if (!normalized) {
- issues.push("Add a workflow description before building.");
- record("fail", "Workflow is empty.");
- } else {
- record("pass", "Workflow text provided.");
- }
-
- if (normalized.length < 30) {
- issues.push("Workflow is too short; add steps/owners.");
- record("fail", "Workflow length below 30 chars.");
- } else {
- record("pass", `Workflow length ${normalized.length} chars.`);
- }
-
- if (steps.length < 3) {
- issues.push("Add at least three steps with clear handoffs (use ->).");
- record("fail", "Fewer than 3 steps detected.");
- } else {
- record("pass", `${steps.length} steps detected via arrows.`);
- }
-
- const hasSubmit = /submit|request|intake/.test(lower);
- if (!hasSubmit) {
- issues.push("Include an intake/submit step to start the flow.");
- record("warn", "Missing explicit submit/intake step.");
- } else {
- record("pass", "Submit/intake step found.");
- }
-
- const hasApproval = /approve|approval|sign|review/.test(lower);
- if (!hasApproval) {
- issues.push("Add at least one explicit approval/review step.");
- record("fail", "No approval/review keywords detected.");
- } else {
- record("pass", "Approval/review step present.");
- }
-
- const hasNotification = /slack|notify|email|alert|teams/.test(lower);
- if (!hasNotification) {
- issues.push("Add notification channel (Slack/Email/Teams) for visibility.");
- record("warn", "No notification channel mentioned.");
- } else {
- record("pass", "Notification channel mentioned.");
- }
-
- const hasSla = /\bSLA\b|\b\d+\s?(h|hr|hrs|hour|hours|d|day|days)/i.test(workflow);
- if (!hasSla) {
- record("warn", "No SLA/timing noted.");
- } else {
- record("pass", "SLA or timing found.");
- }
-
- const duplicates = steps
- .map(s => s.toLowerCase())
- .filter((s, idx, arr) => arr.indexOf(s) !== idx && s);
- if (duplicates.length) {
- const uniqueDupes = [...new Set(duplicates)];
- issues.push(`Duplicate steps found: ${uniqueDupes.join(", ")}`);
- record("fail", `Duplicate step labels: ${uniqueDupes.join(", ")}.`);
- }
-
- const ambiguousSteps = steps.filter(s => s.split("").length < 2);
- if (ambiguousSteps.length) {
- issues.push("Clarify step names with owners/actions (too terse).");
- record("warn", `Ambiguous steps: ${ambiguousSteps.join(", ")}.`);
- }
-
- setPreflightIssues(issues);
- setPreflightTrace(trace);
- return issues;
- };
-
- const handleBuild = async () => {
- if (isViewer) return setError("View-only mode: request access to build.");
- const issues = runPreflight();
- if (issues.length) return;
- setLoading(true);
- setError("");
- setResult(null);
- try {
- const res = await fetch("/api/collaboration-approval-workflows/build", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ workflow })
- });
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setResult(data.result);
- setLastBuiltSnapshot({ workflow, env, ts: Date.now() });
- setHistory(prev => [{ workflow, result: data.result }, ...prev].slice(0, 10));
- setDirtySinceSave(false);
- dirtySkipRef.current = true;
- } catch (err) {
- setError(err.message);
- } finally {
- setLoading(false);
- }
- };
-
- const onboardingContent = (
- <div style={{ padding: 24, background: "#09090b", borderRadius: 12, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Collaboration & Approval Workflows</h3>
- <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
- <li>Design approval and collaboration workflows</li>
- <li>Integrate with Slack, email, and project tools</li>
- <li>Export, share, and review workflow history</li>
- <li>Accessible, secure, and fully compliant</li>
- </ul>
- <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Get Started</button>
- </div>
- );
-
- // Flagship enhancements
- const [workflows, setWorkflows] = useState([]);
- const [approvals, setApprovals] = useState([]);
- const [imported, setImported] = useState(null);
- const [exported, setExported] = useState(null);
- const [feedback, setFeedback] = useState("");
- const fileInputRef = useRef();
- const hydratedRef = useRef(false);
- const dirtySkipRef = useRef(true);
-
- const isViewer = role === "viewer";
-
- const snapshotState = () => ({
- workflow,
- env,
- confirmationNote,
- selectedPreset,
- lastBuiltSnapshot,
- history,
- result
- });
-
- const pushUndoSnapshot = () => {
- setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(snapshotState()))]);
- setRedoStack([]);
- };
-
- const handleUndo = () => {
- if (!undoStack.length) return;
- const prev = undoStack[undoStack.length - 1];
- setUndoStack(undoStack.slice(0, -1));
- setRedoStack(r => [...r.slice(-9), JSON.parse(JSON.stringify(snapshotState()))]);
- setWorkflow(prev.workflow || "");
- setEnv(prev.env || "dev");
- setConfirmationNote(prev.confirmationNote || "");
- setSelectedPreset(prev.selectedPreset || "multi-approver");
- setLastBuiltSnapshot(prev.lastBuiltSnapshot || null);
- setHistory(prev.history || []);
- setResult(prev.result || null);
- };
-
- const handleRedo = () => {
- if (!redoStack.length) return;
- const next = redoStack[redoStack.length - 1];
- setRedoStack(redoStack.slice(0, -1));
- setUndoStack(u => [...u.slice(-9), JSON.parse(JSON.stringify(snapshotState()))]);
- setWorkflow(next.workflow || "");
- setEnv(next.env || "dev");
- setConfirmationNote(next.confirmationNote || "");
- setSelectedPreset(next.selectedPreset || "multi-approver");
- setLastBuiltSnapshot(next.lastBuiltSnapshot || null);
- setHistory(next.history || []);
- setResult(next.result || null);
- };
-
- const handleInputChange = (setter, parser = v => v) => e => {
- if (isViewer) {
- setError("View-only mode request edit access to modify.");
- return;
- }
- pushUndoSnapshot();
- setter(parser(e.target.value));
- };
-
- const handleDirectChange = (setter, parser = v => v) => value => {
- if (isViewer) {
- setError("View-only mode request edit access to modify.");
- return;
- }
- pushUndoSnapshot();
- setter(parser(value));
- };
-
- // Fetch workflows
- const fetchWorkflows = async () => {
- try {
- const res = await fetch("/api/collaboration-approval-workflows/workflows");
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setWorkflows(data.workflows || []);
- } catch (err) {
- setError(err.message);
- }
- };
- // Fetch approvals
- const fetchApprovals = async () => {
- try {
- const res = await fetch("/api/collaboration-approval-workflows/approvals");
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setApprovals(data.approvals || []);
- } catch (err) {
- setError(err.message);
- }
- };
-
- // Import/Export
- const handleImport = e => {
- if (isViewer) return setError("View-only mode: request access to import.");
- const file = e.target.files[0];
- if (!file) return;
- const reader = new FileReader();
- reader.onload = evt => {
- pushUndoSnapshot();
- setWorkflows(JSON.parse(evt.target.result));
- setImported(file.name);
- };
- reader.readAsText(file);
- };
- const handleExport = () => {
- if (isViewer) return setError("View-only mode: request access to export.");
- const blob = new Blob([JSON.stringify({ workflows, approvals }, null, 2)], { type: "application/json"});
- const url = URL.createObjectURL(blob);
- setExported(url);
- setTimeout(() =>URL.revokeObjectURL(url), 10000);
- };
-
- // Feedback
- const handleFeedback = async () => {
- if (!feedback) return;
- if (isViewer) return setError("View-only mode: request access to send feedback edits.");
- setError("");
- try {
- await fetch("/api/collaboration-approval-workflows/feedback", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ feedback })
- });
- setFeedback("");
- } catch (err) {
- setError(err.message);
- }
- };
-
- useEffect(() => {
- if (typeof window === "undefined") return;
- const saved = window.localStorage.getItem(STORAGE_KEY);
- if (saved) {
- try {
- const parsed = JSON.parse(saved);
- if (parsed.workflow) setWorkflow(parsed.workflow);
- if (parsed.env) setEnv(parsed.env);
- if (parsed.confirmationNote) setConfirmationNote(parsed.confirmationNote);
- if (parsed.selectedPreset) setSelectedPreset(parsed.selectedPreset);
- if (parsed.lastSavedAt) setLastSavedAt(parsed.lastSavedAt);
- dirtySkipRef.current = true;
- setDirtySinceSave(false);
- } catch (err) {
- console.warn("Failed to load draft", err);
- }
- }
- }, []);
-
- useEffect(() => {
- if (typeof window === "undefined") return;
- setDraftStatus("saving");
- const handle = setTimeout(() => {
- window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
- workflow,
- env,
- confirmationNote,
- selectedPreset,
- lastSavedAt: Date.now()
- }));
- setDraftStatus("saved");
- setLastSavedAt(Date.now());
- setDirtySinceSave(false);
- }, 400);
- return () => clearTimeout(handle);
- }, [workflow, env, confirmationNote, selectedPreset]);
-
- useEffect(() => {
- const listener = e => {
- if (e.ctrlKey && e.key.toLowerCase() === "s") {
- e.preventDefault();
- handleManualSave();
- }
- if (e.ctrlKey && e.key === "Enter") {
- e.preventDefault();
- handleBuild();
- }
- if (e.ctrlKey && e.key.toLowerCase() === "z") {
- e.preventDefault();
- handleUndo();
- }
- if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "z") || (e.ctrlKey && e.key.toLowerCase() === "y")) {
- e.preventDefault();
- handleRedo();
- }
- if (e.ctrlKey && e.key.toLowerCase() === "k") {
- e.preventDefault();
- setShowCommandPalette(prev => !prev);
- }
- if (e.altKey && e.key.toLowerCase() === "p") {
- e.preventDefault();
- runPreflight();
- }
- };
- window.addEventListener("keydown", listener);
- return () => window.removeEventListener("keydown", listener);
- }, [workflow, env, confirmationNote, undoStack, redoStack]);
-
- const diffSummary = useMemo(() => {
- if (!lastBuiltSnapshot) return null;
- const delta = workflow.length - (lastBuiltSnapshot.workflow?.length || 0);
- return { delta, at: lastBuiltSnapshot.ts };
- }, [workflow, lastBuiltSnapshot]);
-
- const readinessSummary = useMemo(() => {
- const guardrailsOk = preflightIssues.length === 0;
- const contentRich = workflow.length >= 24;
- const coverage = Math.min(100, (workflow.length / 2) + (guardrailsOk ? 20 : 0) + (contentRich ? 20 : 0) + (confirmationNote ? 8 : 0));
- return {
- guardrailsOk,
- contentRich,
- coverage,
- summary: `${workflow.length || 0} chars · ${history.length} history entries`
- };
- }, [workflow.length, preflightIssues.length, confirmationNote, history.length]);
-
- const checklist = useMemo(() => ([
- { label: "Workflow described", ok: workflow.trim().length > 0 },
- { label: "Preflight clear", ok: preflightIssues.length === 0 },
- { label: "Prod note when required", ok: env !== "prod"? true : !!confirmationNote.trim() },
- { label: "Recent build snapshot", ok: !!lastBuiltSnapshot }
- ]), [workflow, preflightIssues.length, env, confirmationNote, lastBuiltSnapshot]);
-
- const formatTime = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit"}) : "";
-
- useEffect(() => {
- if (!hydratedRef.current) {
- hydratedRef.current = true;
- return;
- }
- if (dirtySkipRef.current) {
- dirtySkipRef.current = false;
- return;
- }
- setDirtySinceSave(true);
- }, [workflow, env, confirmationNote, selectedPreset]);
-
- useEffect(() => {
- const handler = (e) => {
- if (dirtySinceSave || preflightIssues.length) {
- e.preventDefault();
- e.returnValue = "";
- return "";
- }
- };
- window.addEventListener("beforeunload", handler);
- return () => window.removeEventListener("beforeunload", handler);
- }, [dirtySinceSave, preflightIssues.length]);
-
- return (
- <div style={{
- 
- margin: "40px auto",
- background: "#18181b",
- borderRadius: 18,
- boxShadow: "0 2px 24px #0002",
- padding: 36,
- color: "#a3e635",
- fontFamily: 'Inter, sans-serif',
- transition: "background 0.3s, color 0.3s"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <button onClick={goBackToSuite} style={{ background: "transparent", color: "#a3e635", border: "1px solid #3f3f46", borderRadius: 10, padding: "6px 10px", fontWeight: 700, cursor: "pointer"}}> Back to Suite</button>
- <div style={{ color: "#a1a1aa", fontSize: 13 }}>Workflows Suite · Collaboration & Approvals</div>
- </div>
- {isViewer && (
- <div style={{ background: "#3f3f46", border: "1px solid #3f3f46", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap"}}>
- <div>
- <div style={{ fontWeight: 800, color: "#fcd34d"}}>View-only mode</div>
- <div style={{ color: "#a1a1aa", fontSize: 13 }}>You can inspect approvals but need elevated access to edit or build workflows.</div>
- </div>
- <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#3f3f46": "#22c55e", color: "#18181b", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default": "pointer"}}>
- {accessRequested ? "Request sent": "Request edit access"}
- </button>
- </div>
- )}
-
- <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10, marginBottom: 12 }}>
- <div style={{ background: "#09090b", border: "1px solid #3f3f46", borderRadius: 12, padding: 12 }}>
- <div style={{ color: "#a1a1aa", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
- <div style={{ fontWeight: 800, fontSize: 22, color: readinessSummary.coverage >= 85 ? "#22c55e": "#fbbf24"}}>{readinessSummary.coverage}%</div>
- <div style={{ color: "#a1a1aa", fontSize: 13 }}>{readinessSummary.summary}</div>
- </div>
- <div style={{ background: "#09090b", border: "1px solid #3f3f46", borderRadius: 12, padding: 12 }}>
- <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
- <div style={{ color: readinessSummary.guardrailsOk ? "#22c55e": "#f59e0b", fontWeight: 700 }}>{readinessSummary.guardrailsOk ? "Clear": `${preflightIssues.length} issue${preflightIssues.length === 1 ? "": "s"}`}</div>
- <div style={{ color: "#a1a1aa", fontSize: 12 }}>Content depth: {readinessSummary.contentRich ? "Rich": "Needs detail"}</div>
- </div>
- <div style={{ background: "#09090b", border: "1px solid #3f3f46", borderRadius: 12, padding: 12 }}>
- <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
- <div style={{ color: dirtySinceSave ? "#fbbf24": "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits": "Clean"}</div>
- <div style={{ color: "#a1a1aa", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : ""}</div>
- </div>
- </div>
-
- <div style={{ marginBottom: 12, background: "#09090b", border: "1px solid #3f3f46", borderRadius: 12, padding: 12 }}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
- <div style={{ fontWeight: 800, color: "#e4e4e7"}}>Operational checklist</div>
- <div style={{ color: "#a1a1aa", fontSize: 12 }}>Auto-updates as you edit</div>
- </div>
- <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 8 }}>
- {checklist.map(item => (
- <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, padding: "8px 10px"}}>
- <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e": "#f97316"}} />
- <div style={{ color: "#fafafa", fontWeight: 600 }}>{item.label}</div>
- </div>
- ))}
- </div>
- </div>
- {showCommandPalette && (
- <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
- <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
- <div style={{ fontWeight: 800, color: "#a5f3fc"}}>Command Palette</div>
- <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#a1a1aa", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
- </div>
- {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Build", action: handleBuild, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
- <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#27272a": "#18181b", color: cmd.disabled ? "#71717a": "#fafafa", border: "1px solid #27272a", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed": "pointer", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
- <span>{cmd.label}</span>
- <span style={{ fontSize: 12, color: "#a1a1aa"}}>{cmd.hotkey}</span>
- </button>
- ))}
- </div>
- </div>
- )}
- <div style={{ position: "sticky", top: 0, zIndex: 4, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", background: "#18181b", paddingBottom: 12 }}>
- <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#3f3f46", border: "1px solid #3f3f46", borderRadius: 12, padding: "8px 12px"}}>
- <span style={{ color: "#d5d8e8", fontWeight: 700 }}>Env</span>
- {["dev", "stage", "prod"].map(opt => (
- <button key={opt} onClick={() => handleDirectChange(setEnv)(opt)} disabled={isViewer} style={{ background: env === opt ? "#a3e635": "#18181b", color: env === opt ? "#18181b": "#fafafa", border: "1px solid #3f3f46", borderRadius: 999, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed": "pointer", opacity: isViewer ? 0.7 : 1 }}>{opt.toUpperCase()}</button>
- ))}
- <span style={{ color: draftStatus === "saved"? "#22c55e": "#fbbf24", fontSize: 12 }}>{draftStatus === "saved"? `Saved ${formatTime(lastSavedAt)}` : "Saving..."}</span>
- {dirtySinceSave && <span style={{ color: "#fbbf24", fontSize: 12 }}>· Unsaved changes</span>}
- </div>
- <div style={{ display: "flex", gap: 8, flexWrap: "wrap"}}>
- <button onClick={runPreflight} disabled={isViewer} style={{ background: "#27272a", color: "#fcd34d", border: "1px solid #52525b", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed": "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight (Alt+P)</button>
- <button onClick={handleBuild} disabled={isViewer} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed": "pointer", opacity: isViewer ? 0.7 : 1 }}>{loading ? "Building": "Build (Ctrl+Enter)"}</button>
- </div>
- </div>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Collaboration & Approval Workflows</h2>
- <div style={{ color: "#a1a1aa", fontSize: 13 }}>
- Hotkeys: Ctrl+S save draft, Ctrl+Enter build, Alt+P preflight, Ctrl+Z / Ctrl+Shift+Z undo/redo, Ctrl+K palette.
- {diffSummary && <span style={{ marginLeft: 10 }}>Δ chars since last build: {diffSummary.delta}</span>}
- </div>
- </div>
- {showOnboarding && onboardingContent}
- <div style={{ marginBottom: 18 }}>
- <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
- {WORKFLOW_PRESETS.map(p => (
- <button key={p.id} onClick={() => { if (isViewer) return; pushUndoSnapshot(); setSelectedPreset(p.id); setWorkflow(p.workflow); }} disabled={isViewer} style={{ background: selectedPreset === p.id ? "#a3e635": "#3f3f46", color: selectedPreset === p.id ? "#18181b": "#fafafa", border: "1px solid #3f3f46", borderRadius: 10, padding: "8px 10px", fontWeight: 700, cursor: isViewer ? "not-allowed": "pointer", opacity: isViewer ? 0.7 : 1 }}>
- {p.name} <span style={{ marginLeft: 6, background: "#a3e6351a", color: "#bef264", padding: "2px 6px", borderRadius: 999, fontSize: 12 }}>{p.badge}</span>
- </button>
- ))}
- </div>
- <input
- value={workflow}
- onChange={handleInputChange(setWorkflow)}
- disabled={isViewer}
- style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, opacity: isViewer ? 0.7 : 1 }}
- placeholder="Describe your workflow or approval chain..."aria-label="Workflow input"/>
- <button onClick={handleBuild} disabled={loading || isViewer} style={{ background: "#4f46e5", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || isViewer ? "not-allowed": "pointer", opacity: loading || isViewer ? 0.7 : 1 }}>Build Workflow</button>
- </div>
- {preflightIssues.length > 0 && (
- <div style={{ marginBottom: 12, background: "#3f3f46", border: "1px solid #3f3f46", borderRadius: 12, padding: 12 }}>
- <div style={{ color: "#fcd34d", fontWeight: 800 }}>Preflight</div>
- <ul style={{ margin: 6, paddingLeft: 18, color: "#fafafa"}}>
- {preflightIssues.map((i, idx) => <li key={idx}>{i}</li>)}
- </ul>
- {env === "prod"&& (
- <div style={{ marginTop: 8 }}>
- <input value={confirmationNote} onChange={handleInputChange(setConfirmationNote)} disabled={isViewer} placeholder="Who approved? What changed?"style={{ width: "100%", background: "#18181b", color: "#fafafa", border: "1px solid #3f3f46", borderRadius: 10, padding: "8px 10px", opacity: isViewer ? 0.7 : 1 }} />
- </div>
- )}
- </div>
- )}
- {preflightTrace.length > 0 && (
- <div style={{ marginBottom: 12, background: "#3f3f46", border: "1px solid #3f3f46", borderRadius: 12, padding: 12 }}>
- <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Preflight Trace</div>
- <ul style={{ margin: 6, paddingLeft: 12, color: "#fafafa", display: "flex", flexDirection: "column", gap: 6 }}>
- {preflightTrace.map((item, idx) => {
- const color = item.status === "pass"? "#22c55e": item.status === "warn"? "#f59e0b": "#f87171";
- const symbol = item.status === "pass"? "": item.status === "warn"? "!": "";
- return (
- <li key={idx} style={{ listStyle: "none", display: "flex", gap: 8, alignItems: "center"}}>
- <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: color }}>{symbol}</span>
- <span>{item.detail}</span>
- </li>
- );
- })}
- </ul>
- </div>
- )}
- <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
- <button onClick={fetchWorkflows} style={{ background: "#4f46e5", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Load Workflows</button>
- <button onClick={fetchApprovals} style={{ background: "#0ea5e9", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginLeft: 12 }}>Load Approvals</button>
- </div>
- <div style={{ display: "flex", gap: 18, marginBottom: 18 }}>
- <div style={{ flex: 1 }}>
- <div style={{ fontWeight: 600, marginBottom: 8 }}>Workflows</div>
- <ul style={{ paddingLeft: 18 }}>
- {workflows.map((wf, idx) => (
- <li key={wf.id || idx} style={{ marginBottom: 8, background: "#3f3f46", borderRadius: 8, padding: 8, color: '#fafafa'}}>{wf.name}</li>
- ))}
- </ul>
- </div>
- <div style={{ flex: 1 }}>
- <div style={{ fontWeight: 600, marginBottom: 8 }}>Approvals</div>
- <ul style={{ paddingLeft: 18 }}>
- {approvals.map((ap, idx) => (
- <li key={ap.id || idx} style={{ marginBottom: 8, background: "#18181b", borderRadius: 8, padding: 8, color: '#4f46e5'}}>{ap.name}</li>
- ))}
- </ul>
- </div>
- </div>
- <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
- <button onClick={() => fileInputRef.current?.click()} disabled={isViewer} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: isViewer ? "not-allowed": "pointer", opacity: isViewer ? 0.7 : 1 }}>Import</button>
- <input ref={fileInputRef} type="file"accept=".json"style={{ display: "none"}} onChange={handleImport} aria-label="Import workflows"disabled={isViewer} />
- <button onClick={handleExport} disabled={isViewer} style={{ background: "#0ea5e9", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: isViewer ? "not-allowed": "pointer", opacity: isViewer ? 0.7 : 1 }}>Export</button>
- {exported && <a href={exported} download="collaboration-workflows.json"style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
- </div>
- {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
- {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
- <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3f3f46", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
- <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
- <textarea
- value={feedback}
- onChange={e => setFeedback(e.target.value)}
- rows={2}
- style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#09090b", color: "#f4f4f5"}}
- placeholder="Share your feedback or suggestions..."aria-label="Feedback input"/>
- <button type="submit"style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Send Feedback</button>
- </form>
- {/* ...existing code... */}
- {result && (
- <div style={{ marginTop: 24, background: "#09090b", borderRadius: 12, padding: 20 }}>
- <h3 style={{ fontWeight: 700, fontSize: 20 }}>Workflow Result</h3>
- <pre style={{ fontSize: 15, color: "#a3e635"}}>{JSON.stringify(result, null, 2)}</pre>
- </div>
- )}
- {history.length > 0 && (
- <div style={{ marginTop: 24 }}>
- <h3 style={{ fontWeight: 700, fontSize: 18 }}>History</h3>
- <ul style={{ paddingLeft: 18 }}>
- {history.map((h, idx) => (
- <li key={idx} style={{ marginBottom: 8, background: "#09090b", borderRadius: 8, padding: 8 }}>
- <b>Workflow:</b> {h.workflow} <br />
- <b>Result:</b> {JSON.stringify(h.result)}
- </li>
- ))}
- </ul>
- </div>
- )}
- </div>
- );
+function parseSteps(workflow) {
+  return workflow.split(/→|->|>/).map(s => s.trim()).filter(Boolean);
 }
 
+export default function CollaborationApprovalWorkflows() {
+  const [tab, setTab]       = useState("builder");
+  const [workflow, setWorkflow] = useState("");
+  const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState("");
 
+  const buildWorkflow = async (wf) => {
+    const wfText = (wf || workflow).trim();
+    if (!wfText) return;
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const r = await apiFetchJSON(`${API}/build`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workflow: wfText }),
+      });
+      if (!r.ok) throw new Error(r.error || "Build failed");
+      setResult(r.result);
+      setHistory(p => [{ workflow: wfText, result: r.result, ts: new Date().toISOString() }, ...p].slice(0, 20));
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
 
+  const loadPreset = (preset) => {
+    setWorkflow(preset.workflow);
+    setTab("builder");
+  };
+
+  const steps = workflow ? parseSteps(workflow) : [];
+
+  return (
+    <div style={S.page}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Collaboration & Approval Workflows</h1>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Design and automate multi-step approval workflows — deal desk, content QA, vendor onboarding, product launches, and any process requiring sequential sign-offs.</p>
+      </div>
+
+      <ErrorBox message={error} />
+      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+
+      {/* BUILDER */}
+      {tab === "builder" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Define Your Workflow (use → to separate steps)</div>
+            <textarea style={{ ...S.ta, minHeight: 80 }} value={workflow} onChange={e => setWorkflow(e.target.value)} placeholder="Submit → Manager review → Legal sign-off → Finance check → Notify team → Archive" />
+
+            {steps.length > 1 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", margin: "12px 0" }}>
+                {steps.map((step, i) => (
+                  <React.Fragment key={i}>
+                    <div style={S.stepNode}>{step}</div>
+                    {i < steps.length - 1 && <span style={S.arrow}>→</span>}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button style={S.btn("primary")} onClick={() => buildWorkflow()} disabled={loading || !workflow.trim()}>{loading ? "Building…" : "Build & Analyse Workflow"}</button>
+              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setWorkflow(""); setResult(null); }}>Clear</button>
+            </div>
+          </div>
+
+          {loading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
+          {result && !loading && (
+            <div style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={S.sectionTitle}>Workflow Analysis</div>
+                <button onClick={() => navigator.clipboard?.writeText(typeof result === "string" ? result : JSON.stringify(result, null, 2))} style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }}>Copy</button>
+              </div>
+              <pre style={S.pre}>{typeof result === "string" ? result : JSON.stringify(result, null, 2)}</pre>
+            </div>
+          )}
+
+          <div style={{ ...S.card, marginTop: 4 }}>
+            <div style={S.sectionTitle}>Workflow Templates — Click to Load</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10, marginTop: 8 }}>
+              {PRESETS.map(p => (
+                <div key={p.id} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 14px", cursor: "pointer" }} onClick={() => loadPreset(p)}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{p.name}</div>
+                    <span style={{ background: "#1e1b4b", color: "#818cf8", padding: "1px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>{p.category}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#71717a", lineHeight: 1.5 }}>{p.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI GENERATE */}
+      {tab === "ai" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ ...S.card }}>
+            <div style={S.sectionTitle}>AI Workflow Suggestions</div>
+            <div style={{ fontSize: 12, color: "#71717a", marginBottom: 12 }}>Select a preset below or enter a custom workflow in the Builder tab, then use "Build & Analyse" to get AI-powered analysis, bottleneck detection, and optimisation suggestions.</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {PRESETS.map(p => (
+                <button key={p.id} style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => { setWorkflow(p.workflow); buildWorkflow(p.workflow); setTab("builder"); }}>{p.name}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HISTORY */}
+      {tab === "history" && (
+        <div style={{ marginTop: 20 }}>
+          {history.length === 0 ? (
+            <EmptyState icon="📋" title="No workflow history" description="Build your first workflow to see history here." />
+          ) : (
+            history.map((h, i) => (
+              <div key={i} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, color: "#52525b", marginBottom: 4 }}>{new Date(h.ts).toLocaleString()}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", marginBottom: 6 }}>
+                      {parseSteps(h.workflow).map((step, i2) => (
+                        <React.Fragment key={i2}>
+                          <span style={{ ...S.stepNode, fontSize: 10, padding: "2px 8px" }}>{step}</span>
+                          {i2 < parseSteps(h.workflow).length - 1 && <span style={{ color: "#52525b", fontSize: 12 }}>→</span>}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    {h.result && <div style={{ fontSize: 12, color: "#a1a1aa" }}>{(typeof h.result === "string" ? h.result : JSON.stringify(h.result)).slice(0, 150)}…</div>}
+                  </div>
+                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => { setWorkflow(h.workflow); setTab("builder"); }}>Re-use</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* GUIDE */}
+      {tab === "guide" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Approval Workflow Design Principles</div>
+            {[
+              { t: "Map current state before automating",          d: "Document exactly how approvals happen today — email chains, Slack threads, spreadsheets. You can't improve what you haven't mapped. Shadow 3 live approvals before designing the workflow." },
+              { t: "Each step needs a clear owner and SLA",        d: "Undefined ownership kills workflows. Every step needs: who approves, what criteria they use, and how long they have. No owner + no deadline = infinite delay." },
+              { t: "Conditional routing cuts cycle time by 30-50%", d: "Use value thresholds (>£500 needs manager, >£5k needs VP), risk levels, or department to auto-route. Most approvals are routine — only escalate the exceptions." },
+              { t: "Notifications must be actionable",             d: "Don't send 'you have a pending approval' with no context. Include: what is it, what decision is needed, deadline, and a one-click link to the item. Reduce clicks to zero." },
+              { t: "Audit trail is non-negotiable",                d: "Every approval decision must be logged with: who, when, what they approved, and any notes. This protects the business legally and enables process improvement." },
+              { t: "Design for the exception, not the rule",       d: "Most approvals are routine and should auto-proceed. Design your workflow for the 5% that need human judgment, not the 95% that don't." },
+            ].map(({ t, d }) => (
+              <div key={t} style={S.row}>
+                <span style={{ color: "#4f46e5", flexShrink: 0 }}>✅</span>
+                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
