@@ -1,282 +1,176 @@
-﻿import React, { useState } from "react";
-import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
-import { FiDownload, FiUpload, FiBarChart2, FiBell, FiSettings, FiHelpCircle } from "react-icons/fi";
+﻿import React, { useState, useEffect } from "react";
+import { apiFetchJSON } from "../../api";
+import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
-function FeedbackModal({ open, onClose, onSubmit }) {
- const [feedback, setFeedback] = useState("");
- if (!open) return null;
- return (
- <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center"}}>
- <div style={{ background: "#3f3f46", borderRadius: 12, padding: 32, minWidth: 340, color: '#fafafa'}}>
- <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
- <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..."/>
- <div style={{ display: "flex", gap: 12 }}>
- <button onClick={() => onSubmit(feedback)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer"}}>Submit</button>
- <button onClick={onClose} style={{ background: "#fafafa", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer"}}>Cancel</button>
- </div>
- </div>
- </div>
- );
-}
+const API = "/api/personalization-recommendation-engine";
+
+const S = {
+  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
+  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
+  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
+  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
+  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
+  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+};
+
+const TABS = [
+  { id: "ai",      label: "AI Suggestions" },
+  { id: "saved",   label: "Saved Recommendations" },
+  { id: "guide",   label: "Personalisation Guide" },
+];
+
+const SAMPLE_DESCRIPTIONS = [
+  "Generate product recommendation widgets for a running shoe store. Customer segments: beginner runners, marathon runners, trail runners. Show 3-5 product slots per page.",
+  "Design a personalised email sequence for customers who viewed winter coats 3+ times but didn't purchase. Include social proof, price anchoring, and urgency tactics.",
+  "Create a homepage personalisation strategy for returning customers vs new visitors. Different hero banners, featured products, and CTAs for each segment.",
+  "Suggest an upsell recommendation engine for a supplements brand. Show complementary products post-purchase based on what the customer bought.",
+];
 
 export default function PersonalizationRecommendationEngine() {
- const [query, setQuery] = useState("");
- const [result, setResult] = useState(null);
- const [loading, setLoading] = useState(false);
- const [error, setError] = useState("");
- const [history, setHistory] = useState([]);
- const [darkMode, setDarkMode] = useState(false);
- const [showOnboarding, setShowOnboarding] = useState(false);
- const [showFeedback, setShowFeedback] = useState(false);
- const [analytics, setAnalytics] = useState([]);
- const [showAnalytics, setShowAnalytics] = useState(false);
- const [notification, setNotification] = useState("");
- const [importing, setImporting] = useState(false);
- const [exporting, setExporting] = useState(false);
- const [showHelp, setShowHelp] = useState(false);
- const [accessibilityMode, setAccessibilityMode] = useState(false);
- const [complianceInfo, setComplianceInfo] = useState(null);
- const [rbacStatus, setRbacStatus] = useState(null);
- const [pluginStatus, setPluginStatus] = useState(null);
+  const [tab, setTab]       = useState("ai");
+  const [description, setDescription] = useState("");
+  const [suggestion, setSuggestion]   = useState(null);
+  const [recs, setRecs]     = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState("");
+  const [deleting, setDeleting] = useState(null);
 
- const handleQuery = async () => {
- setLoading(true);
- setError("");
- setResult(null);
- try {
- const res = await fetch("/api/personalization-recommendation-engine/query", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ query })
- });
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setResult(data.result);
- setHistory(prev => [{ query, result: data.result }, ...prev].slice(0, 10));
- } catch (err) {
- setError(err.message);
- } finally {
- setLoading(false);
- }
- };
+  useEffect(() => { loadRecs(); }, []);
 
- const onboardingContent = (
- <div style={{ padding: 24, background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Personalization & Recommendation Engine</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>Personalized product and content recommendations</li>
- <li>Segmentation, targeting, and A/B testing</li>
- <li>Export, share, and review recommendation history</li>
- <li>Accessible, secure, and fully compliant</li>
- </ul>
- <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Get Started</button>
- </div>
- );
+  const loadRecs = async () => {
+    try {
+      const r = await apiFetchJSON(`${API}/recommendations`);
+      if (r.ok) setRecs(r.recommendations || []);
+    } catch {}
+  };
 
- // Flagship: fetch analytics
- const fetchAnalytics = async () => {
- setShowAnalytics(true);
- try {
- const res = await fetch("/api/personalization-recommendation-engine/analytics");
- const data = await res.json();
- setAnalytics(data.analytics || []);
- } catch {
- setAnalytics([]);
- }
- };
+  const runSuggest = async (override) => {
+    const desc = (override || description).trim();
+    if (!desc) return;
+    setLoading(true); setError(""); setSuggestion(null);
+    try {
+      const r = await apiFetchJSON(`${API}/ai/suggest`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: desc }),
+      });
+      if (!r.ok) throw new Error(r.error || "AI suggest failed");
+      setSuggestion(r.suggestion || r.answer || "");
+      if (!override) setDescription("");
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
 
- // Flagship: import/export
- const handleImport = async e => {
- setImporting(true);
- const file = e.target.files[0];
- if (!file) return;
- const text = await file.text();
- await fetch("/api/personalization-recommendation-engine/import", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: text
- });
- setImporting(false);
- setNotification("Import complete");
- };
- const handleExport = async () => {
- setExporting(true);
- const res = await fetch("/api/personalization-recommendation-engine/export");
- const data = await res.json();
- const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: "application/json"});
- const url = URL.createObjectURL(blob);
- const a = document.createElement("a");
- a.href = url;
- a.download = "recommendations.json";
- a.click();
- setExporting(false);
- setNotification("Export complete");
- };
+  const saveRec = async () => {
+    if (!suggestion) return;
+    setSaving(true);
+    try {
+      await apiFetchJSON(`${API}/recommendations`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: suggestion, description, createdAt: new Date().toISOString() }),
+      });
+      loadRecs();
+    } catch (e) { setError(e.message); }
+    setSaving(false);
+  };
 
- // Flagship: feedback
- const handleFeedbackSubmit = async feedback => {
- await fetch("/api/personalization-recommendation-engine/notify", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ feedback })
- });
- setShowFeedback(false);
- setNotification("Feedback sent. Thank you!");
- };
+  const deleteRec = async (id) => {
+    setDeleting(id);
+    try {
+      await apiFetchJSON(`${API}/recommendations/${id}`, { method: "DELETE" });
+      setRecs(p => p.filter(r => r.id !== id));
+    } catch {}
+    setDeleting(null);
+  };
 
- // Flagship: accessibility toggle
- const toggleAccessibility = () => setAccessibilityMode(m => !m);
+  return (
+    <div style={S.page}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Personalisation & Recommendation Engine</h1>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>AI-powered personalisation strategy — product recommendations, customer segment targeting, homepage personalisation, email sequences, and upsell flows.</p>
+      </div>
 
- // Flagship: compliance info
- const fetchCompliance = async () => {
- const res = await fetch("/api/personalization-recommendation-engine/compliance");
- const data = await res.json();
- setComplianceInfo(data.compliance);
- };
+      <ErrorBox message={error} />
+      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
- // Flagship: RBAC check
- const checkRBAC = async () => {
- const res = await fetch("/api/personalization-recommendation-engine/rbac/check", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ user: "me", action: "view"})
- });
- const data = await res.json();
- setRbacStatus(data.allowed ? "Access granted": "Access denied");
- };
+      {tab === "ai" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+            {SAMPLE_DESCRIPTIONS.map((d, i) => (
+              <button key={i} style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => runSuggest(d)}>{d.slice(0, 35)}…</button>
+            ))}
+          </div>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Describe Your Personalisation Need</div>
+            <textarea style={{ ...S.ta, minHeight: 100 }} value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your personalisation or recommendation use case — segment, goal, products, channel, and any constraints…" />
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button style={S.btn("primary")} onClick={() => runSuggest()} disabled={loading || !description.trim()}>{loading ? "Generating…" : "Get AI Suggestion"}</button>
+              {suggestion && <button style={{ ...S.btn("green"), fontSize: 11, padding: "6px 12px" }} onClick={saveRec} disabled={saving}>{saving ? "Saving…" : "Save to Library"}</button>}
+              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setDescription(""); setSuggestion(null); }}>Clear</button>
+            </div>
+          </div>
+          {loading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
+          {suggestion && !loading && (
+            <div style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={S.sectionTitle}>AI Personalisation Strategy</div>
+                <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }}>Copy</button>
+              </div>
+              <pre style={S.pre}>{suggestion}</pre>
+            </div>
+          )}
+        </div>
+      )}
 
- // Flagship: plugin system
- const runPlugin = async () => {
- const res = await fetch("/api/personalization-recommendation-engine/plugin", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- // ...existing code...
- });
- setPluginStatus("Plugin executed");
- };
+      {tab === "saved" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{recs.length} recommendations</div>
+            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadRecs}>Refresh</button>
+          </div>
+          {recs.length === 0 ? (
+            <EmptyState icon="🎯" title="No saved recommendations" description="Generate personalisation suggestions and save them to build your library." />
+          ) : (
+            recs.map((rec, i) => (
+              <div key={rec.id || i} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1, marginRight: 12 }}>
+                    {rec.createdAt && <div style={{ fontSize: 11, color: "#52525b", marginBottom: 4 }}>{new Date(rec.createdAt).toLocaleDateString()}</div>}
+                    {rec.description && <div style={{ fontSize: 12, color: "#818cf8", marginBottom: 6 }}>{rec.description.slice(0, 80)}…</div>}
+                    <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.5 }}>{(rec.content || "").slice(0, 250)}{(rec.content || "").length > 250 ? "…" : ""}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard?.writeText(rec.content || "")}>Copy</button>
+                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteRec(rec.id)} disabled={deleting === rec.id}>{deleting === rec.id ? "…" : "Delete"}</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
- return (
- <div style={{
- 
- margin: "40px auto",
- background: darkMode ? "#18181b": accessibilityMode ? "#e0f7fa": "#fff",
- borderRadius: 18,
- boxShadow: "0 2px 24px #0002",
- padding: 36,
- color: darkMode ? "#a3e635": accessibilityMode ? "#09090b": "#09090b",
- fontFamily: 'Inter, sans-serif',
- transition: "background 0.3s, color 0.3s"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Personalization & Recommendation Engine</h2>
- <div style={{ display: "flex", gap: 10 }}>
- <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode"style={{ background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{darkMode ? "Light": "Dark"} Mode</button>
- <button onClick={toggleAccessibility} aria-label="Toggle accessibility mode"style={{ background: accessibilityMode ? "#a3e635": "#e0e7ff", color: accessibilityMode ? "#09090b": "#4f46e5", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Accessibility</button>
- <button onClick={() => setShowHelp(true)} aria-label="Help"style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiHelpCircle /></button>
- </div>
- </div>
- <div style={{ marginBottom: 10, color: darkMode ? "#a3e635": "#0ea5e9", fontWeight: 600 }}>
- <span role="img"aria-label="recommend"></span>Get personalized recommendations and insights.
- </div>
- <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
- <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{showOnboarding ? "Hide": "Show"} Onboarding</button>
- <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiBarChart2 />Analytics</button>
- <label style={{ background: "#a3e635", color: "#09090b", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>
- <FiUpload />Import
- <input type="file"accept=".json"style={{ display: "none"}} onChange={handleImport} disabled={importing} />
- </label>
- <button onClick={handleExport} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}} disabled={exporting}><FiDownload />Export</button>
- <button onClick={() => setShowFeedback(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiBell />Feedback</button>
- <button onClick={checkRBAC} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>RBAC</button>
- <button onClick={fetchCompliance} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Compliance</button>
- <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}><FiSettings />Plugin</button>
- </div>
- {notification && <div style={{ color: "#22c55e", marginBottom: 10 }}>{notification}</div>}
- {showHelp && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Help & Documentation</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>How to use personalization and recommendation features</li>
- <li>Best practices for segmentation and targeting</li>
- <li>Accessibility and compliance information</li>
- <li>Integrating plugins and webhooks</li>
- <li>Contact support for advanced help</li>
- </ul>
- <button onClick={() => setShowHelp(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close Help</button>
- </div>
- )}
- {showFeedback && <FeedbackModal open={showFeedback} onClose={() => setShowFeedback(false)} onSubmit={handleFeedbackSubmit} />}
- {showAnalytics && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Analytics Dashboard</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- {analytics.map((a, i) => (
- <li key={i} style={{ marginBottom: 10 }}>
- <div><b>Event:</b> {a.event}</div>
- <div><b>Timestamp:</b> {a.timestamp}</div>
- </li>
- ))}
- </ul>
- <button onClick={() => setShowAnalytics(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close Analytics</button>
- </div>
- )}
- {complianceInfo && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Compliance Information</h3>
- <pre style={{ fontSize: 15 }}>{JSON.stringify(complianceInfo, null, 2)}</pre>
- <button onClick={() => setComplianceInfo(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {rbacStatus && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>RBAC Status</h3>
- <div style={{ fontSize: 15 }}>{rbacStatus}</div>
- <button onClick={() => setRbacStatus(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {pluginStatus && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Plugin Status</h3>
- <div style={{ fontSize: 15 }}>{pluginStatus}</div>
- <button onClick={() => setPluginStatus(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {showOnboarding && onboardingContent}
- <input
- value={query}
- onChange={e => setQuery(e.target.value)}
- type="text"style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555": "1px solid #ccc", marginBottom: 18, background: darkMode ? "#09090b": "#fff", color: darkMode ? "#a3e635": "#09090b"}}
- placeholder="Describe your personalization or recommendation question..."aria-label="Personalization query input"/>
- <button onClick={handleQuery} disabled={loading || !query} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Querying...": "Get Recommendation"}</button>
- {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
- {result && (
- <div style={{ background: "#27272a", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #27272a"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Recommendation Result</span>
- <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer"}}>Copy</button>
- </div>
- <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e4e4e7", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
- </div>
- )}
- {history.length > 0 && (
- <div style={{ marginTop: 24, background: darkMode ? "#52525b": "#f4f4f5", borderRadius: 12, padding: 18 }}>
- <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Recommendation History</div>
- <ul style={{ paddingLeft: 18 }}>
- {history.map((h, i) => (
- <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #27272a"}}>
- <div style={{ fontWeight: 600, fontSize: 13, color: "#e4e4e7"}}>{h.query}</div>
- <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "": ""}</div>
- </div>
- ))}
- </ul>
- </div>
- )}
- <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635": "#71717a", textAlign: "center"}}>
- <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai"style={{ color: darkMode ? "#a3e635": "#0ea5e9", textDecoration: "underline"}}>Contact Support</a></span>
- </div>
- </div>
- );
+      {tab === "guide" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Personalisation Principles</div>
+            {[
+              { t: "Personalisation lifts conversion by 10-30%",   d: "McKinsey data: personalisation drives 10-15% revenue uplift. The range varies by category — fashion sees up to 30%, electronics 10-12%. The key is relevance, not just 'hello, [first name]'." },
+              { t: "'Customers also bought' is still the best algo", d: "Collaborative filtering (show what similar customers bought) consistently outperforms content-based recommendations. Start here before anything else." },
+              { t: "Context > segment for recommendations",         d: "Where someone is in the buying journey matters more than their segment. A first-time visitor needs social proof. A returning browser needs urgency. A post-purchase customer needs upsell." },
+              { t: "Test personalisation properly",                 d: "Many 'personalised' experiences aren't tested rigorously. Run A/B tests with statistical significance. A blank control (no personalisation) is your baseline." },
+              { t: "GDPR and personalisation",                      d: "You need consent for personalisation based on tracking across sites. First-party Shopify data (purchase history, browse history on your own site) requires less friction than third-party retargeting." },
+              { t: "Email personalisation ROI",                     d: "Personalised subject lines increase open rates by 26% (Campaign Monitor). Personalised email content increases click rates by 14% and conversions by 10%." },
+            ].map(({ t, d }) => (
+              <div key={t} style={S.row}>
+                <span style={{ color: "#4f46e5", flexShrink: 0 }}>🎯</span>
+                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
-
-
-
-

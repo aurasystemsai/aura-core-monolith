@@ -1,6 +1,177 @@
-﻿import React, { useState, useEffect } from 'react';
-import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
-import './CustomerDataPlatform.css';
+﻿import React, { useState, useEffect } from "react";
+import { apiFetchJSON } from "../../api";
+import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
+
+const API = "/api/customer-data-platform";
+
+const S = {
+  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
+  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
+  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
+  input: { flex: 1, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none" },
+  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+};
+
+const TABS = [
+  { id: "profiles",  label: "Profiles" },
+  { id: "segments",  label: "Segments" },
+  { id: "guide",     label: "CDP Guide" },
+];
+
+export default function CustomerDataPlatform() {
+  const [tab, setTab]       = useState("profiles");
+  const [profiles, setProfiles] = useState([]);
+  const [segments, setSegments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState("");
+  const [newProfile, setNewProfile] = useState({ email: "", name: "", source: "Manual" });
+  const setNP = (k, v) => setNewProfile(p => ({ ...p, [k]: v }));
+
+  useEffect(() => { loadProfiles(); loadSegments(); }, []);
+
+  const loadProfiles = async () => {
+    setLoading(true);
+    try {
+      const r = await apiFetchJSON(`${API}/profiles`);
+      if (Array.isArray(r)) setProfiles(r);
+      else if (r.profiles) setProfiles(r.profiles);
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  const loadSegments = async () => {
+    try {
+      const r = await apiFetchJSON(`${API}/segments`);
+      if (Array.isArray(r)) setSegments(r);
+      else if (r.segments) setSegments(r.segments);
+    } catch {}
+  };
+
+  const createProfile = async () => {
+    if (!newProfile.email.trim()) { setError("Email required"); return; }
+    try {
+      await apiFetchJSON(`${API}/profiles`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newProfile) });
+      setNewProfile({ email: "", name: "", source: "Manual" });
+      loadProfiles();
+    } catch (e) { setError(e.message); }
+  };
+
+  const deleteProfile = async (id) => {
+    try {
+      await apiFetchJSON(`${API}/profiles/${id}`, { method: "DELETE" });
+      setProfiles(p => p.filter(pr => pr.id !== id));
+    } catch {}
+  };
+
+  return (
+    <div style={S.page}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Customer Data Platform</h1>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Unified customer profiles, event tracking, and behavioural segmentation. The single source of truth for all customer intelligence across your Shopify store.</p>
+      </div>
+
+      <ErrorBox message={error} />
+      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+
+      {tab === "profiles" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Add Profile</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input style={S.input} value={newProfile.name} onChange={e => setNP("name", e.target.value)} placeholder="Full name" />
+              <input style={{ ...S.input, flex: 2 }} value={newProfile.email} onChange={e => setNP("email", e.target.value)} placeholder="Email address" />
+              <button style={S.btn("primary")} onClick={createProfile}>Add Profile</button>
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{profiles.length} profiles</div>
+            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadProfiles}>Refresh</button>
+          </div>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>
+          ) : profiles.length === 0 ? (
+            <EmptyState icon="👤" title="No customer profiles" description="Add a profile manually or they will be created automatically from Shopify orders." />
+          ) : (
+            profiles.slice(0, 50).map((p, i) => (
+              <div key={p.id || i} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{p.name || p.email || "Unknown"}</div>
+                    {p.email && p.name && <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>{p.email}</div>}
+                    {p.source && <span style={{ background: "#27272a", color: "#a1a1aa", padding: "1px 7px", borderRadius: 4, fontSize: 11, marginTop: 4, display: "inline-block" }}>{p.source}</span>}
+                    <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+                      {p.totalOrders != null && <span style={{ fontSize: 11, color: "#71717a" }}>Orders: {p.totalOrders}</span>}
+                      {p.totalSpend != null  && <span style={{ fontSize: 11, color: "#71717a" }}>Spend: £{p.totalSpend?.toFixed?.(2) ?? p.totalSpend}</span>}
+                    </div>
+                  </div>
+                  <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteProfile(p.id)}>Delete</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === "segments" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{segments.length} segments</div>
+          </div>
+          {segments.length === 0 ? (
+            <>
+              <EmptyState icon="🎯" title="No segments defined" description="Segments are created automatically from customer behaviour patterns." />
+              <div style={{ ...S.card, marginTop: 16 }}>
+                <div style={S.sectionTitle}>Built-in Segment Examples</div>
+                {[
+                  { name: "Champions",          desc: "Purchased recently, buy often, spend the most", color: "#166534", text: "#4ade80" },
+                  { name: "Loyal Customers",    desc: "Buy regularly, somewhat recently", color: "#1e3a5f", text: "#60a5fa" },
+                  { name: "At Risk",            desc: "Used to buy frequently but haven't purchased recently", color: "#3d2a0a", text: "#fbbf24" },
+                  { name: "Lost",               desc: "Lowest recency, frequency, and spend scores", color: "#3f1315", text: "#f87171" },
+                  { name: "Potential Loyalists", desc: "Recent customers with average frequency", color: "#1e1b4b", text: "#818cf8" },
+                ].map(seg => (
+                  <div key={seg.name} style={S.row}>
+                    <span style={{ background: seg.color, color: seg.text, padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{seg.name}</span>
+                    <div style={{ fontSize: 12, color: "#a1a1aa" }}>{seg.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            segments.map((seg, i) => (
+              <div key={seg.id || i} style={S.card}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{seg.name}</div>
+                {seg.description && <div style={{ fontSize: 12, color: "#71717a", marginTop: 3 }}>{seg.description}</div>}
+                {seg.count != null && <div style={{ fontSize: 12, color: "#52525b", marginTop: 3 }}>{seg.count} customers</div>}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === "guide" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Customer Data Platform Essentials</div>
+            {[
+              { t: "First-party data is your most valuable asset",  d: "iOS 14+, cookie deprecation, and privacy changes have made third-party data less reliable. Your own customer data — emails, purchase history, behaviour — is becoming the primary competitive advantage." },
+              { t: "Unified profiles unlock personalisation",       d: "Connecting a customer's email interactions, website behaviour, purchase history, and support tickets into one profile enables personalisation at scale. Fragmented data = generic experiences." },
+              { t: "RFM is the foundation of customer analytics",   d: "Recency, Frequency, Monetary — these three dimensions explain 80% of customer behaviour patterns. Every CDP strategy should start with RFM segmentation." },
+              { t: "Behavioural events > demographic data",         d: "What customers DO (add to cart, view product 3 times, abandon checkout) is 5× more predictive than who they ARE (age, location, gender)." },
+              { t: "Data quality before quantity",                  d: "1,000 clean, enriched profiles with accurate email, purchase history, and engagement data is worth more than 100,000 records with 40% invalid emails and missing history." },
+            ].map(({ t, d }) => (
+              <div key={t} style={S.row}>
+                <span style={{ color: "#4f46e5", flexShrink: 0 }}>👤</span>
+                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function FeedbackModal({ open, onClose, onSubmit }) {
  const [text, setText] = React.useState('');
@@ -18,265 +189,4 @@ function FeedbackModal({ open, onClose, onSubmit }) {
  </div>
  );
 }
-
-// Main CDP Component
-
-export default function CustomerDataPlatform() {
- const [query, setQuery] = useState("");
- const [result, setResult] = useState(null);
- const [loading, setLoading] = useState(false);
- const [error, setError] = useState("");
- const [history, setHistory] = useState([]);
- const [darkMode, setDarkMode] = useState(false);
- const [showOnboarding, setShowOnboarding] = useState(false);
- const [showFeedback, setShowFeedback] = useState(false);
- const [analytics, setAnalytics] = useState([]);
- const [showAnalytics, setShowAnalytics] = useState(false);
- const [notification, setNotification] = useState("");
- const [importing, setImporting] = useState(false);
- const [exporting, setExporting] = useState(false);
- const [showHelp, setShowHelp] = useState(false);
- const [accessibilityMode, setAccessibilityMode] = useState(false);
- const [complianceInfo, setComplianceInfo] = useState(null);
- const [rbacStatus, setRbacStatus] = useState(null);
- const [pluginStatus, setPluginStatus] = useState(null);
-
- const handleQuery = async () => {
- setLoading(true);
- setError("");
- setResult(null);
- try {
- const res = await fetch("/api/customer-data-platform/query", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ query })
- });
- const data = await res.json();
- if (!data.ok) throw new Error(data.error || "Unknown error");
- setResult(data.result);
- setHistory(prev => [{ query, result: data.result }, ...prev].slice(0, 10));
- } catch (err) {
- setError(err.message);
- } finally {
- setLoading(false);
- }
- };
-
- const onboardingContent = (
- <div style={{ padding: 24, background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Customer Data Platform</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>Unified customer profiles and segmentation</li>
- <li>Query, export, and analyze customer data</li>
- <li>Accessible, secure, and fully compliant</li>
- </ul>
- <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Get Started</button>
- </div>
- );
-
- // Flagship: fetch analytics
- const fetchAnalytics = async () => {
- setShowAnalytics(true);
- try {
- const res = await fetch("/api/customer-data-platform/analytics");
- const data = await res.json();
- setAnalytics(data.analytics || []);
- } catch {
- setAnalytics([]);
- }
- };
-
- // Flagship: import/export
- const handleImport = async e => {
- setImporting(true);
- const file = e.target.files[0];
- if (!file) return;
- const text = await file.text();
- await fetch("/api/customer-data-platform/import", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: text
- });
- setImporting(false);
- setNotification("Import complete");
- };
- const handleExport = async () => {
- setExporting(true);
- const res = await fetch("/api/customer-data-platform/export");
- const data = await res.json();
- const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: "application/json"});
- const url = URL.createObjectURL(blob);
- const a = document.createElement("a");
- a.href = url;
- a.download = "customer-data.json";
- a.click();
- setExporting(false);
- setNotification("Export complete");
- };
-
- // Flagship: feedback
- const handleFeedbackSubmit = async feedback => {
- await fetch("/api/customer-data-platform/notify", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ feedback })
- });
- setShowFeedback(false);
- setNotification("Feedback sent. Thank you!");
- };
-
- // Flagship: accessibility toggle
- const toggleAccessibility = () => setAccessibilityMode(m => !m);
-
- // Flagship: compliance info
- const fetchCompliance = async () => {
- const res = await fetch("/api/customer-data-platform/compliance");
- const data = await res.json();
- setComplianceInfo(data.compliance);
- };
-
- // Flagship: RBAC check
- const checkRBAC = async () => {
- const res = await fetch("/api/customer-data-platform/rbac/check", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ user: "me", action: "view"})
- });
- const data = await res.json();
- setRbacStatus(data.allowed ? "Access granted": "Access denied");
- };
-
- // Flagship: plugin system
- const runPlugin = async () => {
- const res = await fetch("/api/customer-data-platform/plugin", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- // ...existing code...
- });
- setPluginStatus("Plugin executed");
- };
-
- return (
- <div style={{
- 
- margin: "40px auto",
- background: darkMode ? "#18181b": accessibilityMode ? "#e0f7fa": "#fff",
- borderRadius: 18,
- boxShadow: "0 2px 24px #0002",
- padding: 36,
- color: darkMode ? "#a3e635": accessibilityMode ? "#09090b": "#09090b",
- fontFamily: 'Inter, sans-serif',
- transition: "background 0.3s, color 0.3s"}}>
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Customer Data Platform</h2>
- <div style={{ display: "flex", gap: 10 }}>
- <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode"style={{ background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{darkMode ? "Light": "Dark"} Mode</button>
- <button onClick={toggleAccessibility} aria-label="Toggle accessibility mode"style={{ background: accessibilityMode ? "#a3e635": "#e0e7ff", color: accessibilityMode ? "#09090b": "#4f46e5", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Accessibility</button>
- <button onClick={() => setShowHelp(true)} aria-label="Help"style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>?</button>
- </div>
- </div>
- <div style={{ marginBottom: 10, color: darkMode ? "#a3e635": "#0ea5e9", fontWeight: 600 }}>
- <span role="img"aria-label="customer"></span>Query and analyze unified customer data.
- </div>
- <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
- <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>{showOnboarding ? "Hide": "Show"} Onboarding</button>
- <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Analytics</button>
- <label style={{ background: "#a3e635", color: "#09090b", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>
- Import
- <input type="file"accept=".json"style={{ display: "none"}} onChange={handleImport} disabled={importing} />
- </label>
- <button onClick={handleExport} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}} disabled={exporting}>Export</button>
- <button onClick={() => setShowFeedback(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Feedback</button>
- <button onClick={checkRBAC} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>RBAC</button>
- <button onClick={fetchCompliance} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Compliance</button>
- <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer"}}>Plugin</button>
- </div>
- {notification && <div style={{ color: "#22c55e", marginBottom: 10 }}>{notification}</div>}
- {showHelp && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Help & Documentation</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- <li>How to use customer data platform features</li>
- <li>Best practices for segmentation and analysis</li>
- <li>Accessibility and compliance information</li>
- <li>Integrating plugins and webhooks</li>
- <li>Contact support for advanced help</li>
- </ul>
- <button onClick={() => setShowHelp(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close Help</button>
- </div>
- )}
- {showFeedback && <FeedbackModal open={showFeedback} onClose={() => setShowFeedback(false)} onSubmit={handleFeedbackSubmit} />}
- {showAnalytics && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Analytics Dashboard</h3>
- <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635": "#52525b", fontSize: 16 }}>
- {analytics.map((a, i) => (
- <li key={i} style={{ marginBottom: 10 }}>
- <div><b>Event:</b> {a.event}</div>
- <div><b>Timestamp:</b> {a.timestamp}</div>
- </li>
- ))}
- </ul>
- <button onClick={() => setShowAnalytics(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close Analytics</button>
- </div>
- )}
- {complianceInfo && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Compliance Information</h3>
- <pre style={{ fontSize: 15 }}>{JSON.stringify(complianceInfo, null, 2)}</pre>
- <button onClick={() => setComplianceInfo(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {rbacStatus && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>RBAC Status</h3>
- <div style={{ fontSize: 15 }}>{rbacStatus}</div>
- <button onClick={() => setRbacStatus(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- {pluginStatus && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 12, padding: 24, marginBottom: 18 }}>
- <h3 style={{ fontWeight: 700, fontSize: 22 }}>Plugin Status</h3>
- <div style={{ fontSize: 15 }}>{pluginStatus}</div>
- <button onClick={() => setPluginStatus(null)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer"}}>Close</button>
- </div>
- )}
- <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
- <div style={{ flex: 1, marginRight: 12 }}>
- <input
- value={query}
- onChange={e => setQuery(e.target.value)}
- type="text"style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555": "1px solid #ccc", marginBottom: 18, background: darkMode ? "#09090b": "#fff", color: darkMode ? "#a3e635": "#09090b"}}
- placeholder="Describe your customer data query..."aria-label="Customer data query input"/>
- </div>
- <button onClick={handleQuery} disabled={loading || !query} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Querying...": "Query Data"}</button>
- </div>
- {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
- {result && (
- <div style={{ background: darkMode ? "#09090b": "#f4f4f5", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635": "#09090b"}}>
- <div style={{ fontWeight: 600, marginBottom: 4 }}>Query Result:</div>
- <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 14, lineHeight: 1.7 }}>{typeof result === 'string'? result : JSON.stringify(result, null, 2)}</div>
- </div>
- )}
- {history.length > 0 && (
- <div style={{ marginTop: 24, background: darkMode ? "#52525b": "#f4f4f5", borderRadius: 12, padding: 18 }}>
- <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Query History</div>
- <ul style={{ paddingLeft: 18 }}>
- {history.map((h, i) => (
- <li key={i} style={{ marginBottom: 10 }}>
- <div><b>Query:</b> {h.query}</div>
- <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "...": ""}</div>
- </li>
- ))}
- </ul>
- </div>
- )}
- <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635": "#71717a", textAlign: "center"}}>
- <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai"style={{ color: darkMode ? "#a3e635": "#0ea5e9", textDecoration: "underline"}}>Contact Support</a></span>
- </div>
- </div>
- );
-}
-
-
 
