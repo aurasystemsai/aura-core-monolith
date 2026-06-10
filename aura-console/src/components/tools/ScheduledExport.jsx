@@ -10,30 +10,47 @@ const S = {
   btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
   input: { flex: 1, minWidth: 160, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
   select: { background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none" },
+  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
+  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
   sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
   row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
 };
 
 const TABS = [
-  { id: "schedule", label: "Schedule Export" },
-  { id: "exports",  label: "Scheduled Exports" },
-  { id: "guide",    label: "Export Guide" },
+  { id: "ai",      label: "AI Setup" },
+  { id: "manual",  label: "Manual Schedule" },
+  { id: "exports", label: "My Exports" },
+  { id: "guide",   label: "Export Guide" },
 ];
 
-const REPORT_TYPES = ["Orders Report", "Customer Report", "Product Performance", "Inventory Summary", "Revenue Analytics", "Returns Report"];
-const FORMATS      = ["CSV", "PDF", "Excel (.xlsx)", "JSON"];
-const FREQUENCIES  = ["Daily", "Weekly (Mon)", "Weekly (Fri)", "Monthly", "Quarterly"];
-const DELIVERIES   = ["Email", "Slack", "Google Drive", "Dropbox", "S3 Bucket"];
+const REPORT_TYPES   = ["Orders Report", "Customer Report", "Product Performance", "Inventory Summary", "Revenue Analytics", "Returns Report", "Marketing Performance", "Refund Analysis"];
+const FORMATS        = ["CSV", "PDF", "Excel (.xlsx)", "JSON"];
+const FREQUENCIES    = ["Daily (6am)", "Daily (8pm)", "Weekly (Mon 8am)", "Weekly (Fri 5pm)", "Monthly (1st)", "Monthly (last day)", "Quarterly"];
+const DELIVERIES     = ["Email", "Slack", "Google Drive", "Dropbox", "S3 Bucket", "FTP"];
+
+const AI_SCENARIOS = [
+  { label: "Weekly ops team",       desc: "Weekly Orders Report and Returns Report every Monday morning via email to our operations team. CSV format for easy Excel import." },
+  { label: "Monthly investor deck", desc: "Monthly Revenue Analytics PDF at end of month delivered to Dropbox. For monthly board deck preparation." },
+  { label: "Daily finance sync",    desc: "Daily Orders Report in Excel format every day at 8am to the accounting team email for Xero reconciliation." },
+  { label: "Marketing data feed",   desc: "Weekly Product Performance CSV to a Slack channel every Friday to help marketing plan next week's ad spend." },
+  { label: "S3 data pipeline",      desc: "Daily all-orders JSON export to S3 bucket for data warehouse ingestion by 7am. Needs to include all fields." },
+];
 
 export default function ScheduledExport() {
-  const [tab, setTab]       = useState("schedule");
+  const [tab, setTab]       = useState("ai");
   const [exports, setExports] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState("");
 
-  const [form, setForm] = useState({ reportType: "Orders Report", format: "CSV", frequency: "Weekly (Mon)", delivery: "Email", recipient: "" });
+  // AI Setup
+  const [aiDesc, setAiDesc]   = useState("");
+  const [aiResult, setAiResult] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // Manual form
+  const [form, setForm] = useState({ reportType: "Orders Report", format: "CSV", frequency: "Weekly (Mon 8am)", delivery: "Email", recipient: "" });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   useEffect(() => { loadExports(); }, []);
@@ -51,6 +68,34 @@ export default function ScheduledExport() {
     setLoading(false);
   };
 
+  const aiSetup = async () => {
+    if (!aiDesc.trim()) return;
+    setAiLoading(true); setError(""); setAiResult(null);
+    try {
+      const r = await apiFetchJSON(`${API}/ai/suggest`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: aiDesc }),
+      });
+      if (!r.ok && r.error) throw new Error(r.error);
+      setAiResult(r.suggestion || r.result || r);
+    } catch (e) { setError(e.message); }
+    setAiLoading(false);
+  };
+
+  const applyAiResult = () => {
+    if (!aiResult) return;
+    if (typeof aiResult === "object") {
+      setForm(p => ({
+        ...p,
+        reportType: aiResult.reportType || p.reportType,
+        format:     aiResult.format     || p.format,
+        frequency:  aiResult.frequency  || p.frequency,
+        delivery:   aiResult.delivery   || p.delivery,
+      }));
+    }
+    setTab("manual");
+  };
+
   const saveExport = async () => {
     if (!form.recipient.trim()) { setError("Recipient is required"); return; }
     setSaving(true); setError("");
@@ -62,6 +107,7 @@ export default function ScheduledExport() {
       if (!r.ok) throw new Error(r.error || "Save failed");
       loadExports();
       set("recipient", "");
+      setTab("exports");
     } catch (e) { setError(e.message); }
     setSaving(false);
   };
@@ -77,22 +123,91 @@ export default function ScheduledExport() {
     <div style={S.page}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Scheduled Exports</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Automate PDF and CSV exports of your reports. Deliver to email, Slack, Google Drive, Dropbox, or S3 on any schedule.</p>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
+          Automate report delivery to your team, investors, and tools. Use AI to design the right export schedule, or configure manually. Supports email, Slack, Google Drive, Dropbox, S3, and FTP.
+        </p>
       </div>
 
       {analytics && (
         <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
           <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
             <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>Active Schedules</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#4f46e5" }}>{analytics.totalExports || exports.length}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#4f46e5" }}>{analytics.totalExports ?? exports.length}</div>
           </div>
+          {analytics.lastRun && (
+            <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
+              <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>Last Run</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7", marginTop: 2 }}>{new Date(analytics.lastRun).toLocaleDateString()}</div>
+            </div>
+          )}
         </div>
       )}
 
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
-      {tab === "schedule" && (
+      {/* ── AI SETUP ── */}
+      {tab === "ai" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Describe Your Export Needs</div>
+            <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 14 }}>
+              Tell the AI what you need in plain English — who needs the data, when, in what format, and where to deliver it. The AI will configure the right export setup for you.
+            </p>
+            <textarea
+              style={{ ...S.ta, minHeight: 110 }}
+              value={aiDesc}
+              onChange={e => setAiDesc(e.target.value)}
+              placeholder="e.g. Every Monday morning I need an Orders Report in CSV sent to ops@company.com so the team can review last week's performance…"
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button style={S.btn("primary")} onClick={aiSetup} disabled={aiLoading || !aiDesc.trim()}>
+                {aiLoading ? "Configuring…" : "AI Configure Export"}
+              </button>
+              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setAiDesc(""); setAiResult(null); }}>Clear</button>
+            </div>
+          </div>
+
+          {aiLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
+
+          {aiResult && !aiLoading && (
+            <div style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={S.sectionTitle}>AI Export Configuration</div>
+                <button style={S.btn("primary")} onClick={applyAiResult}>Apply & Review →</button>
+              </div>
+              {typeof aiResult === "object" ? (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {Object.entries(aiResult).filter(([k]) => k !== "ok").map(([k, v]) => (
+                    <div key={k} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px" }}>
+                      <div style={{ fontSize: 10, color: "#71717a", textTransform: "uppercase", letterSpacing: 0.5 }}>{k.replace(/([A-Z])/g, " $1").trim()}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7", marginTop: 2 }}>{String(v)}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <pre style={S.pre}>{String(aiResult)}</pre>
+              )}
+            </div>
+          )}
+
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Quick Scenario Templates</div>
+            {AI_SCENARIOS.map(({ label, desc }) => (
+              <div key={label} style={S.row}>
+                <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => setAiDesc(desc)}>Load</button>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#818cf8", marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: "#71717a" }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── MANUAL SCHEDULE ── */}
+      {tab === "manual" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
             <div style={S.sectionTitle}>Report Type</div>
@@ -110,7 +225,7 @@ export default function ScheduledExport() {
                 </select>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Frequency</div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Schedule</div>
                 <select style={{ ...S.select, width: "100%" }} value={form.frequency} onChange={e => set("frequency", e.target.value)}>
                   {FREQUENCIES.map(f => <option key={f}>{f}</option>)}
                 </select>
@@ -123,8 +238,12 @@ export default function ScheduledExport() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Recipient (email / webhook / path)</div>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.recipient} onChange={e => set("recipient", e.target.value)} placeholder="reports@company.com" />
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.recipient} onChange={e => set("recipient", e.target.value)} placeholder="reports@company.com or /bucket/path" />
               </div>
+            </div>
+
+            <div style={{ background: "#1e1b4b", border: "1px solid #3730a3", borderRadius: 8, padding: "8px 14px", fontSize: 12, color: "#c7d2fe", marginBottom: 14 }}>
+              Summary: <strong>{form.reportType}</strong> ({form.format}) → <strong>{form.delivery}</strong> · <strong>{form.frequency}</strong>
             </div>
 
             <button style={S.btn("primary")} onClick={saveExport} disabled={saving}>{saving ? "Saving…" : "Create Scheduled Export"}</button>
@@ -132,16 +251,36 @@ export default function ScheduledExport() {
         </div>
       )}
 
+      {/* ── MY EXPORTS ── */}
       {tab === "exports" && (
         <div style={{ marginTop: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 13, color: "#71717a" }}>{exports.length} scheduled exports</div>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{exports.length} scheduled export{exports.length !== 1 ? "s" : ""}</div>
             <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadExports}>Refresh</button>
           </div>
           {loading ? (
             <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>
           ) : exports.length === 0 ? (
-            <EmptyState icon="📤" title="No scheduled exports" description="Create your first scheduled export in the Schedule tab." />
+            <div>
+              <EmptyState icon="📤" title="No scheduled exports" description="Set up your first export in the AI Setup or Manual Schedule tab." />
+              <div style={{ ...S.card, marginTop: 16 }}>
+                <div style={S.sectionTitle}>Suggested Starter Schedule</div>
+                {[
+                  { label: "Monday 8am",   report: "Orders Report",       format: "CSV",       delivery: "Email → ops team" },
+                  { label: "Friday 5pm",   report: "Returns Report",      format: "CSV",       delivery: "Email → ops team" },
+                  { label: "Month end",    report: "Revenue Analytics",   format: "PDF",       delivery: "Dropbox → investor folder" },
+                  { label: "Daily 8am",   report: "Orders Report",       format: "Excel",     delivery: "Email → accounting" },
+                  { label: "Weekly Fri",  report: "Product Performance",  format: "CSV",       delivery: "Slack → marketing channel" },
+                ].map(({ label, report, format, delivery }) => (
+                  <div key={label} style={{ display: "grid", gridTemplateColumns: "100px 180px 80px 1fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 12, alignItems: "center" }}>
+                    <span style={{ color: "#818cf8", fontWeight: 700 }}>{label}</span>
+                    <span style={{ color: "#e4e4e7" }}>{report}</span>
+                    <span style={{ color: "#71717a" }}>{format}</span>
+                    <span style={{ color: "#52525b" }}>{delivery}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             exports.map((ex, i) => (
               <div key={ex.id || i} style={S.card}>
@@ -161,20 +300,43 @@ export default function ScheduledExport() {
         </div>
       )}
 
+      {/* ── GUIDE ── */}
       {tab === "guide" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
-            <div style={S.sectionTitle}>Export Strategy Guide</div>
+            <div style={S.sectionTitle}>Export Automation Strategy</div>
             {[
-              { t: "Weekly operations reports",     d: "Every Monday: Orders Report (CSV) → ops team email. Every Friday: Returns Report → ops team. This creates a weekly rhythm for reviewing performance." },
-              { t: "Monthly investor reporting",    d: "Monthly Revenue Analytics (PDF) → Dropbox folder. Investors get a clean PDF without needing Shopify access. Include: revenue, AOV, orders, growth rate." },
-              { t: "Finance team automation",       d: "Daily Orders Report (Excel) → accounting team email. Sync with Xero or QuickBooks workflow. Eliminates manual data pulls that waste ~2 hours/week." },
-              { t: "Marketing team enablement",     d: "Weekly Product Performance (CSV) → marketing Slack channel. Lets marketing team optimise ad spend and content without asking for data." },
-              { t: "Format selection guide",        d: "CSV: best for data analysis, Excel import. PDF: best for sharing with stakeholders. Excel: best for non-technical users who need formatting. JSON: best for developer integrations." },
+              { t: "Weekly operations rhythm",         d: "Every Monday: Orders + Returns Report → ops email (CSV). Every Friday: Returns + Revenue summary → review. This creates a weekly rhythm for reviewing performance without manual work." },
+              { t: "Monthly investor reporting",       d: "Revenue Analytics (PDF) → Dropbox at month end. Investors get clean reporting without Shopify access. Include: total revenue, orders, AOV, growth rate vs prior month and same month last year." },
+              { t: "Daily finance reconciliation",     d: "Daily Orders Report (Excel) → accounting team email at 8am. Integrates with Xero/QuickBooks manual import workflow. Eliminates 2+ hours of weekly manual data pulling." },
+              { t: "Marketing team enablement",        d: "Weekly Product Performance (CSV) → Slack at Friday close. Marketing team sees which products are performing to optimise next week's ad spend and content — no Shopify admin access required." },
+              { t: "Data warehouse pipeline",          d: "Daily all-data JSON → S3 bucket at 6am. Data engineering team ingests into BigQuery/Snowflake. Time the export 1-2 hours before the warehouse pipeline triggers." },
+              { t: "Delivery channel selection guide", d: "Email: simplest, best for people. Slack: great for ops teams who live in Slack. Google Drive/Dropbox: best for stakeholders needing persistent file access. S3/FTP: best for automated data pipelines." },
             ].map(({ t, d }) => (
               <div key={t} style={S.row}>
                 <span style={{ color: "#4f46e5", flexShrink: 0 }}>📤</span>
-                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div>
+                  <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Format Selection Guide</div>
+            {[
+              { fmt: "CSV",          best: "Data teams, Excel users, pipeline ingestion",     avoid: "Stakeholders without Excel familiarity" },
+              { fmt: "PDF",          best: "Board packs, investor reports, non-technical users", avoid: "Any workflow that requires further data manipulation" },
+              { fmt: "Excel (.xlsx)", best: "Finance teams, non-technical operations",         avoid: "Automated pipelines (use CSV or JSON instead)" },
+              { fmt: "JSON",         best: "Data warehouses, APIs, developer integrations",   avoid: "Human-readable reports" },
+            ].map(({ fmt, best, avoid }) => (
+              <div key={fmt} style={S.row}>
+                <span style={{ background: "#1e1b4b", color: "#818cf8", padding: "2px 8px", borderRadius: 4, fontSize: 12, fontWeight: 700, minWidth: 60, textAlign: "center", flexShrink: 0 }}>{fmt}</span>
+                <div>
+                  <div style={{ fontSize: 12, color: "#4ade80" }}>Best for: {best}</div>
+                  <div style={{ fontSize: 12, color: "#71717a", marginTop: 1 }}>Avoid: {avoid}</div>
+                </div>
               </div>
             ))}
           </div>
