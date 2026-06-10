@@ -1,440 +1,201 @@
-﻿import React, { useState, useEffect } from "react";
-import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
-import { Card, Button, Table, Modal, Input, Select, Switch, Tooltip, notification, Tabs, Progress, Tag } from "antd";
-import { DownloadOutlined, PlusOutlined, BellOutlined, BarChartOutlined, InfoCircleOutlined, ReloadOutlined, QuestionCircleOutlined, ShareAltOutlined, SettingOutlined } from "@ant-design/icons";
+﻿import React, { useState } from "react";
+import { MozTabs, EmptyState, ErrorBox } from "../MozUI";
 
-const alertTypes = [
- { label: "Threshold", value: "threshold"},
- { label: "Anomaly", value: "anomaly"},
- { label: "Scheduled", value: "scheduled"},
+const S = {
+  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
+  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
+  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
+  input: { flex: 1, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none" },
+  select: { background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none" },
+  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+  badge: (c) => ({ display: "inline-block", borderRadius: 5, padding: "2px 9px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: c === "anomaly" ? "#3f1315" : c === "threshold" ? "#3d2a0a" : "#052e16", color: c === "anomaly" ? "#f87171" : c === "threshold" ? "#fbbf24" : "#4ade80" }),
+};
+
+const TABS = [
+  { id: "alerts",   label: "Alerts" },
+  { id: "create",   label: "Create Alert" },
+  { id: "history",  label: "Alert History" },
+  { id: "guide",    label: "Alerts Guide" },
 ];
 
-const defaultAlerts = [
- { id: 1, name: "Revenue Drop", type: "anomaly", active: true, lastTriggered: "2026-01-03", recipients: ["ops@brand.com"] },
- { id: 2, name: "Weekly Report", type: "scheduled", active: true, lastTriggered: "2026-01-01", recipients: ["ceo@brand.com"] },
+const ALERT_TYPES = ["threshold", "anomaly", "scheduled"];
+const CHANNELS    = ["Email", "Slack", "SMS", "Webhook"];
+const METRICS     = ["Revenue", "Orders", "Conversion Rate", "AOV", "Return Rate", "Traffic", "Cart Abandonment", "CSAT", "Refund Rate"];
+
+const DEFAULT_ALERTS = [
+  { id: 1, name: "Revenue Drop >20%",      type: "anomaly",    active: true,  metric: "Revenue",        channel: "Slack",  recipient: "#ops-alerts", lastTriggered: "2026-06-02" },
+  { id: 2, name: "Weekly Performance",     type: "scheduled",  active: true,  metric: "Revenue",        channel: "Email",  recipient: "ceo@brand.com", lastTriggered: "2026-06-09" },
+  { id: 3, name: "Cart Abandon >70%",      type: "threshold",  active: false, metric: "Cart Abandonment", channel: "Email", recipient: "marketing@brand.com", lastTriggered: "2026-05-28" },
+  { id: 4, name: "CSAT Below 4.0",         type: "threshold",  active: true,  metric: "CSAT",           channel: "Slack",  recipient: "#cs-team", lastTriggered: "Never" },
 ];
 
 export default function ReportingAlerts() {
- const [alerts, setAlerts] = useState([]);
- const [loading, setLoading] = useState(false);
- const [modalOpen, setModalOpen] = useState(false);
- const [editing, setEditing] = useState(null);
- const [form, setForm] = useState({ name: "", type: "threshold", recipients: "", active: true });
- const [analytics, setAnalytics] = useState({ triggered: 12, resolved: 10, avgResponse: 2.1 });
- const [onboarding, setOnboarding] = useState(false);
- const [exporting, setExporting] = useState(false);
- const [tab, setTab] = useState("alerts");
- const [history, setHistory] = useState([]);
- const [env, setEnv] = useState("dev");
- const devSandbox = env === "dev";
- const [syncHealth, setSyncHealth] = useState({ status: "healthy", lastSuccess: Date.now(), lastError: null });
- const [feedbackText, setFeedbackText] = useState("");
- const [feedbackError, setFeedbackError] = useState("");
- const [simResult, setSimResult] = useState(null);
- const [confirmProd, setConfirmProd] = useState(false);
- const [routingPreset, setRoutingPreset] = useState("high-sms-slack");
- const [cooldownMinutes, setCooldownMinutes] = useState(10);
- const [dedupeMinutes, setDedupeMinutes] = useState(5);
- const [snoozedUntil, setSnoozedUntil] = useState(null);
- const [shop, setShop] = useState("demo-shop.myshopify.com");
- const [quietHours, setQuietHours] = useState({ start: "22:00", end: "06:00", tz: "UTC"});
- const [maintenance, setMaintenance] = useState({ window: "Sun 02:00-03:00", active: false });
- const [escalationPolicy, setEscalationPolicy] = useState([
- { channel: "email", after: 0 },
- { channel: "slack", after: 10 },
- { channel: "sms", after: 20 }
- ]);
- const [traceEvents, setTraceEvents] = useState([]);
- const [showDebug, setShowDebug] = useState(false);
- const [undoStack, setUndoStack] = useState([]);
- const [destructiveEnabled, setDestructiveEnabled] = useState(false);
- const [auditLog, setAuditLog] = useState([]);
+  const [tab, setTab]     = useState("alerts");
+  const [alerts, setAlerts] = useState(DEFAULT_ALERTS);
+  const [error, setError] = useState("");
+  const [form, setForm]   = useState({ name: "", type: "threshold", metric: "Revenue", channel: "Email", recipient: "", threshold: "" });
+  const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
+  const [history] = useState([
+    { id: 1, alertName: "Revenue Drop >20%", triggeredAt: "2026-06-02 09:14", resolved: true,  value: "-24%",  note: "Weekend dip — normal pattern" },
+    { id: 2, alertName: "Cart Abandon >70%", triggeredAt: "2026-05-28 16:32", resolved: false, value: "74%",   note: "Checkout page speed issue" },
+    { id: 3, alertName: "CSAT Below 4.0",    triggeredAt: "2026-05-15 11:00", resolved: true,  value: "3.8",   note: "CS backlog cleared" },
+  ]);
 
- useEffect(() => {
- // Simulate fetch
- setLoading(true);
- setTimeout(() => {
- setAlerts(defaultAlerts);
- setLoading(false);
- setHistory([{ summary: "Loaded defaults", at: Date.now(), env }]);
- }, 500);
- }, []);
+  const createAlert = () => {
+    if (!form.name.trim() || !form.recipient.trim()) { setError("Name and recipient are required"); return; }
+    setAlerts(p => [...p, { id: Date.now(), ...form, active: true, lastTriggered: "Never" }]);
+    setForm({ name: "", type: "threshold", metric: "Revenue", channel: "Email", recipient: "", threshold: "" });
+    setError("");
+    setTab("alerts");
+  };
 
- const recordTrace = (event, meta = {}) => {
- setTraceEvents(prev => [{ event, meta, at: Date.now(), env, shop }, ...prev].slice(0, 12));
- setAuditLog(prev => [{ event, meta, at: Date.now(), env, shop }, ...prev].slice(0, 24));
- };
+  const toggleAlert = (id) => setAlerts(p => p.map(a => a.id === id ? { ...a, active: !a.active } : a));
+  const deleteAlert = (id) => setAlerts(p => p.filter(a => a.id !== id));
 
- useEffect(() => {
- const handler = (e) => {
- if (e.ctrlKey && e.key.toLowerCase() === 'n') {
- e.preventDefault();
- openModal();
- }
- if (e.ctrlKey && e.key.toLowerCase() === 'd') {
- e.preventDefault();
- setShowDebug(v => !v);
- }
- };
- window.addEventListener('keydown', handler);
- return () => window.removeEventListener('keydown', handler);
- }, []);
+  const activeCount = alerts.filter(a => a.active).length;
 
- const quickFixForIssue = (msg = "") => {
- const lower = msg.toLowerCase();
- if (lower.includes("recipient")) return "sanitize";
- if (lower.includes("network")) return "retry";
- return null;
- };
+  return (
+    <div style={S.page}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Reporting & Alerts</h1>
+        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Automated alerts for revenue drops, anomalies, threshold breaches, and scheduled reports. Get notified before problems become crises.</p>
+      </div>
 
- const openModal = (alert = null) => {
- setEditing(alert);
- setForm(alert ? { ...alert, recipients: alert.recipients.join(", ") } : { name: "", type: "threshold", recipients: "", active: true });
- setModalOpen(true);
- };
+      <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Active Alerts",   value: activeCount,      color: "#4f46e5" },
+          { label: "Triggered Today", value: 1,                color: "#f87171" },
+          { label: "Avg Response",    value: "2.1h",           color: "#fbbf24" },
+          { label: "Resolution Rate", value: "92%",            color: "#4ade80" },
+        ].map(m => (
+          <div key={m.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>{m.label}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: m.color }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
 
- const handleSave = () => {
- if (!form.name || !form.recipients) {
- notification.error({ message: "Name and recipients required"});
- return;
- }
- if (env === 'prod'&& !confirmProd) {
- notification.warning({ message: "Confirm prod change", description: "Toggle confirm to edit in Prod."});
- return;
- }
- const recipientsArr = form.recipients.split(",").map(r => r.trim()).filter(Boolean);
- const invalidRecipients = recipientsArr.filter(r => !r.includes("@"));
- if (invalidRecipients.length) {
- notification.error({ message: "Invalid recipient email(s)", description: invalidRecipients.join(", ") });
- setFeedbackError("Recipients must be valid emails");
- return;
- }
- if (editing) {
- setAlerts(alerts.map(a => a.id === editing.id ? { ...form, id: editing.id, recipients: recipientsArr } : a));
- notification.success({ message: "Alert updated"});
- setHistory(h => [{ summary: `Updated alert: ${form.name}`, at: Date.now(), env }, ...h].slice(0, 6));
- recordTrace('alert_updated', { id: editing.id, name: form.name });
- } else {
- setAlerts([...alerts, { ...form, id: Date.now(), recipients: recipientsArr }]);
- notification.success({ message: "Alert created"});
- setHistory(h => [{ summary: `Created alert: ${form.name}`, at: Date.now(), env }, ...h].slice(0, 6));
- recordTrace('alert_created', { name: form.name });
- }
- setSyncHealth({ status: "healthy", lastSuccess: Date.now(), lastError: null });
- setModalOpen(false);
- setEditing(null);
- setForm({ name: "", type: "threshold", recipients: "", active: true });
- };
+      <ErrorBox message={error} />
+      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
- const handleDelete = (id) => {
- if (!destructiveEnabled) {
- notification.warning({ message: "Destructive disabled", description: "Toggle destructive actions to delete."});
- return;
- }
- const removed = alerts.find(a => a.id === id);
- setUndoStack(prev => [{ type: 'alert', data: removed }, ...prev].slice(0, 3));
- setAlerts(alerts.filter(a => a.id !== id));
- notification.info({ message: "Alert deleted"});
- setHistory(h => [{ summary: `Deleted alert ${id}`, at: Date.now(), env }, ...h].slice(0, 6));
- recordTrace('alert_deleted', { id });
- };
+      {tab === "alerts" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#71717a" }}>{alerts.length} alerts configured, {activeCount} active</div>
+            <button style={{ ...S.btn("primary"), fontSize: 11, padding: "6px 12px" }} onClick={() => setTab("create")}>+ New Alert</button>
+          </div>
+          {alerts.length === 0 ? (
+            <EmptyState icon="🔔" title="No alerts configured" description="Create your first alert to get notified of key metric changes." />
+          ) : (
+            alerts.map(a => (
+              <div key={a.id} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                      <span style={S.badge(a.type)}>{a.type}</span>
+                      <span style={{ background: a.active ? "#052e16" : "#27272a", color: a.active ? "#4ade80" : "#71717a", padding: "2px 7px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>{a.active ? "ACTIVE" : "PAUSED"}</span>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>
+                      {a.metric} · {a.channel}: {a.recipient}
+                      {a.lastTriggered !== "Never" && <> · Last triggered: {a.lastTriggered}</>}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button style={{ ...S.btn(a.active ? null : "green"), fontSize: 11, padding: "4px 10px" }} onClick={() => toggleAlert(a.id)}>{a.active ? "Pause" : "Enable"}</button>
+                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteAlert(a.id)}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
- const handleExport = () => {
- if (devSandbox) {
- notification.warning({ message: "Sandbox mode", description: "Export disabled in Dev. Switch to Stage/Prod."});
- return;
- }
- setExporting(true);
- setTimeout(() => {
- notification.success({ message: "Alerts exported as CSV"});
- setExporting(false);
- setHistory(h => [{ summary: "Exported alerts", at: Date.now(), env }, ...h].slice(0, 6));
- setSyncHealth({ status: "healthy", lastSuccess: Date.now(), lastError: null });
- recordTrace('export_alerts', { count: alerts.length });
- }, 800);
- };
+      {tab === "create" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>New Alert Configuration</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Alert Name</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.name} onChange={e => setF("name", e.target.value)} placeholder="Revenue Drop >20%" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Alert Type</div>
+                <select style={{ ...S.select, width: "100%" }} value={form.type} onChange={e => setF("type", e.target.value)}>
+                  {ALERT_TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Metric to Monitor</div>
+                <select style={{ ...S.select, width: "100%" }} value={form.metric} onChange={e => setF("metric", e.target.value)}>
+                  {METRICS.map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Notification Channel</div>
+                <select style={{ ...S.select, width: "100%" }} value={form.channel} onChange={e => setF("channel", e.target.value)}>
+                  {CHANNELS.map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Recipient (email / Slack channel / URL)</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.recipient} onChange={e => setF("recipient", e.target.value)} placeholder="alerts@company.com" />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Threshold / Condition</div>
+                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form.threshold} onChange={e => setF("threshold", e.target.value)} placeholder="e.g. drop >20%, below 4.0, every Monday" />
+              </div>
+            </div>
+            <button style={S.btn("primary")} onClick={createAlert}>Create Alert</button>
+          </div>
+        </div>
+      )}
 
- const simulateAlert = () => {
- setSimResult({ fired: Math.random() > 0.4, severity: form.type === 'anomaly'? 'high': 'medium', sample: form.name || 'Unnamed alert'});
- setHistory(h => [{ summary: `Simulated alert: ${form.name || 'Untitled'}`, at: Date.now(), env }, ...h].slice(0, 6));
- recordTrace('simulate_alert', { name: form.name });
- };
+      {tab === "history" && (
+        <div style={{ marginTop: 20 }}>
+          {history.length === 0 ? (
+            <EmptyState icon="📜" title="No alert history" description="Triggered alerts will appear here." />
+          ) : (
+            history.map(h => (
+              <div key={h.id} style={S.card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ background: h.resolved ? "#052e16" : "#3f1315", color: h.resolved ? "#4ade80" : "#f87171", padding: "2px 7px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>{h.resolved ? "RESOLVED" : "OPEN"}</span>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{h.alertName}</div>
+                    <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>Triggered: {h.triggeredAt} · Value: {h.value}</div>
+                    {h.note && <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 2, fontStyle: "italic" }}>{h.note}</div>}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
- const applyPreset = (value) => {
- setRoutingPreset(value);
- setHistory(h => [{ summary: `Routing preset: ${value}`, at: Date.now(), env }, ...h].slice(0, 6));
- recordTrace('routing_preset', { preset: value });
- };
-
- const handleFeedback = async () => {
- if (!feedbackText) return;
- setFeedbackError("");
- if (devSandbox) {
- setFeedbackError("Sandbox mode: switch to Stage/Prod to submit feedback.");
- return;
- }
- try {
- await new Promise(resolve => setTimeout(resolve, 400));
- notification.success({ message: "Feedback sent"});
- setFeedbackText("");
- setHistory(h => [{ summary: "Feedback submitted", at: Date.now(), env }, ...h].slice(0, 6));
- recordTrace('feedback_sent', {});
- } catch (err) {
- setFeedbackError("Network error while sending feedback");
- }
- };
-
- const undoLast = () => {
- const item = undoStack[0];
- if (!item) return;
- if (item.type === 'alert') {
- setAlerts(prev => [...prev, item.data]);
- recordTrace('undo_alert', { id: item.data?.id });
- }
- setUndoStack(prev => prev.slice(1));
- };
-
- const columns = [
- { title: "Name", dataIndex: "name", key: "name", render: (t, r) => <b>{t}</b> },
- { title: "Type", dataIndex: "type", key: "type", render: t => <Tag color={t === "anomaly"? "red": t === "scheduled"? "blue": "gold"}>{t}</Tag> },
- { title: "Active", dataIndex: "active", key: "active", render: t => <Switch checked={t} disabled /> },
- { title: "Recipients", dataIndex: "recipients", key: "recipients", render: arr => arr.join(", ") },
- { title: "Last Triggered", dataIndex: "lastTriggered", key: "lastTriggered"},
- {
- title: "Actions", key: "actions", render: (_, r) => (
- <>
- <Tooltip title="Edit"><Button icon={<SettingOutlined />} size="small"onClick={() => openModal(r)} /></Tooltip>
- <Tooltip title="Delete"><Button danger size="small"style={{ marginLeft: 8 }} onClick={() => handleDelete(r.id)}>Delete</Button></Tooltip>
- </>
- )
- }
- ];
-
- return (
- <div style={{ padding: 24 }}>
- {devSandbox && (
- <Card style={{ marginBottom: 12, background: "#18181b", borderColor: "#27272a"}}>
- <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap'}}>
- <div>
- <div style={{ fontWeight: 800, color: '#f59e0b'}}>Sandbox mode</div>
- <div style={{ color: '#a1a1aa'}}>Exports and feedback are blocked. Switch env to Stage/Prod.</div>
- </div>
- <div style={{ display: 'flex', gap: 8 }}>
- <Button onClick={() => setEnv('stage')}>Stage</Button>
- <Button type="primary"onClick={() => setEnv('prod')}>Prod</Button>
- </div>
- </div>
- </Card>
- )}
- <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
- <Select value={env} onChange={setEnv} options={[{ value: 'dev', label: 'Dev'}, { value: 'stage', label: 'Stage'}, { value: 'prod', label: 'Prod'}]} style={{ width: 140 }} />
- <Select value={shop} onChange={setShop} options={[{ value: 'demo-shop.myshopify.com', label: 'demo-shop.myshopify.com'}, { value: 'staging-shop.myshopify.com', label: 'staging-shop.myshopify.com'}]} style={{ width: 220 }} />
- <Card style={{ flex: 1, minWidth: 260, marginBottom: 0 }}>
- <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
- <div>
- <div style={{ fontWeight: 700 }}>Sync health</div>
- <div style={{ color: '#71717a', fontSize: 12 }}>Last success {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}) : ''}</div>
- </div>
- <Tag color={syncHealth.status === 'healthy'? 'green': 'red'}>{syncHealth.status}</Tag>
- </div>
- {syncHealth.lastError && <div style={{ color: '#ef4444', marginTop: 6 }}>{syncHealth.lastError}</div>}
- </Card>
- <Card style={{ minWidth: 220, marginBottom: 0 }}>
- <div style={{ fontWeight: 700 }}>Safety</div>
- <div style={{ color: '#71717a', fontSize: 12 }}>Protect deletes and allow undo</div>
- <div style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center'}}>
- <Switch checked={destructiveEnabled} onChange={setDestructiveEnabled} checkedChildren="Destructive on"unCheckedChildren="Locked"/>
- <Button size="small"disabled={!undoStack.length} onClick={undoLast}>Undo</Button>
- </div>
- </Card>
- </div>
- <Card
- title={<span><BellOutlined />Reporting Alerts</span>}
- extra={<>
- <Tooltip title="Export Alerts"><Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport} /></Tooltip>
- <Tooltip title="Export audit log"><Button icon={<DownloadOutlined />} style={{ marginLeft: 8 }} onClick={() => {
- const blob = new Blob([JSON.stringify(auditLog, null, 2)], { type: 'application/json'});
- const url = URL.createObjectURL(blob);
- const link = document.createElement('a');
- link.href = url;
- link.download = 'alerts-audit.json';
- link.click();
- setTimeout(() =>URL.revokeObjectURL(url), 8000);
- recordTrace('audit_export', { count: auditLog.length });
- }} />
- </Tooltip>
- <Tooltip title="Add Alert"><Button type="primary"icon={<PlusOutlined />} onClick={() => openModal()} style={{ marginLeft: 8 }}>Add</Button></Tooltip>
- </>}
- style={{ marginBottom: 24 }}
- >
- <Tabs activeKey={tab} onChange={setTab}>
- <Tabs.TabPane tab={<span><BarChartOutlined />Alerts</span>} key="alerts">
- <Table
- columns={columns}
- dataSource={alerts}
- rowKey="id"loading={loading}
- pagination={false}
- style={{ marginBottom: 16 }}
- scroll={{ y: 320 }}
- sticky
- locale={{ emptyText: devSandbox ? "Sandbox: create or import alerts": "No alerts yet"}}
- />
- <div style={{ marginTop: 16, display: "flex", gap: 24 }}>
- <div>
- <b>Triggered:</b> <span>{analytics.triggered}</span>
- <Progress percent={Math.round((analytics.triggered / 20) * 100)} size="small"status="active"/>
- </div>
- <div>
- <b>Resolved:</b> <span>{analytics.resolved}</span>
- <Progress percent={Math.round((analytics.resolved / 20) * 100)} size="small"status="success"/>
- </div>
- <div>
- <b>Avg Response (hrs):</b> <span>{analytics.avgResponse}</span>
- </div>
- <div>
- <b>Recommendation:</b> <span>Suggested threshold: 95th percentile</span>
- </div>
- </div>
- <div style={{ marginTop: 12, background: '#18181b', padding: 10, borderRadius: 8, border: '1px solid #27272a'}}>
- <div style={{ fontWeight: 700, color: '#fafafa'}}>Severity routing</div>
- <Select size="small"value={routingPreset} onChange={applyPreset} style={{ width: 240, marginTop: 6 }}
- options={[
- { value: 'high-sms-slack', label: 'High: SMS + Slack + Email'},
- { value: 'medium-slack-email', label: 'Medium: Slack + Email'},
- { value: 'low-email', label: 'Low: Email only'}
- ]}
- />
- <div style={{ display: 'flex', gap: 12, marginTop: 10, flexWrap: 'wrap', color: '#fafafa', fontSize: 13 }}>
- <div>Cooldown (min): <input type="number"min="1"value={cooldownMinutes} onChange={e => setCooldownMinutes(Number(e.target.value) || 1)} style={{ width: 70 }} /></div>
- <div>Dedupe window (min): <input type="number"min="1"value={dedupeMinutes} onChange={e => setDedupeMinutes(Number(e.target.value) || 1)} style={{ width: 70 }} /></div>
- <Button size="small"onClick={() => setSnoozedUntil(new Date(Date.now() + 60 * 60 * 1000))}>Snooze 1h</Button>
- {snoozedUntil && <span style={{ color: '#fbbf24'}}>Snoozed until {snoozedUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})}</span>}
- </div>
- <div style={{ marginTop: 10, display: 'flex', gap: 12, flexWrap: 'wrap', color: '#fafafa', fontSize: 13 }}>
- <div>Quiet hours: <input value={quietHours.start} onChange={e => setQuietHours(q => ({ ...q, start: e.target.value }))} style={{ width: 70 }} /> - <input value={quietHours.end} onChange={e => setQuietHours(q => ({ ...q, end: e.target.value }))} style={{ width: 70 }} /> {quietHours.tz}</div>
- <div>Maintenance: <Switch size="small"checked={maintenance.active} onChange={v => setMaintenance(m => ({ ...m, active: v }))} /> {maintenance.window}</div>
- </div>
- </div>
- <div style={{ marginTop: 12, background: '#fafafa', padding: 10, borderRadius: 8 }}>
- <div style={{ fontWeight: 600 }}>Escalation policy</div>
- <div style={{ color: '#52525b', fontSize: 13 }}>Severity high Email Slack SMS fallback</div>
- <div style={{ marginTop: 6, display: 'grid', gap: 6 }}>
- {escalationPolicy.map((step, idx) => (
- <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
- <span style={{ color: '#18181b', fontWeight: 600 }}>{step.channel}</span>
- <span style={{ color: '#52525b', fontSize: 12 }}>after {step.after} min</span>
- </div>
- ))}
- </div>
- <Button size="small"icon={<ReloadOutlined />} style={{ marginTop: 6 }} onClick={() => { notification.info({ message: 'Escalation simulated'}); recordTrace('escalation_simulated', { policy: escalationPolicy.length }); }}>Test escalation</Button>
- </div>
- </Tabs.TabPane>
- <Tabs.TabPane tab={<span><InfoCircleOutlined />Onboarding</span>} key="onboarding">
- <div style={{ padding: 24 }}>
- <h3>How to Use Reporting Alerts</h3>
- <ol>
- <li>Click <b>Add</b> to create a new alert.</li>
- <li>Choose alert type: threshold, anomaly, or scheduled.</li>
- <li>Set recipients and activate the alert.</li>
- <li>Alerts will trigger based on your configuration and notify recipients.</li>
- <li>Export alerts for backup or sharing.</li>
- </ol>
- <Button icon={<QuestionCircleOutlined />} style={{ marginTop: 16 }}>View Documentation</Button>
- </div>
- </Tabs.TabPane>
- <Tabs.TabPane tab={<span><ShareAltOutlined />Feedback</span>} key="feedback">
- <div style={{ padding: 24 }}>
- <h3>Feedback & Suggestions</h3>
- <Input.TextArea rows={4} value={feedbackText} onChange={e => setFeedbackText(e.target.value)} placeholder="Share your feedback or feature requests..."style={{ marginBottom: 12 }} />
- <Button type="primary"onClick={handleFeedback}>Submit Feedback</Button>
- {feedbackError && (
- <div style={{ marginTop: 8, color: '#ef4444', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>
- <span>{feedbackError}</span>
- {quickFixForIssue(feedbackError) === 'retry'&& <Button size="small"onClick={() => { setFeedbackError(''); handleFeedback(); }}>Retry</Button>}
- {quickFixForIssue(feedbackError) === 'sanitize'&& <Button size="small"onClick={() => setFeedbackText(feedbackText.replace(/\s+/g, '').split(',').filter(Boolean).map(r => r.includes('@') ? r : `${r}@example.com`).join(', '))}>Fix emails</Button>}
- </div>
- )}
- </div>
- </Tabs.TabPane>
- </Tabs>
- </Card>
-
- {history.length > 0 && (
- <Card title="Recent activity"style={{ marginBottom: 16 }}>
- {history.slice(0, 5).map((h, idx) => (
- <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: idx === history.slice(0,5).length -1 ? 'none': '1px solid #f4f4f5'}}>
- <div>
- <div style={{ fontWeight: 600 }}>{h.summary}</div>
- <div style={{ color: '#71717a', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})} · {h.env}</div>
- </div>
- <Button size="small"icon={<ReloadOutlined />} onClick={() => notification.info({ message: 'Replayed', description: h.summary })}>Replay</Button>
- </div>
- ))}
- </Card>
- )}
-
- <Card title="Debug panel"style={{ marginBottom: 16 }} extra={<Button size="small"onClick={() => setShowDebug(v => !v)}>{showDebug ? 'Hide': 'Show'}</Button>}>
- {showDebug ? (
- traceEvents.length === 0 ? <div style={{ color: '#71717a'}}>Interact to capture traces. Ctrl+D toggles.</div> : (
- <div style={{ display: 'grid', gap: 8 }}>
- {traceEvents.map((t, idx) => (
- <div key={idx} style={{ padding: 8, border: '1px solid #f4f4f5', borderRadius: 8 }}>
- <div style={{ fontWeight: 700 }}>{t.event}</div>
- <div style={{ color: '#71717a', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})} · {t.env} · {t.shop}</div>
- <div style={{ color: '#71717a', fontSize: 12, wordBreak: 'break-word'}}>{JSON.stringify(t.meta)}</div>
- </div>
- ))}
- </div>
- )
- ) : (
- <div style={{ color: '#71717a'}}>Tracing captures saves, deletes, exports, simulations.</div>
- )}
- </Card>
-
- <Modal
- title={editing ? "Edit Alert": "Add Alert"}
- open={modalOpen}
- onCancel={() => setModalOpen(false)}
- onOk={handleSave}
- okText={editing ? "Save": "Create"}
- >
- <Input
- placeholder="Alert Name"value={form.name}
- onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
- style={{ marginBottom: 12 }}
- />
- <Select
- value={form.type}
- onChange={v => setForm(f => ({ ...f, type: v }))}
- options={alertTypes}
- style={{ width: "100%", marginBottom: 12 }}
- />
- <Input
- placeholder="Recipients (comma separated)"value={form.recipients}
- onChange={e => setForm(f => ({ ...f, recipients: e.target.value }))}
- style={{ marginBottom: 12 }}
- />
- <div style={{ marginBottom: 12 }}>
- <Switch
- checked={form.active}
- onChange={v => setForm(f => ({ ...f, active: v }))}
- checkedChildren="Active"unCheckedChildren="Inactive"/>
- </div>
- <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center'}}>
- <Button icon={<ReloadOutlined />} onClick={simulateAlert}>Simulate alert</Button>
- <Button icon={<QuestionCircleOutlined />} onClick={() => notification.info({ message: 'Runbook opened', description: 'Attach remediation steps here.'})}>Open runbook</Button>
- <Switch checked={confirmProd} onChange={setConfirmProd} checkedChildren="Prod confirmed"unCheckedChildren="Prod locked"/>
- </div>
- {simResult && (
- <div style={{ background: '#fafafa', borderRadius: 8, padding: 10, marginBottom: 8 }}>
- <div><b>Simulation</b>: {simResult.sample}</div>
- <div>Fired: {simResult.fired ? 'Yes': 'No'} · Severity: {simResult.severity}</div>
- </div>
- )}
- </Modal>
- </div>
- );
+      {tab === "guide" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Alert Strategy Guide</div>
+            {[
+              { t: "Alert fatigue is a real risk",             d: "Too many alerts = alerts ignored. Start with 5-10 critical alerts only. Every alert you create must have a clear action: who responds, in what timeframe, with what action." },
+              { t: "Anomaly > threshold for revenue",          d: "Fixed thresholds miss context. A 20% revenue drop on Boxing Day is expected; the same drop on a Tuesday is a crisis. Anomaly detection uses historical baselines." },
+              { t: "Layer alerts by severity",                 d: "Critical (revenue drop >20%, site down): immediate Slack + SMS. Warning (cart abandon up 15%): email within 1 hour. Informational: daily digest only." },
+              { t: "Scheduled reports reduce ad-hoc requests", d: "A Monday morning performance report to the CEO eliminates 5+ 'how did we do this week?' Slack messages. Automate the questions you get asked repeatedly." },
+              { t: "Alert resolution requires accountability",  d: "Every triggered alert should auto-assign to an owner. 'Revenue is down' with no owner = slow resolution. 'Revenue is down — assigned to ops@company.com' = fast resolution." },
+            ].map(({ t, d }) => (
+              <div key={t} style={S.row}>
+                <span style={{ color: "#4f46e5", flexShrink: 0 }}>🔔</span>
+                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
-
-
-
