@@ -19,6 +19,7 @@ const TABS = [
   { id: "profiles",  label: "Profiles" },
   { id: "segments",  label: "Segments" },
   { id: "events",    label: "Events & Funnels" },
+  { id: "ai",        label: "AI Insights" },
   { id: "guide",     label: "CDP Guide" },
 ];
 
@@ -65,6 +66,20 @@ export default function CustomerDataPlatform() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState("");
+
+  // AI Insights
+  const [aiQuery, setAiQuery]       = useState("");
+  const [aiAnswer, setAiAnswer]     = useState(null);
+  const [aiLoading, setAiLoading]   = useState(false);
+
+  const QUICK_AI_QUERIES = [
+    "Which customer segment has the highest LTV?",
+    "What is the best time to send a win-back email?",
+    "How should I segment first-time vs repeat buyers?",
+    "What events should I track for churn prediction?",
+    "How do I build a loyalty tier system from purchase data?",
+    "What is the ideal RFM scoring model for a fashion brand?",
+  ];
 
   useEffect(() => { loadProfiles(); loadSegments(); loadEventStats(); }, []);
 
@@ -174,6 +189,21 @@ export default function CustomerDataPlatform() {
 
   const statKeys = eventStats ? Object.entries(eventStats).filter(([k]) => k !== "ok" && typeof eventStats[k] !== "object") : [];
 
+  const runAiQuery = async (override) => {
+    const q = (override || aiQuery).trim();
+    if (!q) return;
+    setAiLoading(true); setError(""); setAiAnswer(null);
+    try {
+      const r = await apiFetchJSON(`${API}/ai/query`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q, profileCount: profiles.length, segmentCount: segments.length }),
+      });
+      if (!r.ok && r.error) throw new Error(r.error);
+      setAiAnswer(r.answer || r.response || r.result || "");
+    } catch (e) { setError(e.message); }
+    setAiLoading(false);
+  };
+
   return (
     <div style={S.page}>
       <div style={{ marginBottom: 20 }}>
@@ -181,6 +211,20 @@ export default function CustomerDataPlatform() {
         <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
           Unified customer profiles, behavioural events, dynamic segments, and funnel analysis — the single source of truth for all customer intelligence.
         </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+        {[
+          { label: "Total Profiles",     value: profiles.length,          color: "#4f46e5" },
+          { label: "Segments",           value: segments.length,          color: "#4ade80" },
+          { label: "Funnel Templates",   value: FUNNEL_TEMPLATES.length,  color: "#818cf8" },
+          { label: "Event Types",        value: 9,                        color: "#fbbf24" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
+            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       <ErrorBox message={error} />
@@ -478,6 +522,73 @@ export default function CustomerDataPlatform() {
                 <code style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 600 }}>{type}</code>
                 <code style={{ color: "#71717a", fontFamily: "monospace", fontSize: 11 }}>{props}</code>
                 <span style={{ color: "#a1a1aa" }}>{desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── AI INSIGHTS ── */}
+      {tab === "ai" && (
+        <div style={{ marginTop: 20 }}>
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Customer Data AI Advisor</div>
+            <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 14 }}>
+              Ask anything about customer segmentation, LTV strategy, RFM analysis, event tracking, or CDP architecture. The AI advisor answers based on your store context.
+            </p>
+            <textarea
+              style={{ width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", minHeight: 80 }}
+              value={aiQuery}
+              onChange={e => setAiQuery(e.target.value)}
+              placeholder="Ask about segmentation strategy, LTV models, churn signals, event schema design…"
+            />
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button style={S.btn("primary")} onClick={() => runAiQuery()} disabled={aiLoading || !aiQuery.trim()}>
+                {aiLoading ? "Thinking…" : "Ask AI"}
+              </button>
+              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setAiQuery(""); setAiAnswer(null); }}>Clear</button>
+            </div>
+          </div>
+
+          {aiLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
+
+          {aiAnswer && !aiLoading && (
+            <div style={S.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={S.sectionTitle}>AI Response</div>
+                <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => navigator.clipboard?.writeText(aiAnswer)}>Copy</button>
+              </div>
+              <pre style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" }}>
+                {aiAnswer}
+              </pre>
+            </div>
+          )}
+
+          <div style={S.card}>
+            <div style={S.sectionTitle}>Quick CDP Questions</div>
+            {QUICK_AI_QUERIES.map((q, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" }}>
+                <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => { setAiQuery(q); runAiQuery(q); }}>Ask</button>
+                <div style={{ fontSize: 13, color: "#a1a1aa" }}>{q}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={S.card}>
+            <div style={S.sectionTitle}>CDP Health Score</div>
+            {[
+              { label: "Profiles created",    score: profiles.length > 0 ? "✓" : "0",     status: profiles.length > 0 ? "complete" : "pending",  tip: "Add customer profiles to start building your CDP" },
+              { label: "Segments defined",    score: segments.length > 0 ? "✓" : "0",      status: segments.length > 0 ? "complete" : "pending",  tip: "Create RFM-based segments to enable targeted campaigns" },
+              { label: "Funnel analysis run", score: funnelResult ? "✓" : "○",             status: funnelResult ? "complete" : "pending",          tip: "Run a funnel to identify your biggest drop-off point" },
+              { label: "Event tracking set up", score: eventStats ? "✓" : "○",             status: eventStats ? "complete" : "pending",            tip: "Instrument key events (purchase, add_to_cart, email_opened)" },
+            ].map(({ label, score, status, tip }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: "1px solid #1f1f22" }}>
+                <span style={{ width: 24, height: 24, borderRadius: "50%", background: status === "complete" ? "#052e16" : "#27272a", color: status === "complete" ? "#4ade80" : "#52525b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{score}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>{label}</div>
+                  <div style={{ fontSize: 11, color: "#71717a" }}>{tip}</div>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: status === "complete" ? "#4ade80" : "#52525b" }}>{status}</span>
               </div>
             ))}
           </div>

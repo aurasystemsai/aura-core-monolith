@@ -272,6 +272,20 @@ export default function AILaunchPlanner() {
  <span style={{ padding: "6px 10px", borderRadius: 999, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700 }}>Owner {owner}</span>
  </div>
 
+ <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginTop: 12, marginBottom: 4 }}>
+ {[
+ { label: "Phases",          value: phases.length,                                           color: palette.accent },
+ { label: "Checks Done",     value: `${checks.filter(c => c.done).length}/${checks.length}`, color: palette.success },
+ { label: "Active Channels", value: channels.filter(c => c.enabled).length,                  color: palette.warning },
+ { label: "Versions Saved",  value: versions.length,                                         color: palette.muted },
+ ].map(s => (
+ <div key={s.label} style={{ background: palette.card, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "10px 16px" }}>
+ <div style={{ fontSize: 10, color: palette.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+ <div style={{ fontSize: 22, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+ </div>
+ ))}
+ </div>
+
  <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
  {showOnboarding && (
  <div style={{ ...paletteCard, boxShadow: "0 12px 32px rgba(0,0,0,0.22)"}}>
