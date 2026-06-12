@@ -2,20 +2,45 @@
 ## Elevating All 77 Tools to World-Class Enterprise Standard
 
 **Target Standard:** Image Alt Media SEO tool (19,124 lines, 450+ features)  
-**Current Date:** February 14, 2026  
+**Last Updated:** June 12, 2026  
+**Innovation Mandate:** ACTIVE — every tool must include domain-specific innovations (see Innovation Specifications below each phase)  
 **Estimated Timeline:** 12-18 months (phased rollout)  
 **Total Tools to Upgrade:** 77 tools
 
 ### 📈 Overall Progress
 
-**Completed Tools:** 20/77 (26.0%)  
-**Total Lines Delivered:** 249,605 lines  
-**Average Lines Per Tool:** 12,480 lines  
-**Phases Complete:** Phase 1 ✅ | Phase 2 ✅ | Phase 3 In Progress (5/10)
+**Completed Tools:** 23/77 (29.9%)  
+**Total Lines Delivered:** ~308,605 lines  
+**Average Lines Per Tool:** 13,418 lines  
+**Phases Complete:** Phase 1 ✅ | Phase 2 ✅ | Phase 3 ✅ (8/10 complete, entity-topic-explorer remaining)
 
 **Phase 1 (Complete):** 7 tools, 97,531 lines  
 **Phase 2 (Complete):** 8 tools, 93,074 lines  
-**Phase 3 (In Progress):** 5/10 tools, 59,000 lines
+**Phase 3 (8/10 Complete):** KeywordResearchSuite ✅ TechnicalSEOAuditor ✅ BacklinkExplorer ✅ + 5 blog/content tools ✅
+
+---
+
+## 🔴 INNOVATION MANDATE — PERMANENT RULE
+
+> **Every tool upgrade MUST implement way-above-world-class innovations.**
+> Research the cutting edge of each tool's domain. Add specific, named innovations — not generic placeholders.
+> See `/memories/repo/innovation-requirements.md` for the complete per-tool innovation spec.
+
+### Global Innovations Required on EVERY Tool
+| Innovation | Implementation |
+|-----------|---------------|
+| Multi-model AI | GPT-4o + Claude 3.5 Sonnet + Gemini 1.5 Pro + Mistral |
+| AI reasoning chains | Chain-of-thought, Tree-of-thought for complex decisions |
+| Streaming AI | SSE-based real-time AI output |
+| RLHF feedback | Thumbs up/down → prompt improvement pipeline |
+| Anomaly detection | Z-score + IQR + isolation forest auto-alerts |
+| Command palette | Cmd+K global search/action across entire tool |
+| Cohort analysis | Acquisition-period cohort retention curves |
+| Causal inference | Diff-in-diff / Shapley attribution |
+| Audit log | Immutable action log with before/after values |
+| RBAC | Tool-specific permission scopes |
+| White-label export | Branded reports with merchant logo |
+| Webhook system | Subscribe to any event, retry + delivery logs |
 
 ---
 
@@ -317,59 +342,410 @@
 
 **Estimated Effort:** 3 months, 2 developers
 
-### Phase 4: E-commerce & Operations (Months 10-12)
-**Priority: Medium-High**
+---
 
-27. **inventory-forecasting** (Basic - supply chain)
-28. **inventory-supplier-sync** (140 lines - operations)
-29. **returns-rma-automation** (237 lines - customer experience)
-30. **advanced-finance-inventory-planning** (834 lines - expand)
-31. **finance-autopilot** (Basic - financial automation)
-32. **daily-cfo-pack** (Basic - financial insights)
-33. **churn-prediction-playbooks** (Basic - retention)
-34. **ltv-churn-predictor** (Basic - customer lifetime value)
+### Phase 3 Remaining: entity-topic-explorer
+**Status: NOT STARTED** — write generator script `write-entity-topic-explorer.js`
+
+#### 🚀 Innovation Specifications: Entity & Topic Explorer
+
+**Core Domain Innovations:**
+- **Knowledge Graph Integration** — Google Entity Framework, Wikidata QID matching, schema.org entity type classification (Person/Organization/Product/Event/Place/CreativeWork/Thing)
+- **E-E-A-T Scoring Engine** — Algorithmic Experience, Expertise, Authoritativeness, Trustworthiness score per entity with actionable improvement recs
+- **Topical Authority Mapping** — PageRank-style authority flow through topic clusters; measure your topical coverage vs competitors
+- **Entity Co-occurrence Analysis** — PMI (Pointwise Mutual Information) scores — which entities appear together in top-ranking pages
+- **Semantic Triple Extraction** — Subject → Predicate → Object NLP parsing from your content (identifies knowledge gaps)
+- **Wikipedia/Wikidata Entity Matching** — Map your domain entities to Wikidata QIDs; check if Google has an entity card for your brand
+- **Topic Cluster Force Graph** — D3.js force-directed graph visualizing entity relationships and coverage gaps
+- **Semantic Coverage Score** — % of the topical map covered vs top 3 competitors; gap heatmap
+- **Entity Search Intent Mapping** — Map each entity to informational/navigational/transactional/commercial intent signals
+- **Featured Snippet Entity Optimization** — Which entities have PAA (People Also Ask) and featured snippet opportunities
+- **Entity Gap Analysis** — Entities your competitors own that you don't; prioritized by search volume
+- **NLP Content Analysis** — Named entity recognition, co-reference resolution, entity salience scoring
+
+**Tab Groups (7 × 6 = 42 tabs):**
+1. Entities (discover/gap/competitors/authority/co-occurrence/wikidata)
+2. Topics (cluster-map/hierarchy/coverage/intent/seasonality/questions)
+3. Knowledge Graph (kg-presence/entity-cards/schema/structured-data/rich-results/e-e-a-t)
+4. Content Analysis (semantic-audit/nlp-scan/triple-extract/density/freshness/gaps)
+5. Competitors (comp-entities/sov/topical-authority/featured-snippets/comp-content/benchmarks)
+6. Optimize (recs/internal-linking/content-plan/entity-strategy/schema-gen/ai-writer)
+7. Advanced (ai-analysis/trends/voice-search/international/settings/world-class)
+
+---
+
+### Phase 4: E-commerce & Operations (Months 10-12)
+**Priority: Medium-High**  
+**Status: NOT STARTED**
+
+27. **inventory-forecasting** (Basic → enterprise supply chain intelligence)
+28. **inventory-supplier-sync** (140 lines → supplier intelligence platform)
+29. **returns-rma-automation** (237 lines → intelligent returns management)
+30. **advanced-finance-inventory-planning** (834 lines → CFO-grade finance platform)
+31. **finance-autopilot** (Basic → autonomous finance operations)
+32. **daily-cfo-pack** (Basic → executive intelligence briefing)
+33. **churn-prediction-playbooks** (Basic → survival analysis + ML retention)
+34. **ltv-churn-predictor** (Basic → probabilistic LTV + BG/NBD models)
 
 **Estimated Effort:** 3 months, 2 developers
+
+#### 🚀 Innovation Specifications: Phase 4 Tools
+
+##### inventory-forecasting — Supply Chain AI
+- **Time-Series ML Ensemble** — Prophet + LSTM + XGBoost ensemble with automatic model selection per SKU; confidence intervals
+- **Causal Demand Forecasting** — Incorporate promotions, holidays, weather, and social trends as external regressors (with Fourier seasonality)
+- **Bayesian Demand Uncertainty** — Probabilistic forecasts with credible intervals; never just a point estimate
+- **Multi-Echelon Inventory Optimization** — Simultaneous optimization across warehouse → DC → store layers
+- **Dynamic Safety Stock Engine** — Cycle service level targeting; demand variability × lead time variability combined with z-score
+- **Economic Order Quantity (EOQ)** — Calculator with price breaks, holding cost % of item value, ordering cost
+- **ABC-XYZ Matrix Analysis** — Value (ABC) × predictability (XYZ) = 9-cell inventory policy matrix per SKU
+- **Dead Stock AI Detection** — Predict slow-movers BEFORE they become dead stock; liquidation timing recs
+- **Stockout Risk Scoring** — Real-time probability-of-stockout in next 7/14/30 days per SKU
+- **Automated Purchase Order Generation** — Reorder point hit → draft PO with preferred supplier, lead time, quantity
+- **STL Seasonal Decomposition** — Trend + seasonal + residual decomposition for each SKU automatically
+- **Supply Chain Disruption Alerts** — Monitor supplier geopolitical risk, port congestion, transport disruptions
+- **What-If Scenario Planning** — "If demand grows 30%?" / "If lead time doubles?" — instant inventory impact
+
+**Tab Groups:** Forecast (overview/sku-forecast/demand-signals/seasonal/trend/ai-forecast) / Inventory (reorder-points/safety-stock/eoq/abc-xyz/dead-stock/stockouts) / Suppliers (supplier-risk/lead-times/alt-suppliers/po-automation/compliance/scorecards) / Finance (inventory-value/holding-costs/write-offs/cash-impact/budget/scenarios) / Analytics (performance/accuracy/by-category/by-location/benchmarks/reports) / Operations (receiving/warehouse/transfers/adjustments/reconciliation/audit) / Advanced (ai-engine/disruption-radar/integrations/settings/alerts/world-class)
+
+##### inventory-supplier-sync — Supplier Intelligence
+- **Supplier Scorecard AI** — Auto-score on delivery performance, quality rate, price competitiveness, sustainability, financial stability
+- **EDI Integration Patterns** — ANSI X12 / EDIFACT: 850 (PO), 855 (PO Acknowledge), 856 (ASN), 810 (Invoice) document handling
+- **Lead Time Prediction ML** — Supplier-specific lead time distributions with variability modeling (log-normal fit)
+- **Price Negotiation Intelligence** — Historical price trend analysis, commodity market benchmarks, negotiation timing signals
+- **Alternative Supplier Sourcing AI** — AI-suggested backup suppliers by category, geography, capacity, risk profile
+- **Supplier Risk Monitoring** — Financial health (D&B-style), geopolitical risk index, natural disaster proximity
+- **Receiving Variance Analysis** — PO vs receipt quantity/quality discrepancies; trend analysis to hold suppliers accountable
+- **Carbon Footprint Scoring** — Supplier emissions data, transport distance optimization for ESG reporting
+- **VMI (Vendor Managed Inventory)** — Allow trusted suppliers to view your stock levels and trigger replenishment
+- **Contract Management** — Supplier contract terms, expiry alerts, performance-linked pricing clauses
+
+##### returns-rma-automation — Intelligent Returns
+- **Return Reason AI Classification** — NLP on customer return reasons → structured root cause taxonomy (size/quality/expectation/damage/changed-mind/fraud)
+- **Return Fraud Detection ML** — Detect wardrobing, serial returner patterns, receipt fraud, abnormal return velocity
+- **Return Propensity Scoring** — Predict likelihood of return at order creation time (customer + product signals)
+- **Restocking Condition Rules Engine** — Route returned items: restock / refurbish / liquidate / destroy / donate
+- **Exchange-First Revenue Recovery** — AI suggests exchanges before refunds; show revenue saved per exchange
+- **Policy A/B Testing** — Test free-returns vs paid-returns on customer segments; measure revenue + LTV impact
+- **Customer Return DNA** — Per-customer return history, lifetime return rate, reason patterns, fraud flag
+- **Automated Return Labels** — Multi-carrier QR-code label generation (FedEx/UPS/USPS/Royal Mail/DHL)
+- **Return Disposition Optimization** — Maximize secondary market value (eBay / B-stock / liquidators)
+- **Net Merchandise Recovery Rate** — KPI: value recovered / original COGS — track and optimize over time
+- **Returns as Revenue** — Upsell/cross-sell during return flow; store credit incentives to retain revenue
+
+##### advanced-finance-inventory-planning — CFO Suite
+- **13-Week Rolling Cash Flow Forecast** — ARIMA + LSTM ensemble; daily updates; scenario bands (optimistic/base/pessimistic)
+- **Cash Conversion Cycle Optimization** — DPO × DIO × DSO analysis; identify working capital release opportunities
+- **Margin Erosion Alerts** — Real-time gross/net margin monitoring per channel/product with anomaly detection
+- **Live P&L Dashboard** — Real-time P&L updating as Shopify orders/returns/costs come in
+- **Multi-Jurisdiction Tax Automation** — VAT/GST/Sales tax calculation with nexus threshold monitoring
+- **Budget vs Actuals** — Variance analysis with drill-down to SKU / channel / region / week
+- **Monte Carlo Scenario Engine** — 10,000-simulation revenue/cost scenarios with confidence intervals
+- **Currency Risk Dashboard** — FX exposure analysis, multi-currency margin impact, hedging timing recs
+- **Open-to-Buy (OTB) Planning** — Retail merchandise planning: planned sales + BOH - BOM = OTB budget
+- **Accounts Receivable Aging** — Invoice aging with collection probability ML; DSO trend tracking
+
+##### finance-autopilot — Autonomous Finance Operations
+- **Autonomous AP/AR** — Auto-match invoices to POs, auto-approve within thresholds, flag exceptions
+- **Rule-Based Chart of Accounts Mapping** — Auto-classify transactions to correct GL codes using rules + ML
+- **AI Bank Reconciliation** — ML similarity scoring to match bank feed to transactions; exceptions surfaced
+- **Expense Categorization NLP** — Fine-tuned NLP to classify expenses from descriptions
+- **Multi-Level Approval Chains** — Define approval hierarchies with value thresholds and escalation rules
+- **Early Payment Discount Engine** — "Pay invoice in 7 days for 2% discount vs hold cash" — NPV calculation
+- **Tax Calendar Automation** — VAT filing deadlines, estimated tax payments, jurisdiction rules
+- **Shopify Payout Reconciliation** — Auto-reconcile Shopify payouts to bank with fee breakdown by type
+- **Month-End Close Automation** — Checklist-driven close with automated reconciliations and variance sign-off
+- **Fraud Detection** — Detect duplicate invoices, unusual payment patterns, vendor master anomalies
+
+##### daily-cfo-pack — Executive Intelligence Briefing
+- **AI Morning Briefing** — Daily AI-generated brief: yesterday KPIs vs target, top 3 risks, top 3 opportunities, one key decision needed
+- **Adaptive KPI Thresholds** — Self-calibrating alert thresholds based on historical volatility (no manual tuning)
+- **NLP Query Interface** — Natural language: "What drove the 15% revenue decline last Tuesday?" — AI answers with data
+- **Executive Narrative Generation** — AI writes board-ready financial commentary with proper business language
+- **Competitive Financial Benchmarking** — Industry-median comparisons for LTV, AOV, gross margin, CAC payback
+- **Board Pack Generator** — One-click board presentation: charts + AI narrative + YTD vs prior year
+- **Waterfall Bridge Charts** — P&L bridge showing exactly what drove period-over-period change
+- **Rolling 13-Week Forecast** — Always-on near-term forecast updating daily from actuals
+- **Custom KPI Formula Builder** — Define any composite metric, set targets, variance alerts
+- **Real-Time Revenue Ticker** — Live revenue counter updating as orders process
+
+##### churn-prediction-playbooks — Retention AI
+- **Cox Proportional Hazard Model** — Survival analysis for time-to-churn with hazard ratios by segment; identify high-risk cohorts
+- **RFM Scoring Engine** — Recency-Frequency-Monetary quintile scoring (1-5 per dimension) with segment migration tracking
+- **Cohort Churn Curves** — Retention curves by acquisition cohort, channel, first product, promo code
+- **BG/NBD Churn Probability Model** — Buy-till-you-die probabilistic model with individual-level alive probability
+- **Customer Health Score Composite** — Weighted multi-signal score: purchase frequency + AOV trend + support tickets + NPS + login frequency
+- **Win-Back Campaign Automation** — Automatic trigger at churn probability thresholds → Klaviyo/email/SMS
+- **Early Warning Indicator Dashboard** — Leading indicators (login drop, support spike, NPS decline) that precede churn by 30-60 days
+- **Segment-Specific Playbooks** — Different retention playbooks for high-value/low-risk vs low-value/high-risk vs salvageable-churners
+- **Predictive NPS** — Predict NPS before survey using behavioral signals; identify detractors to reach out to proactively
+- **Reactivation ROI Calculator** — Estimate revenue recovery value × probability × campaign cost = reactivation NPV
+
+##### ltv-churn-predictor — Customer Value ML
+- **Pareto/NBD + Gamma-Gamma Model** — Probabilistic LTV model for non-contractual ecommerce; individual purchase probability × expected spend
+- **CLV Quintile Segmentation** — Cluster customers by predicted 1Y/2Y/5Y LTV for resource allocation and acquisition bidding
+- **LTV Attribution by Channel** — Which acquisition channels produce highest-LTV customers? Break the CAC-LTV ratio by source
+- **Product Affinity → LTV Predictor** — Which first product predicts highest downstream LTV? (Inform merchandising)
+- **LTV Decay Visualization** — Cumulative LTV curve over time for each cohort; visualize retention economics
+- **LTV Uplift Testing** — Causal inference: did the loyalty program increase LTV vs control group?
+- **Value-Based Bidding Export** — Export LTV quintile scores to Google Customer Match / Meta custom audiences for value-based bidding
+- **LTV Scenario Modeling** — "If 30-day repeat rate improves 10%, what's the LTV impact across all customers?"
+- **Cross-Sell LTV Predictor** — Which next product recommendation maximizes expected LTV per customer?
+- **Customer Acquisition Payback Period** — By channel/cohort: when does CAC break even given LTV curve?
+
+---
 
 ### Phase 5: Advertising & Paid Media (Months 13-15)
-**Priority: Medium**
+**Priority: Medium**  
+**Status: NOT STARTED**
 
-35. **google-ads-integration** (Basic - paid search)
-36. **facebook-ads-integration** (Basic - social advertising)
-37. **tiktok-ads-integration** (Basic - emerging platforms)
-38. **ad-creative-optimizer** (Basic - creative testing)
-39. **ads-anomaly-guard** (Basic - budget protection)
-40. **multi-channel-optimizer** (141 lines - expand)
+35. **google-ads-integration** (Basic → search intelligence platform)
+36. **facebook-ads-integration** (Basic → Meta social advertising intelligence)
+37. **tiktok-ads-integration** (Basic → short-form video advertising)
+38. **ad-creative-optimizer** (Basic → AI creative intelligence)
+39. **ads-anomaly-guard** (Basic → real-time budget protection)
+40. **multi-channel-optimizer** (141 lines → media mix & attribution)
 
 **Estimated Effort:** 3 months, 2 developers
 
-### Phase 6: Workflow & Automation (Months 16-18)
-**Priority: Medium**
+#### 🚀 Innovation Specifications: Phase 5 Tools
 
-41. **visual-workflow-builder** (1,546 lines - already advanced, polish)
-42. **workflow-automation-builder** (1,009 lines - expand)
-43. **workflow-orchestrator** (1,441 lines - enterprise features)
-44. **conditional-logic-automation** (1,502 lines - enhance)
-45. **automation-templates** (Basic - template library)
-46. **collaboration-approval-workflows** (606 lines - expand)
+##### google-ads-integration — Search Intelligence
+- **Smart Bidding Alignment** — Calibrate Google's tCPA/tROAS targets to actual customer LTV data; surface bid adjustments by customer value segment
+- **Search Term Mining AI** — NLP clustering of search term report → new keyword opportunities + bulk negative keyword suggestions
+- **Quality Score Optimizer** — Per-keyword recommendations for Ad Relevance / Expected CTR / Landing Page Experience
+- **Budget Allocation (Markowitz Portfolio Theory)** — Mean-variance optimization across campaigns to maximize ROAS at target budget
+- **Incrementality Test Design** — Ghost ad / geo holdout test setup within the tool; measure true incremental ROAS
+- **LTV Lookalike Audience Generator** — Score customer list by LTV quintile → export top decile to Google for value-based bidding
+- **Ad Schedule Optimizer** — Bid adjustment recommendations by hour-of-day/day-of-week based on conversion rate patterns
+- **Competitor Auction Insights** — Impression share, overlap rate, outranking share vs specific named competitors
+- **RSA Headline/Description AI** — Generate headline and description combinations; predict CTR from historical data
+- **Keyword Cannibalization Detector** — Surface internal keyword conflicts across campaigns/ad groups automatically
+
+##### facebook-ads-integration — Meta Advertising Intelligence
+- **Creative Performance Predictor AI** — Score creative assets for predicted CTR and conversion rate before launch
+- **Audience Overlap Analysis** — Detect and resolve overlap across ad sets to prevent internal auction competition
+- **Ad Fatigue Frequency Curves** — Fatigue modeling by audience size × creative; auto-pause before performance cliff
+- **DCO Element Analysis** — Dynamic Creative Optimization: which headline / image / CTA combination drives best results
+- **Pixel Event Debugger** — Deduplication check, value alignment, custom conversion verification
+- **LTV Lookalike Seed Builder** — LTV-weighted seed audiences for lookalike expansion (not just recent buyers)
+- **iOS 14+ Modeled Conversion Recovery** — Statistical modeling of missing conversion data from ATT opt-outs
+- **Advantage+ Transparency Layer** — Surface performance breakdown inside Advantage+ Shopping black box
+- **CBO Campaign Simulation** — Predict how Campaign Budget Optimizer will distribute spend before activating
+
+##### tiktok-ads-integration — Short-Form Video Advertising
+- **Spark Ad Candidate Finder** — Identify top organic posts by engagement rate → recommend as Spark Ad candidates
+- **Creative Hook Analyzer** — Frame-by-frame first-3-seconds analysis: hook score, drop-off prediction
+- **Trending Audio Intelligence** — Match ad audio to trending sounds for algorithm favorability
+- **TikTok SEO Optimizer** — Caption keyword optimization, hashtag strategy for organic discoverability
+- **Creator Marketplace Integration** — Find/brief/track UGC creators; deliverable tracking, content approval workflow
+- **Ad Format ROI Comparison** — In-Feed vs TopView vs Branded Effects vs Spark Ads: side-by-side ROI analysis
+- **Gen-Z Persona Intelligence** — Map product/brand to TikTok sub-cultures, interest niches, trend cycles
+- **TikTok Shop Attribution** — Track sales generated via TikTok Shop; attach to ad spend for true ROAS
+
+##### ad-creative-optimizer — Creative Intelligence
+- **AI Creative Generation Suite** — GPT-4o for copy, DALL-E 3 for image concepts, video script generation
+- **Creative Fatigue Predictor ML** — Predict N days until creative performance will decline; prompt preemptive refresh
+- **Computer Vision Emotion Analysis** — Score creative emotional valence (joy/trust/surprise/fear) using CV models
+- **Brand Safety Scanner** — Pre-flight check for brand safety policy violations (sensitive categories, language)
+- **Creative DNA Extraction** — What do your top 20% creatives have in common? Visual patterns, copy structures, offer types
+- **Message-Audience Matrix Testing** — 2×2 matrix: offer × audience × creative × channel with statistical winner detection
+- **Video Thumbnail Optimizer** — Eye-tracking simulation (saliency mapping) to select best thumbnail frame
+- **Localization Engine** — AI translation + cultural adaptation for international ad creatives
+- **Creative Brief → Asset Generator** — Upload brief → AI outputs copy, image prompts, video scripts ready for production
+
+##### ads-anomaly-guard — Budget Protection
+- **Real-Time Spend Velocity Alerting** — Alert within 15 minutes when hourly spend deviates from budget pace
+- **ROAS Cliff Detection** — Automatic detection when ROAS crosses below break-even with auto-pause rule option
+- **Click Fraud Pattern Detection** — Abnormal IP clustering, session duration anomalies, bounce rate correlation
+- **Budget Burn Forecasting** — Predict end-of-period spend at current pace; flag over/under-pacing
+- **Bidding Instability Detector** — Alert when CPC spikes >2σ from baseline (competitor auction entry detection)
+- **Conversion Tracking Breakage Alert** — Detect when conversion count drops anomalously (pixel/tag failure)
+- **Cross-Channel Cannibalization Analysis** — Detect when paid search cannibalizes organic, or paid social cannibalizes paid search
+- **Auto-Pause Rule Engine** — User-defined conditions that auto-pause campaigns (ROAS thresholds, CPA caps, budget caps)
+- **Wasted Spend Audit** — Weekly AI audit: low-quality keywords, irrelevant placements, poor-performing audiences
+
+##### multi-channel-optimizer — Media Mix & Attribution
+- **Bayesian Media Mix Modeling (MMM)** — Adstock + saturation curves per channel; budget optimization with diminishing returns
+- **Shapley Value Attribution** — Game-theory attribution across all touchpoints for unbiased credit allocation
+- **Diminishing Returns Curve Engine** — Marginal ROAS curve for each channel; identify optimal spend inflection points
+- **Cross-Channel Frequency Manager** — Unified frequency cap across Google + Meta + TikTok + programmatic
+- **Incrementality-Adjusted Budget Allocator** — Budget based on incremental ROAS; penalizes channels with high organic overlap
+- **Channel Synergy Analysis** — Which channel combinations produce super-additive ROAS effects?
+- **Budget Scenario Planner** — "Reallocate $10k from Meta to Google" → instant predicted ROAS impact
+- **Attribution Model Comparison** — Last-click vs first-click vs linear vs time-decay vs data-driven — side by side
+
+---
+
+### Phase 6: Workflow & Automation (Months 16-18)
+**Priority: Medium**  
+**Status: NOT STARTED**
+
+41. **visual-workflow-builder** (1,546 lines → React Flow no-code automation platform)
+42. **workflow-automation-builder** (1,009 lines → declarative rule engine)
+43. **workflow-orchestrator** (1,441 lines → DAG-based enterprise orchestrator)
+44. **conditional-logic-automation** (1,502 lines → Boolean logic engine)
+45. **automation-templates** (Basic → curated template marketplace)
+46. **collaboration-approval-workflows** (606 lines → enterprise approval platform)
 
 **Estimated Effort:** 3 months, 1-2 developers
 
+#### 🚀 Innovation Specifications: Phase 6 Tools
+
+##### visual-workflow-builder — No-Code Automation Canvas
+- **React Flow Infinite Canvas** — Infinite canvas with minimap, snap-to-grid, node grouping, selection box, undo/redo stack
+- **NL2Workflow AI** — Type "send welcome email when customer signs up" → AI generates the workflow as visual nodes
+- **300+ Pre-Built Trigger Nodes** — Shopify order events, customer milestones, date/time, webhook, Klaviyo, custom HTTP
+- **JavaScript/Python Code Node** — Sandboxed code execution within the visual flow for custom business logic
+- **Time-Travel Debugging** — Step through any historical execution, inspect state at each node, identify exactly where failures occur
+- **Git-Style Workflow Versioning** — Branch (draft → staging → production), compare diffs, rollback
+- **Workflow Marketplace** — 200+ pre-built templates with one-click install and community sharing + ratings
+- **AI Workflow Optimizer** — Analyze execution data → suggest bottleneck fixes, redundant steps, simplifications
+- **Parallel Execution (Fan-Out/Fan-In)** — Split into parallel branches, rejoin with synchronization gates
+- **Error Handling Nodes** — Visual try/catch/retry/dead-letter patterns as first-class nodes
+- **Circuit Breaker Pattern** — Auto-fallback when downstream service is degraded; self-healing recovery
+
+##### workflow-automation-builder — Declarative Rule Engine
+- **YAML/JSON Rule DSL** — Human-readable rule definitions versionable in git
+- **Visual Decision Table Editor** — Spreadsheet-style conditions → outcomes matrix for complex business rules
+- **Priority Queue Execution** — Business-critical workflows get higher execution priority
+- **Batch Aggregation Node** — Collect N events → trigger once (e.g. bundle 100 orders → one summary Slack)
+- **Event Sourcing Architecture** — Immutable audit log of all workflow state changes for compliance
+- **SAGA Compensation Workflows** — Rollback previous steps if later step fails (choreography-based SAGA pattern)
+- **Human-in-the-Loop Gates** — Pause workflow, notify approver, wait for human decision before continuing
+- **ML Routing Node** — Automatically route items to workflow branches based on ML prediction scores
+- **A/B Test Execution Node** — Split workflow for multi-armed bandit optimization; auto-select winner
+
+##### workflow-orchestrator — Enterprise DAG Orchestrator
+- **DAG-Based Scheduling** — Directed Acyclic Graph scheduler similar to Apache Airflow; dependency management
+- **Durable Execution** — Long-running workflows that span days/weeks survive process restarts (Temporal-inspired)
+- **Cross-Tool Orchestration** — Trigger actions in any AURA tool from any other tool via typed events
+- **Worker Pool Management** — Named worker pools, concurrency limits, priority lanes
+- **SLA Monitoring** — Alert when workflow exceeds expected duration; escalation actions
+- **Workflow Analytics** — P50/P95/P99 execution times, failure rates, step-level bottleneck analysis
+- **Workflow Dependency Graph** — Declare that Workflow B cannot start until Workflow A completes
+
+##### conditional-logic-automation — Boolean Logic Engine
+- **AND/OR/NOT Drag-and-Drop Tree** — Visual nested condition builder with group collapsing
+- **Dynamic Variable References** — Reference any data attribute: order.total, customer.ltv_score, product.tag
+- **Computed Fields Engine** — Define formulas on existing fields (e.g. discount_pct = discount / total * 100)
+- **Temporal Conditions** — "If customer hasn't ordered in 90 days AND was previously a repeat buyer"
+- **ML Score Conditions** — Integrate with churn_risk_score, ltv_score, return_propensity from predictor tools
+- **Rule Conflict Detection** — Automatically surface overlapping or contradictory conditions in rule sets
+- **Impact Simulation** — "How many customers/orders would match this rule set right now?" — instant preview
+
+##### automation-templates — Template Intelligence Platform
+- **200+ Curated Templates** — 10 categories: E-commerce, Email, Social, Finance, SEO, Ads, Support, Retention, Onboarding, Operations
+- **Template Performance Benchmarks** — Show anonymized real performance data (open rates, conversion lifts) per template
+- **Wizard-Style Customizer** — Guided variable substitution before install; preview what the template will do
+- **AI Template Generator** — Describe your goal in plain English → AI generates a custom template
+- **Template Versioning** — Templates improve over time; users prompted to update to latest version
+- **Community Marketplace** — User-submitted templates with ratings, reviews, and install counts
+- **Template Impact Preview** — Simulate the template against your actual data before applying
+
+##### collaboration-approval-workflows — Enterprise Approvals
+- **Real-Time Presence Indicators** — See teammates' locations in the app with avatar overlays
+- **Threaded Comments** — Comment on any item, @mention teammates, emoji reactions, resolution tracking
+- **Multi-Level Approval Chains** — Define approval hierarchies with value thresholds, parallel approvals, or sequential
+- **Escalation Rules** — Auto-escalate to manager if not approved within N hours
+- **Digital Approval Signatures** — Timestamp + IP + user ID approval record for compliance/audit
+- **Out-of-Office Delegation** — Auto-delegate approvals when approver is OOO; calendar integration
+- **Audit Trail** — Immutable log of all approvals with before/after state and approver reasoning
+- **Mobile Push Notifications** — Approval requests push to mobile; one-tap approve/reject
+
+---
+
 ### Phase 7: Integrations & Data (Ongoing)
-**Priority: Low-Medium**
+**Priority: Low-Medium**  
+**Status: NOT STARTED**
 
-47. **data-warehouse-connector** (Basic - data integration)
-48. **reporting-integrations** (976 lines - expand)
-49. **scheduled-export** (131 lines - automation)
-50. **webhook-api-triggers** (1,184 lines - expand)
-51. **aura-api-sdk** (Basic - developer tools)
+47. **data-warehouse-connector** (Basic → reverse ETL + streaming data infrastructure)
+48. **reporting-integrations** (976 lines → BI connector platform)
+49. **scheduled-export** (131 lines → smart data automation)
+50. **webhook-api-triggers** (1,184 lines → event platform)
+51. **aura-api-sdk** (Basic → full developer platform)
 
-**Estimated Effort:** Ongoing, 1 developer
+**Estimated Effort:** Ongoing, 1-2 developers
+
+#### 🚀 Innovation Specifications: Phase 7 Tools
+
+##### data-warehouse-connector — Modern Data Stack Integration
+- **Reverse ETL** — Push data FROM Snowflake/BigQuery/Redshift BACK INTO AURA operational tools (not just extract)
+- **Change Data Capture (CDC)** — Real-time streaming of database changes via Debezium/Kafka connectors
+- **Schema Auto-Discovery** — Infer and map table schemas without manual configuration
+- **Data Quality Monitoring** — Row count, null rate, cardinality drift, distribution shift alerts
+- **Data Lineage Graph** — Visualize where every metric comes from, end-to-end
+- **dbt Model Generator** — Generate dbt transformation models from AURA schemas automatically
+- **OpenAPI Connector Generator** — Point at any OpenAPI spec → auto-generate a bidirectional connector
+- **GraphQL Federation Layer** — Unified GraphQL schema stitching across all AURA data sources
+- **Real-Time Streaming** — Kafka/Kinesis/Pub-Sub direct topic subscription and publishing
+- **Semantic Business Metrics Layer** — Define metrics once in YAML; query via SQL or natural language
+
+##### reporting-integrations — BI Connector Platform
+- **Looker Studio Native Connector** — AURA as a first-class Looker Studio data source
+- **Tableau / Power BI Connectors** — Direct-query connectors with push-down aggregation
+- **Pixel-Perfect Report Builder** — Drag-and-drop chart library with 20+ chart types, calculated fields
+- **AI Narrative Generation** — "Generate weekly performance report" → AI writes full business narrative
+- **Multi-Destination Scheduled Delivery** — Email + Slack + webhook delivery on any cron schedule
+- **White-Label Report Portal** — Customer-facing portals with merchant branding
+- **Cross-Tool Report Stitching** — Combine metrics from any AURA tools in one report
+- **Report Subscriptions** — Stakeholders subscribe to specific reports without needing AURA login
+
+##### scheduled-export — Smart Data Automation
+- **Natural Language Scheduling** — "Every Monday at 8am" → auto-generates cron expression
+- **Incremental/Delta Export** — Only export records changed since last run (watermark-based)
+- **Multi-Destination Fan-Out** — Route same export to S3 + SFTP + email simultaneously
+- **Pre-Export Transformation** — Apply filters, computed fields, column renames before writing
+- **PGP Encryption** — Auto-encrypt with recipient public key for GDPR-compliant transfers
+- **Delivery Confirmation Tracking** — Know which exports were delivered, processed, or failed downstream
+- **Export Schema Registry** — Versioned column definitions for downstream system compatibility
+
+##### webhook-api-triggers — Event Platform
+- **Event Schema Registry** — Versioned schemas for every AURA event type with backward compatibility guarantees
+- **Fan-Out Architecture** — One AURA event triggers multiple webhooks in parallel
+- **Visual Webhook Debugger** — Inspect payloads, replay failed deliveries, sandbox testing mode
+- **Circuit Breaker** — Auto-pause webhooks to unhealthy endpoints; auto-resume on recovery detection
+- **Dead Letter Queue** — Failed webhooks retained 7 days for on-demand replay
+- **JSONata Event Transformation** — Map/filter/transform payloads before delivery using JSONata expressions
+- **Per-Key API Rate Limiting** — Configurable per-consumer rate limits with burst allowance
+- **GraphQL Subscriptions** — Real-time event delivery via GraphQL WebSocket transport
+
+##### aura-api-sdk — Full Developer Platform
+- **SDK Auto-Generation from OpenAPI** — SDKs in 8 languages: JavaScript, Python, Ruby, Go, PHP, Java, C#, Swift
+- **Interactive API Explorer** — Swagger UI with live API calls against real data (with read-only sandboxing)
+- **Semantic CLI** — `aura pull`, `aura push`, `aura deploy`, `aura logs`, `aura diff` commands
+- **Local Dev Proxy** — `aura dev` proxies to production API with local credential injection
+- **OpenAPI 3.1 Spec** — Machine-readable spec auto-generated from route definitions, always up to date
+- **500+ Code Examples** — Every endpoint has examples in all 8 languages
+- **API Sandbox** — Isolated environment with seeded demo data for integration testing
+- **Rate Limit Tier System** — Bronze/Silver/Gold/Platinum tiers with per-minute/day/month limits
+- **Developer Analytics** — Track API usage, error rates, p95 latency per key per endpoint
+- **Changelog & Migration Guides** — Semantic versioned API with automated breaking change detection
+
+---
 
 ### Phase 8: Specialized Tools (As Needed)
-**Priority: Low**
+**Priority: Determined by customer demand**  
+**Status: RESEARCH AT TIME OF BUILD**
 
-52-77. Remaining specialized tools based on customer demand
+52-77. Specialized tools — research + innovate at build time. Categories include:
+- AI Copilot / Autonomous Merchant Agent
+- Advanced SEO (AI Overviews optimization, schema intelligence, international)
+- Conversion Rate Optimization
+- Email Deliverability Intelligence
+- SMS/WhatsApp Marketing Automation
+- Affiliate & Partner Marketing Management
+- Subscription & Recurring Revenue Management
+- Digital Asset Management
+- Customer Journey Mapping & Orchestration
+- Mobile App Analytics
+- Voice Search Optimization
+- Video & Podcast SEO
+- Newsletter Automation
+- Landing Page Builder with A/B Testing
+- Competitive Intelligence Platform
+
+**Each Phase 8 tool must follow identical innovation mandate from `/memories/repo/innovation-requirements.md`**
 
 ---
 
