@@ -23,7 +23,7 @@ const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
 const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
 const Reports = lazy(() => import("./components/Reports.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
-const InternalLinkOptimizer = lazy(() => import("./components/tools/InternalLinkOptimizer"));
+const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
 const AllTools = lazy(() => import("./components/AllTools.jsx"));
 const MainSuite = lazy(() => import("./components/tools/MainSuite.jsx"));
@@ -84,6 +84,7 @@ const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyRef
 const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
 const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTracker.jsx"));
 const BacklinkExplorer = lazy(() => import("./components/tools/BacklinkExplorer.jsx"));
+const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
 const CompetitiveAnalysis = lazy(() => import("./components/tools/CompetitiveAnalysis.jsx"));
 const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
 const LinkIntersectOutreach = lazy(() => import("./components/tools/LinkIntersectOutreach.jsx"));
@@ -543,6 +544,7 @@ function App() {
  {activeSection === "content-scoring-optimization"&& <ContentScoringOptimization />}
  {activeSection === "keyword-research-suite"&& <KeywordResearchSuite />}
  {activeSection === "backlink-explorer"&& <BacklinkExplorer />}
+ {activeSection === "entity-topic-explorer"&& <EntityTopicExplorer />}
  {activeSection === "link-intersect-outreach"&& <LinkIntersectOutreach />}
  {activeSection === "local-seo-toolkit"&& <LocalSEOToolkit />}
  {activeSection === "competitive-analysis"&& <CompetitiveAnalysis />}

@@ -173,6 +173,7 @@ const toolRouters = [
   { path: '/api/content-scoring-optimization', router: require('./tools/content-scoring-optimization/router'), middleware: requireTool('content-scoring-optimization'), creditAction: 'content-brief' },
   { path: '/api/link-intersect-outreach', router: require('./tools/link-intersect-outreach/router'), middleware: requireTool('link-intersect-outreach'), creditAction: 'keyword-research' },
   { path: '/api/backlink-explorer', router: require('./tools/backlink-explorer/router'), middleware: requireTool('backlink-explorer'), creditAction: 'competitive-analysis' },
+  { path: '/api/entity-topic-explorer', router: require('./tools/entity-topic-explorer/router'), middleware: requireTool('entity-topic-explorer'), creditAction: 'seo-analysis' },
   { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post' },
   { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant'), creditAction: 'support-reply' },
   { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text' },
