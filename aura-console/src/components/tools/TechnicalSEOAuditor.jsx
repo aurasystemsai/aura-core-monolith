@@ -52,7 +52,7 @@ function CWVGauge({ label, value, unit, thresholds, description }) {
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
         <span style={{ fontSize: 10, color: "#22c55e" }}>Good â‰¤{good}{unit}</span>
         <span style={{ fontSize: 10, color: colors[status], fontWeight: 700, textTransform: "uppercase" }}>{status === "unknown" ? "No data" : status === "good" ? "Good" : status === "needs" ? "Needs Work" : "Poor"}</span>
-        <span style={{ fontSize: 10, color: "#ef4444" }}>Poor >{poor}{unit}</span>
+        <span style={{ fontSize: 10, color: "#ef4444" }}>Poor &gt;{poor}{unit}</span>
       </div>
       {description && <div style={{ marginTop: 8, fontSize: 11, color: "#52525b", lineHeight: 1.5 }}>{description}</div>}
     </div>
