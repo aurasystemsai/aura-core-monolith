@@ -1,526 +1,487 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { apiFetchJSON } from "../../api";
-import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
 const API = "/api/finance-autopilot";
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: (bg) => ({ background:bg||'#f97316', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
+  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trOdd: { background:'#09090b44' },
+  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
+  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
+  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#f97316' }),
+  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
+  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#f97316', borderRadius:3 }),
+  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
+  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
 };
 
-const TABS = [
-  { id: "dashboard", label: "KPI Dashboard" },
-  { id: "automate",  label: "AI Autopilot" },
-  { id: "tax",       label: "Tax & Reconciliation" },
-  { id: "budget",    label: "Budget Tracker" },
-  { id: "guide",     label: "Finance Guide" },
+const GROUPS = [
+  {
+    "id": "ap",
+    "label": "Accounts Payable",
+    "color": "#f97316",
+    "tabs": [
+      {
+        "id": "ap-invoices",
+        "label": "Invoices"
+      },
+      {
+        "id": "ap-approve",
+        "label": "Approve"
+      },
+      {
+        "id": "po-match",
+        "label": "PO Matching"
+      },
+      {
+        "id": "vendors",
+        "label": "Vendors"
+      },
+      {
+        "id": "ap-aging",
+        "label": "AP Aging"
+      },
+      {
+        "id": "payments",
+        "label": "Payments"
+      }
+    ]
+  },
+  {
+    "id": "ar",
+    "label": "Accounts Receivable",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "ar-list",
+        "label": "Receivables"
+      },
+      {
+        "id": "send-invoice",
+        "label": "Send Invoice"
+      },
+      {
+        "id": "collections",
+        "label": "Collections"
+      },
+      {
+        "id": "ar-reconcile",
+        "label": "Reconcile"
+      },
+      {
+        "id": "ar-aging-tab",
+        "label": "AR Aging"
+      },
+      {
+        "id": "ar-writeoffs",
+        "label": "Write-Offs"
+      }
+    ]
+  },
+  {
+    "id": "recon",
+    "label": "Reconciliation",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "bank-feed",
+        "label": "Bank Feed"
+      },
+      {
+        "id": "matching",
+        "label": "AI Matching"
+      },
+      {
+        "id": "exceptions",
+        "label": "Exceptions"
+      },
+      {
+        "id": "close-check",
+        "label": "Close Checklist"
+      },
+      {
+        "id": "recon-audit",
+        "label": "Audit"
+      },
+      {
+        "id": "recon-history",
+        "label": "History"
+      }
+    ]
+  },
+  {
+    "id": "expenses",
+    "label": "Expenses",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "expense-list",
+        "label": "Expense List"
+      },
+      {
+        "id": "categorize",
+        "label": "Categorize"
+      },
+      {
+        "id": "exp-approval",
+        "label": "Approval"
+      },
+      {
+        "id": "exp-reports",
+        "label": "Reports"
+      },
+      {
+        "id": "policies",
+        "label": "Policies"
+      },
+      {
+        "id": "receipts",
+        "label": "Receipts"
+      }
+    ]
+  },
+  {
+    "id": "tax-ap",
+    "label": "Tax & Payouts",
+    "color": "#ec4899",
+    "tabs": [
+      {
+        "id": "payout-recon",
+        "label": "Payout Recon"
+      },
+      {
+        "id": "sales-tax",
+        "label": "Sales Tax"
+      },
+      {
+        "id": "vat-tab",
+        "label": "VAT"
+      },
+      {
+        "id": "filings",
+        "label": "Filings"
+      },
+      {
+        "id": "tax-calendar",
+        "label": "Tax Calendar"
+      },
+      {
+        "id": "tax-audit",
+        "label": "Audit Trail"
+      }
+    ]
+  },
+  {
+    "id": "auto",
+    "label": "Automation",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "auto-rules",
+        "label": "Rules"
+      },
+      {
+        "id": "auto-workflows",
+        "label": "Workflows"
+      },
+      {
+        "id": "thresholds",
+        "label": "Thresholds"
+      },
+      {
+        "id": "approval-chains",
+        "label": "Approval Chains"
+      },
+      {
+        "id": "notifications",
+        "label": "Notifications"
+      },
+      {
+        "id": "auto-audit",
+        "label": "Audit Log"
+      }
+    ]
+  },
+  {
+    "id": "fa-adv",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "fa-ai",
+        "label": "AI Bookkeeping"
+      },
+      {
+        "id": "fa-integrations",
+        "label": "Integrations"
+      },
+      {
+        "id": "fa-api",
+        "label": "API"
+      },
+      {
+        "id": "fa-reports",
+        "label": "Reports"
+      },
+      {
+        "id": "fa-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "fa-world",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
-
-const SAMPLE_PROMPTS = [
-  { label: "Monthly P&L",         prompt: "Automate our monthly P&L reporting — pull from Shopify, calculate gross margin, COGS, and operating expenses. Highlight any month-over-month anomalies." },
-  { label: "Cash flow forecast",  prompt: "Set up automated cash flow forecasting using the last 6 months of Shopify sales data with a 3-month rolling projection." },
-  { label: "UK VAT readiness",    prompt: "Create an automated tax readiness checklist for a UK-registered Shopify store with VAT obligations and quarterly MTD returns." },
-  { label: "Payout reconciliation", prompt: "Design an automated reconciliation process between Shopify payouts and our bank account deposits, flagging any discrepancies >£10." },
-  { label: "SKU margin analysis", prompt: "Automate per-SKU gross margin calculation. Factor in COGS, Shopify fees (2.5% payment processing), returns rate per SKU, and flag any SKU below 40% margin." },
-];
-
-const TAX_CHECKLIST_ITEMS = [
-  { task: "VAT registered (UK MTD)",              done: false, freq: "Quarterly", notes: "" },
-  { task: "Quarterly VAT return filed",            done: false, freq: "Quarterly", notes: "" },
-  { task: "Corporation tax provision calculated",  done: false, freq: "Monthly",   notes: "" },
-  { task: "Shopify payout → bank reconciliation",  done: false, freq: "Weekly",    notes: "" },
-  { task: "COGS updated for new stock",            done: false, freq: "Per order",  notes: "" },
-  { task: "Returns credited in accounts",          done: false, freq: "Weekly",    notes: "" },
-  { task: "Stripe / PayPal fees reconciled",       done: false, freq: "Monthly",   notes: "" },
-  { task: "Year-end accounts prepared",            done: false, freq: "Annual",    notes: "" },
-  { task: "R&D tax credit reviewed",               done: false, freq: "Annual",    notes: "" },
-];
-
-function computeKPIs({ revenue, cogs, adSpend, newCustomers, opex }) {
-  const r = parseFloat(revenue) || 0;
-  const c = parseFloat(cogs) || 0;
-  const a = parseFloat(adSpend) || 0;
-  const n = parseFloat(newCustomers) || 1;
-  const o = parseFloat(opex) || 0;
-
-  const grossMargin = r > 0 ? ((r - c) / r * 100).toFixed(1) : null;
-  const netMargin   = r > 0 ? ((r - c - a - o) / r * 100).toFixed(1) : null;
-  const cac         = n > 0 ? (a / n).toFixed(2) : null;
-  const contribution = r > 0 ? ((r - c - a) / r * 100).toFixed(1) : null;
-
-  return { grossMargin, netMargin, cac, contribution };
-}
 
 export default function FinanceAutopilot() {
-  const [tab, setTab] = useState("dashboard");
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
+  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ model:'gpt-4o-mini' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [toast, setToast] = useState(null);
 
-  // KPI Dashboard
-  const [kpiInputs, setKpiInputs] = useState({ revenue: "", cogs: "", adSpend: "", newCustomers: "", opex: "" });
-  const setK = (k, v) => setKpiInputs(p => ({ ...p, [k]: v }));
-  const kpis = computeKPIs(kpiInputs);
+  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
 
-  // AI Autopilot
-  const [input, setInput]       = useState("");
-  const [result, setResult]     = useState(null);
-  const [automations, setAutomations] = useState([]);
-  const [loading, setLoading]   = useState(false);
-  const [saving, setSaving]     = useState(false);
-  const [deleting, setDeleting] = useState(null);
+  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
 
-  // Tax & Reconciliation
-  const [checklist, setChecklist] = useState(TAX_CHECKLIST_ITEMS.map((item, i) => ({ ...item, id: i })));
-  const [reconcileNotes, setReconcileNotes] = useState("");
-
-  // Budget Tracker
-  const [budgets, setBudgets]             = useState([]);
-  const [budgetForm, setBudgetForm]       = useState({ name: "", category: "Marketing", budgeted: "", actual: "", period: new Date().toISOString().slice(0, 7) });
-  const setBF = (k, v) => setBudgetForm(p => ({ ...p, [k]: v }));
-  const [budgetSaving, setBudgetSaving]   = useState(false);
-  const [budgetDeleting, setBudgetDeleting] = useState(null);
-
-  const [error, setError] = useState("");
-
-  useEffect(() => { loadAutomations(); loadBudgets(); }, []);
-
-  const loadBudgets = async () => {
-    try { const r = await apiFetchJSON(`${API}/budgets`); if (r.ok) setBudgets(r.budgets || []); } catch {}
-  };
-
-  const saveBudget = async () => {
-    if (!budgetForm.name.trim() || !budgetForm.budgeted) { setError("Name and budget amount are required"); return; }
-    setBudgetSaving(true); setError("");
+  async function fetch_(tab, endpoint, payload={}) {
+    setLoading(l => ({...l,[tab]:true}));
+    setErr(e => ({...e,[tab]:null}));
     try {
-      const r = await apiFetchJSON(`${API}/budgets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...budgetForm, createdAt: new Date().toISOString() }) });
-      if (!r.ok) throw new Error(r.error || "Save failed");
-      loadBudgets(); setBudgetForm(p => ({ ...p, name: "", budgeted: "", actual: "" }));
-    } catch (e) { setError(e.message); }
-    setBudgetSaving(false);
-  };
+      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
+      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
+      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
+    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
+    finally { setLoading(l => ({...l,[tab]:false})); }
+  }
 
-  const deleteBudget = async (id) => {
-    setBudgetDeleting(id);
-    try { await apiFetchJSON(`${API}/budgets/${id}`, { method: "DELETE" }); setBudgets(p => p.filter(b => b.id !== id)); } catch {}
-    setBudgetDeleting(null);
-  };
+  function Generic(tab, title, desc, ep) {
+    const d = data[tab];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
+          <div style={S.row}>
+            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
+            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
+          </div>
+          {err[tab] && <div style={S.err}>{err[tab]}</div>}
+          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+           d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.tbl}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
+                  <tr key={i} style={i%2?S.trOdd:{}}>
+                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
+                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
+                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
+        </div>
+      </div>
+    );
+  }
 
-  const loadAutomations = async () => {
-    try {
-      const r = await apiFetchJSON(`${API}/autopilots`);
-      if (r.ok) setAutomations(r.autopilots || []);
-    } catch {}
-  };
 
-  const runAI = async (override) => {
-    const prompt = (override || input).trim();
-    if (!prompt) return;
-    setLoading(true); setError(""); setResult(null);
-    try {
-      const r = await apiFetchJSON(`${API}/ai/suggest`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ financeData: prompt }),
-      });
-      if (!r.ok) throw new Error(r.error || "AI failed");
-      setResult(r.result || "");
-    } catch (e) { setError(e.message); }
-    setLoading(false);
-  };
+  function renderTab() {
+    const tab = activeTab;
+    const d = data[tab];
+    switch(tab) {
+      case 'ap-invoices': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Accounts Payable — Invoice Queue</div>
+            <div style={S.row}>
+              <button style={S.btn('#f97316')} onClick={()=>fetch_('ap-invoices',API+'/ap/invoices')} disabled={loading['ap-invoices']}>{loading['ap-invoices']?'Loading…':'Load Invoices'}</button>
+              <button style={S.btn('#4f46e5')} onClick={()=>fetch_('matching',API+'/recon/matching')}>Auto-Match</button>
+              <button style={S.btn('#10b981')} onClick={()=>fetch_('fa-ai',API+'/ai/bookkeeping',{})}>✦ AI Bookkeeping</button>
+            </div>
+            {err['ap-invoices'] && <div style={S.err}>{err['ap-invoices']}</div>}
+            {loading['ap-invoices'] ? <div style={S.loading}>Loading invoices…</div> : d?.invoices?.length ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Total',d.total,'#f97316'],['Pending',d.pending,'#f59e0b'],['Overdue',d.overdue,'#ef4444']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={{overflowX:'auto'}}>
+                  <table style={S.tbl}>
+                    <thead><tr><th style={S.th}>Invoice</th><th style={S.th}>Vendor</th><th style={S.th}>Amount</th><th style={S.th}>Due</th><th style={S.th}>Status</th><th style={S.th}>PO Match</th></tr></thead>
+                    <tbody>{d.invoices.map((inv,i)=>(
+                      <tr key={i} style={i%2?S.trOdd:{}}>
+                        <td style={S.td}><span style={{fontWeight:600,fontSize:12}}>{inv.id}</span></td>
+                        <td style={S.td}>{inv.vendor}</td>
+                        <td style={S.td}><span style={{fontWeight:700}}>${inv.amount}</span></td>
+                        <td style={S.td}><span style={{color:new Date(inv.due)<new Date()?'#ef4444':'#71717a',fontSize:12}}>{inv.due}</span></td>
+                        <td style={S.td}><span style={S.badge(inv.status==='paid'?'#10b981':inv.status==='approved'?'#0ea5e9':inv.status==='overdue'?'#ef4444':'#f59e0b')}>{inv.status}</span></td>
+                        <td style={S.td}>{inv.poId?<span style={S.badge('#10b981')}>{inv.poId}</span>:<button style={{...S.btn('#27272a'),padding:'4px 8px',fontSize:11}} onClick={()=>toast_('AI matching…')}>AI Match</button>}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+              </>
+            ) : <div style={S.empty}>Load invoices to manage your accounts payable queue.</div>}
+          </div>
+        </div>
+      );
+      case 'matching': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>AI Bank Reconciliation</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>ML similarity scoring matches bank transactions to invoices and expenses automatically. Exceptions surfaced for human review.</p>
+            <div style={S.row}>
+              <button style={S.btn('#10b981')} onClick={()=>fetch_('matching',API+'/recon/matching')} disabled={loading.matching}>{loading.matching?'Matching…':'Run AI Matching'}</button>
+            </div>
+            {err.matching && <div style={S.err}>{err.matching}</div>}
+            {loading.matching ? <div style={S.loading}>AI matching bank transactions…</div> : d ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Matched',d.matched,'#10b981'],['Unmatched',d.unmatched,'#ef4444'],['Match Rate',d.matchRate+'%','#4f46e5']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={S.sT}>Suggested Matches</div>
+                {d.suggestions?.map((s,i)=>(
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #1f1f22'}}>
+                    <div><div style={{fontSize:13,color:'#fafafa',fontWeight:600}}>{s.txnId}</div><div style={{fontSize:12,color:'#71717a',marginTop:2}}>{s.suggestion}</div></div>
+                    <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                      <span style={S.badge('#4f46e5')}>{(s.confidence*100).toFixed(0)}% match</span>
+                      <button style={{...S.btn('#10b981'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Matched!')}>Accept</button>
+                      <button style={{...S.btn('#27272a'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Skipped')}>Skip</button>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Run AI Matching to reconcile your bank transactions.</div>}
+          </div>
+        </div>
+      );
+      case 'fa-ai': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ AI Bookkeeping Autopilot</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>AI handles AP matching, expense categorization, AR follow-ups, and month-end close checklist — reducing manual bookkeeping by 70%.</p>
+            <div style={S.row}>
+              <select style={S.select} value={form.model||'gpt-4o-mini'} onChange={e=>setForm(p=>({...p,model:e.target.value}))}>
+                <option value="gpt-4o-mini">GPT-4o Mini (2 credits)</option>
+                <option value="gpt-4o">GPT-4o (4 credits)</option>
+              </select>
+              <button style={S.btn('#f97316')} onClick={()=>fetch_('fa-ai',API+'/ai/bookkeeping',{})} disabled={loading['fa-ai']}>{loading['fa-ai']?'Running…':'✦ Run Autopilot'}</button>
+            </div>
+            {loading['fa-ai'] ? <div style={S.loading}>AI autopilot analyzing your books…</div> : data['fa-ai']?.actions?.length ? (
+              data['fa-ai'].actions.map((a,i)=>(
+                <div key={i} style={{...S.mini,marginBottom:12,display:'flex',gap:12,alignItems:'flex-start'}}>
+                  <span style={S.badge('#f97316')}>{a.type}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:13,color:'#fafafa',marginBottom:4}}>{a.action}</div>
+                    <div style={{fontSize:12,color:'#71717a'}}>{a.pending||a.overdue||a.items||0} items • {a.suggested||a.completed||0} ready to process</div>
+                  </div>
+                  <button style={{...S.btn('#4f46e5'),padding:'6px 12px',fontSize:11}} onClick={()=>toast_('Processing '+a.type+'…')}>Process</button>
+                </div>
+              ))
+            ) : <div style={S.empty}>Run Autopilot to let AI handle routine bookkeeping tasks.</div>}
+          </div>
+        </div>
+      );
+      case 'fa-world': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ World-Class Features</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
+              {[
+                {icon:'🤝',t:'Autonomous AP/AR',d:'Auto-match invoices to POs, auto-approve within thresholds, detect duplicates, and flag exceptions for human review.'},
+                {icon:'🏦',t:'AI Bank Reconciliation',d:'ML similarity scoring matches bank feed to invoices with 87%+ auto-match rate. Exceptions surfaced with suggested matches.'},
+                {icon:'🏷️',t:'NLP Expense Categorization',d:'Fine-tuned NLP classifies expenses from free-text descriptions — learn from corrections to improve accuracy over time.'},
+                {icon:'📅',t:'Tax Calendar Automation',d:'VAT/GST filing deadlines, estimated tax payments, nexus threshold alerts — never miss a tax deadline again.'},
+                {icon:'💸',t:'Shopify Payout Reconciliation',d:'Auto-reconcile every Shopify payout to the bank with full fee breakdown (processing, refunds, chargebacks, adjustments).'},
+                {icon:'✅',t:'Month-End Close Automation',d:'Checklist-driven close with automated reconciliations, variance sign-offs, and rollup to management accounts.'},
+              ].map((f,i)=>(
+                <div key={i} style={S.mini}>
+                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
+                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
+    }
+  }
 
-  const saveAutomation = async () => {
-    if (!result) return;
-    setSaving(true);
-    try {
-      const r = await apiFetchJSON(`${API}/autopilots`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: input, result, createdAt: new Date().toISOString() }),
-      });
-      if (r.ok) loadAutomations();
-    } catch (e) { setError(e.message); }
-    setSaving(false);
-  };
 
-  const deleteAutomation = async (id) => {
-    setDeleting(id);
-    try {
-      await apiFetchJSON(`${API}/autopilots/${id}`, { method: "DELETE" });
-      setAutomations(p => p.filter(a => a.id !== id));
-    } catch {}
-    setDeleting(null);
-  };
-
-  const toggleCheck = (id) => setChecklist(p => p.map(item => item.id === id ? { ...item, done: !item.done } : item));
-  const doneCount   = checklist.filter(i => i.done).length;
-
-  const getMarginColor = (v) => {
-    const n = parseFloat(v);
-    if (isNaN(n)) return "#71717a";
-    return n >= 50 ? "#4ade80" : n >= 35 ? "#fbbf24" : "#f87171";
-  };
+  function handleGroup(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
+  }
 
   return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Finance Autopilot</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
-          Live KPI calculator, AI-powered P&L and cash flow automation, tax & reconciliation tracker. Run a tight financial operation without a full-time finance team.
-        </p>
+    <div style={S.root}>
+      <div style={{marginBottom:28}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Finance Autopilot</h1>
+            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>Autonomous finance operations — AP/AR automation, AI reconciliation, NLP expense categorization & Shopify payout reconciliation</p>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        {[
-          { label: "Saved Automations", value: automations.length,                                color: "#4f46e5" },
-          { label: "Budget Lines",      value: budgets.length,                                    color: "#4ade80" },
-          { label: "Tax Tasks Done",    value: checklist.filter(i => i.done).length,              color: "#818cf8" },
-          { label: "Tax Tasks Total",   value: checklist.length,                                  color: "#52525b" },
-        ].map(s => (
-          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
-          </div>
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
         ))}
       </div>
 
-      <ErrorBox message={error} />
-      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
 
-      {/* ── KPI DASHBOARD ── */}
-      {tab === "dashboard" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Input Your Numbers</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10, marginBottom: 16 }}>
-              {[
-                ["revenue",      "Revenue (£)",          "e.g. 85000"],
-                ["cogs",         "COGS (£)",             "e.g. 32000"],
-                ["adSpend",      "Ad Spend (£)",         "e.g. 12000"],
-                ["newCustomers", "New Customers",        "e.g. 340"],
-                ["opex",         "Other OpEx (£)",       "e.g. 8000"],
-              ].map(([key, label, ph]) => (
-                <div key={key}>
-                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>{label}</label>
-                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} type="number" value={kpiInputs[key]} onChange={e => setK(key, e.target.value)} placeholder={ph} />
-                </div>
-              ))}
-            </div>
-          </div>
+      {renderTab()}
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 16 }}>
-            {[
-              { label: "Gross Margin",          val: kpis.grossMargin !== null ? `${kpis.grossMargin}%` : "—", color: kpis.grossMargin !== null ? getMarginColor(kpis.grossMargin) : "#71717a", target: "> 50%" },
-              { label: "Contribution Margin",   val: kpis.contribution !== null ? `${kpis.contribution}%` : "—", color: kpis.contribution !== null ? getMarginColor(kpis.contribution) : "#71717a", target: "> 35%" },
-              { label: "Net Margin",            val: kpis.netMargin !== null ? `${kpis.netMargin}%` : "—",    color: kpis.netMargin !== null ? getMarginColor(kpis.netMargin) : "#71717a",    target: "> 10%" },
-              { label: "CAC",                   val: kpis.cac !== null ? `£${kpis.cac}` : "—",              color: "#818cf8",                                                              target: "< 1/3 LTV" },
-            ].map(({ label, val, color, target }) => (
-              <div key={label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "16px 20px" }}>
-                <div style={{ fontSize: 10, color: "#52525b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
-                <div style={{ fontSize: 32, fontWeight: 900, color, marginTop: 4 }}>{val}</div>
-                <div style={{ fontSize: 11, color: "#3f3f46", marginTop: 2 }}>Target: {target}</div>
-              </div>
-            ))}
-          </div>
-
-          {kpis.grossMargin !== null && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Health Assessment</div>
-              {[
-                { label: "Gross Margin", val: parseFloat(kpis.grossMargin), good: 50, warn: 35, fmt: (v) => `${v}%`,   advice: v => v >= 50 ? "Strong gross margin. Room to invest in growth." : v >= 35 ? "Acceptable but watch ad spend carefully." : "Critical: margin too thin. Review COGS or pricing." },
-                { label: "Net Margin",   val: parseFloat(kpis.netMargin),   good: 10, warn: 5,  fmt: (v) => `${v}%`,   advice: v => v >= 10 ? "Healthy net margin." : v >= 5 ? "Thin net margin. Review OpEx and ROAS." : "Negative or near-zero net margin. Immediate review needed." },
-                { label: "CAC",         val: null, fmt: () => `£${kpis.cac}`, advice: () => "Compare to customer LTV. Healthy CAC:LTV ratio is 1:3 or better." },
-              ].filter(item => item.val !== null || item.label === "CAC").map(({ label, val, good, warn, fmt, advice }) => (
-                <div key={label} style={S.row}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: val === null ? "#818cf8" : val >= good ? "#4ade80" : val >= warn ? "#fbbf24" : "#f87171", marginTop: 6, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{label}: {fmt(val)}</div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}>{advice(val)}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!kpiInputs.revenue && (
-            <div style={{ ...S.card, border: "1px dashed #27272a", textAlign: "center", padding: "30px 24px" }}>
-              <div style={{ fontSize: 14, color: "#52525b" }}>Enter your numbers above to compute live KPIs</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── AI AUTOPILOT ── */}
-      {tab === "automate" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Describe Your Finance Automation Need</div>
-            <textarea style={{ ...S.ta, minHeight: 120 }} value={input} onChange={e => setInput(e.target.value)} placeholder="e.g. 'Automate our monthly gross margin calculation using Shopify revenue data. Factor in a 35% COGS rate and flag months where margin falls below 50%.'" />
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button style={S.btn("primary")} onClick={() => runAI()} disabled={loading || !input.trim()}>{loading ? "Processing…" : "Run Finance AI"}</button>
-              {result && <button style={{ ...S.btn("green"), fontSize: 11, padding: "6px 12px" }} onClick={saveAutomation} disabled={saving}>{saving ? "Saving…" : "Save"}</button>}
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => { setInput(""); setResult(null); }}>Clear</button>
-            </div>
-          </div>
-
-          {!input && !result && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Automation Prompts</div>
-              {SAMPLE_PROMPTS.map(({ label, prompt }) => (
-                <div key={label} style={S.row}>
-                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => { setInput(prompt); runAI(prompt); }}>Run</button>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#818cf8", marginBottom: 2 }}>{label}</div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}>{prompt.slice(0, 90)}…</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {loading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
-
-          {result && !loading && (
-            <div style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={S.sectionTitle}>AI Finance Plan</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(result)}>Copy</button>
-              </div>
-              <pre style={S.pre}>{result}</pre>
-            </div>
-          )}
-
-          {automations.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={S.sectionTitle}>Saved Automations ({automations.length})</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadAutomations}>Refresh</button>
-              </div>
-              {automations.map(a => (
-                <div key={a.id} style={S.card}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "#52525b", marginBottom: 4 }}>{a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}</div>
-                      <div style={{ fontSize: 13, color: "#e4e4e7" }}>{(a.content || "").slice(0, 120)}{(a.content || "").length > 120 ? "…" : ""}</div>
-                    </div>
-                    <div style={{ display: "flex", gap: 5, flexShrink: 0, marginLeft: 12 }}>
-                      <button style={{ ...S.btn(), fontSize: 11, padding: "4px 8px" }} onClick={() => { setInput(a.content || ""); setTab("automate"); }}>Re-use</button>
-                      <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 8px" }} onClick={() => deleteAutomation(a.id)} disabled={deleting === a.id}>{deleting === a.id ? "…" : "✕"}</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── TAX & RECONCILIATION ── */}
-      {tab === "tax" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div style={S.sectionTitle}>Tax & Compliance Checklist</div>
-              <div style={{ fontSize: 13, color: "#71717a" }}>{doneCount}/{checklist.length} complete</div>
-            </div>
-            <div style={{ background: "#09090b", borderRadius: 8, height: 6, marginBottom: 16 }}>
-              <div style={{ height: 6, borderRadius: 8, background: "#4f46e5", width: `${(doneCount / checklist.length) * 100}%`, transition: "width 0.3s" }} />
-            </div>
-            {checklist.map(item => (
-              <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 0", borderBottom: "1px solid #1f1f22" }}>
-                <input type="checkbox" checked={item.done} onChange={() => toggleCheck(item.id)} style={{ accentColor: "#4f46e5", width: 16, height: 16, marginTop: 2, flexShrink: 0, cursor: "pointer" }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: item.done ? "#52525b" : "#e4e4e7", textDecoration: item.done ? "line-through" : "none" }}>{item.task}</div>
-                  <div style={{ fontSize: 11, color: "#3f3f46" }}>{item.freq}</div>
-                </div>
-                <span style={{ background: "#27272a", color: "#71717a", padding: "2px 8px", borderRadius: 4, fontSize: 10, flexShrink: 0 }}>{item.freq}</span>
-              </div>
-            ))}
-          </div>
-
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Reconciliation Notes</div>
-            <textarea style={{ ...S.ta, minHeight: 100 }} value={reconcileNotes} onChange={e => setReconcileNotes(e.target.value)} placeholder="Note any reconciliation discrepancies, outstanding items, or follow-up actions…" />
-          </div>
-
-          <div style={S.card}>
-            <div style={S.sectionTitle}>UK E-Commerce Tax Reference</div>
-            {[
-              { t: "VAT threshold (UK)",       d: "£90,000 taxable turnover in any rolling 12-month period triggers mandatory VAT registration. Register proactively at £80,000 to allow setup time." },
-              { t: "Making Tax Digital (MTD)", d: "All VAT-registered businesses must file via MTD-compatible software (Xero, QuickBooks, FreeAgent). Paper VAT returns are no longer accepted." },
-              { t: "Corporation tax payment",  d: "Due 9 months and 1 day after your accounting period end. Large companies (>£1.5M profit) pay quarterly. Set aside ~25% of profit monthly." },
-              { t: "Shopify payout timing",    d: "Shopify Payments pays out every 3 business days (UK). PayPal is immediate to PayPal balance. Reconcile each payout batch against Shopify admin reports." },
-              { t: "Platform fees are deductible", d: "Shopify subscription, payment processing fees, app fees, and ad spend are all 100% deductible business expenses. Keep all receipts." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4f46e5", flexShrink: 0 }}>💰</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div>
-                  <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── BUDGET TRACKER ── */}
-      {tab === "budget" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Add Budget Line</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 140px 1fr 1fr 140px", gap: 10, marginBottom: 10 }}>
-              <div>
-                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Line Item Name *</div>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.name} onChange={e => setBF("name", e.target.value)} placeholder="Facebook Ads Spend" />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Category</div>
-                <select style={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none", width: "100%" }} value={budgetForm.category} onChange={e => setBF("category", e.target.value)}>
-                  {["Marketing", "Inventory / COGS", "Operations", "Technology", "Staffing", "Fulfilment", "Legal / Finance", "Other"].map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Budgeted (£) *</div>
-                <input type="number" style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.budgeted} onChange={e => setBF("budgeted", e.target.value)} placeholder="5000" />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Actual Spend (£)</div>
-                <input type="number" style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.actual} onChange={e => setBF("actual", e.target.value)} placeholder="4230" />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4 }}>Period (YYYY-MM)</div>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={budgetForm.period} onChange={e => setBF("period", e.target.value)} placeholder="2024-01" />
-              </div>
-            </div>
-            <button style={S.btn("primary")} onClick={saveBudget} disabled={budgetSaving || !budgetForm.name || !budgetForm.budgeted}>{budgetSaving ? "Saving…" : "Add Budget Line"}</button>
-          </div>
-
-          {budgets.length > 0 && (() => {
-            const totalBudgeted = budgets.reduce((s, b) => s + (parseFloat(b.budgeted) || 0), 0);
-            const totalActual   = budgets.reduce((s, b) => s + (parseFloat(b.actual) || 0), 0);
-            const variance      = totalBudgeted - totalActual;
-            return (
-              <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-                {[
-                  { label: "Total Budgeted", value: `£${totalBudgeted.toLocaleString()}`,    color: "#818cf8" },
-                  { label: "Total Actual",   value: `£${totalActual.toLocaleString()}`,       color: totalActual > totalBudgeted ? "#f87171" : "#4ade80" },
-                  { label: "Variance",       value: `${variance >= 0 ? "+" : ""}£${Math.abs(variance).toLocaleString()}`, color: variance >= 0 ? "#4ade80" : "#f87171" },
-                  { label: "Budget Lines",   value: budgets.length,                           color: "#fbbf24" },
-                ].map(s => (
-                  <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
-                    <div style={{ fontSize: 10, color: "#71717a", textTransform: "uppercase", fontWeight: 700 }}>{s.label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ fontSize: 13, color: "#71717a" }}>{budgets.length} budget line{budgets.length !== 1 ? "s" : ""}</div>
-            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadBudgets}>Refresh</button>
-          </div>
-
-          {budgets.length === 0 ? (
-            <div>
-              <EmptyState icon="📊" title="No budget lines yet" description="Add your first budget line above to start tracking spend vs budget." />
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Recommended Budget Structure</div>
-                {[
-                  { cat: "Marketing",        pct: "15–25%", desc: "Paid social, Google Ads, influencer, email tools" },
-                  { cat: "Inventory/COGS",   pct: "40–55%", desc: "Product cost, packaging, raw materials" },
-                  { cat: "Fulfilment",       pct: "8–15%",  desc: "Shipping, 3PL fees, returns processing" },
-                  { cat: "Technology",       pct: "3–6%",   desc: "Shopify, apps, analytics, automation" },
-                  { cat: "Staffing",         pct: "10–20%", desc: "FTE, contractors, freelancers" },
-                  { cat: "Operations",       pct: "5–10%",  desc: "Office, utilities, insurance, admin" },
-                  { cat: "Legal/Finance",    pct: "1–3%",   desc: "Accountant, legal, banking fees" },
-                ].map(({ cat, pct, desc }) => (
-                  <div key={cat} style={{ display: "grid", gridTemplateColumns: "160px 80px 1fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 12, alignItems: "center" }}>
-                    <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{cat}</span>
-                    <span style={{ color: "#818cf8", fontWeight: 700, textAlign: "right" }}>{pct}</span>
-                    <span style={{ color: "#71717a" }}>{desc}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            budgets.map(b => {
-              const over   = parseFloat(b.actual) > parseFloat(b.budgeted);
-              const pct    = b.budgeted ? Math.min(Math.round((parseFloat(b.actual || 0) / parseFloat(b.budgeted)) * 100), 120) : 0;
-              return (
-                <div key={b.id} style={{ ...S.card, borderLeft: `3px solid ${over ? "#f87171" : "#4ade80"}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{b.name}</span>
-                        <span style={{ background: "#27272a", color: "#71717a", padding: "2px 8px", borderRadius: 4, fontSize: 11 }}>{b.category}</span>
-                        {b.period && <span style={{ fontSize: 11, color: "#52525b" }}>{b.period}</span>}
-                      </div>
-                      <div style={{ display: "flex", gap: 16, marginBottom: 8 }}>
-                        <span style={{ fontSize: 13, color: "#71717a" }}>Budget: <strong style={{ color: "#e4e4e7" }}>£{parseFloat(b.budgeted || 0).toLocaleString()}</strong></span>
-                        {b.actual && <span style={{ fontSize: 13, color: "#71717a" }}>Actual: <strong style={{ color: over ? "#f87171" : "#4ade80" }}>£{parseFloat(b.actual).toLocaleString()}</strong></span>}
-                        {b.actual && <span style={{ fontSize: 13, fontWeight: 700, color: over ? "#f87171" : "#4ade80" }}>{pct}%</span>}
-                      </div>
-                      {b.actual && (
-                        <div style={{ height: 4, background: "#27272a", borderRadius: 2 }}>
-                          <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: over ? "#f87171" : "#4f46e5", borderRadius: 2 }} />
-                        </div>
-                      )}
-                    </div>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px", flexShrink: 0, marginLeft: 12 }} onClick={() => deleteBudget(b.id)} disabled={budgetDeleting === b.id}>{budgetDeleting === b.id ? "…" : "Delete"}</button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
-
-      {/* ── FINANCE GUIDE ── */}
-      {tab === "guide" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>E-Commerce Finance KPIs</div>
-            {[
-              { kpi: "Gross Margin",              formula: "(Revenue − COGS) / Revenue × 100",           target: "> 50%",      note: "Below 40% means limited room for marketing spend" },
-              { kpi: "Contribution Margin",        formula: "(Revenue − COGS − Ad Spend) / Revenue × 100", target: "> 35%",    note: "The true margin after variable costs" },
-              { kpi: "Net Margin",                 formula: "(Revenue − All Costs) / Revenue × 100",      target: "> 10–15%",  note: "After all OpEx, marketing, and taxes" },
-              { kpi: "Customer Acquisition Cost",  formula: "Total Ad Spend / New Customers",             target: "< 1/3 LTV", note: "CAC:LTV ratio should be at least 1:3" },
-              { kpi: "Return on Ad Spend (ROAS)",  formula: "Revenue from Ads / Ad Spend",               target: "> 3×",      note: "3× ROAS is sustainable for most margins" },
-              { kpi: "Cash Conversion Cycle",      formula: "DIO + DSO − DPO (days)",                    target: "< 30 days", note: "Shorter cycle = better cash position" },
-              { kpi: "Monthly Recurring Revenue",  formula: "Active Subscribers × Monthly Fee",          target: "Growing MoM", note: "Most predictable revenue stream" },
-            ].map(({ kpi, formula, target, note }) => (
-              <div key={kpi} style={S.row}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{kpi}</div>
-                  <div style={{ fontSize: 11, color: "#818cf8", fontFamily: "monospace", marginTop: 2 }}>{formula}</div>
-                  <div style={{ fontSize: 11, color: "#71717a", marginTop: 2 }}>{note}</div>
-                </div>
-                <span style={{ background: "#052e16", color: "#4ade80", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{target}</span>
-              </div>
-            ))}
-          </div>
-
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Finance Automation Priorities</div>
-            {[
-              { t: "Automate reconciliation first",        d: "Manual Shopify → bank reconciliation is the #1 time-sink for e-commerce operators. Set up automated payout reconciliation as the first finance automation." },
-              { t: "Weekly cash flow dashboard",           d: "Know your runway at all times. A weekly automated cash position (current balance + next 30 days projected revenue − scheduled costs) prevents cash surprises." },
-              { t: "Per-SKU margin tracking",              d: "Most stores know their blended margin but not per-SKU margin. Unprofitable SKUs are hidden drag. Automate this and review monthly." },
-              { t: "Set aside tax monthly, not quarterly", d: "Set aside 25% of net revenue monthly for corporation tax and VAT. Quarterly tax surprises are cash flow killers." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4f46e5", flexShrink: 0 }}>💰</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div>
-                  <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
     </div>

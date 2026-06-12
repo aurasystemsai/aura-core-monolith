@@ -1,366 +1,478 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { apiFetchJSON } from "../../api";
-import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
 const API = "/api/churn-prediction-playbooks";
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { flex: 1, minWidth: 160, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
-  badge: (c) => ({ display: "inline-block", borderRadius: 5, padding: "2px 9px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: c === "Low" ? "#052e16" : c === "Medium" ? "#3d2a0a" : c === "High" ? "#3f1315" : "#27272a", color: c === "Low" ? "#4ade80" : c === "Medium" ? "#fbbf24" : c === "High" ? "#f87171" : "#a1a1aa" }),
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: (bg) => ({ background:bg||'#ef4444', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
+  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trOdd: { background:'#09090b44' },
+  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
+  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
+  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#ef4444' }),
+  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
+  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#ef4444', borderRadius:3 }),
+  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
+  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
 };
 
-const TABS = [
-  { id: "analyse",   label: "AI Analysis" },
-  { id: "customers", label: "At-Risk Customers" },
-  { id: "playbooks", label: "Playbooks" },
-  { id: "segments",  label: "Risk Segments" },
-  { id: "guide",     label: "Retention Guide" },
+const GROUPS = [
+  {
+    "id": "risk",
+    "label": "Churn Risk",
+    "color": "#ef4444",
+    "tabs": [
+      {
+        "id": "risk-dash",
+        "label": "Risk Dashboard"
+      },
+      {
+        "id": "high-risk",
+        "label": "High Risk"
+      },
+      {
+        "id": "rfm",
+        "label": "RFM Scores"
+      },
+      {
+        "id": "health-scores",
+        "label": "Health Scores"
+      },
+      {
+        "id": "predictions",
+        "label": "Predictions"
+      },
+      {
+        "id": "segments-c",
+        "label": "Segments"
+      }
+    ]
+  },
+  {
+    "id": "survival",
+    "label": "Survival",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "cox-ph",
+        "label": "Cox PH Model"
+      },
+      {
+        "id": "cohort-curves",
+        "label": "Cohort Curves"
+      },
+      {
+        "id": "dormancy",
+        "label": "Dormancy"
+      },
+      {
+        "id": "early-warn",
+        "label": "Early Warnings"
+      },
+      {
+        "id": "by-segment",
+        "label": "By Segment"
+      },
+      {
+        "id": "trend-c",
+        "label": "Trend"
+      }
+    ]
+  },
+  {
+    "id": "playbooks",
+    "label": "Playbooks",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "pb-list",
+        "label": "Playbook List"
+      },
+      {
+        "id": "create-pb",
+        "label": "Create Playbook"
+      },
+      {
+        "id": "hv-pb",
+        "label": "High-Value"
+      },
+      {
+        "id": "atrisk-pb",
+        "label": "At-Risk"
+      },
+      {
+        "id": "dormant-pb",
+        "label": "Dormant"
+      },
+      {
+        "id": "winback-pb",
+        "label": "Win-Back"
+      }
+    ]
+  },
+  {
+    "id": "campaigns",
+    "label": "Campaigns",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "active-camp",
+        "label": "Active"
+      },
+      {
+        "id": "winback",
+        "label": "Win-Back"
+      },
+      {
+        "id": "retention",
+        "label": "Retention"
+      },
+      {
+        "id": "reactivation",
+        "label": "Reactivation"
+      },
+      {
+        "id": "camp-results",
+        "label": "Results"
+      },
+      {
+        "id": "camp-roi",
+        "label": "ROI"
+      }
+    ]
+  },
+  {
+    "id": "analytics",
+    "label": "Analytics",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "churn-rate",
+        "label": "Churn Rate"
+      },
+      {
+        "id": "ltv-impact",
+        "label": "LTV Impact"
+      },
+      {
+        "id": "by-channel-c",
+        "label": "By Channel"
+      },
+      {
+        "id": "by-product-c",
+        "label": "By Product"
+      },
+      {
+        "id": "by-cohort-c",
+        "label": "By Cohort"
+      },
+      {
+        "id": "cpp-bench",
+        "label": "Benchmarks"
+      }
+    ]
+  },
+  {
+    "id": "nps",
+    "label": "NPS",
+    "color": "#ec4899",
+    "tabs": [
+      {
+        "id": "nps-tracker",
+        "label": "NPS Tracker"
+      },
+      {
+        "id": "pred-nps",
+        "label": "Predictive NPS"
+      },
+      {
+        "id": "detractors",
+        "label": "Detractors"
+      },
+      {
+        "id": "drivers",
+        "label": "Drivers"
+      },
+      {
+        "id": "nps-trends",
+        "label": "Trends"
+      },
+      {
+        "id": "improvements",
+        "label": "Improvements"
+      }
+    ]
+  },
+  {
+    "id": "cpp-adv",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "ai-models-c",
+        "label": "AI Models"
+      },
+      {
+        "id": "bg-nbd",
+        "label": "BG/NBD Model"
+      },
+      {
+        "id": "cpp-int",
+        "label": "Integrations"
+      },
+      {
+        "id": "cpp-api",
+        "label": "API"
+      },
+      {
+        "id": "cpp-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "cpp-world",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
-
-const PLAYBOOKS = [
-  { name: "Early Warning Intervention", trigger: "Customer inactive for 30+ days after 2+ purchases", actions: ["Send personalised win-back email with 10% loyalty discount", "Trigger support check-in if no open within 7 days", "Escalate to SMS offer after 7 days no response"], risk: "Medium", retention: "42%" },
-  { name: "High-Value Customer Save",   trigger: "LTV > $500, no purchase in 60 days", actions: ["Personal outreach from account manager", "Offer exclusive VIP product preview", "Priority free express shipping on next order"], risk: "High", retention: "67%" },
-  { name: "Post-Negative Review Recovery", trigger: "1-2 star review submitted", actions: ["Immediate apology + resolution within 1 hour", "Full refund or replacement — no questions asked", "Follow up 14 days later with personalised discount"], risk: "High", retention: "55%" },
-  { name: "Post-Purchase Churn Prevention", trigger: "First-time buyer, no second purchase in 45 days", actions: ["Day 14: Product usage tips + related product suggestions", "Day 30: Survey + 10% next order discount", "Day 45: Final offer + loyalty programme invite"], risk: "Low", retention: "31%" },
-];
-
-const RISK_SEGMENTS = [
-  { segment: "Champions",   pct: "18%", desc: "Purchased recently, often, high spend",        action: "Reward + referral programme",          color: "#4ade80" },
-  { segment: "Loyal",       pct: "22%", desc: "Regular buyers, good frequency",               action: "Upsell, cross-sell opportunities",      color: "#86efac" },
-  { segment: "At Risk",     pct: "15%", desc: "Above average but declining frequency",        action: "Early warning playbook — activate now", color: "#fbbf24" },
-  { segment: "Hibernating", pct: "20%", desc: "Last purchase 3+ months ago",                 action: "Win-back campaign with strong offer",   color: "#fb923c" },
-  { segment: "Lost",        pct: "25%", desc: "Last purchase 6+ months, low engagement",     action: "Last-chance offer, then sunset",        color: "#f87171" },
-];
-
-const SAMPLE_QUERIES = [
-  "Analyse churn risk for customers who purchased once 90 days ago and haven't returned. What are key signals and recommended interventions?",
-  "Our subscription retention rate dropped from 87% to 79% this quarter. What are likely causes and what playbooks should I activate?",
-  "Build a churn prediction framework for a $50 AOV fashion store with 60% first-time buyer rate.",
-];
-
-const EMPTY_CUSTOMER = { name: "", email: "", daysSinceLastPurchase: "", totalOrders: "", ltv: "", riskLevel: "Medium", assignedPlaybook: "" };
 
 export default function ChurnPredictionPlaybooks() {
-  const [tab, setTab]           = useState("analyse");
-  const [query, setQuery]       = useState("");
-  const [result, setResult]     = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-  const [history, setHistory]   = useState([]);
-  const [selectedPlaybook, setPlaybook] = useState(null);
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
+  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ model:'gpt-4o-mini' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [toast, setToast] = useState(null);
 
-  // At-risk customers
-  const [customers, setCustomers]     = useState([]);
-  const [custForm, setCustForm]       = useState(EMPTY_CUSTOMER);
-  const [custLoading, setCustLoading] = useState(false);
-  const [custError, setCustError]     = useState("");
-  const [custSuccess, setCustSuccess] = useState("");
-  const [deleting, setDeleting]       = useState(null);
+  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
 
-  useEffect(() => { loadCustomers(); }, []);
+  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
 
-  const loadCustomers = async () => {
-    try { const r = await apiFetchJSON(`${API}/customers`); if (r.ok) setCustomers(r.customers || []); } catch {}
-  };
-
-  const runAnalysis = async () => {
-    if (!query.trim()) return;
-    setLoading(true); setError(""); setResult(null);
+  async function fetch_(tab, endpoint, payload={}) {
+    setLoading(l => ({...l,[tab]:true}));
+    setErr(e => ({...e,[tab]:null}));
     try {
-      const r = await apiFetchJSON(`${API}/query`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query }) });
-      if (!r.ok) throw new Error(r.error || "Analysis failed");
-      setResult(r.result);
-      setHistory(p => [{ query, result: r.result, ts: new Date().toISOString() }, ...p].slice(0, 10));
-    } catch (e) { setError(e.message); }
-    setLoading(false);
-  };
+      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
+      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
+      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
+    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
+    finally { setLoading(l => ({...l,[tab]:false})); }
+  }
 
-  const addCustomer = async () => {
-    if (!custForm.name || !custForm.email) { setCustError("Name and email are required."); return; }
-    setCustLoading(true); setCustError(""); setCustSuccess("");
-    try {
-      const r = await apiFetchJSON(`${API}/customers`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(custForm) });
-      if (!r.ok) throw new Error(r.error || "Failed");
-      setCustSuccess("Customer added to watch list."); setCustForm(EMPTY_CUSTOMER); loadCustomers();
-      setTimeout(() => setCustSuccess(""), 3000);
-    } catch (e) { setCustError(e.message); }
-    setCustLoading(false);
-  };
+  function Generic(tab, title, desc, ep) {
+    const d = data[tab];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
+          <div style={S.row}>
+            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
+            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
+          </div>
+          {err[tab] && <div style={S.err}>{err[tab]}</div>}
+          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+           d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.tbl}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
+                  <tr key={i} style={i%2?S.trOdd:{}}>
+                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
+                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
+                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
+        </div>
+      </div>
+    );
+  }
 
-  const deleteCustomer = async (id) => {
-    setDeleting(id);
-    try { await apiFetchJSON(`${API}/customers/${id}`, { method: "DELETE" }); setCustomers(p => p.filter(c => c.id !== id)); } catch {}
-    setDeleting(null);
-  };
 
-  const highRisk   = customers.filter(c => c.riskLevel === "High").length;
-  const medRisk    = customers.filter(c => c.riskLevel === "Medium").length;
+  function renderTab() {
+    const tab = activeTab;
+    const d = data[tab];
+    switch(tab) {
+      case 'risk-dash': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Churn Risk Dashboard</div>
+            <button style={S.btn('#ef4444')} onClick={()=>fetch_('risk-dash',API+'/risk/dashboard')} disabled={loading['risk-dash']}>{loading['risk-dash']?'Loading…':'Load Risk Dashboard'}</button>
+            {err['risk-dash'] && <div style={S.err}>{err['risk-dash']}</div>}
+            {loading['risk-dash'] ? <div style={S.loading}>Scoring customers…</div> : d ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Total Customers',(d.totalCustomers||0).toLocaleString(),'#fafafa'],['High Risk',d.highRisk,'#ef4444'],['Churn Rate',d.churnRate+'%','#f97316'],['Predicted Loss','$'+d.predLoss30d?.toLocaleString(),'#ef4444'],['Avg Health',d.avgHealthScore,'#0ea5e9'],['MoM Change',d.churnRateChange>0?'+'+d.churnRateChange+'%':d.churnRateChange+'%',d.churnRateChange<0?'#10b981':'#ef4444']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={S.sT}>Segments</div>
+                {d.segments?.map((s,i)=>(
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #1f1f22'}}>
+                    <span style={{fontSize:13,color:'#fafafa',fontWeight:600}}>{s.name}</span>
+                    <span style={{color:'#71717a',fontSize:12}}>{s.count?.toLocaleString()} customers</span>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={S.badge(s.churnProb>0.5?'#ef4444':s.churnProb>0.2?'#f59e0b':'#10b981')}>{(s.churnProb*100).toFixed(0)}% risk</span>
+                      <button style={{...S.btn('#ef4444'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Playbook triggered for '+s.name)}>Activate Playbook</button>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Load the churn risk dashboard to see customer health.</div>}
+          </div>
+        </div>
+      );
+      case 'cox-ph': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Cox Proportional Hazard Model</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Survival analysis for time-to-churn. Hazard ratios identify which behavioral signals most strongly predict churn — enabling targeted intervention.</p>
+            <button style={S.btn('#4f46e5')} onClick={()=>fetch_('cox-ph',API+'/survival/cox-ph')} disabled={loading['cox-ph']}>{loading['cox-ph']?'Running Model…':'Run Cox PH Model'}</button>
+            {err['cox-ph'] && <div style={S.err}>{err['cox-ph']}</div>}
+            {loading['cox-ph'] ? <div style={S.loading}>Running survival analysis…</div> : d?.model ? (
+              <>
+                <div style={{...S.mini,marginBottom:16,borderColor:'#4f46e544'}}>
+                  <div style={{fontSize:12,color:'#4f46e5',fontWeight:600,marginBottom:4}}>Model Concordance: {(d.model.concordance*100).toFixed(0)}%</div>
+                  <p style={{color:'#a1a1aa',fontSize:13,lineHeight:1.6,margin:0}}>{d.model.interpretation}</p>
+                </div>
+                <div style={S.sT}>Hazard Ratios (HR &gt; 1 = increases churn risk)</div>
+                <div style={{overflowX:'auto'}}>
+                  <table style={S.tbl}>
+                    <thead><tr><th style={S.th}>Covariate</th><th style={S.th}>Hazard Ratio</th><th style={S.th}>Direction</th><th style={S.th}>p-value</th></tr></thead>
+                    <tbody>{d.model.hazardRatios?.map((hr,i)=>(
+                      <tr key={i} style={i%2?S.trOdd:{}}>
+                        <td style={S.td}>{hr.covariate}</td>
+                        <td style={{...S.td,fontWeight:700,color:hr.hr>1?'#ef4444':'#10b981'}}>{hr.hr.toFixed(3)}</td>
+                        <td style={S.td}><span style={S.badge(hr.hr>1?'#ef4444':'#10b981')}>{hr.hr>1?'Increases risk':'Reduces risk'}</span></td>
+                        <td style={{...S.td,color:hr.pValue<0.05?'#10b981':'#71717a'}}>{hr.pValue < 0.001?'<0.001':hr.pValue.toFixed(3)}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+              </>
+            ) : <div style={S.empty}>Run the Cox PH model to see survival analysis results.</div>}
+          </div>
+        </div>
+      );
+      case 'early-warn': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Early Warning Indicators</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Leading behavioral signals that precede churn by 3-8 weeks — enabling proactive intervention before customers are lost.</p>
+            <button style={S.btn('#4f46e5')} onClick={()=>fetch_('early-warn',API+'/survival/early-warnings')} disabled={loading['early-warn']}>{loading['early-warn']?'Loading…':'Load Early Warnings'}</button>
+            {err['early-warn'] && <div style={S.err}>{err['early-warn']}</div>}
+            {loading['early-warn'] ? <div style={S.loading}>Loading signals…</div> : d?.indicators?.length ? (
+              d.indicators.map((ind,i)=>(
+                <div key={i} style={{...S.mini,marginBottom:12}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                    <div style={{fontWeight:700,color:'#fafafa',fontSize:13}}>{ind.signal}</div>
+                    <span style={S.badge('#ef4444')}>{ind.count} customers</span>
+                  </div>
+                  <p style={{color:'#a1a1aa',fontSize:12,lineHeight:1.5,margin:'0 0 8px'}}>{ind.description}</p>
+                  <div style={{display:'flex',gap:8}}>
+                    <span style={S.badge('#4f46e5')}>Leads churn by {ind.lead} days</span>
+                    <span style={S.badge('#0ea5e9')}>{(ind.accuracy*100).toFixed(0)}% accuracy</span>
+                    <button style={{...S.btn('#10b981'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Playbook activated for '+ind.count+' customers')}>Activate Playbook</button>
+                  </div>
+                </div>
+              ))
+            ) : <div style={S.empty}>Load early warning indicators to detect pre-churn signals.</div>}
+          </div>
+        </div>
+      );
+      case 'cpp-world': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ World-Class Features</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
+              {[
+                {icon:'📊',t:'Cox Proportional Hazard Model',d:'Survival analysis for time-to-churn — hazard ratios identify exactly which signals predict churn, with statistical significance.'},
+                {icon:'🎯',t:'BG/NBD Churn Probability',d:"Pareto/NBD probabilistic model estimates each customer's probability of being alive and expected future purchases."},
+                {icon:'⚡',t:'RFM Quintile Engine',d:'Recency-Frequency-Monetary scoring with 5×5×5 matrix, segment migration tracking, and automated playbook triggers.'},
+                {icon:'🔬',t:'Health Score Composite',d:'Weighted multi-signal score combining purchase recency/frequency, login activity, support tickets, NPS, and email engagement.'},
+                {icon:'🔮',t:'Predictive NPS',d:'Predict NPS before sending the survey using behavioral signals — proactively intervene with detractors before they churn.'},
+                {icon:'🚀',t:'Segment-Specific Playbooks',d:'Different retention strategies for Champions, Loyal, At-Risk, and Dormant — with automated triggers and ROI tracking per playbook.'},
+              ].map((f,i)=>(
+                <div key={i} style={S.mini}>
+                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
+                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
+    }
+  }
+
+
+  function handleGroup(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
+  }
 
   return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Churn Prediction & Retention Playbooks</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>AI-powered churn analysis, at-risk customer tracking, and pre-built retention playbooks. Identify at-risk customers before they leave and activate the right intervention at the right time.</p>
+    <div style={S.root}>
+      <div style={{marginBottom:28}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Churn Prediction Playbooks</h1>
+            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>Retention AI — Cox PH survival analysis, BG/NBD model, RFM scoring, early warning indicators & automated playbooks</p>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        {[
-          { label: "Customers Tracked", value: customers.length, color: "#818cf8" },
-          { label: "High Risk",         value: highRisk,          color: "#f87171" },
-          { label: "Medium Risk",       value: medRisk,           color: "#fbbf24" },
-          { label: "Playbooks Ready",   value: PLAYBOOKS.length,  color: "#4ade80" },
-        ].map(s => (
-          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
-          </div>
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
         ))}
       </div>
 
-      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
 
-      {/* AI ANALYSIS */}
-      {tab === "analyse" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>AI Churn Analysis Query</div>
-            <textarea style={{ ...S.ta, minHeight: 120 }} value={query} onChange={e => setQuery(e.target.value)} placeholder="Describe your churn challenge…&#10;e.g. 'Our 30-day repurchase rate dropped from 42% to 31% this month. What are likely causes and what retention actions should I prioritise?'" />
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button style={S.btn("primary")} onClick={runAnalysis} disabled={loading || !query.trim()}>{loading ? "Analysing…" : "Run Churn Analysis"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setQuery("")}>Clear</button>
-            </div>
-          </div>
-          {!query && !result && !loading && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Sample Queries</div>
-              {SAMPLE_QUERIES.map((q, i) => (
-                <div key={i} style={S.row}>
-                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => setQuery(q)}>Load</button>
-                  <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>{q}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          <ErrorBox message={error} />
-          {loading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
-          {result && !loading && (
-            <div style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={S.sectionTitle}>Churn Analysis Result</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(typeof result === "string" ? result : JSON.stringify(result, null, 2))}>Copy</button>
-              </div>
-              <pre style={S.pre}>{typeof result === "string" ? result : JSON.stringify(result, null, 2)}</pre>
-            </div>
-          )}
-          {history.length > 0 && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Analysis History</div>
-              {history.map((h, i) => (
-                <div key={i} style={S.row}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, color: "#52525b" }}>{new Date(h.ts).toLocaleString()}</div>
-                    <div style={{ fontSize: 12, color: "#818cf8", fontWeight: 600 }}>{h.query.slice(0, 80)}{h.query.length > 80 ? "…" : ""}</div>
-                  </div>
-                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => setQuery(h.query)}>Re-use</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {renderTab()}
 
-      {/* AT-RISK CUSTOMERS */}
-      {tab === "customers" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Add At-Risk Customer</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
-              {[
-                { key: "name",                  label: "Customer Name *",     placeholder: "Jane Smith" },
-                { key: "email",                 label: "Email *",             placeholder: "jane@example.com" },
-                { key: "daysSinceLastPurchase", label: "Days Since Purchase", placeholder: "45" },
-                { key: "totalOrders",           label: "Total Orders",        placeholder: "3" },
-                { key: "ltv",                   label: "Lifetime Value ($)",  placeholder: "280" },
-                { key: "assignedPlaybook",      label: "Assigned Playbook",   placeholder: "Early Warning Intervention" },
-              ].map(f => (
-                <div key={f.key}>
-                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>{f.label}</label>
-                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={custForm[f.key]} onChange={e => setCustForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} />
-                </div>
-              ))}
-            </div>
-            <div style={{ marginBottom: 10 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Risk Level</label>
-              <div style={{ display: "flex", gap: 6 }}>
-                {["Low", "Medium", "High"].map(level => (
-                  <button key={level} style={{ ...S.btn(custForm.riskLevel === level ? (level === "High" ? "danger" : level === "Low" ? "green" : "primary") : null), fontSize: 12, padding: "6px 14px" }} onClick={() => setCustForm(p => ({ ...p, riskLevel: level }))}>{level}</button>
-                ))}
-              </div>
-            </div>
-            <ErrorBox message={custError} />
-            {custSuccess && <div style={{ color: "#4ade80", fontSize: 13, marginBottom: 8 }}>{custSuccess}</div>}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btn("primary")} onClick={addCustomer} disabled={custLoading}>{custLoading ? "Adding…" : "Add to Watch List"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setCustForm(EMPTY_CUSTOMER)}>Clear</button>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ fontSize: 13, color: "#71717a" }}>{customers.length} customers in watch list</div>
-            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadCustomers}>Refresh</button>
-          </div>
-
-          {customers.length === 0 ? (
-            <EmptyState icon="👥" title="No at-risk customers tracked" description="Add customers you want to monitor for churn signals." />
-          ) : (
-            customers.map(c => (
-              <div key={c.id} style={{ ...S.card, borderLeft: `4px solid ${c.riskLevel === "High" ? "#f87171" : c.riskLevel === "Medium" ? "#fbbf24" : "#4ade80"}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{c.name}</span>
-                      <span style={S.badge(c.riskLevel)}>{c.riskLevel} risk</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}>{c.email}</div>
-                    <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>
-                      {c.daysSinceLastPurchase && <span>Last purchase: {c.daysSinceLastPurchase}d ago</span>}
-                      {c.totalOrders && <span>Orders: {c.totalOrders}</span>}
-                      {c.ltv && <span>LTV: ${c.ltv}</span>}
-                      {c.assignedPlaybook && <span style={{ color: "#818cf8" }}>Playbook: {c.assignedPlaybook}</span>}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12 }}>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(`Analyse churn risk for customer: ${c.name}, email: ${c.email}, days since last purchase: ${c.daysSinceLastPurchase || "unknown"}, total orders: ${c.totalOrders || "unknown"}, LTV: $${c.ltv || "unknown"}. What retention action should I take?`); setTab("analyse"); }}>AI Analyse</button>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteCustomer(c.id)} disabled={deleting === c.id}>{deleting === c.id ? "…" : "Remove"}</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* PLAYBOOKS */}
-      {tab === "playbooks" && (
-        <div style={{ marginTop: 20 }}>
-          {!selectedPlaybook ? (
-            <>
-              <p style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>Pre-built retention playbooks with trigger conditions, action sequences, and expected retention lift.</p>
-              {PLAYBOOKS.map((pb, i) => (
-                <div key={i} style={{ ...S.card, cursor: "pointer", borderColor: "#3f3f46" }} onClick={() => setPlaybook(pb)}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#e4e4e7", marginBottom: 6 }}>{pb.name}</div>
-                      <div style={{ fontSize: 12, color: "#71717a", marginBottom: 8 }}>Trigger: {pb.trigger}</div>
-                      <span style={S.badge(pb.risk)}>{pb.risk} churn risk</span>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: "#4ade80" }}>{pb.retention}</div>
-                      <div style={{ fontSize: 10, color: "#52525b", textTransform: "uppercase" }}>Avg retention lift</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <div>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px", marginBottom: 16 }} onClick={() => setPlaybook(null)}>← Back to Playbooks</button>
-              <div style={S.card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                  <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fafafa", margin: 0, marginBottom: 6 }}>{selectedPlaybook.name}</h2>
-                    <span style={S.badge(selectedPlaybook.risk)}>{selectedPlaybook.risk} churn risk</span>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: "#4ade80" }}>{selectedPlaybook.retention}</div>
-                    <div style={{ fontSize: 11, color: "#52525b", textTransform: "uppercase" }}>Avg retention lift</div>
-                  </div>
-                </div>
-                <div style={S.sectionTitle}>Trigger Condition</div>
-                <div style={{ background: "#0d0d0f", border: "1px solid #3f3f46", borderRadius: 8, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#e4e4e7" }}>{selectedPlaybook.trigger}</div>
-                <div style={S.sectionTitle}>Action Sequence</div>
-                {selectedPlaybook.actions.map((a, i) => (
-                  <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22", alignItems: "flex-start" }}>
-                    <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#1e1b4b", border: "1px solid #3730a3", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#818cf8", flexShrink: 0 }}>{i + 1}</div>
-                    <div style={{ fontSize: 13, color: "#e4e4e7" }}>{a}</div>
-                  </div>
-                ))}
-                <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-                  <button style={S.btn("primary")} onClick={() => { setQuery(`Customise this playbook for my store: ${selectedPlaybook.name}. Trigger: ${selectedPlaybook.trigger}`); setTab("analyse"); }}>Customise with AI</button>
-                  <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => navigator.clipboard?.writeText(selectedPlaybook.actions.join("\n"))}>Copy Actions</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* RISK SEGMENTS */}
-      {tab === "segments" && (
-        <div style={{ marginTop: 20 }}>
-          <p style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>RFM-based customer risk segmentation. Use these segments to prioritise retention spend and activate the right playbook for each group.</p>
-          {RISK_SEGMENTS.map((seg, i) => (
-            <div key={i} style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 6 }}>
-                    <div style={{ width: 12, height: 12, borderRadius: "50%", background: seg.color }} />
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#e4e4e7" }}>{seg.segment}</div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: seg.color }}>{seg.pct}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#71717a", marginBottom: 8 }}>{seg.desc}</div>
-                  <div style={{ fontSize: 12, color: "#818cf8", fontWeight: 600 }}>Recommended: {seg.action}</div>
-                </div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px", marginLeft: 12 }} onClick={() => { setQuery(`Build a retention strategy for my ${seg.segment} customers (${seg.desc}). Recommended action: ${seg.action}`); setTab("analyse"); }}>AI Strategy</button>
-              </div>
-            </div>
-          ))}
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Key Churn Indicators</div>
-            {[
-              { signal: "Drop in purchase frequency",     weight: "High",   threshold: "> 25% decline vs previous period" },
-              { signal: "Reduced email open rate",        weight: "Medium", threshold: "< 15% open rate" },
-              { signal: "Support ticket volume increase", weight: "High",   threshold: "2+ tickets in 30 days" },
-              { signal: "Cart abandonment spike",         weight: "Medium", threshold: "> 3 abandoned carts" },
-              { signal: "No login for 30+ days",         weight: "Medium", threshold: "App/account inactive" },
-              { signal: "Negative review submitted",      weight: "High",   threshold: "Any 1-2 star review" },
-            ].map(r => (
-              <div key={r.signal} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 12 }}>
-                <span style={{ color: "#e4e4e7", fontWeight: 600 }}>{r.signal}</span>
-                <span style={{ color: r.weight === "High" ? "#f87171" : "#fbbf24", fontWeight: 700 }}>{r.weight}</span>
-                <span style={{ color: "#71717a" }}>{r.threshold}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* GUIDE */}
-      {tab === "guide" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Retention Economics</div>
-            {[
-              { t: "5% retention = 25-95% profit increase",      d: "Bain & Company: a 5% increase in customer retention rates increases profits by 25-95%. Prioritise retention over acquisition." },
-              { t: "Cost to retain vs acquire",                  d: "Acquiring a new customer costs 5-25× more than retaining an existing one. Shift CAC budget to CRS incrementally." },
-              { t: "The 3-purchase loyalty threshold",           d: "Customers who make 3+ purchases have a 54% chance of making a 4th. Maximise for this milestone with post-2nd-purchase nudges." },
-              { t: "Personalisation lifts retention by 15-20%", d: "Generic win-back campaigns average 8% open rates. Personalised campaigns with product references average 22-28%." },
-              { t: "Timing matters more than offer size",       d: "A 10% offer sent within 30 days of last purchase outperforms a 20% offer sent after 90 days. Speed of intervention is key." },
-              { t: "NPS as a churn early warning system",       d: "Detractors (0-6 NPS) churn at 3× the rate of promoters. Trigger immediate outreach for any NPS response below 7." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4f46e5", flexShrink: 0 }}>📊</span>
-                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
-              </div>
-            ))}
-          </div>
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
     </div>

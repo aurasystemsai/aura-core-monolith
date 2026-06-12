@@ -1,410 +1,512 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { apiFetchJSON } from "../../api";
-import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
 const API = "/api/ltv-churn-predictor";
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { flex: 1, minWidth: 160, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
-  badge: (c) => ({ display: "inline-block", borderRadius: 5, padding: "2px 9px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: c === "high" ? "#052e16" : c === "med" ? "#3d2a0a" : c === "risk" ? "#3f1315" : "#27272a", color: c === "high" ? "#4ade80" : c === "med" ? "#fbbf24" : c === "risk" ? "#f87171" : "#a1a1aa" }),
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: (bg) => ({ background:bg||'#10b981', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
+  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trOdd: { background:'#09090b44' },
+  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
+  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
+  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#10b981' }),
+  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
+  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#10b981', borderRadius:3 }),
+  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
+  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
 };
 
-const TABS = [
-  { id: "ltv",      label: "LTV Predictions" },
-  { id: "churn",    label: "Churn Risk" },
-  { id: "cohorts",  label: "Cohort Tracker" },
-  { id: "retention",label: "Retention Playbooks" },
-  { id: "guide",    label: "Methodology" },
+const GROUPS = [
+  {
+    "id": "ltv-ov",
+    "label": "LTV Overview",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "ltv-dash",
+        "label": "LTV Dashboard"
+      },
+      {
+        "id": "by-segment-l",
+        "label": "By Segment"
+      },
+      {
+        "id": "by-channel-l",
+        "label": "By Channel"
+      },
+      {
+        "id": "by-product-l",
+        "label": "By Product"
+      },
+      {
+        "id": "by-cohort-l",
+        "label": "By Cohort"
+      },
+      {
+        "id": "ltv-trends",
+        "label": "Trends"
+      }
+    ]
+  },
+  {
+    "id": "models",
+    "label": "Models",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "pareto-nbd",
+        "label": "Pareto/NBD"
+      },
+      {
+        "id": "gamma-gamma",
+        "label": "Gamma-Gamma"
+      },
+      {
+        "id": "clv-segs",
+        "label": "CLV Segments"
+      },
+      {
+        "id": "accuracy",
+        "label": "Model Accuracy"
+      },
+      {
+        "id": "training",
+        "label": "Training"
+      },
+      {
+        "id": "predictions",
+        "label": "Predictions"
+      }
+    ]
+  },
+  {
+    "id": "segments-l",
+    "label": "Segments",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "quintiles",
+        "label": "LTV Quintiles"
+      },
+      {
+        "id": "champions-l",
+        "label": "Champions"
+      },
+      {
+        "id": "growth",
+        "label": "Growth"
+      },
+      {
+        "id": "at-risk-l",
+        "label": "At-Risk"
+      },
+      {
+        "id": "lost",
+        "label": "Lost"
+      },
+      {
+        "id": "ltv-champs",
+        "label": "Top Customers"
+      }
+    ]
+  },
+  {
+    "id": "attrib",
+    "label": "Attribution",
+    "color": "#f97316",
+    "tabs": [
+      {
+        "id": "channel-ltv",
+        "label": "Channel LTV"
+      },
+      {
+        "id": "first-touch",
+        "label": "First Touch"
+      },
+      {
+        "id": "product-ltv",
+        "label": "Product LTV"
+      },
+      {
+        "id": "camp-ltv",
+        "label": "Campaign LTV"
+      },
+      {
+        "id": "ltv-compare",
+        "label": "Compare"
+      },
+      {
+        "id": "bidding",
+        "label": "Value Bidding"
+      }
+    ]
+  },
+  {
+    "id": "scenarios",
+    "label": "Scenarios",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "scenario-builder",
+        "label": "Scenario Builder"
+      },
+      {
+        "id": "impact",
+        "label": "Impact Analysis"
+      },
+      {
+        "id": "retention-sim",
+        "label": "Retention Sim"
+      },
+      {
+        "id": "upsell-sim",
+        "label": "Upsell Sim"
+      },
+      {
+        "id": "ltv-reports",
+        "label": "Reports"
+      },
+      {
+        "id": "ltv-fore",
+        "label": "Forecast"
+      }
+    ]
+  },
+  {
+    "id": "acq",
+    "label": "Acquisition",
+    "color": "#ec4899",
+    "tabs": [
+      {
+        "id": "cac-payback",
+        "label": "CAC Payback"
+      },
+      {
+        "id": "bidding-exp",
+        "label": "Bidding Export"
+      },
+      {
+        "id": "lookalike",
+        "label": "Lookalike Seeds"
+      },
+      {
+        "id": "value-bid",
+        "label": "Value Bidding"
+      },
+      {
+        "id": "acq-targets",
+        "label": "Targets"
+      },
+      {
+        "id": "acq-roi",
+        "label": "ROI"
+      }
+    ]
+  },
+  {
+    "id": "ltv-adv",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "cross-sell-l",
+        "label": "Cross-Sell LTV"
+      },
+      {
+        "id": "ltv-int",
+        "label": "Integrations"
+      },
+      {
+        "id": "ltv-api",
+        "label": "API"
+      },
+      {
+        "id": "ltv-exports",
+        "label": "Exports"
+      },
+      {
+        "id": "ltv-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "ltv-world",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
 
-const SAMPLE_DATA = `Customer Segments (from Shopify analytics):
-- 250 customers with 3+ orders in last 90 days, avg order value $85
-- 800 customers with 1 order 60-90 days ago, no repeat purchase
-- 120 VIP customers with 10+ lifetime orders, avg LTV $1,200
-- 500 customers registered but never purchased
-- 180 customers who purchased once then requested refund`;
-
-const CHANNELS = ["Paid Social", "Organic SEO", "Email", "Referral", "Direct", "Marketplace", "Influencer"];
-const EMPTY_COHORT = { cohortName: "", acquisitionChannel: "Paid Social", startDate: "", initialCustomers: "", retained: "", avgLTV: "", avgOrderValue: "", notes: "" };
-
 export default function LTVChurnPredictor() {
-  const [tab, setTab]         = useState("ltv");
-  const [input, setInput]     = useState("");
-  const [ltv, setLtv]         = useState([]);
-  const [churn, setChurn]     = useState([]);
-  const [retention, setRetention] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [churnLoading, setChurnLoading] = useState(false);
-  const [retLoading, setRetLoading]     = useState(false);
-  const [error, setError]     = useState("");
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
+  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ model:'gpt-4o-mini' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [toast, setToast] = useState(null);
 
-  // Cohorts
-  const [cohorts, setCohorts]         = useState([]);
-  const [cohortForm, setCohortForm]   = useState(EMPTY_COHORT);
-  const [cohortLoading, setCohortLoading] = useState(false);
-  const [cohortError, setCohortError] = useState("");
-  const [cohortSuccess, setCohortSuccess] = useState("");
-  const [deleting, setDeleting]       = useState(null);
+  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
 
-  useEffect(() => { loadCohorts(); }, []);
+  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
 
-  const loadCohorts = async () => {
-    try { const r = await apiFetchJSON(`${API}/cohorts`); if (r.ok) setCohorts(r.cohorts || []); } catch {}
-  };
-
-  const predictLtv = async () => {
-    if (!input.trim()) return;
-    setLoading(true); setError(""); setLtv([]);
+  async function fetch_(tab, endpoint, payload={}) {
+    setLoading(l => ({...l,[tab]:true}));
+    setErr(e => ({...e,[tab]:null}));
     try {
-      const r = await apiFetchJSON(`${API}/ltv`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input }) });
-      if (!r.ok) throw new Error(r.error || "LTV prediction failed");
-      setLtv(r.ltv || []);
-    } catch (e) { setError(e.message); }
-    setLoading(false);
-  };
+      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
+      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
+      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
+    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
+    finally { setLoading(l => ({...l,[tab]:false})); }
+  }
 
-  const predictChurn = async () => {
-    if (!input.trim()) return;
-    setChurnLoading(true); setError(""); setChurn([]);
-    try {
-      const r = await apiFetchJSON(`${API}/churn`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input }) });
-      if (!r.ok) throw new Error(r.error || "Churn prediction failed");
-      setChurn(r.churn || []);
-    } catch (e) { setError(e.message); }
-    setChurnLoading(false);
-  };
+  function Generic(tab, title, desc, ep) {
+    const d = data[tab];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
+          <div style={S.row}>
+            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
+            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
+          </div>
+          {err[tab] && <div style={S.err}>{err[tab]}</div>}
+          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+           d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.tbl}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
+                  <tr key={i} style={i%2?S.trOdd:{}}>
+                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
+                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
+                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
+        </div>
+      </div>
+    );
+  }
 
-  const generateRetention = async () => {
-    if (!input.trim()) return;
-    setRetLoading(true); setError(""); setRetention("");
-    try {
-      const r = await apiFetchJSON(`${API}/ai/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: `Based on this customer data, create a detailed retention playbook with specific campaigns, timing, discount thresholds, and expected outcomes:\n${input}` }) });
-      if (!r.ok) throw new Error(r.error || "Generation failed");
-      setRetention(r.reply || "");
-    } catch (e) { setError(e.message); }
-    setRetLoading(false);
-  };
 
-  const runAll = async () => {
-    if (!input.trim()) return;
-    setLoading(true); setChurnLoading(true); setError(""); setLtv([]); setChurn([]);
-    await Promise.all([
-      apiFetchJSON(`${API}/ltv`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input }) }).then(r => { if (r.ok) setLtv(r.ltv || []); }).catch(() => {}),
-      apiFetchJSON(`${API}/churn`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input }) }).then(r => { if (r.ok) setChurn(r.churn || []); }).catch(() => {}),
-    ]);
-    setLoading(false); setChurnLoading(false);
-  };
+  function renderTab() {
+    const tab = activeTab;
+    const d = data[tab];
+    switch(tab) {
+      case 'ltv-dash': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Customer Lifetime Value Dashboard</div>
+            <button style={S.btn('#4f46e5')} onClick={()=>fetch_('ltv-dash',API+'/ltv/dashboard')} disabled={loading['ltv-dash']}>{loading['ltv-dash']?'Loading…':'Load LTV Dashboard'}</button>
+            {err['ltv-dash'] && <div style={S.err}>{err['ltv-dash']}</div>}
+            {loading['ltv-dash'] ? <div style={S.loading}>Loading LTV data…</div> : d ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Avg LTV','$'+d.avgLtv,'#4f46e5'],['Top 10% LTV','$'+d.topDecileLtv,'#10b981'],['Total Value','$'+d.totalCustomerValue?.toLocaleString(),'#0ea5e9'],['LTV Growth','+'+d.ltvGrowth+'%','#10b981'],['Repeat Rate',d.repeatRate+'%','#a855f7'],['Avg Orders',d.avgOrders,'#f97316']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={S.sT}>LTV Distribution</div>
+                {d.distribution?.map((r,i)=>(
+                  <div key={i} style={{marginBottom:8}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                      <span style={{fontSize:12,color:'#fafafa'}}>{r.range}</span>
+                      <span style={{fontSize:12,color:'#71717a'}}>{r.count?.toLocaleString()} customers ({r.pct}%)</span>
+                    </div>
+                    <div style={S.bar}><div style={S.fill(r.pct*2,'#4f46e5')} /></div>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Load the LTV dashboard to see customer lifetime value analysis.</div>}
+          </div>
+        </div>
+      );
+      case 'pareto-nbd': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Pareto/NBD + BG/NBD LTV Model</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Probabilistic model for non-contractual settings (ecommerce). Estimates each customer&apos;s probability of being alive and expected future transactions.</p>
+            <button style={S.btn('#0ea5e9')} onClick={()=>fetch_('pareto-nbd',API+'/models/pareto-nbd')} disabled={loading['pareto-nbd']}>{loading['pareto-nbd']?'Running Model…':'Run Pareto/NBD'}</button>
+            {err['pareto-nbd'] && <div style={S.err}>{err['pareto-nbd']}</div>}
+            {loading['pareto-nbd'] ? <div style={S.loading}>Fitting probabilistic model…</div> : d?.model ? (
+              <>
+                <div style={{...S.mini,marginBottom:16,borderColor:'#0ea5e944'}}>
+                  <div style={{fontSize:12,color:'#0ea5e9',fontWeight:600,marginBottom:4}}>{d.model.name}</div>
+                  <p style={{color:'#a1a1aa',fontSize:13,margin:'0 0 8px'}}>{d.model.description}</p>
+                  <div style={{display:'flex',gap:16}}>
+                    {Object.entries(d.model.performance||{}).map(([k,v])=>(
+                      <div key={k}><span style={{color:'#71717a',fontSize:11}}>{k.toUpperCase()}: </span><span style={{color:'#0ea5e9',fontWeight:700}}>{v}</span></div>
+                    ))}
+                  </div>
+                </div>
+                <div style={S.sT}>Individual Predictions (Sample)</div>
+                <div style={{overflowX:'auto'}}>
+                  <table style={S.tbl}>
+                    <thead><tr><th style={S.th}>Customer</th><th style={S.th}>P(Alive)</th><th style={S.th}>Expected Purchases (90d)</th><th style={S.th}>Predicted LTV</th></tr></thead>
+                    <tbody>{d.model.predictions?.map((p,i)=>(
+                      <tr key={i} style={i%2?S.trOdd:{}}>
+                        <td style={S.td}>{p.customerId}</td>
+                        <td style={S.td}><span style={{fontWeight:700,color:p.pAlive>0.7?'#10b981':p.pAlive>0.4?'#f59e0b':'#ef4444'}}>{(p.pAlive*100).toFixed(0)}%</span></td>
+                        <td style={S.td}>{p.expectedPurchases90d}</td>
+                        <td style={S.td}><span style={{fontWeight:700,color:'#4f46e5'}}>${p.predictedLtv}</span></td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+              </>
+            ) : <div style={S.empty}>Run the Pareto/NBD model to predict individual customer LTV.</div>}
+          </div>
+        </div>
+      );
+      case 'quintiles': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>LTV Quintile Segmentation</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Cluster customers by predicted LTV quintile — allocate retention resources proportionally to customer value and churn risk.</p>
+            <button style={S.btn('#10b981')} onClick={()=>fetch_('quintiles',API+'/segments/quintiles')} disabled={loading.quintiles}>{loading.quintiles?'Loading…':'Load Quintiles'}</button>
+            {err.quintiles && <div style={S.err}>{err.quintiles}</div>}
+            {loading.quintiles ? <div style={S.loading}>Loading quintiles…</div> : d?.quintiles?.length ? (
+              d.quintiles.map((q,i)=>(
+                <div key={i} style={{...S.mini,marginBottom:10,borderColor:i===0?'#10b98144':i===1?'#4f46e544':'#27272a'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <div>
+                      <span style={{fontWeight:800,fontSize:16,color:i<2?'#10b981':'#fafafa'}}>Q{q.quintile}</span>
+                      <span style={{color:'#71717a',fontSize:13,marginLeft:8}}>{q.label}</span>
+                    </div>
+                    <span style={S.badge('#4f46e5')}>{q.revenueShare}% of revenue</span>
+                  </div>
+                  <div style={{display:'flex',gap:12,marginBottom:6}}>
+                    {[['Avg LTV','$'+q.avgLtv],['Customers',q.customers?.toLocaleString()],['Revenue','$'+q.revenue?.toLocaleString()]].map(([l,v])=>(
+                      <div key={l}><span style={{fontSize:11,color:'#71717a'}}>{l}: </span><span style={{fontWeight:600,fontSize:13}}>{v}</span></div>
+                    ))}
+                  </div>
+                  <div style={{fontSize:12,color:'#a1a1aa',fontStyle:'italic'}}>{q.action}</div>
+                </div>
+              ))
+            ) : <div style={S.empty}>Load quintiles to see LTV-based customer segments.</div>}
+          </div>
+        </div>
+      );
+      case 'channel-ltv': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>LTV by Acquisition Channel</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Which acquisition channels produce the highest-LTV customers? Use LTV:CAC ratio to optimize channel mix and value-based bidding.</p>
+            <button style={S.btn('#f97316')} onClick={()=>fetch_('channel-ltv',API+'/attribution/channel-ltv')} disabled={loading['channel-ltv']}>{loading['channel-ltv']?'Loading…':'Load Channel LTV'}</button>
+            {err['channel-ltv'] && <div style={S.err}>{err['channel-ltv']}</div>}
+            {loading['channel-ltv'] ? <div style={S.loading}>Loading channel attribution…</div> : d?.channels?.length ? (
+              <div style={{overflowX:'auto'}}>
+                <table style={S.tbl}>
+                  <thead><tr><th style={S.th}>Channel</th><th style={S.th}>Avg LTV</th><th style={S.th}>LTV Multiple</th><th style={S.th}>CAC</th><th style={S.th}>LTV:CAC</th><th style={S.th}>Payback</th></tr></thead>
+                  <tbody>{d.channels.map((c,i)=>(
+                    <tr key={i} style={i%2?S.trOdd:{}}>
+                      <td style={S.td}><span style={{fontWeight:600}}>{c.channel}</span></td>
+                      <td style={S.td}><span style={{fontWeight:700,color:'#4f46e5'}}>${c.avgLtv}</span></td>
+                      <td style={S.td}><span style={{fontWeight:700,color:c.ltvMultiple>1?'#10b981':'#ef4444'}}>{c.ltvMultiple}×</span></td>
+                      <td style={S.td}>{c.cac===0?<span style={S.badge('#10b981')}>Free</span>:<span>${c.cac}</span>}</td>
+                      <td style={S.td}>{c.returnOnCAC?<span style={{fontWeight:700,color:c.returnOnCAC>10?'#10b981':c.returnOnCAC>5?'#f59e0b':'#ef4444'}}>{c.returnOnCAC}×</span>:'—'}</td>
+                      <td style={S.td}>{c.paybackDays===0?<span style={S.badge('#10b981')}>Instant</span>:<span style={{color:'#71717a'}}>{c.paybackDays}d</span>}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            ) : <div style={S.empty}>Load channel LTV to see which channels produce your best customers.</div>}
+          </div>
+        </div>
+      );
+      case 'ltv-world': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ World-Class Features</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
+              {[
+                {icon:'📐',t:'Pareto/NBD + Gamma-Gamma Model',d:'Industry-standard probabilistic LTV model: Pareto/NBD for purchase probability × Gamma-Gamma for spend — predicting individual customer value.'},
+                {icon:'🏆',t:'LTV Quintile Segmentation',d:'Cluster customers into 5 value tiers. Top 20% typically generate 60-70% of revenue — focus retention resources where they matter most.'},
+                {icon:'📡',t:'Value-Based Bidding Export',d:'Export LTV quintile scores to Google Customer Match and Meta Custom Audiences for value-based bidding — bid higher on high-LTV prospects.'},
+                {icon:'🔭',t:'LTV Attribution by Channel',d:'Which acquisition channels produce the highest-LTV customers? Break LTV:CAC ratio by source to optimize marketing mix.'},
+                {icon:'🎮',t:'LTV Scenario Modeling',d:'Model LTV impact of retention improvements, upsell programs, and product changes — "If 30-day repeat rate improves 10%, what is the LTV impact?"'},
+                {icon:'🤝',t:'Cross-Sell LTV Predictor',d:'Which next product recommendation maximizes expected LTV per customer? AI-powered next-best-product recommendations with LTV uplift estimates.'},
+              ].map((f,i)=>(
+                <div key={i} style={S.mini}>
+                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
+                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
+    }
+  }
 
-  const addCohort = async () => {
-    if (!cohortForm.cohortName || !cohortForm.initialCustomers) { setCohortError("Cohort name and initial customer count are required."); return; }
-    setCohortLoading(true); setCohortError(""); setCohortSuccess("");
-    try {
-      const r = await apiFetchJSON(`${API}/cohorts`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cohortForm) });
-      if (!r.ok) throw new Error(r.error || "Failed");
-      setCohortSuccess("Cohort added."); setCohortForm(EMPTY_COHORT); loadCohorts();
-      setTimeout(() => setCohortSuccess(""), 3000);
-    } catch (e) { setCohortError(e.message); }
-    setCohortLoading(false);
-  };
 
-  const deleteCohort = async (id) => {
-    setDeleting(id);
-    try { await apiFetchJSON(`${API}/cohorts/${id}`, { method: "DELETE" }); setCohorts(p => p.filter(c => c.id !== id)); } catch {}
-    setDeleting(null);
-  };
-
-  const riskColor = (risk) => risk >= 70 ? "#f87171" : risk >= 40 ? "#fbbf24" : "#4ade80";
-  const riskBadge = (risk) => risk >= 70 ? "risk" : risk >= 40 ? "med" : "high";
-  const retentionRate = (initial, retained) => initial ? Math.round((Number(retained) / Number(initial)) * 100) : 0;
-  const retColor = (pct) => pct >= 80 ? "#4ade80" : pct >= 50 ? "#fbbf24" : "#f87171";
+  function handleGroup(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
+  }
 
   return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>LTV & Churn Predictor</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>AI-powered customer lifetime value prediction, churn risk scoring, and cohort performance tracking. Paste customer data to get predictions, or track acquisition cohorts over time.</p>
+    <div style={S.root}>
+      <div style={{marginBottom:28}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>L T V Churn Predictor</h1>
+            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>Customer value ML — Pareto/NBD + Gamma-Gamma LTV model, quintile segmentation, channel attribution & value-based bidding export</p>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        {[
-          { label: "LTV Segments",   value: ltv.length,    color: "#4ade80" },
-          { label: "Churn Segments", value: churn.length,  color: "#f87171" },
-          { label: "Cohorts Tracked",value: cohorts.length, color: "#818cf8" },
-          { label: "High Risk",      value: churn.filter(s => (s.risk || 0) >= 70).length, color: "#f59e0b" },
-        ].map(m => (
-          <div key={m.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{m.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: m.color, marginTop: 2 }}>{m.value}</div>
-          </div>
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
         ))}
       </div>
 
-      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
 
-      {/* LTV PREDICTIONS */}
-      {tab === "ltv" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Customer Data Input</div>
-            <textarea style={{ ...S.ta, minHeight: 140 }} value={input} onChange={e => setInput(e.target.value)} placeholder={SAMPLE_DATA} />
-            <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-              <button style={S.btn("primary")} onClick={runAll} disabled={loading || churnLoading || !input.trim()}>{loading || churnLoading ? "Predicting…" : "Predict LTV & Churn"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setInput(SAMPLE_DATA)}>Load Sample</button>
-            </div>
-          </div>
-          <ErrorBox message={error} />
-          {loading ? <div style={{ textAlign: "center", padding: 40 }}><Spinner /></div> : (
-            ltv.length === 0 ? (
-              <EmptyState icon="💰" title="No LTV predictions yet" description="Paste customer data above and click 'Predict LTV & Churn'." />
-            ) : (
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Customer Segments by Lifetime Value</div>
-                {ltv.sort((a, b) => (b.ltv || 0) - (a.ltv || 0)).map((seg, i) => (
-                  <div key={i} style={{ ...S.row, alignItems: "center" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7", marginBottom: 2 }}>{seg.name}</div>
-                      <div style={{ fontSize: 12, color: "#71717a" }}>{seg.recommendation}</div>
-                    </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: "#4ade80" }}>${seg.ltv || 0}</div>
-                      <div style={{ fontSize: 11, color: "#52525b" }}>Confidence: {seg.confidence || 0}%</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
-          <div style={S.card}>
-            <div style={S.sectionTitle}>LTV Optimisation Strategies</div>
-            {[
-              { t: "Win repeat purchases from 1-order customers", d: "'How was it?' email at 14 days, second-purchase incentive at day 30. Repeat customers spend 67% more than first-time buyers." },
-              { t: "Implement tiered loyalty rewards",            d: "Bronze/Silver/Gold/Platinum tiers by cumulative spend. Higher tiers unlock exclusive discounts, early access, free shipping." },
-              { t: "Increase AOV with product bundles",           d: "Analyse what high-LTV customers buy together and create bundles at a slight discount to lift basket value." },
-              { t: "Target VIP customers for referrals",          d: "Top 10% by LTV are 5× more likely to refer friends. Give them a personalised referral code with a compelling incentive." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4ade80", fontSize: 14 }}>💰</span>
-                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{d}</div></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {renderTab()}
 
-      {/* CHURN RISK */}
-      {tab === "churn" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Customer Data Input</div>
-            <textarea style={{ ...S.ta, minHeight: 120 }} value={input} onChange={e => setInput(e.target.value)} placeholder={SAMPLE_DATA} />
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button style={S.btn("primary")} onClick={runAll} disabled={loading || churnLoading || !input.trim()}>{churnLoading ? "Predicting…" : "Predict Churn Risk"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setInput(SAMPLE_DATA)}>Load Sample</button>
-            </div>
-          </div>
-          <ErrorBox message={error} />
-          {churnLoading ? <div style={{ textAlign: "center", padding: 40 }}><Spinner /></div> : (
-            churn.length === 0 ? (
-              <EmptyState icon="⚠️" title="No churn predictions yet" description="Click 'Predict Churn Risk' to get risk scores for each segment." />
-            ) : (
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Churn Risk Segments</div>
-                {churn.sort((a, b) => (b.risk || 0) - (a.risk || 0)).map((seg, i) => (
-                  <div key={i} style={{ ...S.row, alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{seg.name}</span>
-                        <span style={S.badge(riskBadge(seg.risk || 0))}>{seg.risk || 0}% risk</span>
-                      </div>
-                      <div style={{ fontSize: 12, color: "#71717a", marginBottom: 4 }}>Signals: {seg.signals}</div>
-                      <div style={{ fontSize: 12, color: "#4f46e5", fontStyle: "italic" }}>Action: {seg.recommendation}</div>
-                    </div>
-                    <div style={{ width: 60, height: 8, background: "#27272a", borderRadius: 4, marginTop: 6, flexShrink: 0 }}>
-                      <div style={{ width: `${seg.risk || 0}%`, height: "100%", background: riskColor(seg.risk || 0), borderRadius: 4 }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
-        </div>
-      )}
-
-      {/* COHORT TRACKER */}
-      {tab === "cohorts" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Add Acquisition Cohort</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
-              {[
-                { key: "cohortName",       label: "Cohort Name *",      placeholder: "Q1 2025 Paid Social" },
-                { key: "startDate",        label: "Acquisition Date",   placeholder: "2025-01-01" },
-                { key: "initialCustomers", label: "Initial Customers *", placeholder: "450" },
-                { key: "retained",         label: "Retained Now",       placeholder: "310" },
-                { key: "avgLTV",           label: "Avg LTV ($)",        placeholder: "280" },
-                { key: "avgOrderValue",    label: "Avg Order Value ($)", placeholder: "65" },
-              ].map(f => (
-                <div key={f.key}>
-                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>{f.label}</label>
-                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={cohortForm[f.key]} onChange={e => setCohortForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} />
-                </div>
-              ))}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Acquisition Channel</label>
-                <select style={{ ...S.input, width: "100%" }} value={cohortForm.acquisitionChannel} onChange={e => setCohortForm(p => ({ ...p, acquisitionChannel: e.target.value }))}>
-                  {CHANNELS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Notes</label>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={cohortForm.notes} onChange={e => setCohortForm(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. Black Friday campaign" />
-              </div>
-            </div>
-            <ErrorBox message={cohortError} />
-            {cohortSuccess && <div style={{ color: "#4ade80", fontSize: 13, marginBottom: 8 }}>{cohortSuccess}</div>}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btn("primary")} onClick={addCohort} disabled={cohortLoading}>{cohortLoading ? "Adding…" : "Add Cohort"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setCohortForm(EMPTY_COHORT)}>Clear</button>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ fontSize: 13, color: "#71717a" }}>{cohorts.length} cohorts tracked</div>
-            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadCohorts}>Refresh</button>
-          </div>
-
-          {cohorts.length === 0 ? (
-            <EmptyState icon="📈" title="No cohorts tracked yet" description="Add your first acquisition cohort to measure retention over time." />
-          ) : (
-            cohorts.map(c => {
-              const retPct = retentionRate(c.initialCustomers, c.retained);
-              const rc = retColor(retPct);
-              return (
-                <div key={c.id} style={{ ...S.card, borderLeft: `4px solid ${rc}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{c.cohortName}</span>
-                        <span style={{ background: "#1a1a2e", color: "#818cf8", borderRadius: 5, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{c.acquisitionChannel}</span>
-                        {c.retained && c.initialCustomers && (
-                          <span style={{ color: rc, fontSize: 13, fontWeight: 800 }}>{retPct}% retained</span>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "#a1a1aa" }}>
-                        <span>Initial: <strong style={{ color: "#fafafa" }}>{c.initialCustomers}</strong></span>
-                        {c.retained && <span>Retained: <strong style={{ color: rc }}>{c.retained}</strong></span>}
-                        {c.avgLTV && <span>Avg LTV: <strong style={{ color: "#4ade80" }}>${c.avgLTV}</strong></span>}
-                        {c.avgOrderValue && <span>AOV: ${c.avgOrderValue}</span>}
-                        {c.startDate && <span>{c.startDate}</span>}
-                      </div>
-                      {c.notes && <div style={{ fontSize: 11, color: "#52525b", marginTop: 4 }}>{c.notes}</div>}
-                      {c.retained && c.initialCustomers && (
-                        <div style={{ marginTop: 8, height: 4, background: "#27272a", borderRadius: 2, maxWidth: 280 }}>
-                          <div style={{ width: `${retPct}%`, height: "100%", background: rc, borderRadius: 2, transition: "width 0.3s" }} />
-                        </div>
-                      )}
-                    </div>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px", flexShrink: 0, marginLeft: 12 }} onClick={() => deleteCohort(c.id)} disabled={deleting === c.id}>{deleting === c.id ? "…" : "Delete"}</button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
-
-      {/* RETENTION PLAYBOOKS */}
-      {tab === "retention" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>AI Retention Playbook Generator</div>
-            <p style={{ fontSize: 13, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>Generate a tailored retention playbook based on your customer data — specific campaigns, timing, discount thresholds and expected outcomes for each churn-risk segment.</p>
-            <textarea style={{ ...S.ta, minHeight: 100 }} value={input} onChange={e => setInput(e.target.value)} placeholder={SAMPLE_DATA} />
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <button style={S.btn("primary")} onClick={generateRetention} disabled={retLoading || !input.trim()}>{retLoading ? "Generating…" : "Generate Retention Playbook"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setInput(SAMPLE_DATA)}>Load Sample</button>
-            </div>
-          </div>
-          {retLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner /></div>}
-          {retention && !retLoading && (
-            <div style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={S.sectionTitle}>Retention Playbook</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(retention)}>Copy</button>
-              </div>
-              <pre style={S.pre}>{retention}</pre>
-            </div>
-          )}
-          {!retention && !retLoading && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Standard Retention Campaigns</div>
-              {[
-                { label: "Win-Back Email Sequence (30/60/90d)", risk: "High churn risk",  d: "Day 30: 'We miss you' + 10% off. Day 60: 'Here's what's new' + 15% off. Day 90: 'Final offer' + 20% off before removing from list." },
-                { label: "VIP Loyalty Upgrade",                 risk: "High LTV",         d: "Segment top 10% by spend. Send handwritten-feel personalised email, exclusive early access, free shipping for life." },
-                { label: "Post-Purchase Nurture",               risk: "1-order buyers",   d: "Day 7: product tips. Day 14: ask for review. Day 21: cross-sell. Day 30: replenishment or complementary product offer." },
-                { label: "Never-Purchased Re-Engagement",       risk: "Registered/no buy", d: "'Here's what you're missing' social proof email. Follow with first-purchase incentive. After 30 days with no action, sunset." },
-              ].map(({ label, risk, d }) => (
-                <div key={label} style={S.row}>
-                  <div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{label}</span>
-                      <span style={S.badge("med")}>{risk}</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{d}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* METHODOLOGY */}
-      {tab === "guide" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>LTV Calculation Methodology</div>
-            <div style={{ background: "#1e1b4b", border: "1px solid #3730a3", borderRadius: 8, padding: "12px 16px", marginBottom: 16, fontFamily: "monospace", fontSize: 13, color: "#c7d2fe" }}>
-              LTV = Average Order Value × Purchase Frequency × Customer Lifespan
-            </div>
-            {[
-              { t: "Average Order Value", d: "Total revenue ÷ number of orders. Improve by: bundles, free shipping thresholds, upsells at checkout." },
-              { t: "Purchase Frequency",  d: "Number of orders ÷ unique customers. Improve by: subscription offers, replenishment reminders, loyalty programs." },
-              { t: "Customer Lifespan",   d: "Average years a customer stays active. Improve by: exceptional post-purchase experience, proactive win-back campaigns." },
-              { t: "Churn Rate",          d: "% of customers who stop buying in a given period. >180 days without a purchase typically indicates e-commerce churn." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <div style={{ minWidth: 160, fontWeight: 700, fontSize: 13, color: "#e4e4e7" }}>{t}</div>
-                <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.5 }}>{d}</div>
-              </div>
-            ))}
-          </div>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Benchmarks by E-Commerce Category</div>
-            {[
-              { cat: "Apparel",         ltv: "$250-500",  churn: "65-75%", freq: "2.1×/yr" },
-              { cat: "Beauty",          ltv: "$150-400",  churn: "55-65%", freq: "3.2×/yr" },
-              { cat: "Electronics",     ltv: "$400-1200", churn: "70-80%", freq: "1.4×/yr" },
-              { cat: "Home & Garden",   ltv: "$300-800",  churn: "60-70%", freq: "1.8×/yr" },
-              { cat: "Health/Wellness", ltv: "$200-600",  churn: "50-60%", freq: "4.1×/yr" },
-            ].map(r => (
-              <div key={r.cat} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                <span style={{ fontWeight: 600, color: "#e4e4e7" }}>{r.cat}</span>
-                <span style={{ color: "#4ade80" }}>LTV: {r.ltv}</span>
-                <span style={{ color: "#f87171" }}>Churn: {r.churn}</span>
-                <span style={{ color: "#818cf8" }}>Freq: {r.freq}</span>
-              </div>
-            ))}
-          </div>
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
     </div>

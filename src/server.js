@@ -181,6 +181,11 @@ const toolRouters = [
   { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router'), middleware: requireTool('ltv-churn-predictor'), creditAction: 'churn-predict' },
   { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync'), creditAction: 'generic-ai' },
   { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router'), middleware: requireTool('finance-autopilot'), creditAction: 'analytics-insight' },
+  { path: '/api/inventory-forecasting', router: require('./tools/inventory-forecasting/router'), middleware: requireTool('inventory-forecasting'), creditAction: 'analytics-insight' },
+  { path: '/api/returns-rma-automation', router: require('./tools/returns-rma-automation/router'), middleware: requireTool('returns-rma-automation'), creditAction: 'generic-ai' },
+  { path: '/api/advanced-finance-inventory-planning', router: require('./tools/advanced-finance-inventory-planning/router'), middleware: requireTool('advanced-finance-inventory-planning'), creditAction: 'analytics-insight' },
+  { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router'), middleware: requireTool('daily-cfo-pack'), creditAction: 'analytics-insight' },
+  { path: '/api/churn-prediction-playbooks', router: require('./tools/churn-prediction-playbooks/router'), middleware: requireTool('churn-prediction-playbooks'), creditAction: 'churn-predict' },
 
   // Pro tier tools
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant'), creditAction: 'ai-support' },

@@ -68,6 +68,8 @@ const InventorySupplierSync = lazy(() => import("./components/tools/InventorySup
 const InboxAssistant = lazy(() => import("./components/tools/InboxAssistant.jsx"));
 const ImageAltMediaSEO = lazy(() => import("./components/tools/ImageAltMediaSEO.jsx"));
 const FinanceAutopilot = lazy(() => import("./components/tools/FinanceAutopilot.jsx"));
+const AdvancedFinanceInventoryPlanning = lazy(() => import("./components/tools/AdvancedFinanceInventoryPlanning.jsx"));
+const DailyCFOPack = lazy(() => import("./components/tools/DailyCFOPack.jsx"));
 const EmailAutomationBuilder = lazy(() => import("./components/tools/EmailAutomationBuilder.jsx"));
 const DynamicPricingEngine = lazy(() => import("./components/tools/DynamicPricingEngine.jsx"));
 const CreativeAutomationEngine = lazy(() => import("./components/tools/CreativeAutomationEngine.jsx"));
@@ -596,6 +598,8 @@ function App() {
 
  {/* -- Finance & Operations -- */}
  {activeSection === "finance-autopilot"&& <FinanceAutopilot />}
+ {activeSection === "advanced-finance-inventory-planning"&& <AdvancedFinanceInventoryPlanning />}
+ {activeSection === "daily-cfo-pack"&& <DailyCFOPack />}
  {activeSection === "inventory-supplier-sync"&& <InventorySupplierSync />}
  {activeSection === "inventory-forecasting"&& <InventoryForecasting />}
 

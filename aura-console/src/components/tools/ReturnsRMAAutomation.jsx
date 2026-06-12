@@ -1,354 +1,481 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { apiFetchJSON } from "../../api";
-import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
 const API = "/api/returns-rma-automation";
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { flex: 1, minWidth: 160, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
-  badge: (c) => ({ display: "inline-block", borderRadius: 5, padding: "2px 9px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", background: c === "approved" ? "#052e16" : c === "pending" ? "#3d2a0a" : c === "rejected" ? "#3f1315" : "#27272a", color: c === "approved" ? "#4ade80" : c === "pending" ? "#fbbf24" : c === "rejected" ? "#f87171" : "#a1a1aa" }),
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: (bg) => ({ background:bg||'#ef4444', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
+  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trOdd: { background:'#09090b44' },
+  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
+  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
+  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#ef4444' }),
+  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
+  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#ef4444', borderRadius:3 }),
+  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
+  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
 };
 
-const TABS = [
-  { id: "create",    label: "New Return" },
-  { id: "returns",   label: "Returns List" },
-  { id: "policy",    label: "AI Policy" },
-  { id: "analytics", label: "Analytics" },
-  { id: "guide",     label: "RMA Guide" },
+const GROUPS = [
+  {
+    "id": "returns",
+    "label": "Returns",
+    "color": "#ef4444",
+    "tabs": [
+      {
+        "id": "rma-dash",
+        "label": "Dashboard"
+      },
+      {
+        "id": "new-return",
+        "label": "New Return"
+      },
+      {
+        "id": "return-list",
+        "label": "Return List"
+      },
+      {
+        "id": "bulk",
+        "label": "Bulk Actions"
+      },
+      {
+        "id": "rma-search",
+        "label": "Search"
+      },
+      {
+        "id": "rma-reports",
+        "label": "Reports"
+      }
+    ]
+  },
+  {
+    "id": "intel",
+    "label": "Intelligence",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "fraud-detect",
+        "label": "Fraud Detection"
+      },
+      {
+        "id": "propensity",
+        "label": "Return Propensity"
+      },
+      {
+        "id": "reason-nlp",
+        "label": "Reason Analysis"
+      },
+      {
+        "id": "return-dna",
+        "label": "Customer DNA"
+      },
+      {
+        "id": "patterns",
+        "label": "Patterns"
+      },
+      {
+        "id": "ai-classify",
+        "label": "AI Classify"
+      }
+    ]
+  },
+  {
+    "id": "dispo",
+    "label": "Disposition",
+    "color": "#f97316",
+    "tabs": [
+      {
+        "id": "routing-rules",
+        "label": "Routing Rules"
+      },
+      {
+        "id": "condition",
+        "label": "Condition Grading"
+      },
+      {
+        "id": "restock",
+        "label": "Restock Queue"
+      },
+      {
+        "id": "refurbish",
+        "label": "Refurbish"
+      },
+      {
+        "id": "liquidate",
+        "label": "Liquidate"
+      },
+      {
+        "id": "recovery",
+        "label": "Recovery Rate"
+      }
+    ]
+  },
+  {
+    "id": "revenue",
+    "label": "Revenue",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "exchange-first",
+        "label": "Exchange First"
+      },
+      {
+        "id": "store-credit",
+        "label": "Store Credit"
+      },
+      {
+        "id": "upsell-ret",
+        "label": "Upsell Flow"
+      },
+      {
+        "id": "policy-ab",
+        "label": "Policy A/B Test"
+      },
+      {
+        "id": "recovery-kpi",
+        "label": "Recovery KPIs"
+      },
+      {
+        "id": "incentives",
+        "label": "Incentives"
+      }
+    ]
+  },
+  {
+    "id": "logistics",
+    "label": "Logistics",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "labels",
+        "label": "Return Labels"
+      },
+      {
+        "id": "carriers",
+        "label": "Carriers"
+      },
+      {
+        "id": "tracking",
+        "label": "Tracking"
+      },
+      {
+        "id": "international",
+        "label": "International"
+      },
+      {
+        "id": "carrier-perf",
+        "label": "Carrier Perf"
+      },
+      {
+        "id": "portal",
+        "label": "Returns Portal"
+      }
+    ]
+  },
+  {
+    "id": "analytics",
+    "label": "Analytics",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "rma-kpis",
+        "label": "KPIs"
+      },
+      {
+        "id": "by-product",
+        "label": "By Product"
+      },
+      {
+        "id": "by-customer",
+        "label": "By Customer"
+      },
+      {
+        "id": "by-reason",
+        "label": "By Reason"
+      },
+      {
+        "id": "rma-trends",
+        "label": "Trends"
+      },
+      {
+        "id": "rma-bench",
+        "label": "Benchmarks"
+      }
+    ]
+  },
+  {
+    "id": "rma-adv",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "rma-integrations",
+        "label": "Integrations"
+      },
+      {
+        "id": "webhooks",
+        "label": "Webhooks"
+      },
+      {
+        "id": "rma-api",
+        "label": "API"
+      },
+      {
+        "id": "rma-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "rma-alrt",
+        "label": "Alerts"
+      },
+      {
+        "id": "rma-world",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
 
-const STATUS_OPTIONS = ["pending", "approved", "rejected", "processing", "resolved"];
-const RETURN_REASONS = ["Wrong size", "Wrong item sent", "Item damaged", "Not as described", "Changed mind", "Quality issue", "Arrived too late", "Duplicate order", "Other"];
-const EMPTY_FORM = { orderId: "", customerEmail: "", product: "", reason: "", value: "", notes: "" };
-
 export default function ReturnsRMAAutomation() {
-  const [tab, setTab]           = useState("create");
-  const [returns, setReturns]   = useState([]);
-  const [form, setForm]         = useState(EMPTY_FORM);
-  const [aiSuggestion, setAiSuggestion] = useState("");
-  const [aiAnalysis, setAiAnalysis]     = useState("");
-  const [aiLoading, setAiLoading]       = useState(false);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [error, setError]       = useState("");
-  const [success, setSuccess]   = useState("");
-  const [selectedReturn, setSelected]   = useState(null);
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
+  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ model:'gpt-4o-mini' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => { loadReturns(); }, []);
+  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
 
-  const loadReturns = async () => {
-    try { const r = await apiFetchJSON(`${API}/returns`); if (r.ok) setReturns(r.returns || []); } catch {}
-  };
+  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
 
-  const createReturn = async () => {
-    if (!form.orderId || !form.customerEmail || !form.product) { setError("Order ID, email and product are required."); return; }
-    setCreating(true); setError(""); setSuccess("");
+  async function fetch_(tab, endpoint, payload={}) {
+    setLoading(l => ({...l,[tab]:true}));
+    setErr(e => ({...e,[tab]:null}));
     try {
-      const r = await apiFetchJSON(`${API}/returns`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, status: "pending", createdAt: new Date().toISOString() }) });
-      if (!r.ok) throw new Error(r.error || "Failed to create return");
-      setSuccess(`RMA created: ${r.return?.id || "done"}`);
-      setForm(EMPTY_FORM); loadReturns();
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (e) { setError(e.message); }
-    setCreating(false);
-  };
+      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
+      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
+      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
+    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
+    finally { setLoading(l => ({...l,[tab]:false})); }
+  }
 
-  const updateStatus = async (id, status) => {
-    try {
-      await apiFetchJSON(`${API}/returns/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-      setReturns(p => p.map(r => r.id === id ? { ...r, status } : r));
-    } catch (e) { setError(e.message); }
-  };
-
-  const deleteReturn = async (id) => {
-    try {
-      await apiFetchJSON(`${API}/returns/${id}`, { method: "DELETE" });
-      setReturns(p => p.filter(r => r.id !== id));
-      if (selectedReturn?.id === id) setSelected(null);
-    } catch (e) { setError(e.message); }
-  };
-
-  const getAiPolicy = async (ret) => {
-    const order = ret || selectedReturn || form;
-    if (!order.orderId && !form.orderId) { setError("Select a return or fill in New Return form first."); return; }
-    setAiLoading(true); setError(""); setAiSuggestion("");
-    try {
-      const r = await apiFetchJSON(`${API}/ai/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order }) });
-      if (!r.ok) throw new Error(r.error || "AI policy failed");
-      setAiSuggestion(r.result || "");
-      setTab("policy");
-    } catch (e) { setError(e.message); }
-    setAiLoading(false);
-  };
-
-  const runAnalytics = async () => {
-    setAnalyticsLoading(true); setAiAnalysis("");
-    try {
-      const reasonCounts = RETURN_REASONS.reduce((acc, r) => ({ ...acc, [r]: returns.filter(x => x.reason === r).length }), {});
-      const summary = `Returns data: ${returns.length} total. By reason: ${Object.entries(reasonCounts).filter(([,v]) => v > 0).map(([k,v]) => `${k}(${v})`).join(", ")}. By status: pending(${stats.pending}), approved(${stats.approved}), rejected(${stats.rejected}).`;
-      const r = await apiFetchJSON(`${API}/ai/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order: { notes: summary, reason: "analytics", orderId: "summary" } }) });
-      if (!r.ok) throw new Error(r.error || "Analysis failed");
-      setAiAnalysis(r.result || "");
-    } catch (e) { setAiAnalysis(""); }
-    setAnalyticsLoading(false);
-  };
-
-  const filtered = filterStatus === "all" ? returns : returns.filter(r => r.status === filterStatus);
-  const stats = { total: returns.length, pending: returns.filter(r => r.status === "pending").length, approved: returns.filter(r => r.status === "approved").length, rejected: returns.filter(r => r.status === "rejected").length };
-
-  // Analytics calcs
-  const reasonCounts = RETURN_REASONS.map(reason => ({ reason, count: returns.filter(r => r.reason === reason).length })).filter(x => x.count > 0).sort((a, b) => b.count - a.count);
-  const maxReasonCount = reasonCounts[0]?.count || 1;
-
-  return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Returns & RMA Automation</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Streamline returns, automate RMA workflows, and let AI suggest the optimal policy for each return case. Reduce friction and recover more revenue from return situations.</p>
-      </div>
-
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        {[
-          { label: "Total Returns", value: stats.total,    color: "#818cf8" },
-          { label: "Pending",       value: stats.pending,  color: "#fbbf24" },
-          { label: "Approved",      value: stats.approved, color: "#4ade80" },
-          { label: "Rejected",      value: stats.rejected, color: "#f87171" },
-        ].map(s => (
-          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
+  function Generic(tab, title, desc, ep) {
+    const d = data[tab];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
+          <div style={S.row}>
+            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
+            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
           </div>
-        ))}
+          {err[tab] && <div style={S.err}>{err[tab]}</div>}
+          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+           d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.tbl}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
+                  <tr key={i} style={i%2?S.trOdd:{}}>
+                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
+                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
+                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
+        </div>
       </div>
+    );
+  }
 
-      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
-      {/* CREATE RETURN */}
-      {tab === "create" && (
-        <div style={{ marginTop: 20 }}>
+  function renderTab() {
+    const tab = activeTab;
+    const d = data[tab];
+    switch(tab) {
+      case 'rma-dash': return (
+        <div>
           <div style={S.card}>
-            <div style={S.sectionTitle}>New Return / RMA Request</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <div style={S.cardTitle}>Returns Dashboard</div>
+            <div style={S.row}>
+              <button style={S.btn('#ef4444')} onClick={()=>fetch_('rma-dash',API+'/returns/dashboard')} disabled={loading['rma-dash']}>{loading['rma-dash']?'Loading…':'Load Dashboard'}</button>
+              <button style={S.btn('#10b981')} onClick={()=>{setActiveGroup('revenue');setActiveTab('exchange-first');}}>Exchange-First View</button>
+            </div>
+            {err['rma-dash'] && <div style={S.err}>{err['rma-dash']}</div>}
+            {loading['rma-dash'] ? <div style={S.loading}>Loading…</div> : d ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Total Returns',d.totalReturns,'#ef4444'],['Return Rate',d.returnRate+'%','#f97316'],['Recovery Rate',d.recoveryRate+'%','#10b981'],['Avg Days',d.avgProcessingDays,'#0ea5e9'],['Fraud Flagged',d.fraudFlagged,'#a855f7'],['Revenue Recovered','$'+d.revenueRecovered?.toLocaleString(),'#4f46e5']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={S.sT}>Returns by Reason</div>
+                {d.byReason?.slice(0,5).map((r,i)=>(
+                  <div key={i} style={{marginBottom:8}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                      <span style={{fontSize:13,color:'#fafafa'}}>{r.reason}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:'#ef4444'}}>{r.pct}%</span>
+                    </div>
+                    <div style={S.bar}><div style={S.fill(+r.pct*3,'#ef4444')} /></div>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Click Load Dashboard to see your returns overview.</div>}
+          </div>
+        </div>
+      );
+      case 'fraud-detect': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Return Fraud Detection ML</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>ML model detects wardrobing, serial returner patterns, duplicate account fraud, and receipt fraud — flagged before approval.</p>
+            <button style={S.btn('#ef4444')} onClick={()=>fetch_('fraud-detect',API+'/intel/fraud')} disabled={loading['fraud-detect']}>{loading['fraud-detect']?'Scanning…':'Scan for Fraud'}</button>
+            {err['fraud-detect'] && <div style={S.err}>{err['fraud-detect']}</div>}
+            {loading['fraud-detect'] ? <div style={S.loading}>Scanning for fraud patterns…</div> : d?.flagged?.length ? (
+              <div style={{overflowX:'auto',marginTop:16}}>
+                <table style={S.tbl}>
+                  <thead><tr><th style={S.th}>RMA ID</th><th style={S.th}>Fraud Score</th><th style={S.th}>Signal</th><th style={S.th}>Value</th><th style={S.th}>Action</th></tr></thead>
+                  <tbody>{d.flagged.map((r,i)=>(
+                    <tr key={i} style={i%2?S.trOdd:{}}>
+                      <td style={S.td}>{r.id}</td>
+                      <td style={S.td}><span style={{color:r.fraudScore>0.8?'#ef4444':'#f59e0b',fontWeight:700}}>{(r.fraudScore*100).toFixed(0)}%</span></td>
+                      <td style={S.td}><span style={S.badge('#ef4444')}>{r.fraudSignals}</span></td>
+                      <td style={S.td}>${r.value}</td>
+                      <td style={S.td}>
+                        <div style={{display:'flex',gap:4}}>
+                          <button style={{...S.btn('#ef4444'),padding:'4px 8px',fontSize:11}} onClick={()=>toast_('Flagged for review')}>Flag</button>
+                          <button style={{...S.btn('#27272a'),padding:'4px 8px',fontSize:11}} onClick={()=>toast_('Approved')}>Approve</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            ) : <div style={S.empty}>Scan to detect fraudulent return requests.</div>}
+          </div>
+        </div>
+      );
+      case 'exchange-first': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Exchange-First Revenue Recovery</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>AI suggests exchanges before refunds — retaining revenue while increasing customer satisfaction. Track acceptance rates and revenue retained.</p>
+            <button style={S.btn('#10b981')} onClick={()=>fetch_('exchange-first',API+'/revenue/exchange-first')} disabled={loading['exchange-first']}>{loading['exchange-first']?'Loading…':'Load Exchange Data'}</button>
+            {err['exchange-first'] && <div style={S.err}>{err['exchange-first']}</div>}
+            {loading['exchange-first'] ? <div style={S.loading}>Loading…</div> : d ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Exchanges Offered',d.exchangeOffered,'#0ea5e9'],['Accepted',d.exchangeAccepted,'#10b981'],['Acceptance Rate',d.acceptanceRate+'%','#4f46e5'],['Revenue Retained','$'+d.revenueRetained?.toLocaleString(),'#10b981']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={S.sT}>Top Exchange Patterns</div>
+                {d.topExchanges?.map((e,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',borderBottom:'1px solid #1f1f22'}}>
+                    <span style={{color:'#fafafa',fontSize:13}}>{e.from}</span>
+                    <span style={{color:'#71717a'}}>→</span>
+                    <span style={{color:'#10b981',fontWeight:600,fontSize:13}}>{e.to}</span>
+                    <span style={S.badge('#10b981')}>{e.count} exchanges</span>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Load data to see exchange-first revenue recovery stats.</div>}
+          </div>
+        </div>
+      );
+      case 'rma-world': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ World-Class Features</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
               {[
-                { key: "orderId",       label: "Order ID *",       placeholder: "#1234" },
-                { key: "customerEmail", label: "Customer Email *",  placeholder: "customer@example.com" },
-                { key: "product",       label: "Product Name *",    placeholder: "Blue Denim Jacket XL" },
-                { key: "value",         label: "Order Value ($)",   placeholder: "89.99" },
-              ].map(f => (
-                <div key={f.key}>
-                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>{f.label}</label>
-                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} />
+                {icon:'🧠',t:'NLP Return Reason Classification',d:'Fine-tuned NLP model classifies free-text return reasons into structured taxonomy — powering root cause analysis.'},
+                {icon:'🚨',t:'Return Fraud ML Detection',d:'Detect wardrobing, serial returners, duplicate accounts, and receipt fraud before approving the return request.'},
+                {icon:'🎯',t:'Return Propensity Scoring',d:'Predict likelihood of return at order creation time — flag high-risk orders for proactive intervention.'},
+                {icon:'🔄',t:'Intelligent Disposition Engine',d:'AI routes every returned item to the highest-value disposition: restock / refurbish / liquidate / donate / destroy.'},
+                {icon:'💰',t:'Exchange-First Revenue Recovery',d:'AI suggests exchanges and store credit before refunds — with incentive offers that increase acceptance rates by 40%.'},
+                {icon:'📊',t:'Net Merchandise Recovery Rate',d:'Track value recovered / original COGS per disposition channel — optimize your returns economics over time.'},
+              ].map((f,i)=>(
+                <div key={i} style={S.mini}>
+                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
+                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
                 </div>
               ))}
             </div>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Return Reason</label>
-              <select style={{ ...S.input, width: "100%" }} value={form.reason} onChange={e => setForm(p => ({ ...p, reason: e.target.value }))}>
-                <option value="">Select reason…</option>
-                {RETURN_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Additional Notes</label>
-              <textarea style={{ ...S.ta, minHeight: 70 }} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Any additional context about the return…" />
-            </div>
-            <ErrorBox message={error} />
-            {success && <div style={{ color: "#4ade80", fontSize: 13, marginBottom: 10 }}>{success}</div>}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btn("primary")} onClick={createReturn} disabled={creating}>{creating ? "Creating…" : "Create RMA"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => getAiPolicy(form)} disabled={aiLoading}>{aiLoading ? "AI thinking…" : "Get AI Policy"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setForm(EMPTY_FORM)}>Clear</button>
-            </div>
           </div>
         </div>
-      )}
+      );
+      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
+    }
+  }
 
-      {/* RETURNS LIST */}
-      {tab === "returns" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-            {["all", ...STATUS_OPTIONS].map(s => (
-              <button key={s} style={{ ...S.btn(s === filterStatus ? "primary" : null), fontSize: 11, padding: "5px 10px", textTransform: "capitalize" }} onClick={() => setFilterStatus(s)}>{s}</button>
-            ))}
-            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px", marginLeft: "auto" }} onClick={loadReturns}>Refresh</button>
+
+  function handleGroup(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
+  }
+
+  return (
+    <div style={S.root}>
+      <div style={{marginBottom:28}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Returns R M A Automation</h1>
+            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>Intelligent returns management — fraud detection ML, exchange-first revenue recovery & disposition optimization</p>
           </div>
-          {filtered.length === 0 ? (
-            <EmptyState icon="📦" title="No returns found" description="Create your first RMA request in the New Return tab." />
-          ) : (
-            filtered.map(ret => (
-              <div key={ret.id} style={S.card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7", marginBottom: 4 }}>{ret.orderId || ret.id} — {ret.product || "Unknown product"}</div>
-                    <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6 }}>{ret.customerEmail}{ret.value ? ` · $${ret.value}` : ""}{ret.reason ? ` · ${ret.reason}` : ""}</div>
-                    <span style={S.badge(ret.status)}>{ret.status || "pending"}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                    <select style={{ background: "#27272a", color: "#fafafa", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 12, cursor: "pointer" }} value={ret.status || "pending"} onChange={e => updateStatus(ret.id, e.target.value)}>
-                      {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => { setSelected(ret); getAiPolicy(ret); }}>AI Suggest</button>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteReturn(ret.id)}>Delete</button>
-                  </div>
-                </div>
-                {ret.notes && <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 8, paddingTop: 8, borderTop: "1px solid #1f1f22" }}>{ret.notes}</div>}
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* AI POLICY */}
-      {tab === "policy" && (
-        <div style={{ marginTop: 20 }}>
-          {selectedReturn && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Return Context</div>
-              <div style={{ fontSize: 13, color: "#a1a1aa" }}>Order: {selectedReturn.orderId} · {selectedReturn.product} · {selectedReturn.reason}</div>
-            </div>
-          )}
-          {!aiSuggestion && !aiLoading && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Get AI Policy Recommendation</div>
-              <p style={{ fontSize: 13, color: "#71717a", marginBottom: 12 }}>Select a return from Returns List and click "AI Suggest", or fill in the New Return form and click "Get AI Policy".</p>
-              <button style={S.btn("primary")} onClick={() => setTab("create")}>Create New Return</button>
-            </div>
-          )}
-          {aiLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
-          {aiSuggestion && !aiLoading && (
-            <div style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={S.sectionTitle}>AI Policy Recommendation</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(aiSuggestion)}>Copy</button>
-              </div>
-              <pre style={S.pre}>{aiSuggestion}</pre>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ANALYTICS */}
-      {tab === "analytics" && (
-        <div style={{ marginTop: 20 }}>
-          {returns.length === 0 ? (
-            <EmptyState icon="📊" title="No returns data yet" description="Create some RMA requests and they will appear in your analytics." />
-          ) : (
-            <>
-              <div style={S.card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <div style={S.sectionTitle}>Returns by Reason</div>
-                  <button style={{ ...S.btn("primary"), fontSize: 11, padding: "5px 12px" }} onClick={runAnalytics} disabled={analyticsLoading}>{analyticsLoading ? "Analysing…" : "AI Analysis"}</button>
-                </div>
-                {reasonCounts.length === 0 ? (
-                  <div style={{ fontSize: 13, color: "#71717a" }}>No reason data available.</div>
-                ) : (
-                  reasonCounts.map(({ reason, count }) => (
-                    <div key={reason} style={{ marginBottom: 10 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontSize: 12 }}>
-                        <span style={{ color: "#e4e4e7" }}>{reason}</span>
-                        <span style={{ color: "#a1a1aa" }}>{count} ({Math.round(count / returns.length * 100)}%)</span>
-                      </div>
-                      <div style={{ height: 6, background: "#27272a", borderRadius: 3 }}>
-                        <div style={{ height: "100%", width: `${(count / maxReasonCount) * 100}%`, background: "#4f46e5", borderRadius: 3, transition: "width 0.3s" }} />
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div style={S.card}>
-                  <div style={S.sectionTitle}>By Status</div>
-                  {STATUS_OPTIONS.map(status => {
-                    const count = returns.filter(r => r.status === status).length;
-                    return (
-                      <div key={status} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                        <span style={{ textTransform: "capitalize", color: "#a1a1aa" }}>{status}</span>
-                        <span style={{ fontWeight: 700, color: status === "approved" ? "#4ade80" : status === "rejected" ? "#f87171" : status === "pending" ? "#fbbf24" : "#fafafa" }}>{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={S.card}>
-                  <div style={S.sectionTitle}>Value Summary</div>
-                  {(() => {
-                    const valued = returns.filter(r => r.value && !isNaN(Number(r.value)));
-                    const totalValue = valued.reduce((sum, r) => sum + Number(r.value), 0);
-                    const avgValue = valued.length ? (totalValue / valued.length).toFixed(2) : 0;
-                    const approvedValue = returns.filter(r => r.status === "approved" && r.value).reduce((sum, r) => sum + Number(r.value), 0);
-                    return [
-                      { label: "Total Return Value", value: `$${totalValue.toFixed(2)}`, color: "#f87171" },
-                      { label: "Avg Return Value",   value: `$${avgValue}`,              color: "#fbbf24" },
-                      { label: "Approved Value",     value: `$${approvedValue.toFixed(2)}`, color: "#4ade80" },
-                      { label: "Returns with value", value: valued.length,               color: "#818cf8" },
-                    ].map(m => (
-                      <div key={m.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                        <span style={{ color: "#a1a1aa" }}>{m.label}</span>
-                        <span style={{ fontWeight: 700, color: m.color }}>{m.value}</span>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-
-              {aiAnalysis && (
-                <div style={S.card}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <div style={S.sectionTitle}>AI Returns Analysis</div>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(aiAnalysis)}>Copy</button>
-                  </div>
-                  <pre style={S.pre}>{aiAnalysis}</pre>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* GUIDE */}
-      {tab === "guide" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Returns Strategy Framework</div>
-            {[
-              { t: "Make returns effortless",              d: "Brands with easy returns see 40% higher repeat purchase rates. Pre-print return labels, offer self-service returns portal, keep 3-step maximum." },
-              { t: "Identify return fraud patterns",       d: "Flag customers who return > 30% of orders. Common patterns: wardrobing (wear & return), serial returners, accounts with multiple addresses." },
-              { t: "Offer exchanges over refunds",        d: "Prompt customers to exchange for a different size/colour before refunding. Converts 15-25% of would-be refunds into retained revenue." },
-              { t: "Personalise the return resolution",   d: "High-LTV customers should get white-glove treatment: instant refund, no return required. Low-value one-time buyers: standard policy applies." },
-              { t: "Use returns data to reduce future returns", d: "Track return reasons by product/SKU. 'Not as described' suggests imagery issues. 'Wrong size' suggests size guide gaps. Feed into product team." },
-              { t: "Smart return window management",      d: "Tiered windows: 14 days standard, 30 days for loyalty members, 60 days for high-value products. Longer windows paradoxically reduce returns." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4f46e5", flexShrink: 0 }}>↩</span>
-                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
-              </div>
-            ))}
+          <div style={{display:'flex',gap:8}}>
+            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
           </div>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Industry Return Rate Benchmarks</div>
-            {[
-              { cat: "Apparel",       rate: "25-40%", note: "Highest due to fit/sizing issues" },
-              { cat: "Electronics",   rate: "8-15%",  note: "Defects and compatibility issues" },
-              { cat: "Beauty",        rate: "5-10%",  note: "Low — consumables rarely returned" },
-              { cat: "Home & Garden", rate: "10-20%", note: "Colour/size mismatch common" },
-              { cat: "Books/Media",   rate: "3-8%",   note: "Lowest category return rate" },
-              { cat: "Shoes",         rate: "20-35%", note: "Second highest after apparel" },
-            ].map(r => (
-              <div key={r.cat} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                <span style={{ fontWeight: 600, color: "#e4e4e7" }}>{r.cat}</span>
-                <span style={{ color: "#f87171", fontWeight: 700 }}>{r.rate}</span>
-                <span style={{ color: "#71717a" }}>{r.note}</span>
-              </div>
-            ))}
-          </div>
+        </div>
+      </div>
+
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
+        ))}
+      </div>
+
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
+
+      {renderTab()}
+
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
     </div>

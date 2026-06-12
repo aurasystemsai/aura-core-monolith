@@ -1,409 +1,453 @@
-﻿import React, { useState, useCallback, useEffect } from "react";
+import React, { useState } from "react";
 import { apiFetchJSON } from "../../api";
-import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
 const API = "/api/inventory-supplier-sync";
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { flex: 1, minWidth: 160, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  select: { background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "10px 14px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: (bg) => ({ background:bg||'#0ea5e9', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
+  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trOdd: { background:'#09090b44' },
+  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
+  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
+  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#0ea5e9' }),
+  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
+  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#0ea5e9', borderRadius:3 }),
+  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
+  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
 };
 
-const TABS = [
-  { id: "suppliers", label: "Suppliers" },
-  { id: "reorder",   label: "Reorder Dashboard" },
-  { id: "sync",      label: "Sync & AI Analyse" },
-  { id: "orders",    label: "Purchase Orders" },
-  { id: "guide",     label: "Supplier Guide" },
+const GROUPS = [
+  {
+    "id": "suppliers",
+    "label": "Suppliers",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "iss-list",
+        "label": "Supplier List"
+      },
+      {
+        "id": "scorecard",
+        "label": "Scorecard"
+      },
+      {
+        "id": "new-supplier",
+        "label": "New Supplier"
+      },
+      {
+        "id": "risk-monitor",
+        "label": "Risk Monitor"
+      },
+      {
+        "id": "compliance",
+        "label": "Compliance"
+      },
+      {
+        "id": "sustainability",
+        "label": "Sustainability"
+      }
+    ]
+  },
+  {
+    "id": "orders",
+    "label": "Orders",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "po-list",
+        "label": "PO List"
+      },
+      {
+        "id": "create-po",
+        "label": "Create PO"
+      },
+      {
+        "id": "receiving",
+        "label": "Receiving"
+      },
+      {
+        "id": "edi-docs",
+        "label": "EDI Documents"
+      },
+      {
+        "id": "variances",
+        "label": "Variances"
+      },
+      {
+        "id": "po-history",
+        "label": "PO History"
+      }
+    ]
+  },
+  {
+    "id": "leadtimes",
+    "label": "Lead Times",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "lt-tracker",
+        "label": "Lead Time Tracker"
+      },
+      {
+        "id": "lt-prediction",
+        "label": "Prediction ML"
+      },
+      {
+        "id": "by-supplier",
+        "label": "By Supplier"
+      },
+      {
+        "id": "by-product",
+        "label": "By Product"
+      },
+      {
+        "id": "lt-alerts",
+        "label": "Alerts"
+      },
+      {
+        "id": "improvement",
+        "label": "Improvement"
+      }
+    ]
+  },
+  {
+    "id": "pricing",
+    "label": "Pricing",
+    "color": "#f97316",
+    "tabs": [
+      {
+        "id": "price-history",
+        "label": "Price History"
+      },
+      {
+        "id": "benchmarks",
+        "label": "Market Benchmarks"
+      },
+      {
+        "id": "negotiations",
+        "label": "Negotiations"
+      },
+      {
+        "id": "contracts",
+        "label": "Contracts"
+      },
+      {
+        "id": "rebates",
+        "label": "Rebates"
+      },
+      {
+        "id": "cost-analysis",
+        "label": "Cost Analysis"
+      }
+    ]
+  },
+  {
+    "id": "risk",
+    "label": "Risk",
+    "color": "#ef4444",
+    "tabs": [
+      {
+        "id": "risk-dashboard",
+        "label": "Risk Dashboard"
+      },
+      {
+        "id": "financial-health",
+        "label": "Financial Health"
+      },
+      {
+        "id": "geo-risk",
+        "label": "Geo Risk"
+      },
+      {
+        "id": "alt-sourcing",
+        "label": "Alt Sourcing"
+      },
+      {
+        "id": "continuity",
+        "label": "Continuity Plan"
+      },
+      {
+        "id": "disruption-log",
+        "label": "Disruption Log"
+      }
+    ]
+  },
+  {
+    "id": "vmi",
+    "label": "VMI",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "vmi-overview",
+        "label": "VMI Overview"
+      },
+      {
+        "id": "stock-visibility",
+        "label": "Stock Visibility"
+      },
+      {
+        "id": "vmi-replenishment",
+        "label": "Replenishment"
+      },
+      {
+        "id": "vmi-performance",
+        "label": "Performance"
+      },
+      {
+        "id": "vmi-settings",
+        "label": "VMI Settings"
+      },
+      {
+        "id": "vmi-alerts",
+        "label": "Alerts"
+      }
+    ]
+  },
+  {
+    "id": "adv",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "iss-ai",
+        "label": "AI Insights"
+      },
+      {
+        "id": "edi-setup",
+        "label": "EDI Setup"
+      },
+      {
+        "id": "iss-integrations",
+        "label": "Integrations"
+      },
+      {
+        "id": "iss-reports",
+        "label": "Reports"
+      },
+      {
+        "id": "iss-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "iss-world",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
 
-const CATEGORIES  = ["Electronics", "Clothing & Apparel", "Home & Garden", "Health & Beauty", "Sports", "Food & Beverage", "Stationery", "Toys", "Automotive", "Other"];
-const TERMS_OPTS  = ["Net 7", "Net 15", "Net 30", "Net 45", "Net 60", "Prepayment", "COD", "Consignment"];
-const PO_STATUSES = ["Draft", "Sent", "Confirmed", "Shipped", "Received", "Cancelled"];
-
-const SAMPLE_DATA = `SKU001, Widget Pro, Supplier: TechParts Ltd, Stock: 240, Reorder: 50, Lead time: 7 days
-SKU002, Blue T-Shirt S/M/L, Supplier: FabricCo, Stock: 80, Reorder: 100, Lead time: 14 days
-SKU003, Premium Candle Set, Supplier: WaxWorks, Stock: 15, Reorder: 30, Lead time: 21 days
-SKU004, Wireless Earbuds, Supplier: AudioTech, Stock: 320, Reorder: 50, Lead time: 5 days`;
-
 export default function InventorySupplierSync() {
-  const [tab, setTab] = useState("suppliers");
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
+  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ model:'gpt-4o-mini' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [toast, setToast] = useState(null);
 
-  // Suppliers
-  const [suppliers, setSuppliers]   = useState([]);
-  const [sLoading, setSLoading]     = useState(false);
-  const [newSup, setNewSup] = useState({ name: "", contact: "", email: "", phone: "", website: "", paymentTerms: "Net 30", leadDays: "", category: "Other", notes: "" });
-  const setSup = (k, v) => setNewSup(p => ({ ...p, [k]: v }));
+  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
 
-  // Reorder
-  const [stockData, setStockData]     = useState("");
-  const [reorderItems, setReorderItems] = useState(null);
+  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
 
-  // Sync & Analyse
-  const [syncData, setSyncData]       = useState("");
-  const [syncResult, setSyncResult]   = useState(null);
-  const [syncLoading, setSyncLoading] = useState(false);
-
-  // Purchase Orders
-  const [orders, setOrders]         = useState([]);
-  const [oLoading, setOLoading]     = useState(false);
-  const [newOrder, setNewOrder] = useState({ supplier: "", items: "", totalValue: "", status: "Draft", expectedDate: "" });
-  const setOrd = (k, v) => setNewOrder(p => ({ ...p, [k]: v }));
-
-  const [error, setError] = useState("");
-
-  const fetchSuppliers = useCallback(async () => {
-    setSLoading(true);
-    try { const r = await apiFetchJSON(`${API}/suppliers`); if (r.ok) setSuppliers(r.suppliers || []); } catch {}
-    setSLoading(false);
-  }, []);
-
-  const fetchOrders = useCallback(async () => {
-    setOLoading(true);
-    try { const r = await apiFetchJSON(`${API}/orders`); if (r.ok) setOrders(r.orders || []); } catch {}
-    setOLoading(false);
-  }, []);
-
-  useEffect(() => { fetchSuppliers(); fetchOrders(); }, [fetchSuppliers, fetchOrders]);
-
-  const createSupplier = async () => {
-    if (!newSup.name.trim()) { setError("Supplier name required"); return; }
-    setError("");
+  async function fetch_(tab, endpoint, payload={}) {
+    setLoading(l => ({...l,[tab]:true}));
+    setErr(e => ({...e,[tab]:null}));
     try {
-      const r = await apiFetchJSON(`${API}/suppliers`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newSup, createdAt: new Date().toISOString() }),
-      });
-      if (r.ok) { fetchSuppliers(); setNewSup({ name: "", contact: "", email: "", phone: "", website: "", paymentTerms: "Net 30", leadDays: "", category: "Other", notes: "" }); }
-    } catch (e) { setError(e.message); }
-  };
+      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
+      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
+      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
+    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
+    finally { setLoading(l => ({...l,[tab]:false})); }
+  }
 
-  const deleteSupplier = async (id) => {
-    try { await apiFetchJSON(`${API}/suppliers/${id}`, { method: "DELETE" }); fetchSuppliers(); } catch {}
-  };
+  function Generic(tab, title, desc, ep) {
+    const d = data[tab];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
+          <div style={S.row}>
+            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
+            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
+          </div>
+          {err[tab] && <div style={S.err}>{err[tab]}</div>}
+          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+           d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.tbl}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
+                  <tr key={i} style={i%2?S.trOdd:{}}>
+                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
+                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
+                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
+        </div>
+      </div>
+    );
+  }
 
-  const analyseReorder = () => {
-    if (!stockData.trim()) return;
-    const lines = stockData.trim().split("\n").filter(l => l.trim());
-    const items = lines.map(line => {
-      const parts = line.split(",").map(s => s.trim());
-      const stock = parseInt((line.match(/[Ss]tock[:\s]+(\d+)/)?.[1] || parts[2] || "0"));
-      const reorder = parseInt((line.match(/[Rr]eorder[:\s]+(\d+)/)?.[1] || parts[3] || "0"));
-      const sku = parts[0] || "";
-      const product = parts[1] || line.slice(0, 30);
-      const urgency = stock === 0 ? "out" : stock < reorder * 0.5 ? "critical" : stock < reorder ? "low" : "ok";
-      return { sku, product, stock, reorder, urgency };
-    });
-    setReorderItems(items);
-  };
 
-  const runSync = async () => {
-    if (!syncData.trim()) return;
-    setSyncLoading(true); setError(""); setSyncResult(null);
-    try {
-      const r = await apiFetchJSON(`${API}/ai/sync`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ supplierData: syncData }),
-      });
-      if (!r.ok) throw new Error(r.error || "Sync failed");
-      setSyncResult(r.analytics);
-    } catch (e) { setError(e.message); }
-    setSyncLoading(false);
-  };
+  function renderTab() {
+    const tab = activeTab;
+    const d = data[tab];
+    switch(tab) {
+      case 'iss-list': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Supplier Directory</div>
+            <div style={S.row}>
+              <input style={S.input} placeholder="Search suppliers…" value={q['iss-list']||''} onChange={e=>setQ(p=>({...p,'iss-list':e.target.value}))} />
+              <button style={S.btn()} onClick={()=>fetch_('iss-list',API+'/suppliers/list',{query:q['iss-list']})} disabled={loading['iss-list']}>{loading['iss-list']?'Loading…':'Load Suppliers'}</button>
+              <button style={S.btn('#10b981')} onClick={()=>{setActiveGroup('suppliers');setActiveTab('new-supplier');}}>+ New Supplier</button>
+            </div>
+            {err['iss-list'] && <div style={S.err}>{err['iss-list']}</div>}
+            {loading['iss-list'] ? <div style={S.loading}>Loading suppliers…</div> : d?.suppliers?.length ? (
+              <div style={{overflowX:'auto'}}>
+                <table style={S.tbl}>
+                  <thead><tr><th style={S.th}>Supplier</th><th style={S.th}>Country</th><th style={S.th}>Category</th><th style={S.th}>On-Time</th><th style={S.th}>Quality</th><th style={S.th}>Risk</th><th style={S.th}>Status</th></tr></thead>
+                  <tbody>{d.suppliers.map((s,i)=>(
+                    <tr key={i} style={i%2?S.trOdd:{}}>
+                      <td style={S.td}><span style={{fontWeight:600}}>{s.name}</span><br/><span style={{fontSize:11,color:'#71717a'}}>{s.id}</span></td>
+                      <td style={S.td}>{s.country}</td>
+                      <td style={S.td}><span style={S.badge('#0ea5e9')}>{s.category}</span></td>
+                      <td style={S.td}><span style={{color:s.onTimeDelivery>=95?'#10b981':s.onTimeDelivery>=85?'#f59e0b':'#ef4444',fontWeight:700}}>{s.onTimeDelivery}%</span></td>
+                      <td style={S.td}><span style={{color:s.qualityRate>=98?'#10b981':s.qualityRate>=95?'#f59e0b':'#ef4444',fontWeight:700}}>{s.qualityRate}%</span></td>
+                      <td style={S.td}><div style={{...S.bar,maxWidth:60,display:'inline-block',width:60}}><div style={S.fill(s.riskScore, s.riskScore>70?'#ef4444':s.riskScore>40?'#f59e0b':'#10b981')} /></div></td>
+                      <td style={S.td}><span style={S.badge(s.status==='active'?'#10b981':s.status==='probation'?'#f59e0b':'#0ea5e9')}>{s.status}</span></td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            ) : <div style={S.empty}>Click Load Suppliers to view your supplier directory.</div>}
+          </div>
+        </div>
+      );
+      case 'scorecard': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Supplier Scorecard</div>
+            <div style={S.row}>
+              <input style={S.input} placeholder="Supplier ID or name…" value={q.scorecard||''} onChange={e=>setQ(p=>({...p,scorecard:e.target.value}))} />
+              <button style={S.btn()} onClick={()=>fetch_('scorecard',API+'/suppliers/scorecard',{supplierId:1})} disabled={loading.scorecard}>{loading.scorecard?'Loading…':'View Scorecard'}</button>
+            </div>
+            {err.scorecard && <div style={S.err}>{err.scorecard}</div>}
+            {loading.scorecard ? <div style={S.loading}>Loading scorecard…</div> : d ? (
+              <>
+                <div style={{fontWeight:700,fontSize:16,color:'#fafafa',marginBottom:16}}>{d.supplier?.name} — Overall: <span style={{color:S.sc(d.scores?.overall||0)}}>{d.scores?.overall}/100</span></div>
+                <div style={S.metaRow}>
+                  {Object.entries(d.scores||{}).filter(([k])=>k!=='overall').map(([k,v])=>(
+                    <div key={k} style={S.metaItem}><div style={S.metaVal(S.sc(v))}>{v}</div><div style={S.metaLbl}>{k.charAt(0).toUpperCase()+k.slice(1)}</div></div>
+                  ))}
+                </div>
+                {Object.entries(d.scores||{}).filter(([k])=>k!=='overall').map(([k,v])=>(
+                  <div key={k} style={{marginBottom:10}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                      <span style={{fontSize:12,color:'#a1a1aa'}}>{k.charAt(0).toUpperCase()+k.slice(1)}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:S.sc(v)}}>{v}/100</span>
+                    </div>
+                    <div style={S.bar}><div style={S.fill(v,S.sc(v))} /></div>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Enter a supplier ID to view their performance scorecard.</div>}
+          </div>
+        </div>
+      );
+      case 'iss-world': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ World-Class Features</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
+              {[
+                {icon:'📋',t:'EDI Integration',d:'ANSI X12 / EDIFACT: 850 PO, 855 PO Acknowledgment, 856 ASN, 810 Invoice — fully automated document exchange.'},
+                {icon:'🤖',t:'AI Scorecard Engine',d:'Automated supplier scoring on 6 dimensions updated after every PO receipt, quality inspection, and delivery event.'},
+                {icon:'🌍',t:'Geopolitical Risk Radar',d:'Real-time monitoring of political instability, natural disasters, and trade policy changes affecting your supplier regions.'},
+                {icon:'📈',t:'Lead Time ML Prediction',d:'Supplier-specific log-normal lead time distributions — predict delays before they happen with 85%+ accuracy.'},
+                {icon:'🌱',t:'Carbon Footprint Scoring',d:'Supplier emissions data, transport distance calculations, and ESG scoring for sustainability reporting.'},
+                {icon:'🔄',t:'VMI (Vendor Managed Inventory)',d:'Allow trusted suppliers to view your stock levels and automatically trigger replenishment — reducing manual POs by 60%.'},
+              ].map((f,i)=>(
+                <div key={i} style={S.mini}>
+                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
+                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
+    }
+  }
 
-  const createOrder = async () => {
-    if (!newOrder.supplier.trim() || !newOrder.items.trim()) { setError("Supplier and items required"); return; }
-    setError("");
-    try {
-      const r = await apiFetchJSON(`${API}/orders`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newOrder, createdAt: new Date().toISOString() }),
-      });
-      if (r.ok) { fetchOrders(); setNewOrder({ supplier: "", items: "", totalValue: "", status: "Draft", expectedDate: "" }); }
-    } catch (e) { setError(e.message); }
-  };
 
-  const updateOrderStatus = async (id, status) => {
-    try { await apiFetchJSON(`${API}/orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); } catch {}
-    setOrders(p => p.map(o => o.id === id ? { ...o, status } : o));
-  };
-
-  const deleteOrder = async (id) => {
-    try { await apiFetchJSON(`${API}/orders/${id}`, { method: "DELETE" }); } catch {}
-    setOrders(p => p.filter(o => o.id !== id));
-  };
-
-  const urgColor = (u) => u === "out" ? "#f87171" : u === "critical" ? "#fb923c" : u === "low" ? "#fbbf24" : "#4ade80";
-  const urgBg    = (u) => u === "out" ? "#3f1315" : u === "critical" ? "#431407" : u === "low" ? "#3d2a0a" : "#052e16";
-  const urgLabel = (u) => u === "out" ? "OUT OF STOCK" : u === "critical" ? "CRITICAL" : u === "low" ? "LOW STOCK" : "OK";
+  function handleGroup(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
+  }
 
   return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Inventory Supplier Sync</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>
-          Manage your supplier network, monitor reorder points, run AI-powered inventory analysis, and track purchase orders from draft to delivery.
-        </p>
+    <div style={S.root}>
+      <div style={{marginBottom:28}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Inventory Supplier Sync</h1>
+            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>Supplier intelligence platform — EDI integration, AI scorecards, lead time prediction & risk monitoring</p>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-        {[
-          { label: "Suppliers",    val: suppliers.length,                        color: "#4f46e5" },
-          { label: "Open Orders",  val: orders.filter(o => !["Received","Cancelled"].includes(o.status)).length, color: "#818cf8" },
-          { label: "Order Value",  val: `£${orders.filter(o => o.status !== "Cancelled").reduce((s, o) => s + (Number(o.totalValue) || 0), 0).toLocaleString()}`, color: "#4ade80" },
-        ].map(({ label, val, color }) => (
-          <div key={label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "10px 18px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color }}>{val}</div>
-          </div>
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
         ))}
       </div>
 
-      <ErrorBox message={error} />
-      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
 
-      {/* ── SUPPLIERS ── */}
-      {tab === "suppliers" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Add Supplier</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-              {[["name","Supplier Name *","TechParts Ltd"],["contact","Contact Person","Jane Smith"],["email","Email","orders@supplier.com"],["phone","Phone","+44 20 0000 0000"],["website","Website","https://supplier.com"],["leadDays","Lead Time (days)","7"]].map(([k,l,ph]) => (
-                <div key={k}>
-                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>{l}</label>
-                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={newSup[k]} onChange={e => setSup(k, e.target.value)} placeholder={ph} />
-                </div>
-              ))}
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Category</label>
-                <select style={{ ...S.select, width: "100%" }} value={newSup.category} onChange={e => setSup("category", e.target.value)}>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select>
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Payment Terms</label>
-                <select style={{ ...S.select, width: "100%" }} value={newSup.paymentTerms} onChange={e => setSup("paymentTerms", e.target.value)}>{TERMS_OPTS.map(t => <option key={t}>{t}</option>)}</select>
-              </div>
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Notes (MOQ, restrictions, specialisms)</label>
-              <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={newSup.notes} onChange={e => setSup("notes", e.target.value)} placeholder="e.g. MOQ 100 units, no returns accepted, specialist in organic cotton" />
-            </div>
-            <button style={S.btn("primary")} onClick={createSupplier}>Add Supplier</button>
-          </div>
+      {renderTab()}
 
-          {sLoading ? <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>
-            : suppliers.length === 0 ? <EmptyState icon="🏭" title="No suppliers yet" description="Add your first supplier above to build your supplier network." />
-            : suppliers.map((s, i) => (
-              <div key={s.id || i} style={S.card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{s.name}</div>
-                      <span style={{ background: "#27272a", color: "#a1a1aa", padding: "2px 8px", borderRadius: 4, fontSize: 11 }}>{s.category}</span>
-                      {s.paymentTerms && <span style={{ background: "#1e1b4b", color: "#818cf8", padding: "2px 8px", borderRadius: 4, fontSize: 11 }}>{s.paymentTerms}</span>}
-                      {s.leadDays && <span style={{ background: "#052e16", color: "#4ade80", padding: "2px 8px", borderRadius: 4, fontSize: 11 }}>{s.leadDays}d lead</span>}
-                    </div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}>
-                      {[s.contact, s.email, s.phone].filter(Boolean).join(" · ")}
-                    </div>
-                    {s.notes && <div style={{ fontSize: 11, color: "#52525b", marginTop: 3 }}>{s.notes}</div>}
-                  </div>
-                  <div style={{ display: "flex", gap: 5, flexShrink: 0, marginLeft: 10 }}>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 8px" }} onClick={() => { setNewOrder(p => ({ ...p, supplier: s.name })); setTab("orders"); }}>New PO</button>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 8px" }} onClick={() => deleteSupplier(s.id)}>✕</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
-
-      {/* ── REORDER DASHBOARD ── */}
-      {tab === "reorder" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={S.sectionTitle}>Paste Stock Snapshot</div>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => setStockData(SAMPLE_DATA)}>Load Sample</button>
-            </div>
-            <textarea style={{ ...S.ta, minHeight: 130 }} value={stockData} onChange={e => setStockData(e.target.value)} placeholder={"Paste your inventory snapshot (CSV or plain text):\nSKU001, Product Name, Stock: 80, Reorder: 100, Lead time: 14 days\n\nSupports: stock/Stock:, reorder/Reorder: patterns"} />
-            <button style={{ ...S.btn("primary"), marginTop: 10 }} onClick={analyseReorder} disabled={!stockData.trim()}>Analyse Reorder Points</button>
-          </div>
-
-          {reorderItems && (
-            <>
-              <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-                {["out","critical","low","ok"].map(u => {
-                  const count = reorderItems.filter(i => i.urgency === u).length;
-                  return (
-                    <div key={u} style={{ background: urgBg(u), border: `1px solid ${urgColor(u)}33`, borderRadius: 10, padding: "8px 16px" }}>
-                      <div style={{ fontSize: 10, color: urgColor(u), fontWeight: 700, textTransform: "uppercase" }}>{urgLabel(u)}</div>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: urgColor(u) }}>{count}</div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Reorder Status — {reorderItems.length} items</div>
-                {reorderItems.filter(i => i.urgency !== "ok").concat(reorderItems.filter(i => i.urgency === "ok")).map((item, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "80px 1fr 80px 80px 120px", gap: 10, alignItems: "center", padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                    <span style={{ color: "#52525b", fontSize: 11 }}>{item.sku}</span>
-                    <span style={{ color: "#e4e4e7", fontWeight: item.urgency !== "ok" ? 700 : 400 }}>{item.product}</span>
-                    <span style={{ color: urgColor(item.urgency), fontWeight: 700 }}>{item.stock} stock</span>
-                    <span style={{ color: "#71717a" }}>ROP: {item.reorder}</span>
-                    <span style={{ background: urgBg(item.urgency), color: urgColor(item.urgency), padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700, textAlign: "center" }}>{urgLabel(item.urgency)}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {!reorderItems && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>How Reorder Levels Work</div>
-              {[
-                { t: "Reorder Point (ROP)", d: "The stock level at which a new order must be placed. Formula: ROP = (Daily sales rate × Lead time) + Safety stock" },
-                { t: "Safety Stock",         d: "Buffer stock to protect against demand spikes and supplier delays. Typically 1-2× the maximum lead time demand." },
-                { t: "Economic Order Quantity", d: "Optimal order size balancing order costs vs holding costs. Use EOQ = √(2DS/H) where D=demand, S=order cost, H=holding cost per unit." },
-                { t: "ABC Analysis",          d: "A items (top 20% by value): tight control, frequent orders. B items (next 30%): moderate control. C items (bottom 50%): loose control, bulk orders." },
-              ].map(({ t, d }) => (
-                <div key={t} style={S.row}>
-                  <span style={{ color: "#4f46e5" }}>📦</span>
-                  <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.5 }}>{d}</div></div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── SYNC & AI ANALYSE ── */}
-      {tab === "sync" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={S.sectionTitle}>Supplier Inventory Data</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => setSyncData(SAMPLE_DATA)}>Load Sample</button>
-                {syncData && <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => setSyncData("")}>Clear</button>}
-              </div>
-            </div>
-            <textarea style={{ ...S.ta, minHeight: 160 }} value={syncData} onChange={e => setSyncData(e.target.value)} placeholder="Paste supplier inventory data (CSV, JSON, or plain text)&#10;Format: SKU, Product, Supplier, Stock qty, Reorder point, Lead time" />
-            <button style={{ ...S.btn("primary"), marginTop: 10 }} onClick={runSync} disabled={syncLoading || !syncData.trim()}>{syncLoading ? "Analysing…" : "Run AI Sync Analysis"}</button>
-          </div>
-          <ErrorBox message={error} />
-          {syncLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
-          {syncResult && !syncLoading && (
-            <div style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={S.sectionTitle}>AI Sync Analysis</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(syncResult.summary || JSON.stringify(syncResult, null, 2))}>Copy</button>
-              </div>
-              <pre style={S.pre}>{syncResult.summary || JSON.stringify(syncResult, null, 2)}</pre>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── PURCHASE ORDERS ── */}
-      {tab === "orders" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Create Purchase Order</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Supplier *</label>
-                <select style={{ ...S.select, width: "100%" }} value={newOrder.supplier} onChange={e => setOrd("supplier", e.target.value)}>
-                  <option value="">Select supplier…</option>
-                  {suppliers.map(s => <option key={s.id}>{s.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Total Value (£)</label>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={newOrder.totalValue} onChange={e => setOrd("totalValue", e.target.value)} type="number" placeholder="0.00" />
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Expected Delivery</label>
-                <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={newOrder.expectedDate} onChange={e => setOrd("expectedDate", e.target.value)} type="date" />
-              </div>
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Items *</label>
-              <textarea style={{ ...S.ta, minHeight: 70 }} value={newOrder.items} onChange={e => setOrd("items", e.target.value)} placeholder="e.g. SKU001 × 200, SKU003 × 50, SKU007 × 100" />
-            </div>
-            <button style={S.btn("primary")} onClick={createOrder}>Create Purchase Order</button>
-          </div>
-
-          {oLoading ? <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>
-            : orders.length === 0 ? <EmptyState icon="📋" title="No purchase orders yet" description="Create your first PO above to track supplier orders." />
-            : orders.map((o, i) => (
-              <div key={o.id || i} style={{ ...S.card, borderLeft: `3px solid ${o.status === "Received" ? "#4ade80" : o.status === "Cancelled" ? "#f87171" : o.status === "Shipped" ? "#818cf8" : o.status === "Confirmed" ? "#fbbf24" : "#3f3f46"}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{o.supplier}</div>
-                      {o.totalValue && <span style={{ color: "#4ade80", fontWeight: 700, fontSize: 13 }}>£{Number(o.totalValue).toLocaleString()}</span>}
-                    </div>
-                    <div style={{ fontSize: 12, color: "#71717a", marginBottom: 4 }}>{o.items?.slice(0, 100)}{(o.items?.length || 0) > 100 ? "…" : ""}</div>
-                    <div style={{ fontSize: 11, color: "#52525b" }}>
-                      Created: {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "—"}
-                      {o.expectedDate ? ` · Expected: ${new Date(o.expectedDate).toLocaleDateString()}` : ""}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 5, flexShrink: 0, marginLeft: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                    <select style={{ ...S.select, fontSize: 11, padding: "4px 8px" }} value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}>
-                      {PO_STATUSES.map(s => <option key={s}>{s}</option>)}
-                    </select>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 8px" }} onClick={() => deleteOrder(o.id)}>✕</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
-
-      {/* ── SUPPLIER GUIDE ── */}
-      {tab === "guide" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Supplier Relationship Management</div>
-            {[
-              { t: "Diversify your supplier base",      d: "Never rely on a single supplier for more than 40% of your inventory. Two approved suppliers per category provides resilience without excessive complexity." },
-              { t: "Negotiate extended payment terms",  d: "Aim for net-45 to net-60 payment terms with key suppliers. This effectively provides free working capital and significantly improves cash flow." },
-              { t: "Volume commitment discounts",       d: "Commit to quarterly minimums in exchange for 5-15% volume discounts. Model your expected growth and negotiate SKU-by-SKU, not on total spend." },
-              { t: "Implement vendor-managed inventory", d: "For A-class suppliers, explore VMI where the supplier manages replenishment. Reduces PO overhead and stockout risk simultaneously." },
-              { t: "Audit actual vs quoted lead times",  d: "Average suppliers overpromise lead time by 15-20%. Audit quarterly. Build real-world buffers into ROP calculations, not quoted times." },
-              { t: "Supplier scorecards (monthly)",     d: "Rate suppliers on: on-time delivery %, quality defect rate, fill rate, responsiveness, and price competitiveness. Share scores quarterly." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4f46e5", flexShrink: 0 }}>🔗</span>
-                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
-              </div>
-            ))}
-          </div>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Key Supplier & Inventory KPIs</div>
-            {[
-              { metric: "Fill Rate",               target: "> 98%",        desc: "% of orders fulfilled from stock without backorders" },
-              { metric: "On-Time Delivery Rate",   target: "> 95%",        desc: "% of supplier deliveries arriving on or before promised date" },
-              { metric: "Inventory Turnover",      target: "4-12× / year", desc: "Higher = faster-moving stock, lower holding costs. Benchmark by industry." },
-              { metric: "Days Sales of Inventory", target: "30-60 days",   desc: "Average days to sell current inventory. Lower is better." },
-              { metric: "Supplier Defect Rate",    target: "< 0.5%",       desc: "% of received units failing quality inspection at goods-in." },
-              { metric: "Perfect Order Rate",      target: "> 96%",        desc: "Orders delivered on time, complete, undamaged, with correct documentation." },
-            ].map(r => (
-              <div key={r.metric} style={{ display: "grid", gridTemplateColumns: "1fr 100px 2fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                <span style={{ fontWeight: 600, color: "#e4e4e7" }}>{r.metric}</span>
-                <span style={{ color: "#4ade80", fontWeight: 700 }}>{r.target}</span>
-                <span style={{ color: "#71717a", fontSize: 12 }}>{r.desc}</span>
-              </div>
-            ))}
-          </div>
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
     </div>

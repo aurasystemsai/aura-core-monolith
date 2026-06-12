@@ -1,375 +1,524 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { apiFetchJSON } from "../../api";
-import { MozTabs, EmptyState, ErrorBox, Spinner } from "../MozUI";
 
 const API = "/api/inventory-forecasting";
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { flex: 1, minWidth: 160, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "'Inter',sans-serif", lineHeight: 1.6 },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: (bg) => ({ background:bg||'#4f46e5', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
+  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trOdd: { background:'#09090b44' },
+  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
+  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
+  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#4f46e5' }),
+  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
+  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#4f46e5', borderRadius:3 }),
+  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
+  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
 };
 
-const TABS = [
-  { id: "forecast", label: "AI Forecast" },
-  { id: "skus",     label: "SKU Tracker" },
-  { id: "reorder",  label: "Reorder Calc" },
-  { id: "history",  label: "History" },
-  { id: "guide",    label: "Strategy Guide" },
-];
-
-const getUrgency = (stock, threshold) => {
-  if (!threshold) return { label: "No threshold", color: "#52525b", bg: "#27272a" };
-  const n = Number(stock); const t = Number(threshold);
-  if (n <= 0)       return { label: "Out of Stock", color: "#f87171", bg: "#3f1315" };
-  if (n <= t * 0.5) return { label: "Critical",     color: "#fb923c", bg: "#431407" };
-  if (n <= t)       return { label: "Low",           color: "#fbbf24", bg: "#3d2a0a" };
-  return               { label: "OK",             color: "#4ade80", bg: "#052e16" };
-};
-
-const EMPTY_SKU = { productName: "", sku: "", currentStock: "", reorderThreshold: "", supplier: "", leadDays: "", category: "" };
-
-const SAMPLE_QUERIES = [
-  "Forecast demand for our best-selling winter coats over the next 30 days. Last month we sold 240 units.",
-  "We have 500 units of a supplement. Average sales 80/week. When should we reorder and how many?",
-  "Our electronics line is showing 15% week-on-week sales increase. How should we adjust stock levels?",
-  "Predict which product line runs out first: A (200 units, 40/week), B (350 units, 90/week), C (120 units, 25/week).",
+const GROUPS = [
+  {
+    "id": "forecast",
+    "label": "Forecast",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "if-overview",
+        "label": "Overview"
+      },
+      {
+        "id": "sku-forecast",
+        "label": "SKU Forecast"
+      },
+      {
+        "id": "demand-signals",
+        "label": "Demand Signals"
+      },
+      {
+        "id": "seasonal",
+        "label": "Seasonality"
+      },
+      {
+        "id": "trend",
+        "label": "Trend Analysis"
+      },
+      {
+        "id": "ai-forecast",
+        "label": "AI Forecast"
+      }
+    ]
+  },
+  {
+    "id": "inventory",
+    "label": "Inventory",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "reorder",
+        "label": "Reorder Points"
+      },
+      {
+        "id": "safety-stock",
+        "label": "Safety Stock"
+      },
+      {
+        "id": "eoq",
+        "label": "EOQ Calculator"
+      },
+      {
+        "id": "abc-xyz",
+        "label": "ABC-XYZ Matrix"
+      },
+      {
+        "id": "dead-stock",
+        "label": "Dead Stock"
+      },
+      {
+        "id": "stockouts",
+        "label": "Stockout Risk"
+      }
+    ]
+  },
+  {
+    "id": "suppliers",
+    "label": "Suppliers",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "supp-risk",
+        "label": "Supplier Risk"
+      },
+      {
+        "id": "lead-times",
+        "label": "Lead Times"
+      },
+      {
+        "id": "alt-supp",
+        "label": "Alt Suppliers"
+      },
+      {
+        "id": "po-auto",
+        "label": "PO Automation"
+      },
+      {
+        "id": "if-compliance",
+        "label": "Compliance"
+      },
+      {
+        "id": "if-scorecards",
+        "label": "Scorecards"
+      }
+    ]
+  },
+  {
+    "id": "finance",
+    "label": "Finance",
+    "color": "#f97316",
+    "tabs": [
+      {
+        "id": "inv-value",
+        "label": "Inventory Value"
+      },
+      {
+        "id": "holding-costs",
+        "label": "Holding Costs"
+      },
+      {
+        "id": "write-offs",
+        "label": "Write-Offs"
+      },
+      {
+        "id": "cash-impact",
+        "label": "Cash Impact"
+      },
+      {
+        "id": "if-budget",
+        "label": "Budget"
+      },
+      {
+        "id": "scenarios",
+        "label": "Scenarios"
+      }
+    ]
+  },
+  {
+    "id": "analytics",
+    "label": "Analytics",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "if-perf",
+        "label": "Performance"
+      },
+      {
+        "id": "accuracy",
+        "label": "Forecast Accuracy"
+      },
+      {
+        "id": "by-category",
+        "label": "By Category"
+      },
+      {
+        "id": "by-location",
+        "label": "By Location"
+      },
+      {
+        "id": "if-bench",
+        "label": "Benchmarks"
+      },
+      {
+        "id": "if-reports",
+        "label": "Reports"
+      }
+    ]
+  },
+  {
+    "id": "operations",
+    "label": "Operations",
+    "color": "#ec4899",
+    "tabs": [
+      {
+        "id": "receiving",
+        "label": "Receiving"
+      },
+      {
+        "id": "warehouse",
+        "label": "Warehouse"
+      },
+      {
+        "id": "transfers",
+        "label": "Transfers"
+      },
+      {
+        "id": "adjustments",
+        "label": "Adjustments"
+      },
+      {
+        "id": "recon",
+        "label": "Reconciliation"
+      },
+      {
+        "id": "if-audit",
+        "label": "Audit Log"
+      }
+    ]
+  },
+  {
+    "id": "advanced",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "ai-engine",
+        "label": "AI Engine"
+      },
+      {
+        "id": "disruption",
+        "label": "Disruption Radar"
+      },
+      {
+        "id": "if-integrations",
+        "label": "Integrations"
+      },
+      {
+        "id": "if-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "if-alerts",
+        "label": "Alerts"
+      },
+      {
+        "id": "if-world",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
 
 export default function InventoryForecasting() {
-  const [tab, setTab]           = useState("forecast");
-  const [query, setQuery]       = useState("");
-  const [result, setResult]     = useState(null);
-  const [queries, setQueries]   = useState([]);
-  const [skus, setSkus]         = useState([]);
-  const [skuForm, setSkuForm]   = useState(EMPTY_SKU);
-  const [loading, setLoading]   = useState(false);
-  const [skuLoading, setSkuLoading] = useState(false);
-  const [deleting, setDeleting] = useState(null);
-  const [error, setError]       = useState("");
-  const [skuError, setSkuError] = useState("");
-  const [skuSuccess, setSkuSuccess] = useState("");
+  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
+  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ model:'gpt-4o-mini' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => { loadHistory(); loadSkus(); }, []);
+  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
 
-  const loadHistory = async () => {
-    try { const r = await apiFetchJSON(`${API}/queries`); if (r.ok) setQueries(r.queries || []); } catch {}
-  };
-  const loadSkus = async () => {
-    try { const r = await apiFetchJSON(`${API}/skus`); if (r.ok) setSkus(r.skus || []); } catch {}
-  };
+  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
 
-  const runForecast = async () => {
-    if (!query.trim()) return;
-    setLoading(true); setError(""); setResult(null);
+  async function fetch_(tab, endpoint, payload={}) {
+    setLoading(l => ({...l,[tab]:true}));
+    setErr(e => ({...e,[tab]:null}));
     try {
-      const r = await apiFetchJSON(`${API}/query`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query }) });
-      if (!r.ok) throw new Error(r.error || "Forecast failed");
-      setResult(r.result); loadHistory();
-    } catch (e) { setError(e.message); }
-    setLoading(false);
-  };
+      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
+      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
+      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
+    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
+    finally { setLoading(l => ({...l,[tab]:false})); }
+  }
 
-  const addSku = async () => {
-    if (!skuForm.productName || !skuForm.currentStock) { setSkuError("Product name and current stock are required."); return; }
-    setSkuLoading(true); setSkuError(""); setSkuSuccess("");
-    try {
-      const r = await apiFetchJSON(`${API}/skus`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(skuForm) });
-      if (!r.ok) throw new Error(r.error || "Failed to add SKU");
-      setSkuSuccess("SKU added."); setSkuForm(EMPTY_SKU); loadSkus();
-      setTimeout(() => setSkuSuccess(""), 3000);
-    } catch (e) { setSkuError(e.message); }
-    setSkuLoading(false);
-  };
+  function Generic(tab, title, desc, ep) {
+    const d = data[tab];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
+          <div style={S.row}>
+            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
+            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
+          </div>
+          {err[tab] && <div style={S.err}>{err[tab]}</div>}
+          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+           d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.tbl}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
+                  <tr key={i} style={i%2?S.trOdd:{}}>
+                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
+                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
+                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
+        </div>
+      </div>
+    );
+  }
 
-  const deleteSku = async (id) => {
-    setDeleting(`sku-${id}`);
-    try { await apiFetchJSON(`${API}/skus/${id}`, { method: "DELETE" }); setSkus(p => p.filter(s => s.id !== id)); } catch {}
-    setDeleting(null);
-  };
 
-  const deleteQuery = async (id) => {
-    try { await apiFetchJSON(`${API}/queries/${id}`, { method: "DELETE" }); setQueries(p => p.filter(q => q.id !== id)); } catch {}
-  };
+  function renderTab() {
+    const tab = activeTab;
+    const d = data[tab];
+    switch(tab) {
+      case 'if-overview': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Inventory Forecast Overview</div>
+            <div style={S.row}>
+              <button style={S.btn()} onClick={()=>fetch_('if-overview',API+'/forecast/overview')} disabled={loading['if-overview']}>{loading['if-overview']?'Loading…':'Load Overview'}</button>
+              <button style={S.btn('#10b981')} onClick={()=>fetch_('ai-forecast',API+'/forecast/ai',{})}>✦ AI Insights</button>
+            </div>
+            {err['if-overview'] && <div style={S.err}>{err['if-overview']}</div>}
+            {loading['if-overview'] ? <div style={S.loading}>Loading…</div> : d ? (
+              <>
+                <div style={S.metaRow}>
+                  {[['Total SKUs',d.totalSKUs,'#4f46e5'],['At Risk',d.atRisk,'#f97316'],['Stockouts',d.stockouts,'#ef4444'],['Fill Rate',d.fillRate+'%','#10b981'],['Accuracy',d.forecastAccuracy+'%','#0ea5e9'],['Turnover',d.turnoverRate+'x','#a855f7']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+                <div style={S.sT}>Top Risks</div>
+                {d.topRisks?.map((r,i)=>(
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #1f1f22'}}>
+                    <span style={{fontWeight:600,fontSize:13}}>{r.sku}</span>
+                    <span style={S.badge(r.risk==='critical'?'#ef4444':r.risk==='high'?'#f97316':'#f59e0b')}>{r.risk}</span>
+                    <span style={{color:'#71717a',fontSize:12}}>{r.daysLeft} days left</span>
+                    <button style={{...S.btn('#27272a'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Creating PO…')}>Auto PO</button>
+                  </div>
+                ))}
+              </>
+            ) : <div style={S.empty}>Click Load Overview to see your inventory forecast dashboard.</div>}
+          </div>
+        </div>
+      );
+      case 'abc-xyz': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>ABC-XYZ Inventory Matrix</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>ABC = value contribution. XYZ = demand predictability. The 9-cell matrix determines the optimal inventory policy per SKU.</p>
+            <button style={S.btn()} onClick={()=>fetch_('abc-xyz',API+'/inventory/abc-xyz')} disabled={loading['abc-xyz']}>{loading['abc-xyz']?'Loading…':'Generate Matrix'}</button>
+            {err['abc-xyz'] && <div style={S.err}>{err['abc-xyz']}</div>}
+            {loading['abc-xyz'] ? <div style={S.loading}>Building matrix…</div> : d ? (
+              <div style={{marginTop:16}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
+                  {Object.entries(d.matrix||{}).map(([k,v])=>(
+                    <div key={k} style={{...S.mini,borderColor:k.startsWith('A')?'#4f46e544':k.startsWith('B')?'#0ea5e944':'#27272a'}}>
+                      <div style={{fontWeight:800,fontSize:16,color:k.startsWith('A')?'#4f46e5':k.startsWith('B')?'#0ea5e9':'#52525b'}}>{k}</div>
+                      <div style={{fontSize:12,color:'#a1a1aa',marginTop:2}}>{v.count} SKUs ({v.pct}%)</div>
+                      <div style={{fontSize:11,color:'#71717a',marginTop:4,lineHeight:1.4}}>{v.policy}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : <div style={S.empty}>Click Generate Matrix to see the ABC-XYZ classification.</div>}
+          </div>
+        </div>
+      );
+      case 'eoq': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>EOQ Calculator</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Economic Order Quantity — the order size that minimises total annual ordering + holding costs.</p>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12,marginBottom:16}}>
+              {[['Annual Demand (units)','annualDemand','1000'],['Order Cost ($)','orderCost','50'],['Holding Rate (%)','holdingRate','0.25'],['Unit Cost ($)','unitCost','10']].map(([l,k,ph])=>(
+                <div key={k}><label style={S.label}>{l}</label><input style={S.input} placeholder={ph} value={form[k]||''} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} /></div>
+              ))}
+            </div>
+            <button style={S.btn()} onClick={()=>fetch_('eoq',API+'/inventory/eoq',{annualDemand:+form.annualDemand||1000,orderCost:+form.orderCost||50,holdingRate:+form.holdingRate||0.25,unitCost:+form.unitCost||10})} disabled={loading.eoq}>{loading.eoq?'Calculating…':'Calculate EOQ'}</button>
+            {d ? (
+              <div style={{...S.mini,marginTop:16}}>
+                <div style={S.sT}>Results</div>
+                <div style={S.metaRow}>
+                  {[['EOQ',d.eoq+' units','#4f46e5'],['Annual Order Cost','$'+(d.annualOrderCost||0).toFixed(0),'#0ea5e9'],['Annual Holding Cost','$'+(d.annualHoldingCost||0).toFixed(0),'#f97316'],['Total Cost','$'+(d.totalCost||0).toFixed(0),'#10b981']].map(([l,v,c])=>(
+                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      );
+      case 'stockouts': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>Stockout Risk Scoring</div>
+            <div style={S.row}>
+              <button style={S.btn('#ef4444')} onClick={()=>fetch_('stockouts',API+'/inventory/stockout-risk')} disabled={loading.stockouts}>{loading.stockouts?'Scanning…':'Scan Stockout Risk'}</button>
+            </div>
+            {err.stockouts && <div style={S.err}>{err.stockouts}</div>}
+            {loading.stockouts ? <div style={S.loading}>Scanning for stockout risks…</div> : d?.at_risk?.length ? (
+              <div style={{overflowX:'auto'}}>
+                <table style={S.tbl}>
+                  <thead><tr><th style={S.th}>SKU</th><th style={S.th}>Days Left</th><th style={S.th}>Probability</th><th style={S.th}>Velocity</th><th style={S.th}>Action</th></tr></thead>
+                  <tbody>{d.at_risk.map((r,i)=>(
+                    <tr key={i} style={i%2?S.trOdd:{}}>
+                      <td style={S.td}><span style={{fontWeight:600}}>{r.sku}</span><br/><span style={{fontSize:11,color:'#71717a'}}>{r.name}</span></td>
+                      <td style={S.td}><span style={{color:r.daysToStockout<=7?'#ef4444':r.daysToStockout<=14?'#f59e0b':'#10b981',fontWeight:700}}>{r.daysToStockout}d</span></td>
+                      <td style={S.td}><span style={{fontWeight:700,color:r.probability>0.8?'#ef4444':r.probability>0.5?'#f59e0b':'#10b981'}}>{(r.probability*100).toFixed(0)}%</span></td>
+                      <td style={S.td}>{r.salesVelocity}/day</td>
+                      <td style={S.td}><button style={{...S.btn('#4f46e5'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Generating PO for '+r.sku)}>Auto PO ({r.recommendedOrder})</button></td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            ) : <div style={S.empty}>Scan for stockout risks to see at-risk SKUs.</div>}
+          </div>
+        </div>
+      );
+      case 'ai-forecast': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ AI Forecast Intelligence</div>
+            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Ensemble ML forecasting using Prophet + LSTM + XGBoost with causal demand signals, seasonal decomposition, and what-if scenario planning.</p>
+            <div style={S.row}>
+              <select style={S.select} value={form.model||'gpt-4o-mini'} onChange={e=>setForm(p=>({...p,model:e.target.value}))}>
+                <option value="gpt-4o-mini">GPT-4o Mini (3 credits)</option>
+                <option value="gpt-4o">GPT-4o (6 credits)</option>
+                <option value="gpt-4">GPT-4 (9 credits)</option>
+              </select>
+              <button style={S.btn('#10b981')} onClick={()=>fetch_('ai-forecast',API+'/forecast/ai',{})} disabled={loading['ai-forecast']}>{loading['ai-forecast']?'Analyzing…':'✦ Run AI Forecast'}</button>
+            </div>
+            {loading['ai-forecast'] ? <div style={S.loading}>AI is analyzing your inventory data…</div> : data['ai-forecast'] ? (
+              <div>
+                <div style={{...S.mini,marginBottom:16}}><p style={{color:'#a1a1aa',fontSize:13,lineHeight:1.7,margin:0}}>{data['ai-forecast'].summary}</p></div>
+                <div style={S.sT}>Recommendations</div>
+                {data['ai-forecast'].recommendations?.map((r,i)=>(
+                  <div key={i} style={{display:'flex',gap:12,padding:'12px 0',borderBottom:'1px solid #1f1f22'}}>
+                    <span style={S.badge(r.urgency==='critical'?'#ef4444':r.urgency==='high'?'#f97316':'#f59e0b')}>{r.urgency}</span>
+                    <div><div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{r.action}</div><div style={{fontSize:12,color:'#71717a'}}>{r.impact}</div></div>
+                  </div>
+                ))}
+                <div style={{color:'#71717a',fontSize:11,marginTop:8}}>Credits used: {data['ai-forecast'].creditsUsed}</div>
+              </div>
+            ) : <div style={S.empty}>Run AI Forecast to get ensemble ML-powered inventory recommendations.</div>}
+          </div>
+        </div>
+      );
+      case 'if-world': return (
+        <div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>✦ World-Class Features</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
+              {[
+                {icon:'📈',t:'Prophet + LSTM + XGBoost Ensemble',d:'Automatic model selection per SKU based on historical patterns, seasonality, and data volume.'},
+                {icon:'🎯',t:'Causal Demand Forecasting',d:'Incorporate promotions, holidays, weather events, and social trends as external regressors into the forecast.'},
+                {icon:'📊',t:'Bayesian Uncertainty Quantification',d:'Credible intervals (not just point estimates) — know the probability distribution of future demand.'},
+                {icon:'🔗',t:'Multi-Echelon Optimization',d:'Simultaneously optimize inventory across warehouse → distribution center → store for supply chain efficiency.'},
+                {icon:'🏭',t:'ABC-XYZ Policy Engine',d:'9-cell matrix automatically assigns the right replenishment policy to each SKU based on value and predictability.'},
+                {icon:'⚡',t:'Real-Time Disruption Radar',d:'Monitor geopolitical events, port congestion, and supplier financial health to pre-empt supply chain disruptions.'},
+              ].map((f,i)=>(
+                <div key={i} style={S.mini}>
+                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
+                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
+    }
+  }
 
-  const exportHistory = () => {
-    const blob = new Blob([JSON.stringify(queries, null, 2)], { type: "application/json" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "inventory-forecasts.json"; a.click();
-  };
 
-  const outOfStock    = skus.filter(s => Number(s.currentStock) <= 0).length;
-  const belowThreshold = skus.filter(s => s.reorderThreshold && Number(s.currentStock) <= Number(s.reorderThreshold)).length;
+  function handleGroup(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
+  }
 
   return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Inventory Forecasting</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>AI-powered demand forecasting, SKU tracking, and reorder planning. Describe your inventory scenario for data-driven recommendations, or track individual SKUs for automated reorder alerts.</p>
+    <div style={S.root}>
+      <div style={{marginBottom:28}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Inventory Forecasting</h1>
+            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>AI-powered supply chain forecasting — ensemble ML, ABC-XYZ matrix, EOQ, safety stock & disruption radar</p>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
+            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-        {[
-          { label: "Tracked SKUs",    value: skus.length,       color: "#818cf8" },
-          { label: "Below Threshold", value: belowThreshold,    color: "#fbbf24" },
-          { label: "Out of Stock",    value: outOfStock,        color: "#f87171" },
-          { label: "Saved Forecasts", value: queries.length,    color: "#4ade80" },
-        ].map(s => (
-          <div key={s.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 20px" }}>
-            <div style={{ fontSize: 10, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value}</div>
-          </div>
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
         ))}
       </div>
 
-      <MozTabs tabs={TABS} active={tab} onChange={setTab} />
-
-      {/* AI FORECAST */}
-      {tab === "forecast" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Describe Your Inventory Scenario</div>
-            <textarea style={{ ...S.ta, minHeight: 130 }} value={query} onChange={e => setQuery(e.target.value)} placeholder="e.g. 'Forecast demand for our best-selling winter boots over the next 30 days. Current stock: 380 units. Last month sales: 290 units. Sales trending up 12% week-on-week.'" />
-            <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-              <button style={S.btn("primary")} onClick={runForecast} disabled={loading || !query.trim()}>{loading ? "Forecasting…" : "Run AI Forecast"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setQuery("")}>Clear</button>
-            </div>
-          </div>
-          {!query && !result && !loading && (
-            <div style={S.card}>
-              <div style={S.sectionTitle}>Sample Queries — Click to Load</div>
-              {SAMPLE_QUERIES.map((q, i) => (
-                <div key={i} style={S.row}>
-                  <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px", flexShrink: 0 }} onClick={() => setQuery(q)}>Load</button>
-                  <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>{q}</div>
-                </div>
-              ))}
-            </div>
-          )}
-          <ErrorBox message={error} />
-          {loading && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
-          {result && !loading && (
-            <div style={S.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={S.sectionTitle}>Forecast Result</div>
-                <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(typeof result === "string" ? result : JSON.stringify(result, null, 2))}>Copy</button>
-              </div>
-              <pre style={S.pre}>{typeof result === "string" ? result : JSON.stringify(result, null, 2)}</pre>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* SKU TRACKER */}
-      {tab === "skus" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Add SKU / Product</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
-              {[
-                { key: "productName",       label: "Product Name *",        placeholder: "Blue Denim Jacket" },
-                { key: "sku",              label: "SKU / Item Code",       placeholder: "BDJ-XL-001" },
-                { key: "category",         label: "Category",              placeholder: "Apparel" },
-                { key: "currentStock",     label: "Current Stock *",       placeholder: "380" },
-                { key: "reorderThreshold", label: "Reorder Threshold",     placeholder: "100" },
-                { key: "leadDays",         label: "Supplier Lead (days)",  placeholder: "14" },
-              ].map(f => (
-                <div key={f.key}>
-                  <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>{f.label}</label>
-                  <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={skuForm[f.key]} onChange={e => setSkuForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} />
-                </div>
-              ))}
-            </div>
-            <div style={{ marginBottom: 10 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 3 }}>Supplier Name</label>
-              <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={skuForm.supplier} onChange={e => setSkuForm(p => ({ ...p, supplier: e.target.value }))} placeholder="Acme Suppliers Ltd" />
-            </div>
-            <ErrorBox message={skuError} />
-            {skuSuccess && <div style={{ color: "#4ade80", fontSize: 13, marginBottom: 8 }}>{skuSuccess}</div>}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btn("primary")} onClick={addSku} disabled={skuLoading}>{skuLoading ? "Adding…" : "Add SKU"}</button>
-              <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setSkuForm(EMPTY_SKU)}>Clear</button>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ fontSize: 13, color: "#71717a" }}>{skus.length} SKUs tracked</div>
-            <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadSkus}>Refresh</button>
-          </div>
-
-          {skus.length === 0 ? (
-            <EmptyState icon="📦" title="No SKUs tracked yet" description="Add your first product above to start tracking reorder points." />
-          ) : (
-            skus.map(sku => {
-              const u = getUrgency(sku.currentStock, sku.reorderThreshold);
-              return (
-                <div key={sku.id} style={{ ...S.card, borderLeft: `4px solid ${u.color}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7" }}>{sku.productName}</span>
-                        {sku.sku && <span style={{ fontSize: 11, color: "#52525b", background: "#09090b", border: "1px solid #27272a", borderRadius: 4, padding: "1px 6px" }}>{sku.sku}</span>}
-                        <span style={{ background: u.bg, color: u.color, borderRadius: 5, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>{u.label}</span>
-                      </div>
-                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#71717a" }}>
-                        <span>Stock: <strong style={{ color: "#fafafa" }}>{sku.currentStock ?? "—"}</strong></span>
-                        {sku.reorderThreshold && <span>Reorder at: <strong style={{ color: "#fbbf24" }}>{sku.reorderThreshold}</strong></span>}
-                        {sku.supplier && <span>Supplier: {sku.supplier}</span>}
-                        {sku.leadDays && <span>Lead: {sku.leadDays}d</span>}
-                        {sku.category && <span>Cat: {sku.category}</span>}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 12 }}>
-                      <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(`Forecast demand for ${sku.productName}. Current stock: ${sku.currentStock} units. Reorder threshold: ${sku.reorderThreshold || "N/A"}. Supplier lead time: ${sku.leadDays || "?"} days.`); setTab("forecast"); }}>Forecast</button>
-                      <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteSku(sku.id)} disabled={deleting === `sku-${sku.id}`}>{deleting === `sku-${sku.id}` ? "…" : "Delete"}</button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
-
-      {/* REORDER CALC */}
-      {tab === "reorder" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Reorder Point Calculator</div>
-            <p style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}>Calculate exactly when to place a new order to avoid stockouts while minimising excess inventory.</p>
-            <ReorderCalculator />
-          </div>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Safety Stock Benchmarks by Category</div>
-            {[
-              { cat: "Apparel & Fashion",  leadTime: "14-21 days", safetyStock: "2-3 weeks", note: "High seasonality — buffer for trend spikes" },
-              { cat: "Electronics",        leadTime: "7-14 days",  safetyStock: "1-2 weeks", note: "Lower margins — keep safety stock lean" },
-              { cat: "Health & Beauty",    leadTime: "7-10 days",  safetyStock: "2-3 weeks", note: "Steady demand — moderate safety stock" },
-              { cat: "Food & Beverage",    leadTime: "3-7 days",   safetyStock: "1-2 weeks", note: "Perishables — tight stock management required" },
-              { cat: "Home & Garden",      leadTime: "14-30 days", safetyStock: "3-4 weeks", note: "Seasonal peaks — increase Q3/Q4 buffer" },
-              { cat: "Sports & Outdoor",   leadTime: "10-21 days", safetyStock: "2-4 weeks", note: "High seasonality — forecast by quarter" },
-            ].map(r => (
-              <div key={r.cat} style={{ ...S.row, flexWrap: "wrap" }}>
-                <div style={{ minWidth: 200 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{r.cat}</div>
-                  <div style={{ fontSize: 11, color: "#71717a" }}>{r.note}</div>
-                </div>
-                <div style={{ display: "flex", gap: 12 }}>
-                  <span style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#a1a1aa" }}>Lead: {r.leadTime}</span>
-                  <span style={{ background: "#1a1a2e", border: "1px solid #3730a3", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#818cf8" }}>Safety: {r.safetyStock}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* HISTORY */}
-      {tab === "history" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 13, color: "#71717a" }}>{queries.length} saved forecasts</div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {queries.length > 0 && <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={exportHistory}>Export JSON</button>}
-              <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={loadHistory}>Refresh</button>
-            </div>
-          </div>
-          {queries.length === 0 ? (
-            <EmptyState icon="📋" title="No forecasts yet" description="Run your first AI demand forecast in the AI Forecast tab." />
-          ) : (
-            queries.map(q => (
-              <div key={q.id} style={S.card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1, marginRight: 12 }}>
-                    <div style={{ fontSize: 11, color: "#52525b", marginBottom: 4 }}>{q.createdAt ? new Date(q.createdAt).toLocaleString() : "Saved"}</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7", marginBottom: 6 }}>{q.query?.slice(0, 120)}{q.query?.length > 120 ? "…" : ""}</div>
-                    {q.result && <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.5 }}>{(typeof q.result === "string" ? q.result : JSON.stringify(q.result)).slice(0, 200)}…</div>}
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }} onClick={() => { setQuery(q.query); setTab("forecast"); }}>Re-use</button>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => deleteQuery(q.id)}>Delete</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* GUIDE */}
-      {tab === "guide" && (
-        <div style={{ marginTop: 20 }}>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>Inventory Optimisation Principles</div>
-            {[
-              { t: "ABC Analysis", d: "Classify inventory into A (top 20% items driving 80% revenue), B (moderate), and C (low-value). Focus forecasting effort on A items. Review C items for discontinuation." },
-              { t: "Economic Order Quantity (EOQ)", d: "EOQ = √(2DS/H) where D=annual demand, S=order cost, H=holding cost per unit. Minimises total cost of ordering and holding inventory." },
-              { t: "Safety Stock Formula", d: "Safety Stock = Z × σ_LT × √LT, where Z=service level factor (1.65 for 95%), σ_LT=demand standard deviation, LT=lead time in days." },
-              { t: "Reorder Point (ROP)", d: "ROP = (Average daily demand × Lead time) + Safety stock. When stock reaches this level, place a new order to avoid stockouts." },
-              { t: "Seasonal Adjustment", d: "Multiply base forecast by a seasonal index. Seasonal index = (Period avg sales) / (Overall avg sales). Apply 3-year rolling average for accuracy." },
-              { t: "Demand Sensing", d: "Use real-time signals (ad spend, social trends, weather, competitor stockouts) to adjust near-term forecasts by ±15-30%. Most ERP systems miss this layer." },
-            ].map(({ t, d }) => (
-              <div key={t} style={S.row}>
-                <span style={{ color: "#4f46e5", fontSize: 15, flexShrink: 0 }}>📦</span>
-                <div><div style={{ fontSize: 13, fontWeight: 700, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>{d}</div></div>
-              </div>
-            ))}
-          </div>
-          <div style={S.card}>
-            <div style={S.sectionTitle}>KPI Benchmarks</div>
-            {[
-              { kpi: "Inventory Turnover",   target: "4-8× per year",              note: "Higher = better. Less than 4 suggests overstocking." },
-              { kpi: "Stockout Rate",        target: "< 2%",                       note: "% of SKUs out of stock at any given time." },
-              { kpi: "Fill Rate",            target: "> 98%",                      note: "% of orders fulfilled from available stock." },
-              { kpi: "Days of Supply",       target: "30-60 days",                 note: "How many days current inventory will last at avg sales rate." },
-              { kpi: "Carrying Cost",        target: "20-30% of inventory value/yr", note: "Includes warehousing, insurance, depreciation." },
-            ].map(r => (
-              <div key={r.kpi} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 8, padding: "8px 0", borderBottom: "1px solid #1f1f22", fontSize: 12 }}>
-                <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{r.kpi}</span>
-                <span style={{ color: "#4ade80", fontWeight: 700 }}>{r.target}</span>
-                <span style={{ color: "#71717a" }}>{r.note}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ReorderCalculator() {
-  const [avgDaily, setAvgDaily] = useState("");
-  const [leadTime, setLeadTime] = useState("");
-  const [safetyDays, setSafety] = useState("7");
-  const rop    = avgDaily && leadTime ? Math.ceil(Number(avgDaily) * Number(leadTime) + Number(avgDaily) * Number(safetyDays)) : null;
-  const suggest = rop ? Math.ceil(rop * 2) : null;
-  const S2 = {
-    label: { fontSize: 12, color: "#71717a", marginBottom: 4, display: "block" },
-    inp: { background: "#09090b", border: "1px solid #3f3f46", borderRadius: 8, color: "#fafafa", fontSize: 14, padding: "9px 14px", outline: "none", width: "100%" },
-  };
-  return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
-        <div><label style={S2.label}>Avg daily sales (units)</label><input style={S2.inp} type="number" min="0" value={avgDaily} onChange={e => setAvgDaily(e.target.value)} placeholder="40" /></div>
-        <div><label style={S2.label}>Supplier lead time (days)</label><input style={S2.inp} type="number" min="0" value={leadTime} onChange={e => setLeadTime(e.target.value)} placeholder="14" /></div>
-        <div><label style={S2.label}>Safety stock buffer (days)</label><input style={S2.inp} type="number" min="0" value={safetyDays} onChange={e => setSafety(e.target.value)} placeholder="7" /></div>
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+        ))}
       </div>
-      {rop !== null && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: "#0d0d0f", border: "1px solid #4f46e5", borderRadius: 10, padding: "14px 18px" }}>
-            <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4, textTransform: "uppercase" }}>Reorder Point</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#4f46e5" }}>{rop.toLocaleString()} units</div>
-            <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>({avgDaily}/day × {leadTime}d lead) + ({avgDaily}/day × {safetyDays}d buffer)</div>
-          </div>
-          <div style={{ background: "#0d0d0f", border: "1px solid #166534", borderRadius: 10, padding: "14px 18px" }}>
-            <div style={{ fontSize: 11, color: "#71717a", marginBottom: 4, textTransform: "uppercase" }}>Suggested Order Qty</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#4ade80" }}>{suggest?.toLocaleString()} units</div>
-            <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>Covers full lead time + safety buffer × 2</div>
-          </div>
+
+      {renderTab()}
+
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
     </div>
