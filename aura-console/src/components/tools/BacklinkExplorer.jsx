@@ -1,691 +1,1038 @@
-﻿import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { apiFetchJSON } from "../../api";
-import {
-  ScoreRing, MetricRow, SortableTable, FilterBar, ToolHeader,
-  MozTabs, MozCard, EmptyState, ErrorBox, Spinner,
-  AuthorityBadge, LinkTypeBadge, SpamBar, ScoreBar,
-} from "../MozUI";
+import { AuthorityBadge, ScoreBar, MozTabs, ErrorBox, Spinner } from "../MozUI";
+
+const API = "/api/backlink-explorer";
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+function spamColor(score) {
+  if(score <= 10) return '#10b981';
+  if(score <= 30) return '#f59e0b';
+  if(score <= 60) return '#f97316';
+  return '#ef4444';
+}
+function spamLabel(score) {
+  if(score <= 10) return 'Healthy';
+  if(score <= 30) return 'Suspicious';
+  if(score <= 60) return 'Toxic';
+  return 'Dangerous';
+}
+function typeColor(type) {
+  const m = { dofollow:'#10b981', nofollow:'#71717a', ugc:'#0ea5e9', sponsored:'#f59e0b' };
+  return m[type] || '#52525b';
+}
+
+// ─── styles ──────────────────────────────────────────────────────────────────
 
 const S = {
-  page: { background: "#09090b", minHeight: "100vh", padding: "28px 32px", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif" },
-  card: { background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: "20px 24px", marginBottom: 16 },
-  btn: (v) => ({ background: v === "primary" ? "#4f46e5" : v === "green" ? "#166534" : v === "danger" ? "#7f1d1d" : v === "gold" ? "#78350f" : "#27272a", color: "#fafafa", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }),
-  input: { flex: 1, minWidth: 200, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 14, padding: "11px 16px", outline: "none" },
-  ta: { width: "100%", background: "#09090b", border: "1px solid #3f3f46", borderRadius: 10, color: "#fafafa", fontSize: 13, padding: "12px 14px", outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "monospace", lineHeight: 1.6 },
-  badge: (c) => ({ display: "inline-block", borderRadius: 5, padding: "2px 9px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, background: c === "good" ? "#052e16" : c === "red" ? "#3f1315" : c === "yellow" ? "#3d2a0a" : c === "blue" ? "#1e1b4b" : "#27272a", color: c === "good" ? "#4ade80" : c === "red" ? "#f87171" : c === "yellow" ? "#fbbf24" : c === "blue" ? "#818cf8" : "#a1a1aa" }),
-  sectionTitle: { fontSize: 11, fontWeight: 700, color: "#52525b", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  row: { display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #1f1f22" },
-  pre: { background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "14px 16px", fontSize: 13, lineHeight: 1.7, color: "#e4e4e7", whiteSpace: "pre-wrap", fontFamily: "monospace", overflowX: "auto" },
+  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
+  header: { marginBottom:28 },
+  title: { fontSize:24, fontWeight:800, color:'#fafafa', margin:'0 0 4px', letterSpacing:'-0.02em' },
+  subtitle: { color:'#71717a', marginTop:4, fontSize:13 },
+  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
+  miniCard: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
+  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
+  inputRow: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
+  input: { flex:1, minWidth:200, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
+  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
+  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
+  btn: { background:'#4f46e5', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' },
+  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6 },
+  table: { width:'100%', borderCollapse:'collapse', fontSize:13 },
+  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
+  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
+  trEven: { background:'transparent' },
+  trOdd: { background:'#09090b44' },
+  badge: (color) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(color||'#27272a')+'33', color:color||'#a1a1aa', border:`1px solid ${(color||'#3f3f46')}44` }),
+  emptyState: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
+  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
+  errorBox: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
+  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
+  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 140px', textAlign:'center' },
+  metaVal: { fontSize:22, fontWeight:700, color:'#4f46e5' },
+  metaLabel: { fontSize:11, color:'#71717a', marginTop:2 },
+  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
+  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
+  groupBtn: (active, color) => ({ background: active ? color+'22' : '#18181b', color: active ? color : '#71717a', border:`1px solid ${active ? color+'44' : '#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:active?700:500, cursor:'pointer' }),
+  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
+  tabBtn: (active, color) => ({ background:'none', color: active ? color : '#71717a', border:'none', borderBottom: active ? `2px solid ${color}` : '2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:active?700:500, cursor:'pointer', marginBottom:-9 }),
+  progressBar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
+  progressFill: (pct, color) => ({ height:'100%', width:Math.min(pct,100)+'%', background:color||'#4f46e5', borderRadius:3 }),
 };
 
-const TABS = [
-  { id: "overview",    label: "Overview" },
-  { id: "inbound",     label: "Inbound Links" },
-  { id: "domains",     label: "Linking Domains" },
-  { id: "anchors",     label: "Anchor Text" },
-  { id: "top-pages",   label: "Top Pages" },
-  { id: "spam",        label: "Spam Analysis" },
-  { id: "competitor",  label: "Competitor Gap" },
-  { id: "new-lost",    label: "New / Lost" },
-  { id: "opps",        label: "Link Opportunities" },
-  { id: "outreach",    label: "AI Outreach" },
-  { id: "disavow",     label: "Disavow Builder" },
+// ─── groups config ────────────────────────────────────────────────────────────
+
+const GROUPS = [
+  {
+    "id": "overview",
+    "label": "Overview",
+    "color": "#4f46e5",
+    "tabs": [
+      {
+        "id": "dashboard",
+        "label": "Dashboard"
+      },
+      {
+        "id": "new-lost",
+        "label": "New & Lost"
+      },
+      {
+        "id": "history",
+        "label": "Link History"
+      },
+      {
+        "id": "top-pages",
+        "label": "Top Linked Pages"
+      },
+      {
+        "id": "by-type",
+        "label": "Link Types"
+      },
+      {
+        "id": "by-country",
+        "label": "By Country"
+      }
+    ]
+  },
+  {
+    "id": "domains",
+    "label": "Referring Domains",
+    "color": "#0ea5e9",
+    "tabs": [
+      {
+        "id": "all-domains",
+        "label": "All Domains"
+      },
+      {
+        "id": "new-domains",
+        "label": "New Domains"
+      },
+      {
+        "id": "lost-domains",
+        "label": "Lost Domains"
+      },
+      {
+        "id": "da-dist",
+        "label": "Authority Distribution"
+      },
+      {
+        "id": "top-domains",
+        "label": "Top Domains"
+      },
+      {
+        "id": "spam-dist",
+        "label": "Spam Distribution"
+      }
+    ]
+  },
+  {
+    "id": "anchors",
+    "label": "Anchor Text",
+    "color": "#10b981",
+    "tabs": [
+      {
+        "id": "anchor-overview",
+        "label": "Anchor Overview"
+      },
+      {
+        "id": "distribution",
+        "label": "Distribution"
+      },
+      {
+        "id": "risky-anchors",
+        "label": "Risky Anchors"
+      },
+      {
+        "id": "anchor-recs",
+        "label": "Recommendations"
+      },
+      {
+        "id": "keyword-anchors",
+        "label": "Keyword Anchors"
+      },
+      {
+        "id": "branded-anchors",
+        "label": "Branded Anchors"
+      }
+    ]
+  },
+  {
+    "id": "compete",
+    "label": "Competitors",
+    "color": "#f97316",
+    "tabs": [
+      {
+        "id": "gap-analysis",
+        "label": "Gap Analysis"
+      },
+      {
+        "id": "compare",
+        "label": "Compare Domains"
+      },
+      {
+        "id": "link-intersect",
+        "label": "Link Intersection"
+      },
+      {
+        "id": "comp-pages",
+        "label": "Competitor Pages"
+      },
+      {
+        "id": "comp-new",
+        "label": "Competitor New Links"
+      },
+      {
+        "id": "benchmarks",
+        "label": "Benchmarks"
+      }
+    ]
+  },
+  {
+    "id": "prospecting",
+    "label": "Link Building",
+    "color": "#a855f7",
+    "tabs": [
+      {
+        "id": "prospects",
+        "label": "Find Prospects"
+      },
+      {
+        "id": "resource-pages",
+        "label": "Resource Pages"
+      },
+      {
+        "id": "broken-link",
+        "label": "Broken Link Opps"
+      },
+      {
+        "id": "mentions",
+        "label": "Unlinked Mentions"
+      },
+      {
+        "id": "guest-posts",
+        "label": "Guest Post Sites"
+      },
+      {
+        "id": "score-prospects",
+        "label": "Score Prospects"
+      }
+    ]
+  },
+  {
+    "id": "outreach",
+    "label": "Outreach",
+    "color": "#ec4899",
+    "tabs": [
+      {
+        "id": "campaigns",
+        "label": "Campaigns"
+      },
+      {
+        "id": "new-campaign",
+        "label": "New Campaign"
+      },
+      {
+        "id": "email-gen",
+        "label": "AI Email Generator"
+      },
+      {
+        "id": "outreach-stats",
+        "label": "Outreach Stats"
+      },
+      {
+        "id": "templates",
+        "label": "Email Templates"
+      },
+      {
+        "id": "sequences",
+        "label": "Sequences"
+      }
+    ]
+  },
+  {
+    "id": "advanced",
+    "label": "Advanced",
+    "color": "#f59e0b",
+    "tabs": [
+      {
+        "id": "disavow",
+        "label": "Disavow Builder"
+      },
+      {
+        "id": "ai-strategy",
+        "label": "AI Link Strategy"
+      },
+      {
+        "id": "alerts-tab",
+        "label": "Alerts"
+      },
+      {
+        "id": "exports",
+        "label": "Export Data"
+      },
+      {
+        "id": "bl-settings",
+        "label": "Settings"
+      },
+      {
+        "id": "world-class",
+        "label": "World-Class"
+      }
+    ]
+  }
 ];
 
-const INBOUND_COLS = [
-  { key: "url",    label: "Page",         render: v => <a href={v} target="_blank" rel="noreferrer" style={{ color: "#818cf8", fontSize: 12, wordBreak: "break-all" }}>{v}</a> },
-  { key: "da",     label: "DA",           render: v => <AuthorityBadge score={v} label="DA" /> },
-  { key: "pa",     label: "PA",           render: v => <AuthorityBadge score={v} label="PA" /> },
-  { key: "type",   label: "Link Type",    render: v => <LinkTypeBadge type={v} /> },
-  { key: "anchor", label: "Anchor Text",  render: v => <span style={{ fontSize: 12, color: "#a1a1aa" }}>{v || "â€”"}</span> },
-  { key: "spam",   label: "Spam Score",   render: v => <span style={{ color: Number(v) > 8 ? "#f87171" : Number(v) > 4 ? "#f5c842" : "#1fbb7a", fontWeight: 700, fontSize: 12 }}>{v ?? "â€”"}/17</span> },
-];
-
-const DOMAIN_COLS = [
-  { key: "domain", label: "Domain",          render: v => <span style={{ color: "#fafafa", fontWeight: 600, fontSize: 13 }}>{v}</span> },
-  { key: "da",     label: "DA",              render: v => <AuthorityBadge score={v} label="DA" /> },
-  { key: "links",  label: "Backlinks",       render: v => <span style={{ fontWeight: 700, color: "#4f46e5" }}>{(v||0).toLocaleString()}</span> },
-  { key: "spam",   label: "Spam Score",      render: v => <span style={{ color: Number(v) > 8 ? "#f87171" : Number(v) > 4 ? "#f5c842" : "#1fbb7a", fontWeight: 700, fontSize: 12 }}>{v ?? "â€”"}/17</span> },
-  { key: "type",   label: "Link Type",       render: v => <LinkTypeBadge type={v} /> },
-];
-
-const ANCHOR_COLS = [
-  { key: "anchor",  label: "Anchor Text", render: v => <span style={{ color: "#fafafa", fontSize: 13 }}>{v || "(none)"}</span> },
-  { key: "links",   label: "Links",       render: v => <span style={{ fontWeight: 700, color: "#4f46e5" }}>{(v||0).toLocaleString()}</span> },
-  { key: "domains", label: "Domains",     render: v => <span style={{ fontWeight: 600, color: "#a1a1aa" }}>{(v||0).toLocaleString()}</span> },
-  { key: "pct",     label: "Share",       render: v => (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 100 }}>
-      <div style={{ flex: 1, background: "#27272a", borderRadius: 4, height: 6 }}>
-        <div style={{ width: `${Math.min(100, v || 0)}%`, height: "100%", background: "#4f46e5", borderRadius: 4 }} />
-      </div>
-      <span style={{ fontSize: 11, color: "#71717a" }}>{v || 0}%</span>
-    </div>
-  )},
-];
-
-const TOP_PAGES_COLS = [
-  { key: "url",     label: "Page",            render: v => <a href={v} target="_blank" rel="noreferrer" style={{ color: "#818cf8", fontSize: 12, wordBreak: "break-all" }}>{v}</a> },
-  { key: "pa",      label: "PA",              render: v => <AuthorityBadge score={v} label="PA" /> },
-  { key: "links",   label: "Inbound Links",   render: v => <span style={{ fontWeight: 700, color: "#4f46e5" }}>{(v||0).toLocaleString()}</span> },
-  { key: "domains", label: "Linking Domains", render: v => <span style={{ fontWeight: 600, color: "#a1a1aa" }}>{(v||0).toLocaleString()}</span> },
-];
+// ─── main component ───────────────────────────────────────────────────────────
 
 export default function BacklinkExplorer() {
-  const [domain, setDomain]         = useState("");
-  const [data, setData]             = useState(null);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState("");
-  const [tab, setTab]               = useState("overview");
-  const [search, setSearch]         = useState("");
-  const [linkFilter, setLinkFilter] = useState("all");
+  const [activeGroup, setActiveGroup] = useState('overview');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [q, setQ] = useState({});
+  const [form, setForm] = useState({ aiModel:'gpt-4o-mini', emailType:'link-request' });
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [err, setErr] = useState({});
+  const [settings, setSettings] = useState({ defaultModel:'gpt-4o-mini', alertsEnabled:true });
+  const [toast, setToast] = useState(null);
+  const [modal, setModal] = useState(null);
 
-  // Competitor Gap
-  const [compDomain, setCompDomain]   = useState("");
-  const [compData, setCompData]       = useState(null);
-  const [compLoading, setCompLoading] = useState(false);
-  const [compError, setCompError]     = useState("");
+  const curGroup = GROUPS.find(g=>g.id===activeGroup)||GROUPS[0];
 
-  // New/Lost tracking
-  const [snapshot, setSnapshot] = useState(null);
-  const [snapshotDiff, setSnapshotDiff] = useState(null);
+  function showToast(msg, color='#10b981') {
+    setToast({msg,color});
+    setTimeout(()=>setToast(null),3000);
+  }
 
-  // Outreach
-  const [outreachDomain, setOutreachDomain] = useState("");
-  const [outreachContext, setOutreachContext] = useState("");
-  const [outreachResult, setOutreachResult] = useState(null);
-  const [outreachLoading, setOutreachLoading] = useState(false);
-
-  // Disavow
-  const [disavowList, setDisavowList] = useState([]);
-  const [disavowInput, setDisavowInput] = useState("");
-
-  const analyze = useCallback(async () => {
-    if (!domain.trim()) return;
-    setLoading(true); setError(""); setData(null); setTab("overview");
+  async function fetchTab(tab, extraPayload={}) {
+    setLoading(l=>({...l,[tab]:true}));
+    setErr(e=>({...e,[tab]:null}));
+    const endpoints = {
+      'dashboard':       API+'/backlinks/overview',
+      'new-lost':        API+'/backlinks/new',
+      'history':         API+'/backlinks/history',
+      'top-pages':       API+'/backlinks/top-pages',
+      'by-type':         API+'/backlinks/by-type',
+      'by-country':      API+'/backlinks/by-country',
+      'all-domains':     API+'/domains/referring',
+      'new-domains':     API+'/domains/new',
+      'lost-domains':    API+'/domains/lost',
+      'da-dist':         API+'/domains/authority-distribution',
+      'top-domains':     API+'/domains/top',
+      'spam-dist':       API+'/domains/spam-distribution',
+      'anchor-overview': API+'/anchors/overview',
+      'distribution':    API+'/anchors/distribution',
+      'risky-anchors':   API+'/anchors/risky',
+      'anchor-recs':     API+'/anchors/recommendations',
+      'keyword-anchors': API+'/anchors/overview',
+      'branded-anchors': API+'/anchors/overview',
+      'gap-analysis':    API+'/competitor/gap',
+      'compare':         API+'/competitor/compare',
+      'link-intersect':  API+'/competitor/link-intersection',
+      'comp-pages':      API+'/competitor/top-pages',
+      'comp-new':        API+'/competitor/new-backlinks',
+      'benchmarks':      API+'/competitor/benchmarks',
+      'prospects':       API+'/prospects/find',
+      'resource-pages':  API+'/prospects/resource-pages',
+      'broken-link':     API+'/prospects/broken-links',
+      'mentions':        API+'/prospects/unlinked-mentions',
+      'guest-posts':     API+'/prospects/guest-posts',
+      'score-prospects': API+'/prospects/score',
+      'campaigns':       API+'/outreach/campaigns',
+      'outreach-stats':  API+'/outreach/stats',
+      'disavow':         API+'/disavow/analyze',
+      'ai-strategy':     API+'/ai/link-strategy',
+      'alerts-tab':      API+'/alerts',
+      'bl-settings':     null,
+      'world-class':     null,
+      'new-campaign':    null,
+      'email-gen':       null,
+      'templates':       null,
+      'sequences':       null,
+    };
+    const url = endpoints[tab];
+    if(!url) { setLoading(l=>({...l,[tab]:false})); return; }
     try {
-      const r = await apiFetchJSON("/api/backlink-explorer/analyze", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: domain.trim() }),
-      });
-      if (!r.ok) throw new Error(r.error || "Analysis failed");
-      setData(r.result || r);
-      // Save snapshot for New/Lost tracking
-      const snap = r.result || r;
-      setSnapshot({ domains: (snap.linkingDomains || snap.domains || []).map(d => d.domain || d), timestamp: new Date().toISOString() });
-    } catch (e) { setError(e.message); }
-    setLoading(false);
-  }, [domain]);
+      const payload = {
+        domain: q[tab]||q.dashboard||'',
+        keyword: q[tab]||'',
+        competitor: q[tab]||form.comp1||'',
+        competitors: [form.comp1,form.comp2,form.comp3].filter(Boolean),
+        brand: form.brand||'',
+        type: form.linkType||'',
+        period: form.period||'30d',
+        model: form.aiModel||'gpt-4o-mini',
+        page: 1, limit: 50,
+        ...extraPayload,
+      };
+      const r = await apiFetchJSON(url, { method:'POST', body:JSON.stringify(payload) });
+      if(r.ok) setData(d=>({...d,[tab]:r.data||r.results||r}));
+      else setErr(e=>({...e,[tab]:r.error||'Request failed'}));
+    } catch(e) { setErr(er=>({...er,[tab]:e.message})); }
+    finally { setLoading(l=>({...l,[tab]:false})); }
+  }
 
-  const analyzeCompetitor = async () => {
-    if (!compDomain.trim()) return;
-    setCompLoading(true); setCompError(""); setCompData(null);
+  async function generateEmail() {
+    setLoading(l=>({...l,'email-gen':true}));
     try {
-      const r = await apiFetchJSON("/api/backlink-explorer/analyze", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: compDomain.trim() }),
+      const r = await apiFetchJSON(API+'/outreach/generate-email', {
+        method:'POST',
+        body:JSON.stringify({ prospect:q['email-gen']||'', type:form.emailType||'link-request', model:form.aiModel||'gpt-4o-mini' }),
       });
-      if (!r.ok) throw new Error(r.error || "Analysis failed");
-      setCompData(r.result || r);
-    } catch (e) { setCompError(e.message); }
-    setCompLoading(false);
-  };
+      if(r.ok) setData(d=>({...d,'email-gen':r.data}));
+      else showToast(r.error,'#ef4444');
+    } catch(e) { showToast(e.message,'#ef4444'); }
+    finally { setLoading(l=>({...l,'email-gen':false})); }
+  }
 
-  const generateOutreach = async () => {
-    if (!outreachDomain.trim()) return;
-    setOutreachLoading(true); setOutreachResult(null);
+  async function createCampaign() {
     try {
-      // Re-use analyze to get the linking domain's profile, then generate email
-      const r = await apiFetchJSON("/api/backlink-explorer/analyze", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: outreachDomain.trim(), context: outreachContext, generateOutreach: true }),
+      const r = await apiFetchJSON(API+'/outreach/campaigns/create', {
+        method:'POST',
+        body:JSON.stringify({ name:form.campaignName||'New Campaign', domain:form.campaignDomain||'', targetType:form.campaignType||'link-request' }),
       });
-      setOutreachResult(r.result || r);
-    } catch (e) { setOutreachResult({ error: e.message }); }
-    setOutreachLoading(false);
-  };
+      if(r.ok) { showToast('Campaign created'); fetchTab('campaigns'); setModal(null); }
+      else showToast(r.error,'#ef4444');
+    } catch(e) { showToast(e.message,'#ef4444'); }
+  }
 
-  const takeNewSnapshot = async () => {
-    if (!domain.trim() || !data) return;
-    const newSnap = { domains: (data.linkingDomains || data.domains || []).map(d => d.domain || d), timestamp: new Date().toISOString() };
-    if (snapshot) {
-      const oldSet = new Set(snapshot.domains);
-      const newSet = new Set(newSnap.domains);
-      setSnapshotDiff({
-        newLinks: newSnap.domains.filter(d => !oldSet.has(d)),
-        lostLinks: snapshot.domains.filter(d => !newSet.has(d)),
-        oldTimestamp: snapshot.timestamp,
-        newTimestamp: newSnap.timestamp,
+  async function createAlert() {
+    try {
+      const r = await apiFetchJSON(API+'/alerts/create', {
+        method:'POST',
+        body:JSON.stringify({ domain:form.alertDomain||'', type:form.alertType||'new-link', threshold:form.alertThreshold||10 }),
       });
+      if(r.ok) { showToast('Alert created'); fetchTab('alerts-tab'); }
+      else showToast(r.error,'#ef4444');
+    } catch(e) { showToast(e.message,'#ef4444'); }
+  }
+
+  async function generateDisavow() {
+    try {
+      const r = await apiFetchJSON(API+'/disavow/generate', { method:'POST', body:JSON.stringify({ items:form.disavowItems||[] }) });
+      if(r.ok) setData(d=>({...d,'disavow-file':r.data}));
+    } catch(e) { showToast(e.message,'#ef4444'); }
+  }
+
+  function handleGroupClick(gid) {
+    const g = GROUPS.find(x=>x.id===gid);
+    if(g) { setActiveGroup(gid); setActiveTab(g.tabs[0].id); }
+  }
+
+  // ─── tab renderers ────────────────────────────────────────────────────────
+
+  function renderDashboard() {
+    const d = data.dashboard;
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Backlink Profile Overview</div>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Enter domain (e.g. example.com)…" value={q.dashboard||''} onChange={e=>setQ(p=>({...p,dashboard:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetchTab('dashboard')} />
+            <button style={S.btn} onClick={()=>fetchTab('dashboard')} disabled={loading.dashboard}>{loading.dashboard?'Analyzing…':'Analyze Backlinks'}</button>
+            <button style={{...S.btn,background:'#10b981'}} onClick={()=>{fetchTab('ai-strategy');setActiveGroup('advanced');setActiveTab('ai-strategy');}}>✦ AI Strategy</button>
+          </div>
+          {err.dashboard && <div style={S.errorBox}>{err.dashboard}</div>}
+          {loading.dashboard ? <div style={S.loading}>Analyzing backlink profile…</div> :
+          d ? (
+            <>
+              <div style={S.metaRow}>
+                <div style={S.metaItem}><div style={S.metaVal}>{d.totalBacklinks?.toLocaleString()}</div><div style={S.metaLabel}>Total Backlinks</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#0ea5e9'}}>{d.referringDomains?.toLocaleString()}</div><div style={S.metaLabel}>Referring Domains</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#10b981'}}>{d.dofollow?.toLocaleString()}</div><div style={S.metaLabel}>Dofollow Links</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#f59e0b'}}>{d.newLast30?.toLocaleString()}</div><div style={S.metaLabel}>New (30d)</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#ef4444'}}>{d.lostLast30?.toLocaleString()}</div><div style={S.metaLabel}>Lost (30d)</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#a855f7'}}>{d.domainRating}</div><div style={S.metaLabel}>Domain Rating</div></div>
+              </div>
+              {d.recentBacklinks?.length ? (
+                <>
+                  <div style={S.sT}>Recent Backlinks</div>
+                  <div style={{overflowX:'auto'}}>
+                    <table style={S.table}>
+                      <thead><tr><th style={S.th}>Source URL</th><th style={S.th}>DA</th><th style={S.th}>Type</th><th style={S.th}>Anchor</th><th style={S.th}>First Seen</th><th style={S.th}>Status</th></tr></thead>
+                      <tbody>{d.recentBacklinks.map((b,i)=>(
+                        <tr key={i} style={i%2===0?S.trEven:S.trOdd}>
+                          <td style={S.td}><a href={b.url} target="_blank" rel="noopener noreferrer" style={{color:'#4f46e5',fontSize:11}}>{b.url}</a></td>
+                          <td style={S.td}><AuthorityBadge da={b.da} /></td>
+                          <td style={S.td}><span style={S.badge(typeColor(b.type))}>{b.type}</span></td>
+                          <td style={S.td}><span style={{color:'#a1a1aa',fontSize:12}}>{b.anchorText||'—'}</span></td>
+                          <td style={S.td}>{b.firstSeen}</td>
+                          <td style={S.td}><span style={S.badge(b.status==='new'?'#10b981':b.status==='lost'?'#ef4444':'#27272a')}>{b.status}</span></td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                </>
+              ) : null}
+            </>
+          ) : <div style={S.emptyState}>Enter a domain to analyze its complete backlink profile.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderAllDomains() {
+    const d = data['all-domains'];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>All Referring Domains</div>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Domain…" value={q['all-domains']||''} onChange={e=>setQ(p=>({...p,'all-domains':e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetchTab('all-domains')} />
+            <select style={S.select} value={form.domainSort||'da'} onChange={e=>setForm(p=>({...p,domainSort:e.target.value}))}>
+              <option value="da">Sort: Domain Authority</option>
+              <option value="links">Sort: Backlinks</option>
+              <option value="spam">Sort: Spam Score</option>
+              <option value="first">Sort: First Seen</option>
+            </select>
+            <button style={S.btn} onClick={()=>fetchTab('all-domains')} disabled={loading['all-domains']}>{loading['all-domains']?'Loading…':'Get Domains'}</button>
+          </div>
+          {err['all-domains'] && <div style={S.errorBox}>{err['all-domains']}</div>}
+          {loading['all-domains'] ? <div style={S.loading}>Loading referring domains…</div> :
+          d?.domains?.length ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.table}>
+                <thead><tr><th style={S.th}>Domain</th><th style={S.th}>DA</th><th style={S.th}>Backlinks</th><th style={S.th}>Dofollow</th><th style={S.th}>Country</th><th style={S.th}>Spam</th><th style={S.th}>First Seen</th></tr></thead>
+                <tbody>{d.domains.map((dom,i)=>(
+                  <tr key={i} style={i%2===0?S.trEven:S.trOdd}>
+                    <td style={S.td}><span style={{fontWeight:600,color:'#fafafa'}}>{dom.domain}</span></td>
+                    <td style={S.td}><AuthorityBadge da={dom.da} /></td>
+                    <td style={S.td}>{dom.backlinks}</td>
+                    <td style={S.td}>{dom.dofollow}</td>
+                    <td style={S.td}>{dom.country}</td>
+                    <td style={S.td}>
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <span style={S.badge(spamColor(dom.spam))}>{dom.spam}</span>
+                        <span style={{fontSize:10,color:'#71717a'}}>{spamLabel(dom.spam)}</span>
+                      </div>
+                    </td>
+                    <td style={S.td}>{dom.firstSeen}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          ) : <div style={S.emptyState}>Enter a domain to load its referring domains.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderAnchorOverview() {
+    const d = data['anchor-overview'];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Anchor Text Profile</div>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Domain…" value={q['anchor-overview']||''} onChange={e=>setQ(p=>({...p,'anchor-overview':e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetchTab('anchor-overview')} />
+            <button style={S.btn} onClick={()=>fetchTab('anchor-overview')} disabled={loading['anchor-overview']}>{loading['anchor-overview']?'Analyzing…':'Analyze Anchors'}</button>
+          </div>
+          {err['anchor-overview'] && <div style={S.errorBox}>{err['anchor-overview']}</div>}
+          {loading['anchor-overview'] ? <div style={S.loading}>Analyzing anchor text profile…</div> :
+          d?.anchors?.length ? (
+            <>
+              <div style={S.metaRow}>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:d.overOptimized?'#ef4444':'#10b981'}}>{d.naturalScore}/100</div><div style={S.metaLabel}>Natural Score</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#10b981'}}>{d.brandedPct}%</div><div style={S.metaLabel}>Branded Anchors</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:d.overOptimized?'#ef4444':'#f59e0b'}}>{d.overOptimized?'Risk Detected':'Normal'}</div><div style={S.metaLabel}>Over-Optimization</div></div>
+              </div>
+              {d.anchors.map((a,i)=>(
+                <div key={i} style={{marginBottom:12}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+                    <span style={{fontSize:13,color:'#fafafa'}}>{a.text} <span style={{color:'#71717a',fontSize:11}}>({a.count} links)</span></span>
+                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                      <span style={{fontSize:13,fontWeight:700,color:'#4f46e5'}}>{a.pct}%</span>
+                      <span style={S.badge(a.risk==='high'?'#ef4444':a.risk==='medium'?'#f59e0b':'#10b981')}>{a.type}</span>
+                    </div>
+                  </div>
+                  <div style={S.progressBar}>
+                    <div style={S.progressFill(a.pct, a.risk==='high'?'#ef4444':a.risk==='medium'?'#f59e0b':'#4f46e5')} />
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : <div style={S.emptyState}>Enter a domain to analyze its anchor text distribution.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderGapAnalysis() {
+    const d = data['gap-analysis'];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Backlink Gap Analysis</div>
+          <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Find domains linking to your competitors but not to you.</p>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Your domain…" value={q['gap-analysis']||''} onChange={e=>setQ(p=>({...p,'gap-analysis':e.target.value}))} />
+            <input style={S.input} placeholder="Competitor 1…" value={form.comp1||''} onChange={e=>setForm(p=>({...p,comp1:e.target.value}))} />
+            <input style={S.input} placeholder="Competitor 2…" value={form.comp2||''} onChange={e=>setForm(p=>({...p,comp2:e.target.value}))} />
+            <button style={S.btn} onClick={()=>fetchTab('gap-analysis')} disabled={loading['gap-analysis']}>{loading['gap-analysis']?'Analyzing…':'Find Gap'}</button>
+          </div>
+          {err['gap-analysis'] && <div style={S.errorBox}>{err['gap-analysis']}</div>}
+          {loading['gap-analysis'] ? <div style={S.loading}>Comparing backlink profiles…</div> :
+          d?.opportunities?.length ? (
+            <>
+              <div style={S.metaRow}>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#ef4444'}}>{d.uniqueToCompetitors?.toLocaleString()}</div><div style={S.metaLabel}>Gaps Found</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#10b981'}}>{d.uniqueToYou?.toLocaleString()}</div><div style={S.metaLabel}>Your Advantages</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#4f46e5'}}>{d.shared?.toLocaleString()}</div><div style={S.metaLabel}>Shared Domains</div></div>
+              </div>
+              <div style={S.sT}>Link Gap Opportunities</div>
+              <div style={{overflowX:'auto'}}>
+                <table style={S.table}>
+                  <thead><tr><th style={S.th}>Domain</th><th style={S.th}>DA</th><th style={S.th}>Competitors Linked</th><th style={S.th}>Your Links</th><th style={S.th}>Opportunity</th></tr></thead>
+                  <tbody>{d.opportunities.map((opp,i)=>(
+                    <tr key={i} style={i%2===0?S.trEven:S.trOdd}>
+                      <td style={S.td}><span style={{fontWeight:600}}>{opp.domain}</span></td>
+                      <td style={S.td}><AuthorityBadge da={opp.da} /></td>
+                      <td style={S.td}><span style={{color:'#10b981',fontWeight:700}}>{opp.competitorCount}</span></td>
+                      <td style={S.td}><span style={{color:opp.yourBacklinks>0?'#10b981':'#ef4444'}}>{opp.yourBacklinks||'None'}</span></td>
+                      <td style={S.td}><button style={{...S.btn,padding:'4px 10px',fontSize:11,background:'#a855f7'}} onClick={()=>showToast('Adding to prospects…')}>+ Prospect</button></td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </>
+          ) : <div style={S.emptyState}>Enter your domain and competitors to find backlink gaps.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderProspects() {
+    const d = data.prospects;
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Find Link Prospects</div>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Target keyword or niche…" value={q.prospects||''} onChange={e=>setQ(p=>({...p,prospects:e.target.value}))} />
+            <select style={S.select} value={form.prospectType||''} onChange={e=>setForm(p=>({...p,prospectType:e.target.value}))}>
+              <option value="">All Types</option>
+              <option value="guest-post">Guest Post</option>
+              <option value="resource">Resource Page</option>
+              <option value="broken-link">Broken Link</option>
+              <option value="unlinked-mention">Unlinked Mention</option>
+            </select>
+            <button style={S.btn} onClick={()=>fetchTab('prospects')} disabled={loading.prospects}>{loading.prospects?'Finding…':'Find Prospects'}</button>
+            <button style={{...S.btn,background:'#10b981'}} onClick={()=>fetchTab('score-prospects',{urls:(d?.prospects||[]).slice(0,20).map(p=>p.url)})} disabled={loading['score-prospects']}>✦ AI Score</button>
+          </div>
+          {err.prospects && <div style={S.errorBox}>{err.prospects}</div>}
+          {loading.prospects ? <div style={S.loading}>Finding link building prospects…</div> :
+          d?.prospects?.length ? (
+            <>
+              <div style={S.metaRow}>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#a855f7'}}>{d.total?.toLocaleString()}</div><div style={S.metaLabel}>Total Prospects</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#4f46e5'}}>{d.prospects.filter(p=>p.da>=50).length}</div><div style={S.metaLabel}>DA 50+</div></div>
+              </div>
+              <div style={{overflowX:'auto'}}>
+                <table style={S.table}>
+                  <thead><tr><th style={S.th}>URL</th><th style={S.th}>DA</th><th style={S.th}>Traffic</th><th style={S.th}>Type</th><th style={S.th}>Relevance</th><th style={S.th}></th></tr></thead>
+                  <tbody>{d.prospects.map((p,i)=>(
+                    <tr key={i} style={i%2===0?S.trEven:S.trOdd}>
+                      <td style={S.td}><a href={p.url} target="_blank" rel="noopener noreferrer" style={{color:'#4f46e5',fontSize:11}}>{p.url}</a></td>
+                      <td style={S.td}><AuthorityBadge da={p.da} /></td>
+                      <td style={S.td}>{p.traffic?.toLocaleString()}</td>
+                      <td style={S.td}><span style={S.badge('#a855f7')}>{p.type}</span></td>
+                      <td style={S.td}><ScoreBar score={p.relevance||0} max={100} /></td>
+                      <td style={S.td}>
+                        <div style={{display:'flex',gap:4}}>
+                          <button style={{...S.btn,padding:'4px 10px',fontSize:11,background:'#27272a'}} onClick={()=>{setQ(qp=>({...qp,'email-gen':p.url}));setActiveGroup('outreach');setActiveTab('email-gen');}}>Outreach</button>
+                          <button style={{...S.btn,padding:'4px 10px',fontSize:11,background:'#a855f7'}} onClick={()=>showToast('Added to campaign')}>+ Add</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </>
+          ) : <div style={S.emptyState}>Enter a keyword or niche to find link building prospects.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderEmailGen() {
+    const d = data['email-gen'];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>✦ AI Outreach Email Generator</div>
+          <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Generate personalized link building outreach emails using AI. Each email is customized based on the prospect&apos;s site.</p>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Prospect URL or domain…" value={q['email-gen']||''} onChange={e=>setQ(p=>({...p,'email-gen':e.target.value}))} />
+            <select style={S.select} value={form.emailType||'link-request'} onChange={e=>setForm(p=>({...p,emailType:e.target.value}))}>
+              <option value="link-request">Link Request</option>
+              <option value="broken-link">Broken Link</option>
+              <option value="guest-post">Guest Post Pitch</option>
+              <option value="unlinked-mention">Unlinked Mention</option>
+            </select>
+            <select style={S.select} value={form.aiModel||'gpt-4o-mini'} onChange={e=>setForm(p=>({...p,aiModel:e.target.value}))}>
+              <option value="gpt-4o-mini">GPT-4o Mini (1 credit)</option>
+              <option value="gpt-4o">GPT-4o (2 credits)</option>
+              <option value="gpt-4">GPT-4 (3 credits)</option>
+            </select>
+            <button style={{...S.btn,background:'#ec4899'}} onClick={generateEmail} disabled={loading['email-gen']}>{loading['email-gen']?'Generating…':'✦ Generate Email'}</button>
+          </div>
+          {err['email-gen'] && <div style={S.errorBox}>{err['email-gen']}</div>}
+          {loading['email-gen'] ? <div style={S.loading}>Generating personalized outreach email…</div> :
+          d?.email ? (
+            <div>
+              <pre style={{background:'#0d0d10',border:'1px solid #3f3f46',borderRadius:10,padding:16,fontSize:13,color:'#e4e4e7',whiteSpace:'pre-wrap',fontFamily:'monospace',lineHeight:1.7,marginBottom:12}}>{d.email}</pre>
+              <div style={{display:'flex',gap:8}}>
+                <button style={{...S.btn,background:'#27272a'}} onClick={()=>{navigator.clipboard?.writeText(d.email);showToast('Copied to clipboard');}}>Copy Email</button>
+                <button style={{...S.btn,background:'#ec4899'}} onClick={generateEmail}>✦ Regenerate</button>
+                <button style={{...S.btn,background:'#a855f7'}} onClick={()=>showToast('Added to sequence')}>Add to Sequence</button>
+              </div>
+              <div style={{color:'#71717a',fontSize:11,marginTop:8}}>Model: {d.model} · Credits used: {d.creditsUsed}</div>
+            </div>
+          ) : <div style={S.emptyState}>Enter a prospect URL and click Generate Email to create a personalized outreach message.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderCampaigns() {
+    const d = data.campaigns;
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Outreach Campaigns</div>
+          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+            <button style={{...S.btn,background:'#ec4899'}} onClick={()=>setModal('new-campaign')}>+ New Campaign</button>
+          </div>
+          <button style={{...S.btn,background:'#27272a',marginBottom:16}} onClick={()=>fetchTab('campaigns')} disabled={loading.campaigns}>{loading.campaigns?'Loading…':'Refresh'}</button>
+          {loading.campaigns ? <div style={S.loading}>Loading campaigns…</div> :
+          d?.campaigns?.length ? (
+            d.campaigns.map((c,i)=>(
+              <div key={i} style={{...S.card,marginBottom:10,padding:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div>
+                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{c.name}</div>
+                  <div style={{display:'flex',gap:8}}>
+                    <span style={S.badge(c.status==='active'?'#10b981':'#52525b')}>{c.status}</span>
+                    <span style={{color:'#71717a',fontSize:12}}>Sent: {c.sent||0} · Replied: {c.replied||0}</span>
+                  </div>
+                </div>
+                <button style={{...S.btn,padding:'6px 14px',fontSize:12,background:'#27272a'}} onClick={()=>showToast('Opening campaign…')}>View</button>
+              </div>
+            ))
+          ) : <div style={S.emptyState}>No campaigns yet. Create one to start building links.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderDisavow() {
+    const d = data.disavow;
+    const fileData = data['disavow-file'];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Disavow Builder</div>
+          <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Identify and disavow toxic backlinks that may be harming your rankings.</p>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Domain to analyze for toxic links…" value={q.disavow||''} onChange={e=>setQ(p=>({...p,disavow:e.target.value}))} />
+            <button style={S.btn} onClick={()=>fetchTab('disavow')} disabled={loading.disavow}>{loading.disavow?'Scanning…':'Scan for Toxic Links'}</button>
+          </div>
+          {err.disavow && <div style={S.errorBox}>{err.disavow}</div>}
+          {loading.disavow ? <div style={S.loading}>Scanning for toxic links…</div> :
+          d ? (
+            <>
+              <div style={S.metaRow}>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#ef4444'}}>{d.toxic?.length||0}</div><div style={S.metaLabel}>Toxic Links</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#f59e0b'}}>{d.suspicious||0}</div><div style={S.metaLabel}>Suspicious</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#10b981'}}>{d.healthy||0}</div><div style={S.metaLabel}>Healthy</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#4f46e5'}}>{d.totalAnalyzed||0}</div><div style={S.metaLabel}>Total Analyzed</div></div>
+              </div>
+              {d.toxic?.length ? (
+                <>
+                  <div style={{overflowX:'auto',marginBottom:12}}>
+                    <table style={S.table}>
+                      <thead><tr><th style={S.th}>Domain</th><th style={S.th}>Spam Score</th><th style={S.th}>Reason</th><th style={S.th}>Action</th></tr></thead>
+                      <tbody>{d.toxic.map((b,i)=>(
+                        <tr key={i} style={i%2===0?S.trEven:S.trOdd}>
+                          <td style={S.td}><span style={{color:'#ef4444',fontSize:12}}>{b.sourceDomain}</span></td>
+                          <td style={S.td}><span style={S.badge(spamColor(b.spam))}>{b.spam}</span></td>
+                          <td style={S.td}>{b.reason}</td>
+                          <td style={S.td}><span style={S.badge('#ef4444')}>{b.recommendation}</span></td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                  <button style={{...S.btn,background:'#ef4444'}} onClick={generateDisavow}>Generate Disavow File</button>
+                </>
+              ) : null}
+              {fileData?.content ? (
+                <div style={{marginTop:16}}>
+                  <div style={S.sT}>Disavow File Preview</div>
+                  <pre style={{background:'#0d0d10',border:'1px solid #3f3f46',borderRadius:10,padding:16,fontSize:12,color:'#a1a1aa',fontFamily:'monospace',whiteSpace:'pre-wrap',maxHeight:300,overflow:'auto'}}>{fileData.content}</pre>
+                  <div style={{display:'flex',gap:8,marginTop:8}}>
+                    <button style={{...S.btn,background:'#27272a'}} onClick={()=>{navigator.clipboard?.writeText(fileData.content);showToast('Copied');}}>Copy</button>
+                    <button style={{...S.btn,background:'#ef4444'}} onClick={()=>showToast('Ready for GSC submission')}>Submit to GSC</button>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : <div style={S.emptyState}>Enter a domain to scan for toxic and spammy backlinks.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderAiStrategy() {
+    const d = data['ai-strategy'];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>✦ AI Link Building Strategy</div>
+          <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Get an AI-generated comprehensive link building strategy tailored to your domain, competitors, and niche.</p>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Your domain…" value={q['ai-strategy']||''} onChange={e=>setQ(p=>({...p,'ai-strategy':e.target.value}))} />
+            <select style={S.select} value={form.aiModel||'gpt-4o'} onChange={e=>setForm(p=>({...p,aiModel:e.target.value}))}>
+              <option value="gpt-4o-mini">GPT-4o Mini (2 credits)</option>
+              <option value="gpt-4o">GPT-4o (4 credits)</option>
+              <option value="gpt-4">GPT-4 (6 credits)</option>
+            </select>
+            <button style={{...S.btn,background:'#10b981'}} onClick={()=>fetchTab('ai-strategy')} disabled={loading['ai-strategy']}>{loading['ai-strategy']?'Generating…':'✦ Generate Strategy'}</button>
+          </div>
+          {err['ai-strategy'] && <div style={S.errorBox}>{err['ai-strategy']}</div>}
+          {loading['ai-strategy'] ? <div style={S.loading}>AI is building your link strategy…</div> :
+          d?.strategy ? (
+            <div>
+              <div style={{...S.card,background:'#09090b',marginBottom:16}}>
+                <div style={{fontWeight:700,color:'#fafafa',marginBottom:8}}>Strategy Summary</div>
+                <p style={{color:'#a1a1aa',fontSize:13,lineHeight:1.7,margin:0}}>{d.strategy.summary}</p>
+              </div>
+              <div style={S.sT}>Key Pillars</div>
+              {d.strategy.pillars?.map((p,i)=>(
+                <div key={i} style={S.issueRowStyle}>
+                  <span style={{background:'#4f46e546',color:'#818cf8',borderRadius:4,padding:'2px 7px',fontSize:11,fontWeight:700,flexShrink:0}}>#{i+1}</span>
+                  <span style={{color:'#fafafa',fontSize:13}}>{p}</span>
+                </div>
+              ))}
+              <div style={S.metaRow}>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#10b981'}}>{d.strategy.monthlyGoal}</div><div style={S.metaLabel}>Monthly Link Goal</div></div>
+                <div style={S.metaItem}><div style={{...S.metaVal,color:'#4f46e5'}}>{d.strategy.estimatedTimeMonths}m</div><div style={S.metaLabel}>Est. Timeline</div></div>
+              </div>
+            </div>
+          ) : <div style={S.emptyState}>Enter your domain to get an AI-powered link building strategy.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  function renderWorldClass() {
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>✦ World-Class Enterprise Features</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
+            {[
+              {icon:'🔗',title:'Real-Time Link Monitoring',desc:'Monitor your backlink profile 24/7 with instant alerts for new toxic links, lost high-value links, and competitor wins.'},
+              {icon:'🤖',title:'AI Link Qualification',desc:'Automatically score and qualify every prospect using multi-model AI trained on millions of successful link placements.'},
+              {icon:'📊',title:'Predictive Link Analytics',desc:'Forecast the ranking impact of acquiring links from specific domains using our ML ranking models.'},
+              {icon:'🌐',title:'Global Crawl Network',desc:'Distributed crawl infrastructure covering 99.9% of the web with daily freshness for top 10M domains.'},
+              {icon:'📧',title:'Automated Outreach Sequences',desc:'Multi-touch outreach sequences with A/B testing, CRM sync, and smart follow-up timing.'},
+              {icon:'🛡️',title:'Penguin-Safe Analysis',desc:'Enterprise-grade penalty risk analysis aligned with Google Quality Guidelines.'},
+            ].map((f,i)=>(
+              <div key={i} style={S.miniCard}>
+                <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
+                <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.title}</div>
+                <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderGenericTab(tabId, title, desc) {
+    const d = data[tabId];
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>{title}</div>
+          <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>
+          <div style={S.inputRow}>
+            <input style={S.input} placeholder="Enter domain or URL…" value={q[tabId]||''} onChange={e=>setQ(p=>({...p,[tabId]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetchTab(tabId)} />
+            <button style={S.btn} onClick={()=>fetchTab(tabId)} disabled={loading[tabId]}>{loading[tabId]?'Loading…':'Analyze'}</button>
+            <button style={{...S.btn,background:'#10b981'}} onClick={()=>showToast('AI analyzing…')}>✦ AI Insights</button>
+          </div>
+          {err[tabId] && <div style={S.errorBox}>{err[tabId]}</div>}
+          {loading[tabId] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
+          d ? (
+            <div style={{overflowX:'auto'}}>
+              <table style={S.table}>
+                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Authority</th><th style={S.th}>Details</th><th style={S.th}>Status</th></tr></thead>
+                <tbody>{(Array.isArray(d)?d:d.domains||d.pages||d.backlinks||d.items||[]).map((r,i)=>(
+                  <tr key={i} style={i%2===0?S.trEven:S.trOdd}>
+                    <td style={S.td}><span style={{fontWeight:600,color:'#fafafa',fontSize:12}}>{r.domain||r.url||r.item||String(r)}</span></td>
+                    <td style={S.td}>{r.da?<AuthorityBadge da={r.da} />:'—'}</td>
+                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{r.detail||r.description||r.type||r.firstSeen||'—'}</span></td>
+                    <td style={S.td}>{r.status?<span style={S.badge(r.status==='active'?'#10b981':'#52525b')}>{r.status}</span>:'—'}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          ) : <div style={S.emptyState}>Enter a domain to analyze {title.toLowerCase()}.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── tab renderer ─────────────────────────────────────────────────────────
+
+  const issueRowStyle = { display:'flex', alignItems:'flex-start', gap:10, padding:'10px 0', borderBottom:'1px solid #1f1f22' };
+
+  function renderTab() {
+    switch(activeTab) {
+      case 'dashboard':     return renderDashboard();
+      case 'new-lost':      return renderGenericTab('new-lost','New & Lost Links','Track links gained and lost in the last 30/60/90 days.');
+      case 'history':       return renderGenericTab('history','Link History','Full historical timeline of your backlink profile growth.');
+      case 'top-pages':     return renderGenericTab('top-pages','Top Linked Pages','Your pages with the most backlinks and referring domains.');
+      case 'by-type':       return renderGenericTab('by-type','Links by Type','Break down backlinks by dofollow, nofollow, UGC, and sponsored.');
+      case 'by-country':    return renderGenericTab('by-country','Links by Country','Geographic distribution of your referring domains.');
+      case 'all-domains':   return renderAllDomains();
+      case 'new-domains':   return renderGenericTab('new-domains','New Referring Domains','Domains that linked to you for the first time this period.');
+      case 'lost-domains':  return renderGenericTab('lost-domains','Lost Referring Domains','Domains that previously linked to you but no longer do.');
+      case 'da-dist':       return renderGenericTab('da-dist','Authority Distribution','Distribution of referring domain authority scores.');
+      case 'top-domains':   return renderGenericTab('top-domains','Top Domains','Highest-authority domains linking to you.');
+      case 'spam-dist':     return renderGenericTab('spam-dist','Spam Distribution','Distribution of spam scores across your referring domains.');
+      case 'anchor-overview': return renderAnchorOverview();
+      case 'distribution':  return renderGenericTab('distribution','Anchor Distribution','Visual breakdown of anchor text types and percentages.');
+      case 'risky-anchors': return renderGenericTab('risky-anchors','Risky Anchors','Over-optimized anchor text that could trigger Google penalties.');
+      case 'anchor-recs':   return renderGenericTab('anchor-recs','Anchor Recommendations','AI recommendations to improve your anchor text profile.');
+      case 'keyword-anchors': return renderGenericTab('keyword-anchors','Keyword Anchors','Anchors containing target keywords — diversity and risk analysis.');
+      case 'branded-anchors': return renderGenericTab('branded-anchors','Branded Anchors','Brand-name anchors as a percentage of your profile.');
+      case 'gap-analysis':  return renderGapAnalysis();
+      case 'compare':       return renderGenericTab('compare','Compare Domains','Side-by-side comparison of backlink metrics across multiple domains.');
+      case 'link-intersect': return renderGenericTab('link-intersect','Link Intersection','Domains linking to all your competitors but not to you.');
+      case 'comp-pages':    return renderGenericTab('comp-pages','Competitor Top Pages','Most-linked pages on competitor sites.');
+      case 'comp-new':      return renderGenericTab('comp-new','Competitor New Links','Links your competitors acquired recently.');
+      case 'benchmarks':    return renderGenericTab('benchmarks','Benchmarks','Compare your backlink KPIs against industry benchmarks.');
+      case 'prospects':     return renderProspects();
+      case 'resource-pages': return renderGenericTab('resource-pages','Resource Pages','Resource and links pages in your niche that accept submissions.');
+      case 'broken-link':   return renderGenericTab('broken-link','Broken Link Opportunities','Pages with broken outbound links you can replace with your content.');
+      case 'mentions':      return renderGenericTab('mentions','Unlinked Mentions','Sites that mention your brand without linking — easy link wins.');
+      case 'guest-posts':   return renderGenericTab('guest-posts','Guest Post Sites','High-DA sites in your niche accepting guest contributions.');
+      case 'score-prospects': return renderGenericTab('score-prospects','Score Prospects','AI scoring of your prospect list by link value and obtainability.');
+      case 'campaigns':     return renderCampaigns();
+      case 'new-campaign':  return renderGenericTab('new-campaign','New Campaign','Create a structured outreach campaign for a link building initiative.');
+      case 'email-gen':     return renderEmailGen();
+      case 'outreach-stats': return renderGenericTab('outreach-stats','Outreach Stats','Track email open rates, reply rates, and link acquisition success.');
+      case 'templates':     return renderGenericTab('templates','Email Templates','Library of proven outreach email templates by link type.');
+      case 'sequences':     return renderGenericTab('sequences','Outreach Sequences','Multi-step follow-up sequences for automated link building outreach.');
+      case 'disavow':       return renderDisavow();
+      case 'ai-strategy':   return renderAiStrategy();
+      case 'alerts-tab':    return renderGenericTab('alerts-tab','Link Alerts','Get notified about new links, lost links, and competitor activity.');
+      case 'exports':       return renderGenericTab('exports','Export Data','Export your backlink data in CSV, XLSX, or JSON format.');
+      case 'bl-settings':   return renderSettings();
+      case 'world-class':   return renderWorldClass();
+      default:              return <div style={S.emptyState}>Select a tab to begin.</div>;
     }
-    setSnapshot(newSnap);
-  };
+  }
 
-  const addToDisavow = (domain) => {
-    if (!domain || disavowList.includes(domain)) return;
-    setDisavowList(l => [...l, domain]);
-  };
+  function renderSettings() {
+    return (
+      <div>
+        <div style={S.card}>
+          <div style={S.cardTitle}>Tool Settings</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
+            <div>
+              <div style={S.label}>Default AI Model</div>
+              <select style={S.select} value={settings.defaultModel||'gpt-4o-mini'} onChange={e=>setSettings(s=>({...s,defaultModel:e.target.value}))}>
+                <option value="gpt-4o-mini">GPT-4o Mini (cheapest)</option>
+                <option value="gpt-4o">GPT-4o (balanced)</option>
+                <option value="gpt-4">GPT-4 (best quality)</option>
+              </select>
+            </div>
+            <div>
+              <div style={S.label}>Backlink Alerts</div>
+              <select style={S.select} value={settings.alertsEnabled?'yes':'no'} onChange={e=>setSettings(s=>({...s,alertsEnabled:e.target.value==='yes'}))}>
+                <option value="yes">Enabled</option>
+                <option value="no">Disabled</option>
+              </select>
+            </div>
+          </div>
+          <button style={{...S.btn,marginTop:20}} onClick={async()=>{
+            try { await apiFetchJSON(API+'/settings',{method:'POST',body:JSON.stringify(settings)}); showToast('Settings saved'); } catch(e) { showToast('Failed','#ef4444'); }
+          }}>Save Settings</button>
+        </div>
+      </div>
+    );
+  }
 
-  const exportDisavow = () => {
-    const content = disavowList.map(d => `domain:${d}`).join("\n");
-    const blob = new Blob([`# Disavow file generated by AURA BacklinkExplorer\n# ${new Date().toISOString()}\n\n${content}`], { type: "text/plain" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "disavow.txt"; a.click();
-  };
-
-  // Derived data
-  const da = data?.domainAuthority ?? data?.da ?? 0;
-  const pa = data?.pageAuthority ?? data?.pa ?? 0;
-  const spam = data?.spamScore ?? data?.spam ?? 0;
-  const inboundLinks = data?.inboundLinks || data?.backlinks || [];
-  const linkingDomains = data?.linkingDomains || data?.domains || [];
-  const anchorText = data?.anchorText || data?.anchors || [];
-  const topPages = data?.topPages || data?.pages || [];
-
-  const filteredInbound = inboundLinks
-    .filter(r => linkFilter === "all" || (r.type || "follow").toLowerCase() === linkFilter)
-    .filter(r => !search || JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
-  const filteredDomains = linkingDomains
-    .filter(r => !search || JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
-
-  // Competitor gap: domains linking to competitor but not to us
-  const myDomainSet = new Set(linkingDomains.map(d => d.domain || d));
-  const compLinkingDomains = compData?.linkingDomains || compData?.domains || [];
-  const gapDomains = compLinkingDomains.filter(d => !myDomainSet.has(d.domain || d));
-
-  // Link opportunities from competitor's high-DA linking domains
-  const opportunities = compLinkingDomains
-    .filter(d => !myDomainSet.has(d.domain || d))
-    .sort((a, b) => (b.da || 0) - (a.da || 0))
-    .slice(0, 20);
+  // ─── render ───────────────────────────────────────────────────────────────
 
   return (
-    <div style={S.page}>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fafafa", margin: 0 }}>Backlink Explorer</h1>
-        <p style={{ fontSize: 14, color: "#71717a", marginTop: 4, marginBottom: 0 }}>Research Domain Authority, inbound links, referring domains, anchor distribution and competitor link gaps. Ahrefs-level backlink intelligence for Shopify stores.</p>
+    <div style={S.root}>
+      <div style={S.header}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={S.title}>Backlink Explorer</h1>
+            <p style={S.subtitle}>Enterprise link intelligence — analysis, prospecting, AI outreach, competitive gap & disavow management</p>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={{...S.btn,background:'#27272a'}} onClick={()=>fetchTab('dashboard')}>↺ Refresh</button>
+            <button style={{...S.btn,background:'#10b981'}} onClick={()=>{setActiveGroup('advanced');setActiveTab('ai-strategy');}}>✦ AI Strategy</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-        <input style={S.input} value={domain} onChange={e => setDomain(e.target.value)} onKeyDown={e => e.key === "Enter" && analyze()} placeholder="Enter a domain, e.g. mystore.com" />
-        <button style={S.btn("primary")} onClick={analyze} disabled={loading}>{loading ? "Analyzingâ€¦" : "Analyze Backlinks"}</button>
+      <div style={S.groupNav}>
+        {GROUPS.map(g=>(
+          <button key={g.id} style={S.groupBtn(activeGroup===g.id, g.color)} onClick={()=>handleGroupClick(g.id)}>
+            {g.label}
+          </button>
+        ))}
       </div>
 
-      <ErrorBox message={error} />
+      <div style={S.tabStrip}>
+        {curGroup.tabs.map(t=>(
+          <button key={t.id} style={S.tabBtn(activeTab===t.id, curGroup.color)} onClick={()=>setActiveTab(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {loading && (
-        <div style={{ ...S.card, textAlign: "center", padding: 40 }}>
-          <Spinner size={36} />
-          <div style={{ color: "#71717a", marginTop: 16, fontSize: 14 }}>Analyzing backlink profile for <strong style={{ color: "#fafafa" }}>{domain}</strong>â€¦</div>
+      {renderTab()}
+
+      {toast && (
+        <div style={{position:'fixed',bottom:24,right:24,background:toast.color,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
+          {toast.msg}
         </div>
       )}
 
-      {!loading && !data && !error && (
-        <EmptyState icon="ðŸ”—" title="Enter a domain to explore backlinks" description="Domain Authority, referring domains, anchor text distribution, spam score, competitor gap analysis and link prospecting." />
-      )}
-
-      {(data || tab === "disavow") && !loading && (
-        <>
-          {data && (
-            <div style={{ ...S.card, display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center", marginBottom: 20 }}>
-              <ScoreRing score={da} label="Domain Authority" size={100} />
-              <ScoreRing score={pa} label="Page Authority" size={80} />
-              <div style={{ flex: 1, display: "flex", flexWrap: "wrap", gap: 12 }}>
-                {[
-                  { label: "Inbound Links",    value: (data?.inboundLinksCount ?? inboundLinks.length) || "â€”", color: "#4f46e5" },
-                  { label: "Linking Domains",  value: (data?.linkingDomainsCount ?? linkingDomains.length) || "â€”", color: "#818cf8" },
-                  { label: "Ranking Keywords", value: data?.rankingKeywords ?? "â€”", color: "#22c55e" },
-                  { label: "Spam Score",       value: `${spam}/17`, color: spam > 8 ? "#f87171" : spam > 4 ? "#f5c842" : "#1fbb7a" },
-                ].map(m => (
-                  <div key={m.label} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "14px 18px", minWidth: 110, flex: 1 }}>
-                    <div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{m.label}</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: m.color, lineHeight: 1 }}>{m.value}</div>
-                  </div>
-                ))}
-              </div>
+      {modal === 'new-campaign' && (
+        <div style={{position:'fixed',inset:0,background:'#000a',zIndex:9998,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setModal(null)}>
+          <div style={{...S.card,minWidth:360,maxWidth:480}} onClick={e=>e.stopPropagation()}>
+            <div style={S.cardTitle}>New Outreach Campaign</div>
+            <div style={{marginBottom:12}}>
+              <div style={S.label}>Campaign Name</div>
+              <input style={S.input} placeholder="e.g. Q3 Guest Post Push" value={form.campaignName||''} onChange={e=>setForm(p=>({...p,campaignName:e.target.value}))} autoFocus />
             </div>
-          )}
-
-          <MozTabs tabs={TABS} active={tab} onChange={t => { setTab(t); setSearch(""); }} />
-
-          {/* OVERVIEW */}
-          {tab === "overview" && data && (
-            <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-              <MozCard title="Spam Score">
-                <SpamBar score={spam} />
-                <div style={{ marginTop: 12, fontSize: 13, color: "#71717a", lineHeight: 1.6 }}>Spam Score of {spam}/17 â€” {spam > 8 ? "High risk. Review and disavow toxic links." : spam > 4 ? "Moderate. Monitor new links closely." : "Healthy. Continue building quality links."}</div>
-              </MozCard>
-              <MozCard title="Link Type Distribution">
-                {["follow", "nofollow", "sponsored", "ugc"].map((type, i) => {
-                  const count = inboundLinks.filter(l => (l.type || "follow").toLowerCase() === type).length;
-                  const pct = inboundLinks.length ? Math.round((count / inboundLinks.length) * 100) : 0;
-                  const colors = ["#1fbb7a", "#f87171", "#f5c842", "#818cf8"];
-                  return (
-                    <div key={type} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                      <div style={{ width: 72, fontSize: 11, fontWeight: 600, color: "#a1a1aa", textTransform: "capitalize" }}>{type}</div>
-                      <div style={{ flex: 1, background: "#27272a", borderRadius: 4, height: 8 }}>
-                        <div style={{ width: `${pct}%`, height: "100%", background: colors[i], borderRadius: 4 }} />
-                      </div>
-                      <span style={{ fontSize: 12, color: "#71717a", minWidth: 32, textAlign: "right" }}>{count}</span>
-                    </div>
-                  );
-                })}
-              </MozCard>
-              <MozCard title="Top Anchor Text">
-                {anchorText.slice(0, 8).length > 0 ? anchorText.slice(0, 8).map((a, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid #1f1f22", fontSize: 13 }}>
-                    <span style={{ color: "#fafafa" }}>{a.anchor || "(none)"}</span>
-                    <span style={{ color: "#4f46e5", fontWeight: 700 }}>{a.links || a.count || 0}</span>
-                  </div>
-                )) : <div style={{ color: "#52525b", fontSize: 13 }}>No anchor data</div>}
-              </MozCard>
-              <MozCard title="Domain Authority Benchmarks">
-                {[
-                  { label: "Your Domain", score: da, color: "#4f46e5" },
-                  { label: "Industry Avg (eComm)", score: 35, color: "#52525b" },
-                  { label: "New Domain Baseline", score: 10, color: "#27272a" },
-                ].map(b => (
-                  <div key={b.label} style={{ marginBottom: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: "#a1a1aa" }}>{b.label}</span>
-                      <span style={{ color: b.color, fontWeight: 700 }}>{b.score}</span>
-                    </div>
-                    <div style={{ background: "#27272a", borderRadius: 4, height: 8 }}>
-                      <div style={{ width: `${b.score}%`, background: b.color, height: "100%", borderRadius: 4 }} />
-                    </div>
-                  </div>
-                ))}
-                <div style={{ fontSize: 12, color: "#52525b", marginTop: 8 }}>DA 50+ = strong. DA 30-49 = good. DA below 30 = needs link building.</div>
-              </MozCard>
-              {data?.rawReport && (
-                <div style={{ ...S.card, gridColumn: "1 / -1" }}>
-                  <div style={S.sectionTitle}>AI Analysis Report</div>
-                  <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{data.rawReport || data.result}</div>
-                </div>
-              )}
+            <div style={{marginBottom:12}}>
+              <div style={S.label}>Target Domain</div>
+              <input style={S.input} placeholder="yoursite.com" value={form.campaignDomain||''} onChange={e=>setForm(p=>({...p,campaignDomain:e.target.value}))} />
             </div>
-          )}
-
-          {/* INBOUND LINKS */}
-          {tab === "inbound" && data && (
-            <div style={{ marginTop: 20 }}>
-              <MozCard title={`Inbound Links (${filteredInbound.length})`} noPad>
-                <div style={{ padding: "14px 20px 0" }}>
-                  <FilterBar search={search} onSearch={setSearch} placeholder="Filter by URL, anchor..." count={filteredInbound.length}>
-                    <select value={linkFilter} onChange={e => setLinkFilter(e.target.value)}
-                      style={{ background: "#09090b", border: "1px solid #3f3f46", borderRadius: 8, color: "#fafafa", fontSize: 12, padding: "8px 12px" }}>
-                      <option value="all">All types</option>
-                      <option value="follow">Follow</option>
-                      <option value="nofollow">Nofollow</option>
-                      <option value="sponsored">Sponsored</option>
-                      <option value="ugc">UGC</option>
-                    </select>
-                    <button style={{ ...S.btn("danger"), fontSize: 11, padding: "6px 12px" }} onClick={() => { const spam = filteredInbound.filter(l => Number(l.spam) > 8); spam.forEach(l => { const d = new URL(l.url).hostname; addToDisavow(d); }); setTab("disavow"); }}>
-                      Disavow High-Spam
-                    </button>
-                  </FilterBar>
-                </div>
-                <SortableTable columns={INBOUND_COLS} rows={filteredInbound} emptyText="No inbound links found." loading={loading} />
-              </MozCard>
+            <div style={{marginBottom:16}}>
+              <div style={S.label}>Campaign Type</div>
+              <select style={S.select} value={form.campaignType||'link-request'} onChange={e=>setForm(p=>({...p,campaignType:e.target.value}))}>
+                <option value="link-request">Link Request</option>
+                <option value="guest-post">Guest Post</option>
+                <option value="broken-link">Broken Link</option>
+                <option value="unlinked-mention">Unlinked Mention</option>
+              </select>
             </div>
-          )}
-
-          {/* LINKING DOMAINS */}
-          {tab === "domains" && data && (
-            <div style={{ marginTop: 20 }}>
-              <MozCard title={`Linking Domains (${filteredDomains.length})`} noPad>
-                <div style={{ padding: "14px 20px 0" }}>
-                  <FilterBar search={search} onSearch={setSearch} placeholder="Filter by domain..." count={filteredDomains.length}>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "6px 12px" }} onClick={() => setOutreachDomain((filteredDomains[0]?.domain || ""))}> Copy Top Domain for Outreach</button>
-                  </FilterBar>
-                </div>
-                <SortableTable columns={[...DOMAIN_COLS, { key: "domain", label: "", render: (v) => (
-                  <div style={{ display: "flex", gap: 4 }}>
-                    <button style={{ ...S.btn(), fontSize: 10, padding: "3px 8px" }} onClick={() => { setOutreachDomain(v); setTab("outreach"); }}>Outreach</button>
-                    <button style={{ ...S.btn("danger"), fontSize: 10, padding: "3px 8px" }} onClick={() => addToDisavow(v)}>Disavow</button>
-                  </div>
-                )}]} rows={filteredDomains} emptyText="No linking domains found." loading={loading} />
-              </MozCard>
+            <div style={{display:'flex',gap:8}}>
+              <button style={{...S.btn,background:'#ec4899'}} onClick={createCampaign}>Create Campaign</button>
+              <button style={{...S.btn,background:'#27272a'}} onClick={()=>setModal(null)}>Cancel</button>
             </div>
-          )}
-
-          {/* ANCHOR TEXT */}
-          {tab === "anchors" && data && (
-            <div style={{ marginTop: 20 }}>
-              <MozCard title="Anchor Text Distribution" noPad>
-                <SortableTable columns={ANCHOR_COLS} rows={anchorText.filter(r => !search || (r.anchor || "").toLowerCase().includes(search.toLowerCase()))} emptyText="No anchor text data." loading={loading} />
-              </MozCard>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Anchor Text Health Guide</div>
-                {[
-                  { risk: "Exact-match anchors > 20%", impact: "High risk of Penguin filter. Google sees over-optimised anchor profiles as a manipulation signal.", fix: "Diversify to branded, partial-match, and natural anchors." },
-                  { risk: "No branded anchors", impact: "Indicates an unnatural link profile â€” real mentions usually include brand names.", fix: "Prioritise link building strategies that generate branded links." },
-                  { risk: "Generic anchors (click here, read more)", impact: "Low SEO value but natural. Having some is fine.", fix: "Use targeted outreach to improve anchor text on key links." },
-                ].map(({ risk, impact, fix }) => (
-                  <div key={risk} style={{ padding: "10px 0", borderBottom: "1px solid #1f1f22" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f87171", marginBottom: 2 }}>{risk}</div>
-                    <div style={{ fontSize: 12, color: "#71717a" }}><strong style={{ color: "#52525b" }}>Impact:</strong> {impact}</div>
-                    <div style={{ fontSize: 12, color: "#818cf8" }}><strong>Fix:</strong> {fix}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TOP PAGES */}
-          {tab === "top-pages" && data && (
-            <div style={{ marginTop: 20 }}>
-              <MozCard title="Top Pages by Inbound Links" noPad>
-                <SortableTable columns={TOP_PAGES_COLS} rows={topPages} emptyText="No page data available." loading={loading} />
-              </MozCard>
-            </div>
-          )}
-
-          {/* SPAM ANALYSIS */}
-          {tab === "spam" && data && (
-            <div style={{ marginTop: 20 }}>
-              <MozCard title="Spam Score Breakdown">
-                <SpamBar score={spam} />
-                <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-                  {(data?.spamSignals || [
-                    { label: "Toxic links count",      score: Math.min(17, Math.round(spam * 1.2)) },
-                    { label: "Thin content signals",   score: Math.min(17, Math.round(spam * 0.8)) },
-                    { label: "Anchor manipulation",    score: Math.min(17, Math.round(spam * 0.6)) },
-                    { label: "Link velocity anomaly",  score: Math.min(17, Math.round(spam * 0.4)) },
-                  ]).map((sig, i) => (
-                    <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px" }}>
-                      <div style={{ fontSize: 12, color: "#71717a", marginBottom: 8 }}>{sig.label}</div>
-                      <ScoreBar score={((sig.score || 0) / 17) * 100} />
-                      <div style={{ fontSize: 11, color: "#52525b", marginTop: 4 }}>{sig.score || 0}/17 flags</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 16, background: "#0d1117", border: "1px solid #1e3a5f", borderRadius: 10, padding: "14px 18px", fontSize: 13, color: "#71717a", lineHeight: 1.7 }}>
-                  <strong style={{ color: "#3b9eff" }}>What is Spam Score?</strong> Moz's Spam Score represents the percentage of sites with similar features that have been penalised or banned by Google. Score above 8/17 warrants a disavow review.
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <button style={S.btn("danger")} onClick={() => setTab("disavow")}>Build Disavow File â†’</button>
-                </div>
-              </MozCard>
-            </div>
-          )}
-
-          {/* COMPETITOR GAP */}
-          {tab === "competitor" && (
-            <div style={{ marginTop: 20 }}>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Competitor Backlink Gap Analysis</div>
-                <p style={{ fontSize: 13, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>Enter a competitor's domain to discover which sites link to them but not to you. These are your highest-priority link building targets.</p>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <input style={S.input} value={compDomain} onChange={e => setCompDomain(e.target.value)} onKeyDown={e => e.key === "Enter" && analyzeCompetitor()} placeholder="e.g. competitor.com" />
-                  <button style={S.btn("primary")} onClick={analyzeCompetitor} disabled={compLoading}>{compLoading ? "Analysingâ€¦" : "Analyse Competitor"}</button>
-                </div>
-              </div>
-              {compError && <ErrorBox message={compError} />}
-              {compLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner /></div>}
-              {compData && (
-                <>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
-                    {[
-                      { label: "Your DA", value: da, color: "#4f46e5" },
-                      { label: `${compDomain} DA`, value: compData?.domainAuthority ?? compData?.da ?? "â€”", color: "#f59e0b" },
-                      { label: "Link Gap (you're missing)", value: gapDomains.length, color: "#f87171" },
-                    ].map(m => (
-                      <div key={m.label} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "14px 18px", textAlign: "center" }}>
-                        <div style={{ fontSize: 11, color: "#71717a", marginBottom: 6 }}>{m.label}</div>
-                        <div style={{ fontSize: 28, fontWeight: 900, color: m.color }}>{m.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <MozCard title={`Domains linking to ${compDomain} but NOT ${domain || "you"} (${gapDomains.length})`} noPad>
-                    <SortableTable
-                      columns={[...DOMAIN_COLS, { key: "domain", label: "", render: v => (
-                        <div style={{ display: "flex", gap: 4 }}>
-                          <button style={{ ...S.btn("green"), fontSize: 10, padding: "3px 8px" }} onClick={() => { setOutreachDomain(v); setTab("outreach"); }}>Target</button>
-                        </div>
-                      )}]}
-                      rows={gapDomains} emptyText="No gap found â€” you have all the same links as this competitor!" loading={compLoading}
-                    />
-                  </MozCard>
-                </>
-              )}
-              {!compData && !compLoading && (
-                <div style={S.card}>
-                  <div style={S.sectionTitle}>Why Competitor Gap Analysis Matters</div>
-                  {[
-                    { t: "Find proven link sources", d: "If a site links to your competitor, they already accept links in your niche â€” much easier to pitch than cold outreach." },
-                    { t: "Prioritise by DA", d: "Sort gap domains by Domain Authority to target the highest-impact link opportunities first." },
-                    { t: "Reverse-engineer their strategy", d: "See what content or pages are attracting competitor links and create better versions." },
-                    { t: "Close the authority gap faster", d: "Systematically closing your link gap is the most efficient way to outrank competitors." },
-                  ].map(({ t, d }) => (
-                    <div key={t} style={S.row}>
-                      <span style={S.badge("blue")}>âœ“</span>
-                      <div><div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a" }}>{d}</div></div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* NEW / LOST */}
-          {tab === "new-lost" && (
-            <div style={{ marginTop: 20 }}>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>New & Lost Link Tracker</div>
-                <p style={{ fontSize: 13, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>Track which linking domains have been gained or lost between analysis runs. Click "Take Snapshot" after re-analysing to compare with the previous run.</p>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <button style={S.btn("primary")} onClick={takeNewSnapshot} disabled={!data}>Take New Snapshot & Compare</button>
-                </div>
-                {snapshot && <div style={{ marginTop: 10, fontSize: 12, color: "#52525b" }}>Last snapshot: {new Date(snapshot.timestamp).toLocaleString()} â€” {snapshot.domains.length} domains</div>}
-              </div>
-              {snapshotDiff ? (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                  <div style={S.card}>
-                    <div style={S.sectionTitle}>New Links Gained ({snapshotDiff.newLinks.length})</div>
-                    {snapshotDiff.newLinks.length === 0 ? <EmptyState icon="ðŸ“Š" title="No new links" description="No new linking domains since last snapshot." /> :
-                      snapshotDiff.newLinks.map(d => (
-                        <div key={d} style={{ ...S.row, justifyContent: "space-between" }}>
-                          <span style={{ fontSize: 13, color: "#fafafa" }}>{d}</span>
-                          <span style={S.badge("good")}>+New</span>
-                        </div>
-                      ))
-                    }
-                  </div>
-                  <div style={S.card}>
-                    <div style={S.sectionTitle}>Lost Links ({snapshotDiff.lostLinks.length})</div>
-                    {snapshotDiff.lostLinks.length === 0 ? <EmptyState icon="ðŸ“Š" title="No lost links" description="No linking domains lost since last snapshot." /> :
-                      snapshotDiff.lostLinks.map(d => (
-                        <div key={d} style={{ ...S.row, justifyContent: "space-between" }}>
-                          <span style={{ fontSize: 13, color: "#fafafa" }}>{d}</span>
-                          <span style={S.badge("red")}>Lost</span>
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-              ) : (
-                <div style={S.card}>
-                  <div style={S.sectionTitle}>How Link Monitoring Works</div>
-                  {[
-                    { t: "Step 1: Analyse your domain", d: "Run a backlink analysis to capture the current linking domain profile as your baseline snapshot." },
-                    { t: "Step 2: Wait and re-analyse", d: "Come back after a week or two and run another analysis. Then click 'Take New Snapshot'." },
-                    { t: "Step 3: Review changes", d: "See exactly which domains are newly linking (great for validating outreach campaigns) and which are lost (needs action)." },
-                    { t: "Step 4: Act on lost links", d: "For lost links, reach out to the site owner to check if the link removal was intentional. Often it's just a site migration." },
-                  ].map(({ t, d }) => (
-                    <div key={t} style={S.row}>
-                      <span style={S.badge("blue")}>â†’</span>
-                      <div><div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a" }}>{d}</div></div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* LINK OPPORTUNITIES */}
-          {tab === "opps" && (
-            <div style={{ marginTop: 20 }}>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>AI-Powered Link Opportunities</div>
-                <p style={{ fontSize: 13, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>These are your highest-priority link building targets: high-DA domains that link to competitors but not to you. Add a competitor on the Competitor Gap tab first to populate this list.</p>
-              </div>
-              {opportunities.length > 0 ? (
-                <MozCard title={`Top ${opportunities.length} Link Opportunities (sorted by DA)`} noPad>
-                  <SortableTable
-                    columns={[
-                      ...DOMAIN_COLS,
-                      { key: "domain", label: "Priority", render: (v, row) => {
-                        const score = row.da || 0;
-                        const priority = score >= 50 ? "High" : score >= 30 ? "Medium" : "Low";
-                        const color = score >= 50 ? "good" : score >= 30 ? "yellow" : "";
-                        return <span style={S.badge(color)}>{priority}</span>;
-                      }},
-                      { key: "domain", label: "", render: v => (
-                        <button style={{ ...S.btn("primary"), fontSize: 10, padding: "3px 10px" }} onClick={() => { setOutreachDomain(v); setTab("outreach"); }}>Write Outreach â†’</button>
-                      )},
-                    ]}
-                    rows={opportunities} emptyText="Add a competitor on the Competitor Gap tab to find opportunities."
-                  />
-                </MozCard>
-              ) : (
-                <div style={S.card}>
-                  <EmptyState icon="ðŸŽ¯" title="No opportunities yet" description="Run a Competitor Gap analysis first. The highest-DA domains linking to your competitor will appear here as prioritised link building targets." />
-                  <button style={{ ...S.btn("primary"), marginTop: 14 }} onClick={() => setTab("competitor")}>Go to Competitor Gap â†’</button>
-                </div>
-              )}
-
-              {/* Prospecting strategies */}
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Link Prospecting Strategies</div>
-                {[
-                  { t: "Skyscraper Technique", d: "Find competitor pages with lots of backlinks, create significantly better content, then ask linking domains to update their link to yours." },
-                  { t: "Resource Page Link Building", d: "Google '[your niche] + resources' or 'intitle:resources [topic]' to find curated resource pages that might link to your products." },
-                  { t: "Broken Link Building", d: "Find broken links on high-DA sites in your niche, then offer your content as a replacement. Extension: Check My Links (Chrome)." },
-                  { t: "Digital PR / HARO", d: "Sign up for HARO (Help a Reporter Out) to get mentioned in press articles with high-DA links." },
-                  { t: "Product Reviews & Roundups", d: "Reach out to bloggers and affiliate sites for product reviews â€” these generate both traffic and quality backlinks." },
-                  { t: "Supplier / Partner Links", d: "Ask existing suppliers, partners, and distributors to add a link to your store from their websites." },
-                ].map(({ t, d }) => (
-                  <div key={t} style={{ padding: "10px 0", borderBottom: "1px solid #1f1f22" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#818cf8" }}>{t}</div>
-                    <div style={{ fontSize: 12, color: "#71717a", marginTop: 3 }}>{d}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* AI OUTREACH */}
-          {tab === "outreach" && (
-            <div style={{ marginTop: 20 }}>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>AI Outreach Email Generator</div>
-                <p style={{ fontSize: 13, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>Generate personalised, high-converting link building outreach emails for any target domain. The AI tailors the pitch to the target site's content and your store's value proposition.</p>
-                <div style={{ display: "grid", gap: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 12, color: "#71717a", marginBottom: 4 }}>Target Domain</div>
-                    <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={outreachDomain} onChange={e => setOutreachDomain(e.target.value)} placeholder="e.g. blog.example.com" />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, color: "#71717a", marginBottom: 4 }}>Context (optional â€” describe your store / what you're offering)</div>
-                    <textarea style={{ ...S.ta, height: 80 }} value={outreachContext} onChange={e => setOutreachContext(e.target.value)} placeholder="e.g. We sell handmade leather goods and want a link from their sustainable fashion gift guide..." />
-                  </div>
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <button style={S.btn("primary")} onClick={generateOutreach} disabled={outreachLoading || !outreachDomain.trim()}>{outreachLoading ? "Generatingâ€¦" : "Generate Outreach Email with AI"}</button>
-                </div>
-              </div>
-
-              {outreachLoading && <div style={{ textAlign: "center", padding: 30 }}><Spinner /></div>}
-              {outreachResult && (
-                <div style={S.card}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <div style={S.sectionTitle}>Generated Outreach Email</div>
-                    <button style={{ ...S.btn(), fontSize: 11, padding: "5px 10px" }} onClick={() => navigator.clipboard?.writeText(typeof outreachResult === "string" ? outreachResult : JSON.stringify(outreachResult, null, 2))}>Copy Email</button>
-                  </div>
-                  <div style={{ fontSize: 13, color: "#e4e4e7", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{typeof outreachResult === "string" ? outreachResult : (outreachResult.result || outreachResult.reply || JSON.stringify(outreachResult, null, 2))}</div>
-                </div>
-              )}
-
-              {/* Outreach best practices */}
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Outreach Best Practices</div>
-                {[
-                  { t: "Personalise every email", d: "Reference specific content on their site. Generic emails get ignored. Mention their most recent article or a specific page." },
-                  { t: "Lead with value", d: "Explain what's in it for them before asking for anything. 'I have a resource your readers would love' beats 'Can I have a link?'" },
-                  { t: "Keep it short", d: "3-4 sentences max. Busy editors make quick decisions. Long emails get skimmed and deleted." },
-                  { t: "Follow up once", d: "Send exactly one follow-up 5-7 days after the first email. More than that is spam." },
-                  { t: "Track with UTM", d: "Add UTM parameters to your link so you can see in GA4 exactly how much traffic each placed link drives." },
-                ].map(({ t, d }) => (
-                  <div key={t} style={S.row}>
-                    <span style={S.badge("blue")}>âœ“</span>
-                    <div><div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a" }}>{d}</div></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* DISAVOW BUILDER */}
-          {tab === "disavow" && (
-            <div style={{ marginTop: 20 }}>
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Google Disavow File Builder</div>
-                <p style={{ fontSize: 13, color: "#71717a", marginBottom: 14, lineHeight: 1.6 }}>Build and export a Google Disavow file to remove toxic backlinks from your profile. Only disavow links you've already tried to remove manually â€” misusing disavow can harm rankings.</p>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <input style={S.input} value={disavowInput} onChange={e => setDisavowInput(e.target.value)} placeholder="Add domain to disavow, e.g. spamsite.com" onKeyDown={e => { if (e.key === "Enter") { addToDisavow(disavowInput.trim()); setDisavowInput(""); } }} />
-                  <button style={S.btn("danger")} onClick={() => { addToDisavow(disavowInput.trim()); setDisavowInput(""); }}>Add to Disavow</button>
-                </div>
-                {data && inboundLinks.filter(l => Number(l.spam) > 8).length > 0 && (
-                  <div style={{ marginTop: 10, fontSize: 13, color: "#71717a" }}>
-                    <span style={{ color: "#f87171", fontWeight: 700 }}>{inboundLinks.filter(l => Number(l.spam) > 8).length} high-spam links detected.</span>
-                    {" "}<button style={{ ...S.btn("danger"), fontSize: 11, padding: "4px 10px" }} onClick={() => {
-                      inboundLinks.filter(l => Number(l.spam) > 8).forEach(l => { try { const d = new URL(l.url).hostname; addToDisavow(d); } catch {} });
-                    }}>Auto-add all high-spam domains</button>
-                  </div>
-                )}
-              </div>
-
-              {disavowList.length > 0 ? (
-                <div style={S.card}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <div style={S.sectionTitle}>Disavow List ({disavowList.length} domains)</div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button style={{ ...S.btn("primary"), fontSize: 12 }} onClick={exportDisavow}>Export disavow.txt for Google</button>
-                      <button style={{ ...S.btn("danger"), fontSize: 12 }} onClick={() => setDisavowList([])}>Clear All</button>
-                    </div>
-                  </div>
-                  {disavowList.map(d => (
-                    <div key={d} style={{ ...S.row, justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 13, color: "#fafafa", fontFamily: "monospace" }}>domain:{d}</span>
-                      <button style={{ ...S.btn("danger"), fontSize: 10, padding: "3px 8px" }} onClick={() => setDisavowList(l => l.filter(x => x !== d))}>Remove</button>
-                    </div>
-                  ))}
-                  <div style={{ marginTop: 14, background: "#09090b", borderRadius: 8, padding: "12px 14px", fontFamily: "monospace", fontSize: 12, color: "#71717a" }}>
-                    <div style={{ color: "#52525b" }}># Disavow file preview</div>
-                    {disavowList.map(d => <div key={d} style={{ color: "#e4e4e7" }}>domain:{d}</div>)}
-                  </div>
-                </div>
-              ) : (
-                <EmptyState icon="ðŸš«" title="Disavow list is empty" description="Add toxic domains manually or use the Auto-add button after analysing your backlinks to detect high-spam links automatically." />
-              )}
-
-              <div style={S.card}>
-                <div style={S.sectionTitle}>Disavow File Guidelines (Google)</div>
-                {[
-                  { t: "Only use as a last resort", d: "First contact the site owner and request link removal. Only disavow if you've tried and failed to get links removed." },
-                  { t: "domain: prefix disavows ALL pages", d: "'domain:spamsite.com' disavows every link from that domain. Use a full URL to disavow only specific pages." },
-                  { t: "Submit via Google Search Console", d: "Upload the .txt file at search.google.com/search-console/disavow-links. Processed within weeks." },
-                  { t: "Disavow takes time", d: "Google re-crawls disavowed sites before ignoring them. Allow 4â€“6 weeks to see effects in rankings." },
-                  { t: "Don't disavow good links", d: "Only target clearly manipulative or paid links. Disavowing legitimate editorial links will hurt your authority." },
-                ].map(({ t, d }) => (
-                  <div key={t} style={S.row}>
-                    <span style={S.badge("yellow")}>âš </span>
-                    <div><div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>{t}</div><div style={{ fontSize: 12, color: "#71717a" }}>{d}</div></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
     </div>
   );
