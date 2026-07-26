@@ -1,24 +1,20 @@
+"use strict";
 const express = require("express");
 const router = express.Router();
-const { handleWarehouseQuery } = require("./dataWarehouseConnectorService");
-
-// POST /api/data-warehouse-connector/query
-router.post("/query", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await handleWarehouseQuery(query);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Data Warehouse Connector API running" });
-});
-
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const { requireCreditsOnMutation } = require("../../core/creditMiddleware");
+const engine = require("./engines/data-warehouse-engine");
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "data-warehouse-connector", v: "2.0.0" })));
+router.get("/dashboard", ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get("/connectors", ah(async (req, res) => res.json({ ok: true, connectors: engine.getConnectors(req.query) })));
+router.get("/connectors/:id", ah(async (req, res) => { const c = engine.getConnector(req.params.id); if (!c) return res.status(404).json({ ok: false, error: "Connector not found" }); res.json({ ok: true, connector: c }); }));
+router.get("/sync-jobs", ah(async (req, res) => res.json({ ok: true, jobs: engine.getSyncJobs(req.query) })));
+router.get("/schema", ah(async (req, res) => res.json({ ok: true, tables: engine.getSchemaTables() })));
+router.post("/connectors/:id/test", ah(async (req, res) => res.json({ ok: true, ...engine.testConnection(req.params.id, req.body.credentials || {}) })));
+router.post("/connectors/:id/sync", ah(async (req, res) => res.json({ ok: true, ...engine.triggerSync(req.params.id, req.body.tables) })));
+router.post("/query/preview", requireCreditsOnMutation("analytics-insight"), ah(async (req, res) => { const { sql, connectorId } = req.body; if (!sql) return res.status(400).json({ ok: false, error: "sql required" }); res.json({ ok: true, ...engine.previewQuery(sql, connectorId) }); }));
+router.post("/connectors", ah(async (req, res) => { const { type, name, credentials } = req.body; if (!type || !name) return res.status(400).json({ ok: false, error: "type and name required" }); res.json({ ok: true, connector: { id: type + "_" + Date.now(), type, name, status: "pending", createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

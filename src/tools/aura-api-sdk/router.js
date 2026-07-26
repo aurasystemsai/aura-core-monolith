@@ -1,10 +1,20 @@
-const express = require('express');
+"use strict";
+const express = require("express");
 const router = express.Router();
-// Placeholder for Aura API SDK advanced endpoints
-router.get('/docs', (req, res) => {
-  res.json({ ok: true, docs: 'Aura API SDK endpoints coming soon.' });
-});
-router.get('/i18n', (req, res) => {
-  res.json({ ok: true, i18n: { title: 'Aura API SDK' } });
-});
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const engine = require("./engines/aura-api-sdk-engine");
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "aura-api-sdk", v: "2.0.0" })));
+router.get("/dashboard", ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get("/keys", ah(async (req, res) => res.json({ ok: true, keys: engine.getApiKeys(req.headers["x-shopify-shop-domain"]) })));
+router.get("/keys/:id", ah(async (req, res) => { const k = engine.getApiKey(req.params.id); if (!k) return res.status(404).json({ ok: false, error: "Key not found" }); res.json({ ok: true, key: k }); }));
+router.post("/keys", ah(async (req, res) => { const { name, permissions } = req.body; if (!name) return res.status(400).json({ ok: false, error: "name required" }); res.json({ ok: true, key: engine.createApiKey(name, permissions) }); }));
+router.post("/keys/:id/revoke", ah(async (req, res) => res.json({ ok: true, ...engine.revokeApiKey(req.params.id) })));
+router.post("/keys/:id/test", ah(async (req, res) => res.json({ ok: true, ...engine.testApiKey(req.params.id) })));
+router.get("/endpoints", ah(async (req, res) => res.json({ ok: true, endpoints: engine.getEndpoints(req.query) })));
+router.get("/sdks", ah(async (req, res) => res.json({ ok: true, sdks: engine.getSdkLanguages() })));
+router.get("/usage", ah(async (req, res) => res.json({ ok: true, history: engine.getUsageHistory() })));
+router.post("/snippet", ah(async (req, res) => { const { lang, endpoint } = req.body; if (!lang || !endpoint) return res.status(400).json({ ok: false, error: "lang and endpoint required" }); res.json({ ok: true, ...engine.generateCodeSnippet(lang, endpoint) }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;
