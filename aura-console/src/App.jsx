@@ -71,6 +71,12 @@ const FinanceAutopilot = lazy(() => import("./components/tools/FinanceAutopilot.
 const AdvancedFinanceInventoryPlanning = lazy(() => import("./components/tools/AdvancedFinanceInventoryPlanning.jsx"));
 const DailyCFOPack = lazy(() => import("./components/tools/DailyCFOPack.jsx"));
 const EmailAutomationBuilder = lazy(() => import("./components/tools/EmailAutomationBuilder.jsx"));
+const GoogleAdsIntegration = lazy(() => import("./components/tools/GoogleAdsIntegration.jsx"));
+const FacebookAdsIntegration = lazy(() => import("./components/tools/FacebookAdsIntegration.jsx"));
+const TikTokAdsIntegration = lazy(() => import("./components/tools/TikTokAdsIntegration.jsx"));
+const AdCreativeOptimizer = lazy(() => import("./components/tools/AdCreativeOptimizer.jsx"));
+const AdsAnomalyGuard = lazy(() => import("./components/tools/AdsAnomalyGuard.jsx"));
+const MultiChannelOptimizer = lazy(() => import("./components/tools/MultiChannelOptimizer.jsx"));
 const DynamicPricingEngine = lazy(() => import("./components/tools/DynamicPricingEngine.jsx"));
 const CreativeAutomationEngine = lazy(() => import("./components/tools/CreativeAutomationEngine.jsx"));
 const BrandIntelligenceLayer = lazy(() => import("./components/tools/BrandIntelligenceLayer.jsx"));
@@ -595,6 +601,14 @@ function App() {
  {activeSection === "customer-segmentation-engine"&& <CustomerSegmentationEngine />}
  {activeSection === "customer-journey-mapping"&& <CustomerJourneyMapping />}
  {activeSection === "data-enrichment-suite"&& <DataEnrichmentSuite />}
+
+ {/* -- Advertising & Paid Media -- */}
+ {activeSection === "google-ads-integration"&& <GoogleAdsIntegration />}
+ {activeSection === "facebook-ads-integration"&& <FacebookAdsIntegration />}
+ {activeSection === "tiktok-ads-integration"&& <TikTokAdsIntegration />}
+ {activeSection === "ad-creative-optimizer"&& <AdCreativeOptimizer />}
+ {activeSection === "ads-anomaly-guard"&& <AdsAnomalyGuard />}
+ {activeSection === "multi-channel-optimizer"&& <MultiChannelOptimizer />}
 
  {/* -- Finance & Operations -- */}
  {activeSection === "finance-autopilot"&& <FinanceAutopilot />}

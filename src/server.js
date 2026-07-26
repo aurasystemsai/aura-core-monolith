@@ -186,6 +186,12 @@ const toolRouters = [
   { path: '/api/advanced-finance-inventory-planning', router: require('./tools/advanced-finance-inventory-planning/router'), middleware: requireTool('advanced-finance-inventory-planning'), creditAction: 'analytics-insight' },
   { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router'), middleware: requireTool('daily-cfo-pack'), creditAction: 'analytics-insight' },
   { path: '/api/churn-prediction-playbooks', router: require('./tools/churn-prediction-playbooks/router'), middleware: requireTool('churn-prediction-playbooks'), creditAction: 'churn-predict' },
+  { path: '/api/google-ads-integration', router: require('./tools/google-ads-integration/router'), middleware: requireTool('google-ads-integration'), creditAction: 'analytics-insight' },
+  { path: '/api/facebook-ads-integration', router: require('./tools/facebook-ads-integration/router'), middleware: requireTool('facebook-ads-integration'), creditAction: 'analytics-insight' },
+  { path: '/api/tiktok-ads-integration', router: require('./tools/tiktok-ads-integration/router'), middleware: requireTool('tiktok-ads-integration'), creditAction: 'analytics-insight' },
+  { path: '/api/ad-creative-optimizer', router: require('./tools/ad-creative-optimizer/router'), middleware: requireTool('ad-creative-optimizer'), creditAction: 'ad-copy' },
+  { path: '/api/ads-anomaly-guard', router: require('./tools/ads-anomaly-guard/router'), middleware: requireTool('ads-anomaly-guard'), creditAction: 'analytics-insight' },
+  { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer'), creditAction: 'analytics-insight' },
 
   // Pro tier tools
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant'), creditAction: 'ai-support' },
