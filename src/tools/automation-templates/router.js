@@ -1,24 +1,16 @@
+"use strict";
 const express = require("express");
 const router = express.Router();
-const { handleTemplateQuery } = require("./automationTemplatesService");
-
-// POST /api/automation-templates/query
-router.post("/query", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await handleTemplateQuery(query);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Automation Templates API running" });
-});
-
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const engine = require("./engines/automation-templates-engine");
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "automation-templates", v: "2.0.0" })));
+router.get("/stats", ah(async (req, res) => res.json({ ok: true, ...engine.getStats() })));
+router.get("/templates", ah(async (req, res) => res.json({ ok: true, templates: engine.getTemplates(req.query) })));
+router.get("/templates/:id", ah(async (req, res) => { const t=engine.getTemplate(req.params.id); if(!t) return res.status(404).json({ok:false,error:"not found"}); res.json({ok:true,template:t}); }));
+router.get("/templates/:id/preview", ah(async (req, res) => res.json({ ok: true, ...engine.previewTemplate(req.params.id) })));
+router.get("/categories", ah(async (req, res) => res.json({ ok: true, categories: engine.getCategories() })));
+router.post("/templates/:id/install", ah(async (req, res) => res.json({ ok: true, ...engine.installTemplate(req.params.id, req.body.customizations || {}) })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

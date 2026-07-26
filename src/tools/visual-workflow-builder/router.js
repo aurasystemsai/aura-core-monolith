@@ -1,32 +1,22 @@
-const express = require('express');
+"use strict";
+const express = require("express");
 const router = express.Router();
-const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const { requireCreditsOnMutation } = require("../../core/creditMiddleware");
+const engine = require("./engines/visual-workflow-engine");
 router.use(verifyShopifySession);
-
-
-router.post('/generate', requireCreditsOnMutation('workflow-generate'), async (req, res) => {
-  try {
-    const { prompt } = req.body;
-    if (!prompt) return res.status(400).json({ ok: false, error: 'prompt required' });
-    res.json({ ok: true, workflow: { nodes: [], edges: [], prompt } });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.get('/templates', async (req, res) => {
-  res.json({ ok: true, templates: [] });
-});
-
-router.get('/executions', async (req, res) => {
-  res.json({ ok: true, executions: [] });
-});
-
-router.post('/activate', requireCreditsOnMutation('workflow-activate'), async (req, res) => {
-  res.json({ ok: true, status: 'active' });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "visual-workflow-builder", v: "2.0.0" })));
+router.get("/dashboard", ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get("/workflows", ah(async (req, res) => res.json({ ok: true, workflows: engine.getWorkflows(req.query) })));
+router.get("/workflows/:id", ah(async (req, res) => { const wf = engine.getWorkflow(req.params.id); if (!wf) return res.status(404).json({ ok: false, error: "not found" }); res.json({ ok: true, workflow: wf }); }));
+router.get("/node-types", ah(async (req, res) => res.json({ ok: true, nodeTypes: engine.getNodeTypes() })));
+router.get("/trigger-types", ah(async (req, res) => res.json({ ok: true, triggerTypes: engine.getTriggerTypes() })));
+router.get("/executions", ah(async (req, res) => res.json({ ok: true, executions: engine.getExecutions(req.query.workflowId) })));
+router.post("/generate", requireCreditsOnMutation("workflow-generate"), ah(async (req, res) => { if (!req.body.prompt) return res.status(400).json({ ok: false, error: "prompt required" }); res.json({ ok: true, ...engine.nlToWorkflow(req.body.prompt) }); }));
+router.post("/validate", ah(async (req, res) => res.json({ ok: true, ...engine.validateDag(req.body.nodes || [], req.body.edges || []) })));
+router.post("/workflows", ah(async (req, res) => { if (!req.body.name) return res.status(400).json({ ok: false, error: "name required" }); res.json({ ok: true, workflow: { id: "wf_" + Date.now(), ...req.body, status: "draft", createdAt: new Date().toISOString() } }); }));
+router.post("/workflows/:id/activate", ah(async (req, res) => res.json({ ok: true, workflowId: req.params.id, status: "active" })));
+router.post("/workflows/:id/pause", ah(async (req, res) => res.json({ ok: true, workflowId: req.params.id, status: "paused" })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

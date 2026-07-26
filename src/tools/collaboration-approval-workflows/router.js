@@ -1,24 +1,19 @@
+"use strict";
 const express = require("express");
 const router = express.Router();
-const { buildCollaborationWorkflow } = require("./collaborationApprovalService");
-
-// POST /api/collaboration-approval-workflows/build
-router.post("/build", async (req, res) => {
-  try {
-    const { workflow } = req.body;
-    if (!workflow || typeof workflow !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid workflow" });
-    }
-    const result = await buildCollaborationWorkflow(workflow);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Collaboration Approval Workflows API running" });
-});
-
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const engine = require("./engines/collaboration-approval-engine");
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "collaboration-approval-workflows", v: "2.0.0" })));
+router.get("/dashboard", ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get("/requests", ah(async (req, res) => res.json({ ok: true, requests: engine.getRequests(req.query) })));
+router.get("/requests/:id", ah(async (req, res) => { const r=engine.getRequest(req.params.id); if(!r) return res.status(404).json({ok:false,error:"not found"}); res.json({ok:true,request:r,auditLog:engine.getAuditLog(req.params.id)}); }));
+router.get("/chains", ah(async (req, res) => res.json({ ok: true, chains: engine.getChains() })));
+router.get("/audit-log", ah(async (req, res) => res.json({ ok: true, log: engine.getAuditLog(req.query.requestId) })));
+router.post("/requests/:id/approve", ah(async (req, res) => { const {approver,comment}=req.body; if(!approver) return res.status(400).json({ok:false,error:"approver required"}); res.json({ok:true,...engine.approveRequest(req.params.id,approver,comment)}); }));
+router.post("/requests/:id/reject", ah(async (req, res) => { const {approver,reason}=req.body; if(!approver||!reason) return res.status(400).json({ok:false,error:"approver and reason required"}); res.json({ok:true,...engine.rejectRequest(req.params.id,approver,reason)}); }));
+router.post("/requests/:id/delegate", ah(async (req, res) => { const {from,to,reason}=req.body; if(!from||!to) return res.status(400).json({ok:false,error:"from and to required"}); res.json({ok:true,...engine.delegateApproval(req.params.id,from,to,reason)}); }));
+router.post("/requests", ah(async (req, res) => { const {title,type,requestedBy}=req.body; if(!title||!type||!requestedBy) return res.status(400).json({ok:false,error:"title, type, requestedBy required"}); res.json({ok:true,request:{id:"apr_"+Date.now(),title,type,requestedBy,...req.body,status:"pending",createdAt:new Date().toISOString()}}); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

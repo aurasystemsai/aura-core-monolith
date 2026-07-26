@@ -1,30 +1,18 @@
-const express = require('express');
+"use strict";
+const express = require("express");
 const router = express.Router();
-const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const { requireCreditsOnMutation } = require("../../core/creditMiddleware");
+const engine = require("./engines/conditional-logic-engine");
 router.use(verifyShopifySession);
-
-
-router.get('/variables', async (req, res) => {
-  res.json({ ok: true, variables: [] });
-});
-
-router.post('/simulate', requireCreditsOnMutation('simulate-conditions'), async (req, res) => {
-  try {
-    res.json({ ok: true, matchCount: Math.floor(Math.random() * 5000) + 500 });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.post('/rules', requireCreditsOnMutation('logic-rule'), async (req, res) => {
-  res.json({ ok: true, rule: req.body });
-});
-
-router.get('/conflicts', async (req, res) => {
-  res.json({ ok: true, conflicts: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "conditional-logic-automation", v: "2.0.0" })));
+router.get("/dashboard", ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get("/rules", ah(async (req, res) => res.json({ ok: true, rules: engine.getRuleTrees(req.query) })));
+router.get("/rules/:id", ah(async (req, res) => { const r=engine.getRuleTree(req.params.id); if(!r) return res.status(404).json({ok:false,error:"not found"}); res.json({ok:true,rule:r}); }));
+router.get("/condition-fields", ah(async (req, res) => res.json({ ok: true, fields: engine.getConditionFields() })));
+router.post("/rules/:id/evaluate", ah(async (req, res) => res.json({ ok: true, ...engine.evaluateTree(req.params.id, req.body.contextData || {}) })));
+router.post("/preview", requireCreditsOnMutation("analytics-insight"), ah(async (req, res) => { if(!req.body.conditions) return res.status(400).json({ok:false,error:"conditions required"}); res.json({ok:true,...engine.previewSegment(req.body.conditions,req.body.rootOp)}); }));
+router.post("/rules", ah(async (req, res) => { const {name,conditions,rootOp,action}=req.body; if(!name||!conditions||!action) return res.status(400).json({ok:false,error:"name, conditions, action required"}); res.json({ok:true,rule:{id:"rt_"+Date.now(),name,conditions,rootOp:rootOp||"AND",action,status:"draft",createdAt:new Date().toISOString()}}); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

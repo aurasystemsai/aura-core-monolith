@@ -1,32 +1,22 @@
-const express = require('express');
+"use strict";
+const express = require("express");
 const router = express.Router();
-const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const verifyShopifySession = require("../../middleware/verifyShopifySession");
+const { requireCreditsOnMutation } = require("../../core/creditMiddleware");
+const engine = require("./engines/workflow-automation-engine");
 router.use(verifyShopifySession);
-
-
-router.get('/rules', async (req, res) => {
-  res.json({ ok: true, rules: [] });
-});
-
-router.post('/rules', requireCreditsOnMutation('workflow-rule'), async (req, res) => {
-  try {
-    const { ruleName, trigger, operator, value, action } = req.body;
-    if (!ruleName || !trigger) return res.status(400).json({ ok: false, error: 'ruleName and trigger required' });
-    res.json({ ok: true, rule: { ruleName, trigger, operator, value, action, status: 'active' } });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.put('/rules/:id', requireCreditsOnMutation('workflow-rule'), async (req, res) => {
-  res.json({ ok: true, updated: true });
-});
-
-router.get('/audit', async (req, res) => {
-  res.json({ ok: true, events: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get("/health", ah(async (req, res) => res.json({ ok: true, service: "workflow-automation-builder", v: "2.0.0" })));
+router.get("/dashboard", ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get("/rules", ah(async (req, res) => res.json({ ok: true, rules: engine.getRules(req.query) })));
+router.get("/rules/:id", ah(async (req, res) => { const r = engine.getRule(req.params.id); if (!r) return res.status(404).json({ ok: false, error: "not found" }); res.json({ ok: true, rule: r }); }));
+router.get("/triggers", ah(async (req, res) => res.json({ ok: true, triggers: engine.getTriggers() })));
+router.get("/actions", ah(async (req, res) => res.json({ ok: true, actions: engine.getActions() })));
+router.get("/suggestions", ah(async (req, res) => res.json({ ok: true, suggestions: engine.suggestAutomations() })));
+router.post("/rules/parse", ah(async (req, res) => { const { triggerExpr, actionExpr } = req.body; if (!triggerExpr || !actionExpr) return res.status(400).json({ ok: false, error: "triggerExpr and actionExpr required" }); res.json({ ok: true, ...engine.parseRule(triggerExpr, actionExpr) }); }));
+router.post("/rules/:id/test", requireCreditsOnMutation("automation-test"), ah(async (req, res) => res.json({ ok: true, ...engine.testRule(req.params.id, req.body.sampleData || {}) })));
+router.post("/rules", ah(async (req, res) => { const { name, triggerExpr, actionExpr } = req.body; if (!name || !triggerExpr || !actionExpr) return res.status(400).json({ ok: false, error: "name, triggerExpr, actionExpr required" }); res.json({ ok: true, rule: { id: "ar_" + Date.now(), name, trigger: triggerExpr, action: actionExpr, status: "draft", createdAt: new Date().toISOString() } }); }));
+router.post("/rules/:id/activate", ah(async (req, res) => res.json({ ok: true, ruleId: req.params.id, status: "active" })));
+router.post("/rules/:id/pause", ah(async (req, res) => res.json({ ok: true, ruleId: req.params.id, status: "paused" })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;
