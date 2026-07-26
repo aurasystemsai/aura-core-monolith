@@ -1,524 +1,174 @@
-import React, { useState } from "react";
-import { apiFetchJSON } from "../../api";
+import { useState } from 'react';
+import { apiFetchJSON } from '../../api';
 
-const API = "/api/inventory-forecasting";
+const ACC = '#10b981';
 
 const S = {
-  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
-  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
-  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
-  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
-  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
-  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
-  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
-  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
-  btn: (bg) => ({ background:bg||'#4f46e5', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
-  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
-  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
-  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
-  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
-  trOdd: { background:'#09090b44' },
-  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
-  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
-  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
-  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
-  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
-  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
-  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#4f46e5' }),
-  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
-  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
-  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
-  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
-  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
-  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
-  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
-  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#4f46e5', borderRadius:3 }),
-  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
-  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
+  page: { background: '#09090b', minHeight: '100vh', color: '#fafafa', fontFamily: 'Inter,sans-serif', padding: '32px' },
+  title: { fontSize: 26, fontWeight: 700, margin: 0 },
+  subtitle: { color: '#a1a1aa', fontSize: 14, marginTop: 6, marginBottom: 24 },
+  card: { background: '#18181b', border: '1px solid #27272a', borderRadius: 12, padding: 24, marginBottom: 20 },
+  cardSm: { background: '#09090b', border: '1px solid #27272a', borderRadius: 10, padding: 14, marginBottom: 10 },
+  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  grid3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 },
+  grid4: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 },
+  label: { display: 'block', color: '#a1a1aa', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 },
+  input: { width: '100%', background: '#09090b', border: '1px solid #27272a', borderRadius: 8, padding: '10px 12px', color: '#fafafa', fontSize: 14, boxSizing: 'border-box' },
+  select: { width: '100%', background: '#09090b', border: '1px solid #27272a', borderRadius: 8, padding: '10px 12px', color: '#fafafa', fontSize: 14, boxSizing: 'border-box' },
+  btn: (c) => ({ padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14, background: c || ACC, color: '#fff' }),
+  btnSm: (c) => ({ padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 12, background: c || ACC, color: '#fff' }),
+  badge: (c) => ({ display: 'inline-block', padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: (c||ACC)+'22', color: c||ACC }),
+  row: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
+  metric: { background: '#09090b', border: '1px solid #27272a', borderRadius: 10, padding: 16, textAlign: 'center' },
+  metricNum: (c) => ({ fontSize: 26, fontWeight: 800, color: c || ACC }),
+  metricLabel: { fontSize: 12, color: '#71717a', marginTop: 4 },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: { textAlign: 'left', color: '#71717a', fontSize: 12, fontWeight: 600, padding: '8px 10px', borderBottom: '1px solid #27272a' },
+  td: { padding: '9px 10px', borderBottom: '1px solid #18181b', fontSize: 13, color: '#e4e4e7' },
+  divider: { borderTop: '1px solid #27272a', margin: '20px 0' },
+  tab: (a, c) => ({ padding: '9px 14px', cursor: 'pointer', border: 'none', background: a ? (c||ACC)+'22' : 'transparent', color: a ? (c||ACC) : '#71717a', fontWeight: a ? 700 : 400, fontSize: 12, borderRadius: 6, whiteSpace: 'nowrap' }),
+  tabBar: { display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' },
 };
 
-const GROUPS = [
-  {
-    "id": "forecast",
-    "label": "Forecast",
-    "color": "#4f46e5",
-    "tabs": [
-      {
-        "id": "if-overview",
-        "label": "Overview"
-      },
-      {
-        "id": "sku-forecast",
-        "label": "SKU Forecast"
-      },
-      {
-        "id": "demand-signals",
-        "label": "Demand Signals"
-      },
-      {
-        "id": "seasonal",
-        "label": "Seasonality"
-      },
-      {
-        "id": "trend",
-        "label": "Trend Analysis"
-      },
-      {
-        "id": "ai-forecast",
-        "label": "AI Forecast"
-      }
-    ]
-  },
-  {
-    "id": "inventory",
-    "label": "Inventory",
-    "color": "#0ea5e9",
-    "tabs": [
-      {
-        "id": "reorder",
-        "label": "Reorder Points"
-      },
-      {
-        "id": "safety-stock",
-        "label": "Safety Stock"
-      },
-      {
-        "id": "eoq",
-        "label": "EOQ Calculator"
-      },
-      {
-        "id": "abc-xyz",
-        "label": "ABC-XYZ Matrix"
-      },
-      {
-        "id": "dead-stock",
-        "label": "Dead Stock"
-      },
-      {
-        "id": "stockouts",
-        "label": "Stockout Risk"
-      }
-    ]
-  },
-  {
-    "id": "suppliers",
-    "label": "Suppliers",
-    "color": "#10b981",
-    "tabs": [
-      {
-        "id": "supp-risk",
-        "label": "Supplier Risk"
-      },
-      {
-        "id": "lead-times",
-        "label": "Lead Times"
-      },
-      {
-        "id": "alt-supp",
-        "label": "Alt Suppliers"
-      },
-      {
-        "id": "po-auto",
-        "label": "PO Automation"
-      },
-      {
-        "id": "if-compliance",
-        "label": "Compliance"
-      },
-      {
-        "id": "if-scorecards",
-        "label": "Scorecards"
-      }
-    ]
-  },
-  {
-    "id": "finance",
-    "label": "Finance",
-    "color": "#f97316",
-    "tabs": [
-      {
-        "id": "inv-value",
-        "label": "Inventory Value"
-      },
-      {
-        "id": "holding-costs",
-        "label": "Holding Costs"
-      },
-      {
-        "id": "write-offs",
-        "label": "Write-Offs"
-      },
-      {
-        "id": "cash-impact",
-        "label": "Cash Impact"
-      },
-      {
-        "id": "if-budget",
-        "label": "Budget"
-      },
-      {
-        "id": "scenarios",
-        "label": "Scenarios"
-      }
-    ]
-  },
-  {
-    "id": "analytics",
-    "label": "Analytics",
-    "color": "#a855f7",
-    "tabs": [
-      {
-        "id": "if-perf",
-        "label": "Performance"
-      },
-      {
-        "id": "accuracy",
-        "label": "Forecast Accuracy"
-      },
-      {
-        "id": "by-category",
-        "label": "By Category"
-      },
-      {
-        "id": "by-location",
-        "label": "By Location"
-      },
-      {
-        "id": "if-bench",
-        "label": "Benchmarks"
-      },
-      {
-        "id": "if-reports",
-        "label": "Reports"
-      }
-    ]
-  },
-  {
-    "id": "operations",
-    "label": "Operations",
-    "color": "#ec4899",
-    "tabs": [
-      {
-        "id": "receiving",
-        "label": "Receiving"
-      },
-      {
-        "id": "warehouse",
-        "label": "Warehouse"
-      },
-      {
-        "id": "transfers",
-        "label": "Transfers"
-      },
-      {
-        "id": "adjustments",
-        "label": "Adjustments"
-      },
-      {
-        "id": "recon",
-        "label": "Reconciliation"
-      },
-      {
-        "id": "if-audit",
-        "label": "Audit Log"
-      }
-    ]
-  },
-  {
-    "id": "advanced",
-    "label": "Advanced",
-    "color": "#f59e0b",
-    "tabs": [
-      {
-        "id": "ai-engine",
-        "label": "AI Engine"
-      },
-      {
-        "id": "disruption",
-        "label": "Disruption Radar"
-      },
-      {
-        "id": "if-integrations",
-        "label": "Integrations"
-      },
-      {
-        "id": "if-settings",
-        "label": "Settings"
-      },
-      {
-        "id": "if-alerts",
-        "label": "Alerts"
-      },
-      {
-        "id": "if-world",
-        "label": "World-Class"
-      }
-    ]
-  }
+
+const SKUS = [
+  { sku: 'SKU-001', name: 'Classic White Tee', abcClass: 'A', xyzClass: 'X', stockLevel: 210, reorderPoint: 145, eoq: 280, safetyStock: 32, stockoutRisk7d: 0.08, stockoutRisk30d: 0.31, forecastAccuracy: 0.89, reorderNeeded: false, avgDailySales: 14.2 },
+  { sku: 'SKU-002', name: 'Organic Cotton Hoodie', abcClass: 'A', xyzClass: 'Y', stockLevel: 95, reorderPoint: 140, eoq: 190, safetyStock: 55, stockoutRisk7d: 0.34, stockoutRisk30d: 0.72, forecastAccuracy: 0.81, reorderNeeded: true, avgDailySales: 8.7 },
+  { sku: 'SKU-003', name: 'Slim Fit Jeans', abcClass: 'B', xyzClass: 'X', stockLevel: 320, reorderPoint: 110, eoq: 145, safetyStock: 28, stockoutRisk7d: 0.02, stockoutRisk30d: 0.05, forecastAccuracy: 0.93, reorderNeeded: false, avgDailySales: 5.4 },
+  { sku: 'SKU-004', name: 'Linen Summer Dress', abcClass: 'A', xyzClass: 'Z', stockLevel: 180, reorderPoint: 380, eoq: 240, safetyStock: 148, stockoutRisk7d: 0.61, stockoutRisk30d: 0.89, forecastAccuracy: 0.71, reorderNeeded: true, avgDailySales: 11.3 },
+  { sku: 'SKU-005', name: 'Canvas Tote Bag', abcClass: 'C', xyzClass: 'X', stockLevel: 440, reorderPoint: 25, eoq: 80, safetyStock: 12, stockoutRisk7d: 0.01, stockoutRisk30d: 0.02, forecastAccuracy: 0.96, reorderNeeded: false, avgDailySales: 2.1 },
 ];
+const TABS = ['Overview','SKU Forecast','Safety Stock & EOQ','ABC-XYZ Matrix','Stockout Risks','What-If Scenarios'];
+const riskColor = r => r > 0.5 ? '#ef4444' : r > 0.25 ? '#f59e0b' : '#22c55e';
 
 export default function InventoryForecasting() {
-  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
-  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
-  const [q, setQ] = useState({});
-  const [form, setForm] = useState({ model:'gpt-4o-mini' });
-  const [data, setData] = useState({});
-  const [loading, setLoading] = useState({});
-  const [err, setErr] = useState({});
-  const [toast, setToast] = useState(null);
-
-  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
-
-  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
-
-  async function fetch_(tab, endpoint, payload={}) {
-    setLoading(l => ({...l,[tab]:true}));
-    setErr(e => ({...e,[tab]:null}));
-    try {
-      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
-      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
-      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
-    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
-    finally { setLoading(l => ({...l,[tab]:false})); }
-  }
-
-  function Generic(tab, title, desc, ep) {
-    const d = data[tab];
-    return (
-      <div>
-        <div style={S.card}>
-          <div style={S.cardTitle}>{title}</div>
-          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
-          <div style={S.row}>
-            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
-            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
-            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
-          </div>
-          {err[tab] && <div style={S.err}>{err[tab]}</div>}
-          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
-           d ? (
-            <div style={{overflowX:'auto'}}>
-              <table style={S.tbl}>
-                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
-                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
-                  <tr key={i} style={i%2?S.trOdd:{}}>
-                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
-                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
-                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
-                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
-                  </tr>
-                ))}</tbody>
-              </table>
-            </div>
-           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
-        </div>
-      </div>
-    );
-  }
-
-
-  function renderTab() {
-    const tab = activeTab;
-    const d = data[tab];
-    switch(tab) {
-      case 'if-overview': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>Inventory Forecast Overview</div>
-            <div style={S.row}>
-              <button style={S.btn()} onClick={()=>fetch_('if-overview',API+'/forecast/overview')} disabled={loading['if-overview']}>{loading['if-overview']?'Loading…':'Load Overview'}</button>
-              <button style={S.btn('#10b981')} onClick={()=>fetch_('ai-forecast',API+'/forecast/ai',{})}>✦ AI Insights</button>
-            </div>
-            {err['if-overview'] && <div style={S.err}>{err['if-overview']}</div>}
-            {loading['if-overview'] ? <div style={S.loading}>Loading…</div> : d ? (
-              <>
-                <div style={S.metaRow}>
-                  {[['Total SKUs',d.totalSKUs,'#4f46e5'],['At Risk',d.atRisk,'#f97316'],['Stockouts',d.stockouts,'#ef4444'],['Fill Rate',d.fillRate+'%','#10b981'],['Accuracy',d.forecastAccuracy+'%','#0ea5e9'],['Turnover',d.turnoverRate+'x','#a855f7']].map(([l,v,c])=>(
-                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
-                  ))}
-                </div>
-                <div style={S.sT}>Top Risks</div>
-                {d.topRisks?.map((r,i)=>(
-                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #1f1f22'}}>
-                    <span style={{fontWeight:600,fontSize:13}}>{r.sku}</span>
-                    <span style={S.badge(r.risk==='critical'?'#ef4444':r.risk==='high'?'#f97316':'#f59e0b')}>{r.risk}</span>
-                    <span style={{color:'#71717a',fontSize:12}}>{r.daysLeft} days left</span>
-                    <button style={{...S.btn('#27272a'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Creating PO…')}>Auto PO</button>
-                  </div>
-                ))}
-              </>
-            ) : <div style={S.empty}>Click Load Overview to see your inventory forecast dashboard.</div>}
-          </div>
-        </div>
-      );
-      case 'abc-xyz': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>ABC-XYZ Inventory Matrix</div>
-            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>ABC = value contribution. XYZ = demand predictability. The 9-cell matrix determines the optimal inventory policy per SKU.</p>
-            <button style={S.btn()} onClick={()=>fetch_('abc-xyz',API+'/inventory/abc-xyz')} disabled={loading['abc-xyz']}>{loading['abc-xyz']?'Loading…':'Generate Matrix'}</button>
-            {err['abc-xyz'] && <div style={S.err}>{err['abc-xyz']}</div>}
-            {loading['abc-xyz'] ? <div style={S.loading}>Building matrix…</div> : d ? (
-              <div style={{marginTop:16}}>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
-                  {Object.entries(d.matrix||{}).map(([k,v])=>(
-                    <div key={k} style={{...S.mini,borderColor:k.startsWith('A')?'#4f46e544':k.startsWith('B')?'#0ea5e944':'#27272a'}}>
-                      <div style={{fontWeight:800,fontSize:16,color:k.startsWith('A')?'#4f46e5':k.startsWith('B')?'#0ea5e9':'#52525b'}}>{k}</div>
-                      <div style={{fontSize:12,color:'#a1a1aa',marginTop:2}}>{v.count} SKUs ({v.pct}%)</div>
-                      <div style={{fontSize:11,color:'#71717a',marginTop:4,lineHeight:1.4}}>{v.policy}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : <div style={S.empty}>Click Generate Matrix to see the ABC-XYZ classification.</div>}
-          </div>
-        </div>
-      );
-      case 'eoq': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>EOQ Calculator</div>
-            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Economic Order Quantity — the order size that minimises total annual ordering + holding costs.</p>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12,marginBottom:16}}>
-              {[['Annual Demand (units)','annualDemand','1000'],['Order Cost ($)','orderCost','50'],['Holding Rate (%)','holdingRate','0.25'],['Unit Cost ($)','unitCost','10']].map(([l,k,ph])=>(
-                <div key={k}><label style={S.label}>{l}</label><input style={S.input} placeholder={ph} value={form[k]||''} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} /></div>
-              ))}
-            </div>
-            <button style={S.btn()} onClick={()=>fetch_('eoq',API+'/inventory/eoq',{annualDemand:+form.annualDemand||1000,orderCost:+form.orderCost||50,holdingRate:+form.holdingRate||0.25,unitCost:+form.unitCost||10})} disabled={loading.eoq}>{loading.eoq?'Calculating…':'Calculate EOQ'}</button>
-            {d ? (
-              <div style={{...S.mini,marginTop:16}}>
-                <div style={S.sT}>Results</div>
-                <div style={S.metaRow}>
-                  {[['EOQ',d.eoq+' units','#4f46e5'],['Annual Order Cost','$'+(d.annualOrderCost||0).toFixed(0),'#0ea5e9'],['Annual Holding Cost','$'+(d.annualHoldingCost||0).toFixed(0),'#f97316'],['Total Cost','$'+(d.totalCost||0).toFixed(0),'#10b981']].map(([l,v,c])=>(
-                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      );
-      case 'stockouts': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>Stockout Risk Scoring</div>
-            <div style={S.row}>
-              <button style={S.btn('#ef4444')} onClick={()=>fetch_('stockouts',API+'/inventory/stockout-risk')} disabled={loading.stockouts}>{loading.stockouts?'Scanning…':'Scan Stockout Risk'}</button>
-            </div>
-            {err.stockouts && <div style={S.err}>{err.stockouts}</div>}
-            {loading.stockouts ? <div style={S.loading}>Scanning for stockout risks…</div> : d?.at_risk?.length ? (
-              <div style={{overflowX:'auto'}}>
-                <table style={S.tbl}>
-                  <thead><tr><th style={S.th}>SKU</th><th style={S.th}>Days Left</th><th style={S.th}>Probability</th><th style={S.th}>Velocity</th><th style={S.th}>Action</th></tr></thead>
-                  <tbody>{d.at_risk.map((r,i)=>(
-                    <tr key={i} style={i%2?S.trOdd:{}}>
-                      <td style={S.td}><span style={{fontWeight:600}}>{r.sku}</span><br/><span style={{fontSize:11,color:'#71717a'}}>{r.name}</span></td>
-                      <td style={S.td}><span style={{color:r.daysToStockout<=7?'#ef4444':r.daysToStockout<=14?'#f59e0b':'#10b981',fontWeight:700}}>{r.daysToStockout}d</span></td>
-                      <td style={S.td}><span style={{fontWeight:700,color:r.probability>0.8?'#ef4444':r.probability>0.5?'#f59e0b':'#10b981'}}>{(r.probability*100).toFixed(0)}%</span></td>
-                      <td style={S.td}>{r.salesVelocity}/day</td>
-                      <td style={S.td}><button style={{...S.btn('#4f46e5'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Generating PO for '+r.sku)}>Auto PO ({r.recommendedOrder})</button></td>
-                    </tr>
-                  ))}</tbody>
-                </table>
-              </div>
-            ) : <div style={S.empty}>Scan for stockout risks to see at-risk SKUs.</div>}
-          </div>
-        </div>
-      );
-      case 'ai-forecast': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>✦ AI Forecast Intelligence</div>
-            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Ensemble ML forecasting using Prophet + LSTM + XGBoost with causal demand signals, seasonal decomposition, and what-if scenario planning.</p>
-            <div style={S.row}>
-              <select style={S.select} value={form.model||'gpt-4o-mini'} onChange={e=>setForm(p=>({...p,model:e.target.value}))}>
-                <option value="gpt-4o-mini">GPT-4o Mini (3 credits)</option>
-                <option value="gpt-4o">GPT-4o (6 credits)</option>
-                <option value="gpt-4">GPT-4 (9 credits)</option>
-              </select>
-              <button style={S.btn('#10b981')} onClick={()=>fetch_('ai-forecast',API+'/forecast/ai',{})} disabled={loading['ai-forecast']}>{loading['ai-forecast']?'Analyzing…':'✦ Run AI Forecast'}</button>
-            </div>
-            {loading['ai-forecast'] ? <div style={S.loading}>AI is analyzing your inventory data…</div> : data['ai-forecast'] ? (
-              <div>
-                <div style={{...S.mini,marginBottom:16}}><p style={{color:'#a1a1aa',fontSize:13,lineHeight:1.7,margin:0}}>{data['ai-forecast'].summary}</p></div>
-                <div style={S.sT}>Recommendations</div>
-                {data['ai-forecast'].recommendations?.map((r,i)=>(
-                  <div key={i} style={{display:'flex',gap:12,padding:'12px 0',borderBottom:'1px solid #1f1f22'}}>
-                    <span style={S.badge(r.urgency==='critical'?'#ef4444':r.urgency==='high'?'#f97316':'#f59e0b')}>{r.urgency}</span>
-                    <div><div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{r.action}</div><div style={{fontSize:12,color:'#71717a'}}>{r.impact}</div></div>
-                  </div>
-                ))}
-                <div style={{color:'#71717a',fontSize:11,marginTop:8}}>Credits used: {data['ai-forecast'].creditsUsed}</div>
-              </div>
-            ) : <div style={S.empty}>Run AI Forecast to get ensemble ML-powered inventory recommendations.</div>}
-          </div>
-        </div>
-      );
-      case 'if-world': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>✦ World-Class Features</div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
-              {[
-                {icon:'📈',t:'Prophet + LSTM + XGBoost Ensemble',d:'Automatic model selection per SKU based on historical patterns, seasonality, and data volume.'},
-                {icon:'🎯',t:'Causal Demand Forecasting',d:'Incorporate promotions, holidays, weather events, and social trends as external regressors into the forecast.'},
-                {icon:'📊',t:'Bayesian Uncertainty Quantification',d:'Credible intervals (not just point estimates) — know the probability distribution of future demand.'},
-                {icon:'🔗',t:'Multi-Echelon Optimization',d:'Simultaneously optimize inventory across warehouse → distribution center → store for supply chain efficiency.'},
-                {icon:'🏭',t:'ABC-XYZ Policy Engine',d:'9-cell matrix automatically assigns the right replenishment policy to each SKU based on value and predictability.'},
-                {icon:'⚡',t:'Real-Time Disruption Radar',d:'Monitor geopolitical events, port congestion, and supplier financial health to pre-empt supply chain disruptions.'},
-              ].map((f,i)=>(
-                <div key={i} style={S.mini}>
-                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
-                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
-                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
-    }
-  }
-
-
-  function handleGroup(gid) {
-    const g = GROUPS.find(x=>x.id===gid);
-    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
-  }
+  const [tab, setTab] = useState(0);
+  const [selected, setSelected] = useState(SKUS[1]);
+  const [demandMult, setDemandMult] = useState(1.3);
+  const [ltMult, setLtMult] = useState(1.5);
 
   return (
-    <div style={S.root}>
-      <div style={{marginBottom:28}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
-          <div>
-            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Inventory Forecasting</h1>
-            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>AI-powered supply chain forecasting — ensemble ML, ABC-XYZ matrix, EOQ, safety stock & disruption radar</p>
+    <div style={S.page}>
+      <h1 style={S.title}>Inventory Forecasting</h1>
+      <p style={S.subtitle}>AI-powered demand forecasting, safety stock optimisation, ABC-XYZ matrix, and stockout risk scoring</p>
+      <div style={S.grid4}>
+        {[['SKUs Tracked','5'],['Reorder Needed','2'],['Critical Stockouts','1'],['Avg Accuracy','86%']].map(([l,v])=>(
+          <div key={l} style={S.metric}><div style={S.metricNum()}>{v}</div><div style={S.metricLabel}>{l}</div></div>
+        ))}
+      </div>
+      <div style={{...S.tabBar, marginTop:20}}>{TABS.map((t,i)=><button key={t} style={S.tab(tab===i)} onClick={()=>setTab(i)}>{t}</button>)}</div>
+
+      {tab === 0 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>SKU Overview</div>
+          <table style={S.table}>
+            <thead><tr><th style={S.th}>SKU</th><th style={S.th}>Name</th><th style={S.th}>Stock</th><th style={S.th}>Coverage</th><th style={S.th}>30d Risk</th><th style={S.th}>ABC-XYZ</th><th style={S.th}>Accuracy</th><th style={S.th}></th></tr></thead>
+            <tbody>{SKUS.map(s=>(
+              <tr key={s.sku}>
+                <td style={S.td}><code style={{fontSize:11,color:'#a1a1aa'}}>{s.sku}</code></td>
+                <td style={S.td}><strong>{s.name}</strong></td>
+                <td style={S.td}><span style={{color:s.reorderNeeded?'#ef4444':'#22c55e',fontWeight:700}}>{s.stockLevel}</span></td>
+                <td style={S.td}>{Math.floor(s.stockLevel/s.avgDailySales)}d</td>
+                <td style={S.td}><span style={{color:riskColor(s.stockoutRisk30d),fontWeight:700}}>{(s.stockoutRisk30d*100).toFixed(0)}%</span></td>
+                <td style={S.td}><span style={S.badge(s.abcClass==='A'?'#8b5cf6':s.abcClass==='B'?ACC:'#71717a')}>{s.abcClass+s.xyzClass}</span></td>
+                <td style={S.td}>{(s.forecastAccuracy*100).toFixed(0)}%</td>
+                <td style={S.td}>{s.reorderNeeded&&<button style={S.btnSm()}>Gen PO</button>}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+          <button style={{...S.btn(),marginTop:16}}>Bulk Generate POs (2 credits)</button>
+        </div>
+      )}
+
+      {tab === 1 && (
+        <div style={S.card}>
+          <div style={{...S.row,marginBottom:16}}>
+            <div style={{fontWeight:700,fontSize:15}}>Demand Forecast — {selected.name}</div>
+            <select style={{...S.select,width:'auto'}} onChange={e=>setSelected(SKUS.find(s=>s.sku===e.target.value))}>
+              {SKUS.map(s=><option key={s.sku} value={s.sku}>{s.name}</option>)}
+            </select>
           </div>
-          <div style={{display:'flex',gap:8}}>
-            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
-            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+          <div style={S.grid3}>
+            {[['Avg Daily Sales',selected.avgDailySales,'units/day'],['Forecast Accuracy',(selected.forecastAccuracy*100).toFixed(0)+'%','model'],['EOQ',selected.eoq,'units']].map(([l,v,u])=>(
+              <div key={l} style={S.metric}><div style={S.metricNum()}>{v}</div><div style={S.metricLabel}>{l} · {u}</div></div>
+            ))}
+          </div>
+          <div style={S.divider} />
+          <div style={{fontWeight:600,marginBottom:10,fontSize:13}}>8-Week Forecast (Prophet + XGBoost Ensemble, 95% CI)</div>
+          <table style={S.table}>
+            <thead><tr><th style={S.th}>Period</th><th style={S.th}>Actual</th><th style={S.th}>Forecast</th><th style={S.th}>Lower</th><th style={S.th}>Upper</th></tr></thead>
+            <tbody>{[{p:'Wk 1',a:98,f:102,l:88,u:116},{p:'Wk 2',a:111,f:108,l:94,u:122},{p:'Wk 3',a:89,f:95,l:81,u:109},{p:'Wk 4',a:124,f:118,l:104,u:132},{p:'Wk 5',a:null,f:131,l:115,u:147},{p:'Wk 6',a:null,f:128,l:112,u:144},{p:'Wk 7',a:null,f:136,l:118,u:154},{p:'Wk 8',a:null,f:142,l:124,u:160}].map((r,i)=>(
+              <tr key={i}><td style={S.td}>{r.p}</td><td style={S.td}>{r.a??<em style={{color:'#71717a'}}>projected</em>}</td><td style={{...S.td,fontWeight:700,color:ACC}}>{r.f}</td><td style={{...S.td,color:'#71717a'}}>{r.l}</td><td style={{...S.td,color:'#71717a'}}>{r.u}</td></tr>
+            ))}</tbody>
+          </table>
+          <button style={{...S.btn(),marginTop:16}}>Run AI Forecast (2 credits)</button>
+        </div>
+      )}
+
+      {tab === 2 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Safety Stock & EOQ Calculator</div>
+          {SKUS.map(s=>(
+            <div key={s.sku} style={S.cardSm}>
+              <div style={{...S.row,marginBottom:8}}><strong>{s.name}</strong><span style={S.badge()}>{s.abcClass+s.xyzClass}</span></div>
+              <div style={S.grid4}>
+                {[['Safety Stock',s.safetyStock+' units'],['Reorder Point',s.reorderPoint+' units'],['EOQ',s.eoq+' units'],['Current Stock',s.stockLevel+' units']].map(([l,v])=>(
+                  <div key={l}><div style={S.label}>{l}</div><div style={{fontWeight:700,color:ACC}}>{v}</div></div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 3 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>ABC-XYZ Inventory Policy Matrix</div>
+          <div style={{display:'grid',gridTemplateColumns:'auto 1fr 1fr 1fr',gap:2}}>
+            {['','X (Stable)','Y (Variable)','Z (Volatile)','A (High Value)','Tight control, frequent ordering','Regular review, safety buffer','High safety stock, dual sourcing','B (Medium Value)','Standard reorder','Moderate buffer','Safety stock + supplier risk','C (Low Value)','Min order + JIT','Low stock OK','Consignment/dropship'].map((cell,i)=>(
+              <div key={i} style={{background:i===0||i===4||i===8||i===12?'#27272a':i<4?'#1f1f23':'#18181b',padding:'10px 14px',borderRadius:4,fontSize:i<4?12:13,color:i<4?'#a1a1aa':'#e4e4e7',fontWeight:i<4?700:400}}>
+                {cell}
+                {i>4&&i!==0&&[5,6,7,9,10,11,13,14,15].includes(i)&&(()=>{const skuMap={5:'AX',6:'AY',7:'AZ',9:'BX',10:'BY',11:'BZ',13:'CX',14:'CY',15:'CZ'};const cls=skuMap[i];const skusInCell=SKUS.filter(s=>s.abcClass+s.xyzClass===cls);return skusInCell.map(s=><div key={s.sku} style={{...S.badge(ACC),marginTop:6,display:'block'}}>{s.name}</div>);})()}
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      <div style={S.groupNav}>
-        {GROUPS.map(g=>(
-          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
-        ))}
-      </div>
+      {tab === 4 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Stockout Risk Dashboard</div>
+          {SKUS.filter(s=>s.stockoutRisk7d>0.1||s.stockoutRisk30d>0.3).map(s=>(
+            <div key={s.sku} style={{...S.cardSm,borderColor:s.stockoutRisk7d>0.5?'#ef4444':'#27272a'}}>
+              <div style={S.row}>
+                <strong style={{flex:1}}>{s.name}</strong>
+                <span style={S.badge(riskColor(s.stockoutRisk7d))}>7d: {(s.stockoutRisk7d*100).toFixed(0)}%</span>
+                <span style={S.badge(riskColor(s.stockoutRisk30d))}>30d: {(s.stockoutRisk30d*100).toFixed(0)}%</span>
+                <span style={{color:'#a1a1aa',fontSize:12}}>Stock: {s.stockLevel} / ROP: {s.reorderPoint}</span>
+                <button style={S.btnSm()}>Create PO</button>
+              </div>
+              <div style={{marginTop:8,background:'#27272a',borderRadius:4,height:6}}>
+                <div style={{background:riskColor(s.stockoutRisk30d),height:6,borderRadius:4,width:Math.min(100,s.stockLevel/s.reorderPoint*100)+'%'}} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <div style={S.tabStrip}>
-        {curGroup.tabs.map(t=>(
-          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
-        ))}
-      </div>
-
-      {renderTab()}
-
-      {toast && (
-        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
-          {toast.msg}
+      {tab === 5 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>What-If Scenario Planner</div>
+          <div style={S.grid2}>
+            <div><label style={S.label}>Demand Multiplier</label><input type="range" min="0.5" max="2" step="0.1" value={demandMult} onChange={e=>setDemandMult(parseFloat(e.target.value))} style={{width:'100%'}} /><div style={{textAlign:'center',fontWeight:700,color:ACC,fontSize:18}}>×{demandMult}</div></div>
+            <div><label style={S.label}>Lead Time Multiplier</label><input type="range" min="0.5" max="3" step="0.1" value={ltMult} onChange={e=>setLtMult(parseFloat(e.target.value))} style={{width:'100%'}} /><div style={{textAlign:'center',fontWeight:700,color:ACC,fontSize:18}}>×{ltMult}</div></div>
+          </div>
+          <div style={S.divider} />
+          <table style={S.table}>
+            <thead><tr><th style={S.th}>SKU</th><th style={S.th}>New Daily Sales</th><th style={S.th}>New Safety Stock</th><th style={S.th}>Stockout Risk Change</th></tr></thead>
+            <tbody>{SKUS.map(s=>{const newSales=(s.avgDailySales*demandMult).toFixed(1);const newSS=Math.round(s.safetyStock*demandMult*ltMult);const riskChange=((s.stockoutRisk30d*demandMult*ltMult)-s.stockoutRisk30d).toFixed(2);return(
+              <tr key={s.sku}><td style={S.td}>{s.name}</td><td style={S.td}>{newSales}/day</td><td style={S.td}>{newSS} units</td><td style={S.td}><span style={{color:riskChange>0?'#ef4444':'#22c55e',fontWeight:700}}>{riskChange>0?'+':''}{riskChange}</span></td></tr>
+            )})}</tbody>
+          </table>
         </div>
       )}
     </div>

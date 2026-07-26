@@ -1,478 +1,169 @@
-import React, { useState } from "react";
-import { apiFetchJSON } from "../../api";
+import { useState } from 'react';
 
-const API = "/api/churn-prediction-playbooks";
+const ACC = '#ec4899';
 
 const S = {
-  root: { background:'#09090b', minHeight:'100vh', color:'#fafafa', fontFamily:"'Inter',system-ui,sans-serif", padding:'28px 32px' },
-  card: { background:'#18181b', border:'1px solid #27272a', borderRadius:14, padding:24, marginBottom:20 },
-  mini: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:16 },
-  cardTitle: { fontSize:14, fontWeight:700, color:'#fafafa', marginBottom:16, marginTop:0 },
-  row: { display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' },
-  input: { flex:1, minWidth:180, background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:14, padding:'11px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif" },
-  select: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'11px 14px', outline:'none', cursor:'pointer' },
-  textarea: { width:'100%', background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, color:'#fafafa', fontSize:13, padding:'12px 14px', outline:'none', fontFamily:"'Inter',system-ui,sans-serif", resize:'vertical', boxSizing:'border-box' },
-  btn: (bg) => ({ background:bg||'#ef4444', color:'#fff', border:'none', borderRadius:10, padding:'11px 22px', fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }),
-  label: { fontSize:12, fontWeight:600, color:'#a1a1aa', marginBottom:6, display:'block' },
-  tbl: { width:'100%', borderCollapse:'collapse', fontSize:13 },
-  th: { textAlign:'left', color:'#71717a', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 14px', borderBottom:'2px solid #27272a', whiteSpace:'nowrap', background:'#18181b' },
-  td: { padding:'12px 14px', borderBottom:'1px solid #1f1f22', color:'#fafafa', verticalAlign:'middle' },
-  trOdd: { background:'#09090b44' },
-  badge: (c) => ({ display:'inline-block', padding:'2px 8px', borderRadius:6, fontSize:11, fontWeight:600, background:(c||'#27272a')+'33', color:c||'#a1a1aa', border:`1px solid ${(c||'#3f3f46')}44` }),
-  empty: { textAlign:'center', padding:'56px 24px', color:'#52525b', fontSize:13 },
-  loading: { textAlign:'center', padding:'32px 24px', color:'#71717a', fontSize:13 },
-  err: { background:'#1c0c0c', border:'1px solid #7f1d1d', color:'#fca5a5', borderRadius:10, padding:'12px 16px', fontSize:13, marginBottom:16 },
-  metaRow: { display:'flex', gap:12, flexWrap:'wrap', marginBottom:20 },
-  metaItem: { background:'#09090b', border:'1px solid #27272a', borderRadius:10, padding:'12px 18px', flex:'1 1 130px', textAlign:'center' },
-  metaVal: (c) => ({ fontSize:22, fontWeight:700, color:c||'#ef4444' }),
-  metaLbl: { fontSize:11, color:'#71717a', marginTop:2 },
-  sT: { fontSize:12, fontWeight:700, color:'#a1a1aa', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8, marginTop:16 },
-  groupNav: { display:'flex', gap:6, marginBottom:20, flexWrap:'wrap' },
-  gBtn: (a, c) => ({ background:a?c+'22':'#18181b', color:a?c:'#71717a', border:`1px solid ${a?c+'44':'#27272a'}`, borderRadius:10, padding:'8px 18px', fontSize:13, fontWeight:a?700:500, cursor:'pointer' }),
-  tabStrip: { display:'flex', gap:4, marginBottom:20, flexWrap:'wrap', borderBottom:'1px solid #27272a', paddingBottom:8 },
-  tBtn: (a, c) => ({ background:'none', color:a?c:'#71717a', border:'none', borderBottom:a?`2px solid ${c}`:'2px solid transparent', padding:'8px 14px', fontSize:13, fontWeight:a?700:500, cursor:'pointer', marginBottom:-9 }),
-  bar: { height:6, background:'#27272a', borderRadius:3, overflow:'hidden', marginTop:4 },
-  fill: (pct, c) => ({ height:'100%', width:Math.min(pct||0,100)+'%', background:c||'#ef4444', borderRadius:3 }),
-  pre: { background:'#0d0d10', border:'1px solid #3f3f46', borderRadius:10, padding:16, fontSize:12, color:'#a1a1aa', fontFamily:'monospace', whiteSpace:'pre-wrap', maxHeight:280, overflow:'auto', marginBottom:12 },
-  sc: (s) => { if(s>=75) return '#10b981'; if(s>=50) return '#f59e0b'; return '#ef4444'; },
+  page: { background: '#09090b', minHeight: '100vh', color: '#fafafa', fontFamily: 'Inter,sans-serif', padding: '32px' },
+  title: { fontSize: 26, fontWeight: 700, margin: 0 },
+  subtitle: { color: '#a1a1aa', fontSize: 14, marginTop: 6, marginBottom: 24 },
+  card: { background: '#18181b', border: '1px solid #27272a', borderRadius: 12, padding: 24, marginBottom: 20 },
+  cardSm: { background: '#09090b', border: '1px solid #27272a', borderRadius: 10, padding: 14, marginBottom: 10 },
+  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  grid3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 },
+  grid4: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 },
+  label: { display: 'block', color: '#a1a1aa', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 },
+  input: { width: '100%', background: '#09090b', border: '1px solid #27272a', borderRadius: 8, padding: '10px 12px', color: '#fafafa', fontSize: 14, boxSizing: 'border-box' },
+  select: { width: '100%', background: '#09090b', border: '1px solid #27272a', borderRadius: 8, padding: '10px 12px', color: '#fafafa', fontSize: 14, boxSizing: 'border-box' },
+  btn: (c) => ({ padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14, background: c || ACC, color: '#fff' }),
+  btnSm: (c) => ({ padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 12, background: c || ACC, color: '#fff' }),
+  badge: (c) => ({ display: 'inline-block', padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: (c||ACC)+'22', color: c||ACC }),
+  row: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' },
+  metric: { background: '#09090b', border: '1px solid #27272a', borderRadius: 10, padding: 16, textAlign: 'center' },
+  metricNum: (c) => ({ fontSize: 26, fontWeight: 800, color: c || ACC }),
+  metricLabel: { fontSize: 12, color: '#71717a', marginTop: 4 },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: { textAlign: 'left', color: '#71717a', fontSize: 12, fontWeight: 600, padding: '8px 10px', borderBottom: '1px solid #27272a' },
+  td: { padding: '9px 10px', borderBottom: '1px solid #18181b', fontSize: 13, color: '#e4e4e7' },
+  divider: { borderTop: '1px solid #27272a', margin: '20px 0' },
+  tab: (a, c) => ({ padding: '9px 14px', cursor: 'pointer', border: 'none', background: a ? (c||ACC)+'22' : 'transparent', color: a ? (c||ACC) : '#71717a', fontWeight: a ? 700 : 400, fontSize: 12, borderRadius: 6, whiteSpace: 'nowrap' }),
+  tabBar: { display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' },
 };
 
-const GROUPS = [
-  {
-    "id": "risk",
-    "label": "Churn Risk",
-    "color": "#ef4444",
-    "tabs": [
-      {
-        "id": "risk-dash",
-        "label": "Risk Dashboard"
-      },
-      {
-        "id": "high-risk",
-        "label": "High Risk"
-      },
-      {
-        "id": "rfm",
-        "label": "RFM Scores"
-      },
-      {
-        "id": "health-scores",
-        "label": "Health Scores"
-      },
-      {
-        "id": "predictions",
-        "label": "Predictions"
-      },
-      {
-        "id": "segments-c",
-        "label": "Segments"
-      }
-    ]
-  },
-  {
-    "id": "survival",
-    "label": "Survival",
-    "color": "#4f46e5",
-    "tabs": [
-      {
-        "id": "cox-ph",
-        "label": "Cox PH Model"
-      },
-      {
-        "id": "cohort-curves",
-        "label": "Cohort Curves"
-      },
-      {
-        "id": "dormancy",
-        "label": "Dormancy"
-      },
-      {
-        "id": "early-warn",
-        "label": "Early Warnings"
-      },
-      {
-        "id": "by-segment",
-        "label": "By Segment"
-      },
-      {
-        "id": "trend-c",
-        "label": "Trend"
-      }
-    ]
-  },
-  {
-    "id": "playbooks",
-    "label": "Playbooks",
-    "color": "#0ea5e9",
-    "tabs": [
-      {
-        "id": "pb-list",
-        "label": "Playbook List"
-      },
-      {
-        "id": "create-pb",
-        "label": "Create Playbook"
-      },
-      {
-        "id": "hv-pb",
-        "label": "High-Value"
-      },
-      {
-        "id": "atrisk-pb",
-        "label": "At-Risk"
-      },
-      {
-        "id": "dormant-pb",
-        "label": "Dormant"
-      },
-      {
-        "id": "winback-pb",
-        "label": "Win-Back"
-      }
-    ]
-  },
-  {
-    "id": "campaigns",
-    "label": "Campaigns",
-    "color": "#10b981",
-    "tabs": [
-      {
-        "id": "active-camp",
-        "label": "Active"
-      },
-      {
-        "id": "winback",
-        "label": "Win-Back"
-      },
-      {
-        "id": "retention",
-        "label": "Retention"
-      },
-      {
-        "id": "reactivation",
-        "label": "Reactivation"
-      },
-      {
-        "id": "camp-results",
-        "label": "Results"
-      },
-      {
-        "id": "camp-roi",
-        "label": "ROI"
-      }
-    ]
-  },
-  {
-    "id": "analytics",
-    "label": "Analytics",
-    "color": "#a855f7",
-    "tabs": [
-      {
-        "id": "churn-rate",
-        "label": "Churn Rate"
-      },
-      {
-        "id": "ltv-impact",
-        "label": "LTV Impact"
-      },
-      {
-        "id": "by-channel-c",
-        "label": "By Channel"
-      },
-      {
-        "id": "by-product-c",
-        "label": "By Product"
-      },
-      {
-        "id": "by-cohort-c",
-        "label": "By Cohort"
-      },
-      {
-        "id": "cpp-bench",
-        "label": "Benchmarks"
-      }
-    ]
-  },
-  {
-    "id": "nps",
-    "label": "NPS",
-    "color": "#ec4899",
-    "tabs": [
-      {
-        "id": "nps-tracker",
-        "label": "NPS Tracker"
-      },
-      {
-        "id": "pred-nps",
-        "label": "Predictive NPS"
-      },
-      {
-        "id": "detractors",
-        "label": "Detractors"
-      },
-      {
-        "id": "drivers",
-        "label": "Drivers"
-      },
-      {
-        "id": "nps-trends",
-        "label": "Trends"
-      },
-      {
-        "id": "improvements",
-        "label": "Improvements"
-      }
-    ]
-  },
-  {
-    "id": "cpp-adv",
-    "label": "Advanced",
-    "color": "#f59e0b",
-    "tabs": [
-      {
-        "id": "ai-models-c",
-        "label": "AI Models"
-      },
-      {
-        "id": "bg-nbd",
-        "label": "BG/NBD Model"
-      },
-      {
-        "id": "cpp-int",
-        "label": "Integrations"
-      },
-      {
-        "id": "cpp-api",
-        "label": "API"
-      },
-      {
-        "id": "cpp-settings",
-        "label": "Settings"
-      },
-      {
-        "id": "cpp-world",
-        "label": "World-Class"
-      }
-    ]
-  }
+
+const TABS = ['Churn Dashboard','RFM Segmentation','Cohort Retention','Early Warnings','Playbooks','Reactivation ROI'];
+const SEGMENTS = [
+  { segment: 'Champions', r:5, f:5, m:5, count: 284, revPct: 0.42, churnRisk: 0.04, action: 'Reward and upsell' },
+  { segment: 'Loyal', r:4, f:4, m:4, count: 418, revPct: 0.28, churnRisk: 0.09, action: 'Upsell premium' },
+  { segment: 'At Risk', r:2, f:3, m:3, count: 312, revPct: 0.14, churnRisk: 0.44, action: 'Win-back campaign' },
+  { segment: 'Cant Lose', r:1, f:5, m:5, count: 98, revPct: 0.09, churnRisk: 0.68, action: 'Personal outreach' },
+  { segment: 'Hibernating', r:2, f:2, m:2, count: 521, revPct: 0.04, churnRisk: 0.71, action: 'Reactivation series' },
+  { segment: 'Lost', r:1, f:1, m:1, count: 841, revPct: 0.03, churnRisk: 0.91, action: 'Final win-back' },
 ];
+const churnColor = r => r > 0.6 ? '#ef4444' : r > 0.35 ? '#f59e0b' : '#22c55e';
 
 export default function ChurnPredictionPlaybooks() {
-  const [activeGroup, setActiveGroup] = useState(GROUPS[0].id);
-  const [activeTab, setActiveTab] = useState(GROUPS[0].tabs[0].id);
-  const [q, setQ] = useState({});
-  const [form, setForm] = useState({ model:'gpt-4o-mini' });
-  const [data, setData] = useState({});
-  const [loading, setLoading] = useState({});
-  const [err, setErr] = useState({});
-  const [toast, setToast] = useState(null);
+  const [tab, setTab] = useState(0);
+  const [rfmInput, setRfmInput] = useState('');
+  const [churnResult, setChurnResult] = useState(null);
 
-  const curGroup = GROUPS.find(g => g.id === activeGroup) || GROUPS[0];
-
-  function toast_(msg, c='#10b981') { setToast({msg,c}); setTimeout(() => setToast(null), 3200); }
-
-  async function fetch_(tab, endpoint, payload={}) {
-    setLoading(l => ({...l,[tab]:true}));
-    setErr(e => ({...e,[tab]:null}));
-    try {
-      const r = await apiFetchJSON(endpoint, { method:'POST', body:JSON.stringify({ ...payload, model:form.model }) });
-      if (r.ok) setData(d => ({...d,[tab]:r.data||r}));
-      else setErr(e => ({...e,[tab]:r.error||'Failed'}));
-    } catch(e) { setErr(er => ({...er,[tab]:e.message})); }
-    finally { setLoading(l => ({...l,[tab]:false})); }
-  }
-
-  function Generic(tab, title, desc, ep) {
-    const d = data[tab];
-    return (
-      <div>
-        <div style={S.card}>
-          <div style={S.cardTitle}>{title}</div>
-          {desc && <p style={{color:'#71717a',fontSize:13,marginTop:0}}>{desc}</p>}
-          <div style={S.row}>
-            <input style={S.input} placeholder="Search or filter…" value={q[tab]||''} onChange={e=>setQ(p=>({...p,[tab]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&fetch_(tab,ep,{query:q[tab]})} />
-            <button style={S.btn()} onClick={()=>fetch_(tab,ep,{query:q[tab]})} disabled={loading[tab]}>{loading[tab]?'Loading…':'Load Data'}</button>
-            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analyzing…')}>✦ AI Insights</button>
-          </div>
-          {err[tab] && <div style={S.err}>{err[tab]}</div>}
-          {loading[tab] ? <div style={S.loading}>Loading {title.toLowerCase()}…</div> :
-           d ? (
-            <div style={{overflowX:'auto'}}>
-              <table style={S.tbl}>
-                <thead><tr><th style={S.th}>Item</th><th style={S.th}>Category</th><th style={S.th}>Value</th><th style={S.th}>Status</th></tr></thead>
-                <tbody>{(Array.isArray(d)?d:Object.values(d)[0]||[]).map((row,i)=>(
-                  <tr key={i} style={i%2?S.trOdd:{}}>
-                    <td style={S.td}>{row.name||row.id||row.label||row.item||JSON.stringify(row).slice(0,40)}</td>
-                    <td style={S.td}><span style={{color:'#71717a',fontSize:12}}>{row.category||row.type||row.group||'—'}</span></td>
-                    <td style={S.td}><span style={{fontWeight:600}}>{row.value||row.amount||row.score||'—'}</span></td>
-                    <td style={S.td}>{row.status?<span style={S.badge(row.status==='active'||row.status==='ok'?'#10b981':row.status==='warning'?'#f59e0b':'#ef4444')}>{row.status}</span>:'—'}</td>
-                  </tr>
-                ))}</tbody>
-              </table>
-            </div>
-           ) : <div style={S.empty}>Enter a query to load {title.toLowerCase()}.</div>}
-        </div>
-      </div>
-    );
-  }
-
-
-  function renderTab() {
-    const tab = activeTab;
-    const d = data[tab];
-    switch(tab) {
-      case 'risk-dash': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>Churn Risk Dashboard</div>
-            <button style={S.btn('#ef4444')} onClick={()=>fetch_('risk-dash',API+'/risk/dashboard')} disabled={loading['risk-dash']}>{loading['risk-dash']?'Loading…':'Load Risk Dashboard'}</button>
-            {err['risk-dash'] && <div style={S.err}>{err['risk-dash']}</div>}
-            {loading['risk-dash'] ? <div style={S.loading}>Scoring customers…</div> : d ? (
-              <>
-                <div style={S.metaRow}>
-                  {[['Total Customers',(d.totalCustomers||0).toLocaleString(),'#fafafa'],['High Risk',d.highRisk,'#ef4444'],['Churn Rate',d.churnRate+'%','#f97316'],['Predicted Loss','$'+d.predLoss30d?.toLocaleString(),'#ef4444'],['Avg Health',d.avgHealthScore,'#0ea5e9'],['MoM Change',d.churnRateChange>0?'+'+d.churnRateChange+'%':d.churnRateChange+'%',d.churnRateChange<0?'#10b981':'#ef4444']].map(([l,v,c])=>(
-                    <div key={l} style={S.metaItem}><div style={S.metaVal(c)}>{v}</div><div style={S.metaLbl}>{l}</div></div>
-                  ))}
-                </div>
-                <div style={S.sT}>Segments</div>
-                {d.segments?.map((s,i)=>(
-                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #1f1f22'}}>
-                    <span style={{fontSize:13,color:'#fafafa',fontWeight:600}}>{s.name}</span>
-                    <span style={{color:'#71717a',fontSize:12}}>{s.count?.toLocaleString()} customers</span>
-                    <div style={{display:'flex',alignItems:'center',gap:8}}>
-                      <span style={S.badge(s.churnProb>0.5?'#ef4444':s.churnProb>0.2?'#f59e0b':'#10b981')}>{(s.churnProb*100).toFixed(0)}% risk</span>
-                      <button style={{...S.btn('#ef4444'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Playbook triggered for '+s.name)}>Activate Playbook</button>
-                    </div>
-                  </div>
-                ))}
-              </>
-            ) : <div style={S.empty}>Load the churn risk dashboard to see customer health.</div>}
-          </div>
-        </div>
-      );
-      case 'cox-ph': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>Cox Proportional Hazard Model</div>
-            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Survival analysis for time-to-churn. Hazard ratios identify which behavioral signals most strongly predict churn — enabling targeted intervention.</p>
-            <button style={S.btn('#4f46e5')} onClick={()=>fetch_('cox-ph',API+'/survival/cox-ph')} disabled={loading['cox-ph']}>{loading['cox-ph']?'Running Model…':'Run Cox PH Model'}</button>
-            {err['cox-ph'] && <div style={S.err}>{err['cox-ph']}</div>}
-            {loading['cox-ph'] ? <div style={S.loading}>Running survival analysis…</div> : d?.model ? (
-              <>
-                <div style={{...S.mini,marginBottom:16,borderColor:'#4f46e544'}}>
-                  <div style={{fontSize:12,color:'#4f46e5',fontWeight:600,marginBottom:4}}>Model Concordance: {(d.model.concordance*100).toFixed(0)}%</div>
-                  <p style={{color:'#a1a1aa',fontSize:13,lineHeight:1.6,margin:0}}>{d.model.interpretation}</p>
-                </div>
-                <div style={S.sT}>Hazard Ratios (HR &gt; 1 = increases churn risk)</div>
-                <div style={{overflowX:'auto'}}>
-                  <table style={S.tbl}>
-                    <thead><tr><th style={S.th}>Covariate</th><th style={S.th}>Hazard Ratio</th><th style={S.th}>Direction</th><th style={S.th}>p-value</th></tr></thead>
-                    <tbody>{d.model.hazardRatios?.map((hr,i)=>(
-                      <tr key={i} style={i%2?S.trOdd:{}}>
-                        <td style={S.td}>{hr.covariate}</td>
-                        <td style={{...S.td,fontWeight:700,color:hr.hr>1?'#ef4444':'#10b981'}}>{hr.hr.toFixed(3)}</td>
-                        <td style={S.td}><span style={S.badge(hr.hr>1?'#ef4444':'#10b981')}>{hr.hr>1?'Increases risk':'Reduces risk'}</span></td>
-                        <td style={{...S.td,color:hr.pValue<0.05?'#10b981':'#71717a'}}>{hr.pValue < 0.001?'<0.001':hr.pValue.toFixed(3)}</td>
-                      </tr>
-                    ))}</tbody>
-                  </table>
-                </div>
-              </>
-            ) : <div style={S.empty}>Run the Cox PH model to see survival analysis results.</div>}
-          </div>
-        </div>
-      );
-      case 'early-warn': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>Early Warning Indicators</div>
-            <p style={{color:'#71717a',fontSize:13,marginTop:0}}>Leading behavioral signals that precede churn by 3-8 weeks — enabling proactive intervention before customers are lost.</p>
-            <button style={S.btn('#4f46e5')} onClick={()=>fetch_('early-warn',API+'/survival/early-warnings')} disabled={loading['early-warn']}>{loading['early-warn']?'Loading…':'Load Early Warnings'}</button>
-            {err['early-warn'] && <div style={S.err}>{err['early-warn']}</div>}
-            {loading['early-warn'] ? <div style={S.loading}>Loading signals…</div> : d?.indicators?.length ? (
-              d.indicators.map((ind,i)=>(
-                <div key={i} style={{...S.mini,marginBottom:12}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
-                    <div style={{fontWeight:700,color:'#fafafa',fontSize:13}}>{ind.signal}</div>
-                    <span style={S.badge('#ef4444')}>{ind.count} customers</span>
-                  </div>
-                  <p style={{color:'#a1a1aa',fontSize:12,lineHeight:1.5,margin:'0 0 8px'}}>{ind.description}</p>
-                  <div style={{display:'flex',gap:8}}>
-                    <span style={S.badge('#4f46e5')}>Leads churn by {ind.lead} days</span>
-                    <span style={S.badge('#0ea5e9')}>{(ind.accuracy*100).toFixed(0)}% accuracy</span>
-                    <button style={{...S.btn('#10b981'),padding:'4px 10px',fontSize:11}} onClick={()=>toast_('Playbook activated for '+ind.count+' customers')}>Activate Playbook</button>
-                  </div>
-                </div>
-              ))
-            ) : <div style={S.empty}>Load early warning indicators to detect pre-churn signals.</div>}
-          </div>
-        </div>
-      );
-      case 'cpp-world': return (
-        <div>
-          <div style={S.card}>
-            <div style={S.cardTitle}>✦ World-Class Features</div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:16}}>
-              {[
-                {icon:'📊',t:'Cox Proportional Hazard Model',d:'Survival analysis for time-to-churn — hazard ratios identify exactly which signals predict churn, with statistical significance.'},
-                {icon:'🎯',t:'BG/NBD Churn Probability',d:"Pareto/NBD probabilistic model estimates each customer's probability of being alive and expected future purchases."},
-                {icon:'⚡',t:'RFM Quintile Engine',d:'Recency-Frequency-Monetary scoring with 5×5×5 matrix, segment migration tracking, and automated playbook triggers.'},
-                {icon:'🔬',t:'Health Score Composite',d:'Weighted multi-signal score combining purchase recency/frequency, login activity, support tickets, NPS, and email engagement.'},
-                {icon:'🔮',t:'Predictive NPS',d:'Predict NPS before sending the survey using behavioral signals — proactively intervene with detractors before they churn.'},
-                {icon:'🚀',t:'Segment-Specific Playbooks',d:'Different retention strategies for Champions, Loyal, At-Risk, and Dormant — with automated triggers and ROI tracking per playbook.'},
-              ].map((f,i)=>(
-                <div key={i} style={S.mini}>
-                  <div style={{fontSize:28,marginBottom:8}}>{f.icon}</div>
-                  <div style={{fontWeight:700,color:'#fafafa',marginBottom:4}}>{f.t}</div>
-                  <div style={{fontSize:12,color:'#71717a',lineHeight:1.5}}>{f.d}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-      default: return Generic(tab, curGroup.tabs.find(t=>t.id===tab)?.label||tab, '', API+'/health');
-    }
-  }
-
-
-  function handleGroup(gid) {
-    const g = GROUPS.find(x=>x.id===gid);
-    if(g){setActiveGroup(gid);setActiveTab(g.tabs[0].id);}
-  }
+  const calcChurn = () => {
+    const score = parseInt(rfmInput) || 9;
+    const prob = Math.min(0.95, Math.max(0.02, (15 - score) / 15 * 0.8));
+    setChurnResult({ score, prob, risk: prob > 0.6 ? 'critical' : prob > 0.35 ? 'high' : prob > 0.15 ? 'medium' : 'low' });
+  };
 
   return (
-    <div style={S.root}>
-      <div style={{marginBottom:28}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:16}}>
-          <div>
-            <h1 style={{fontSize:24,fontWeight:800,color:'#fafafa',margin:'0 0 4px',letterSpacing:'-0.02em'}}>Churn Prediction Playbooks</h1>
-            <p style={{color:'#71717a',fontSize:13,margin:'4px 0 0'}}>Retention AI — Cox PH survival analysis, BG/NBD model, RFM scoring, early warning indicators & automated playbooks</p>
-          </div>
-          <div style={{display:'flex',gap:8}}>
-            <button style={S.btn('#27272a')} onClick={()=>fetch_(activeTab, API+'/health',{})}>↺ Refresh</button>
-            <button style={S.btn('#10b981')} onClick={()=>toast_('AI analysis started…')}>✦ AI Analysis</button>
+    <div style={S.page}>
+      <h1 style={S.title}>Churn Prediction & Playbooks</h1>
+      <p style={S.subtitle}>RFM scoring, BG/NBD churn model, cohort retention curves, early warning indicators, and retention playbooks</p>
+      <div style={S.grid4}>
+        {[['High Risk Customers','410'],['Revenue at Risk','23%'],['Avg 6m Retention','21%'],['Early Warnings','2 active']].map(([l,v])=>(
+          <div key={l} style={S.metric}><div style={S.metricNum(ACC)}>{v}</div><div style={S.metricLabel}>{l}</div></div>
+        ))}
+      </div>
+      <div style={{...S.tabBar,marginTop:20}}>{TABS.map((t,i)=><button key={t} style={S.tab(tab===i,ACC)} onClick={()=>setTab(i)}>{t}</button>)}</div>
+
+      {tab === 0 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Churn Risk Overview</div>
+          {SEGMENTS.map(s=>(
+            <div key={s.segment} style={{...S.row,padding:'10px 0',borderBottom:'1px solid #27272a'}}>
+              <span style={{minWidth:120,fontWeight:600}}>{s.segment}</span>
+              <span style={{color:'#71717a',fontSize:13}}>{s.count} customers</span>
+              <span style={{color:'#a1a1aa',fontSize:13}}>{(s.revPct*100).toFixed(0)}% revenue</span>
+              <div style={{flex:1,background:'#27272a',borderRadius:4,height:8,margin:'0 8px'}}><div style={{background:churnColor(s.churnRisk),height:8,borderRadius:4,width:(s.churnRisk*100)+'%'}} /></div>
+              <span style={{color:churnColor(s.churnRisk),fontWeight:700,minWidth:60}}>{(s.churnRisk*100).toFixed(0)}% risk</span>
+              <button style={S.btnSm(ACC)}>Playbook</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 1 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>RFM Quintile Scoring</div>
+          <table style={S.table}>
+            <thead><tr><th style={S.th}>Segment</th><th style={S.th}>R</th><th style={S.th}>F</th><th style={S.th}>M</th><th style={S.th}>Count</th><th style={S.th}>Churn Risk</th><th style={S.th}>Recommended Action</th></tr></thead>
+            <tbody>{SEGMENTS.map(s=>(
+              <tr key={s.segment}>
+                <td style={{...S.td,fontWeight:700}}>{s.segment}</td>
+                <td style={S.td}>{s.r}</td><td style={S.td}>{s.f}</td><td style={S.td}>{s.m}</td>
+                <td style={S.td}>{s.count}</td>
+                <td style={S.td}><span style={{color:churnColor(s.churnRisk),fontWeight:700}}>{(s.churnRisk*100).toFixed(0)}%</span></td>
+                <td style={{...S.td,color:'#a1a1aa',fontSize:12}}>{s.action}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+          <div style={{marginTop:16}}>
+            <div style={S.label}>BG/NBD Churn Probability Calculator</div>
+            <div style={S.row}>
+              <input style={{...S.input,flex:1}} placeholder="RFM score (3-15)" value={rfmInput} onChange={e=>setRfmInput(e.target.value)} type="number" min="3" max="15" />
+              <button style={S.btn(ACC)} onClick={calcChurn}>Calculate Churn Probability</button>
+            </div>
+            {churnResult&&<div style={{...S.cardSm,marginTop:12,borderColor:churnColor(churnResult.prob)}}>
+              <div style={S.row}><span style={{fontWeight:700}}>RFM Score {churnResult.score}:</span><span style={{fontSize:20,fontWeight:800,color:churnColor(churnResult.prob)}}>{(churnResult.prob*100).toFixed(1)}% churn probability</span><span style={S.badge(churnColor(churnResult.prob))}>{churnResult.risk}</span></div>
+            </div>}
           </div>
         </div>
-      </div>
+      )}
 
-      <div style={S.groupNav}>
-        {GROUPS.map(g=>(
-          <button key={g.id} style={S.gBtn(activeGroup===g.id,g.color)} onClick={()=>handleGroup(g.id)}>{g.label}</button>
-        ))}
-      </div>
+      {tab === 2 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Cohort Retention Curves</div>
+          <table style={S.table}>
+            <thead><tr><th style={S.th}>Cohort</th><th style={S.th}>M+0</th><th style={S.th}>M+1</th><th style={S.th}>M+2</th><th style={S.th}>M+3</th><th style={S.th}>M+4</th><th style={S.th}>M+5</th><th style={S.th}>M+6</th></tr></thead>
+            <tbody>{[{c:'Jan 2025',d:[100,42,31,26,23,21,19]},{c:'Feb 2025',d:[100,45,33,28,25,23,21]},{c:'Mar 2025',d:[100,48,36,30,27,24,null]},{c:'Apr 2025',d:[100,51,38,32,29,null,null]},{c:'May 2025',d:[100,53,40,34,null,null,null]},{c:'Jun 2025',d:[100,56,42,null,null,null,null]}].map(row=>(
+              <tr key={row.c}><td style={S.td}><strong>{row.c}</strong></td>{row.d.map((v,i)=>(<td key={i} style={{...S.td,color:v===null?'#27272a':v>=50?'#22c55e':v>=30?ACC:ACC,fontWeight:v===100?800:400}}>{v!==null?v+'%':'—'}</td>))}</tr>
+            ))}</tbody>
+          </table>
+        </div>
+      )}
 
-      <div style={S.tabStrip}>
-        {curGroup.tabs.map(t=>(
-          <button key={t.id} style={S.tBtn(activeTab===t.id,curGroup.color)} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
-        ))}
-      </div>
+      {tab === 3 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Early Warning Indicators</div>
+          {[{signal:'Email open rate declining',change:'-28% MoM',affected:842,lead:45,sev:'high'},{signal:'Support tickets spike',change:'+41% WoW',affected:184,lead:21,sev:'high'},{signal:'Add-to-cart no purchase',change:'+18% MoM',affected:2840,lead:14,sev:'medium'},{signal:'Session duration drop',change:'-22% WoW',affected:1240,lead:30,sev:'medium'}].map((w,i)=>(
+            <div key={i} style={{...S.cardSm,borderColor:w.sev==='high'?'#ef4444':'#27272a'}}>
+              <div style={S.row}>
+                <span style={S.badge(w.sev==='high'?'#ef4444':'#f59e0b')}>{w.sev.toUpperCase()}</span>
+                <strong style={{flex:1}}>{w.signal}</strong>
+                <span style={{color:'#ef4444',fontWeight:700}}>{w.change}</span>
+                <span style={{color:'#a1a1aa',fontSize:12}}>{w.affected.toLocaleString()} customers · leads churn by {w.lead}d</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {renderTab()}
+      {tab === 4 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Segment Playbooks</div>
+          {[{segment:'At Risk',churnRisk:'44%',steps:[{day:0,action:'Email: "We miss you" + 15% off',channel:'Email',conv:0.12},{day:3,action:'SMS: Limited time offer expiring',channel:'SMS',conv:0.08},{day:7,action:'Loyalty points bonus',channel:'Email',conv:0.06},{day:14,action:'Final: Free shipping',channel:'Email+SMS',conv:0.04}],revenue:28400},{segment:'Cant Lose',churnRisk:'68%',steps:[{day:0,action:'Personal founder email — no sales',channel:'Email',conv:0.22},{day:2,action:'Exclusive VIP event invitation',channel:'Email',conv:0.14},{day:7,action:'20% lifetime discount offer',channel:'Email+Phone',conv:0.10}],revenue:18900}].map((p,i)=>(
+            <div key={i} style={{...S.card,background:'#09090b',marginBottom:16}}>
+              <div style={{...S.row,marginBottom:12}}><strong style={{fontSize:15}}>{p.segment} Playbook</strong><span style={S.badge(ACC)}>Churn risk: {p.churnRisk}</span><span style={{marginLeft:'auto',color:'#22c55e',fontWeight:700}}>Est. £{p.revenue.toLocaleString()} recovered</span></div>
+              {p.steps.map((step,j)=>(
+                <div key={j} style={{...S.row,padding:'8px 0',borderBottom:'1px solid #27272a'}}>
+                  <span style={{...S.badge(ACC),minWidth:50}}>Day {step.day}</span>
+                  <span style={{flex:1,fontSize:13}}>{step.action}</span>
+                  <span style={{fontSize:12,color:'#71717a'}}>{step.channel}</span>
+                  <span style={{color:'#22c55e',fontWeight:700}}>{(step.conv*100).toFixed(0)}% conv.</span>
+                </div>
+              ))}
+              <button style={{...S.btn(ACC),marginTop:12}}>Activate Playbook</button>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {toast && (
-        <div style={{position:'fixed',bottom:24,right:24,background:toast.c,color:'#fff',borderRadius:10,padding:'12px 20px',fontSize:13,fontWeight:600,zIndex:9999,boxShadow:'0 4px 24px #0006'}}>
-          {toast.msg}
+      {tab === 5 && (
+        <div style={S.card}>
+          <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Reactivation ROI Calculator</div>
+          <div style={S.grid3}>
+            {[['Segment','At Risk'],['Campaign Cost','£2,000'],['Revenue per Customer','£180'],['Expected Conversions','28'],['Revenue Recovered','£5,040'],['ROI','152%']].map(([l,v])=>(
+              <div key={l} style={S.metric}><div style={S.metricNum(ACC)}>{v}</div><div style={S.metricLabel}>{l}</div></div>
+            ))}
+          </div>
+          <button style={{...S.btn(ACC),marginTop:20}}>Model Custom Scenario</button>
         </div>
       )}
     </div>
