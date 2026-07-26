@@ -1,26 +1,18 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/subscription-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/subscribers', async (req, res) => {
-  res.json({ ok: true, subscribers: [], mrr: 0 });
-});
-
-router.get('/analytics', async (req, res) => {
-  res.json({ ok: true, mrr: 84200, churnRate: 2.1, ltv: 840 });
-});
-
-router.post('/plans', requireCreditsOnMutation('sub-plan'), async (req, res) => {
-  res.json({ ok: true, plan: req.body });
-});
-
-router.post('/dunning/retry', requireCreditsOnMutation('dunning-retry'), async (req, res) => {
-  res.json({ ok: true, recovered: true });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'subscription-management', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/subscriptions', ah(async (req, res) => res.json({ ok: true, subscriptions: engine.getSubscriptions(req.query) })));
+router.get('/subscriptions/:id', ah(async (req, res) => { const s = engine.getSubscription(req.params.id); if (!s) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, subscription: s }); }));
+router.get('/plans', ah(async (req, res) => res.json({ ok: true, plans: engine.getPlans() })));
+router.get('/churn-reasons', ah(async (req, res) => res.json({ ok: true, reasons: engine.getChurnReasons() })));
+router.post('/subscriptions/:id/pause', ah(async (req, res) => res.json({ ok: true, ...engine.pauseSubscription(req.params.id, req.body.reason) })));
+router.post('/subscriptions/:id/cancel', ah(async (req, res) => { if (!req.body.reason) return res.status(400).json({ ok: false, error: 'reason required' }); res.json({ ok: true, ...engine.cancelSubscription(req.params.id, req.body.reason) }); }));
+router.post('/subscriptions/:id/resume', ah(async (req, res) => res.json({ ok: true, ...engine.resumeSubscription(req.params.id) })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

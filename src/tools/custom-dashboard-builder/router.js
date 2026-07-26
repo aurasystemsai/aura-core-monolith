@@ -1,24 +1,16 @@
-const express = require("express");
+﻿'use strict';
+const express = require('express');
 const router = express.Router();
-const { handleDashboardBuilderQuery } = require("./customDashboardBuilderService");
-
-// POST /api/custom-dashboard-builder/query
-router.post("/query", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await handleDashboardBuilderQuery(query);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Custom Dashboard Builder API running" });
-});
-
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const engine = require('./engines/dashboard-builder-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'custom-dashboard-builder', v: '2.0.0' })));
+router.get('/stats', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/dashboards', ah(async (req, res) => res.json({ ok: true, dashboards: engine.getDashboards(req.query) })));
+router.get('/dashboards/:id', ah(async (req, res) => { const d = engine.getDashboard(req.params.id); if (!d) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, dashboard: d }); }));
+router.get('/widgets', ah(async (req, res) => res.json({ ok: true, widgets: engine.getWidgetCatalog(req.query) })));
+router.get('/widgets/:id/data', ah(async (req, res) => res.json({ ok: true, ...engine.getWidgetData(req.params.id) })));
+router.post('/dashboards', ah(async (req, res) => { if (!req.body.name) return res.status(400).json({ ok: false, error: 'name required' }); res.json({ ok: true, dashboard: { id: 'db_' + Date.now(), ...req.body, widgets: [], createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

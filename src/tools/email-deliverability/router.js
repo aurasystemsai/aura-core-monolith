@@ -1,32 +1,16 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/email-deliverability-engine');
 router.use(verifyShopifySession);
-
-
-router.post('/scan', requireCreditsOnMutation('domain-scan'), async (req, res) => {
-  try {
-    const { domain } = req.body;
-    if (!domain) return res.status(400).json({ ok: false, error: 'domain required' });
-    res.json({ ok: true, domain, senderScore: 94, inboxRate: 97.2, blacklists: 0 });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.get('/dns', async (req, res) => {
-  res.json({ ok: true, checks: [] });
-});
-
-router.get('/blacklist', async (req, res) => {
-  res.json({ ok: true, listings: 0, checked: 92 });
-});
-
-router.post('/analyze-spam', requireCreditsOnMutation('spam-analyze'), async (req, res) => {
-  res.json({ ok: true, score: 2.1, issues: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'email-deliverability', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/domains', ah(async (req, res) => res.json({ ok: true, domains: engine.getDomains() })));
+router.get('/domains/check', ah(async (req, res) => { if (!req.query.domain) return res.status(400).json({ ok: false, error: 'domain required' }); res.json({ ok: true, ...engine.checkDomain(req.query.domain) }); }));
+router.get('/blacklists', ah(async (req, res) => res.json({ ok: true, blacklists: engine.getBlacklists() })));
+router.get('/isp-metrics', ah(async (req, res) => res.json({ ok: true, metrics: engine.getIspMetrics() })));
+router.get('/recommendations', ah(async (req, res) => res.json({ ok: true, recommendations: engine.getRecommendations() })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

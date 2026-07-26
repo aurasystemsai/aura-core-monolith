@@ -1,26 +1,17 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/cro-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/opportunities', async (req, res) => {
-  res.json({ ok: true, opportunities: [], estimatedLift: 0 });
-});
-
-router.post('/scan', requireCreditsOnMutation('cro-scan'), async (req, res) => {
-  res.json({ ok: true, opportunities: [] });
-});
-
-router.post('/ab-test', requireCreditsOnMutation('ab-test'), async (req, res) => {
-  res.json({ ok: true, test: req.body });
-});
-
-router.get('/analytics', async (req, res) => {
-  res.json({ ok: true, convRate: 3.4, revenuePerVisitor: 1.84 });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'conversion-rate-optimization', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/ab-tests', ah(async (req, res) => res.json({ ok: true, tests: engine.getAbTests(req.query) })));
+router.get('/ab-tests/:id', ah(async (req, res) => { const t = engine.getAbTest(req.params.id); if (!t) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, test: t }); }));
+router.get('/heatmaps', ah(async (req, res) => res.json({ ok: true, heatmaps: engine.getHeatmaps() })));
+router.get('/funnel', ah(async (req, res) => res.json({ ok: true, funnel: engine.getFunnel() })));
+router.get('/insights', ah(async (req, res) => res.json({ ok: true, insights: engine.getInsights() })));
+router.post('/ab-tests', ah(async (req, res) => { const { name, control, variant } = req.body; if (!name || !control || !variant) return res.status(400).json({ ok: false, error: 'name, control, variant required' }); res.json({ ok: true, test: { id: 'ab_' + Date.now(), name, control, variant, status: 'draft', createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

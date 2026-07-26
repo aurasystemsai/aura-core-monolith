@@ -1,44 +1,15 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
-const OpenAI = require('openai');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// POST /generate - Aura Operations AI main endpoint
-router.post('/generate', async (req, res) => {
-  try {
-    const { messages, prompt, context } = req.body || {};
-    if (!messages && !prompt) {
-      return res.status(400).json({ ok: false, error: 'Missing messages or prompt' });
-    }
-    const chatMessages = messages || [
-      { role: 'system', content: 'You are an expert AI operations assistant for e-commerce.' },
-      { role: 'user', content: prompt }
-    ];
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: chatMessages,
-      max_tokens: 512,
-      temperature: 0.7
-    });
-    const reply = completion.choices[0]?.message?.content?.trim() || '';
-    res.json({ ok: true, reply });
-  } catch (err) {
-    console.error('[Aura Operations AI] Error:', err);
-    res.status(500).json({ ok: false, error: err.message || 'AI error' });
-  }
-});
-
-// GET /docs - API documentation
-router.get('/docs', (req, res) => {
-  res.json({
-    ok: true,
-    docs: 'POST /api/aura-operations-ai/generate { messages: [...], prompt: string } => { ok, reply }'
-  });
-});
-
-// GET /i18n - i18n strings
-router.get('/i18n', (req, res) => {
-  res.json({ ok: true, i18n: { title: 'Aura Operations AI', input: 'Input', run: 'Run Tool' } });
-});
-
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const engine = require('./engines/aura-ops-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'aura-operations-ai', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/alerts', ah(async (req, res) => res.json({ ok: true, alerts: engine.getAlerts(req.query) })));
+router.get('/briefing', ah(async (req, res) => res.json({ ok: true, briefing: engine.getDailyBriefing() })));
+router.get('/workflows', ah(async (req, res) => res.json({ ok: true, workflows: engine.getWorkflows() })));
+router.post('/alerts/:id/resolve', ah(async (req, res) => { if (!req.body.resolution) return res.status(400).json({ ok: false, error: 'resolution required' }); res.json({ ok: true, ...engine.resolveAlert(req.params.id, req.body.resolution) }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

@@ -1,32 +1,15 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/ai-copilot-engine');
 router.use(verifyShopifySession);
-
-
-router.post('/chat', requireCreditsOnMutation('ai-chat'), async (req, res) => {
-  try {
-    const { message } = req.body;
-    if (!message) return res.status(400).json({ ok: false, error: 'message required' });
-    res.json({ ok: true, reply: 'I have analysed your request and queued the appropriate actions.' });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.get('/action-log', async (req, res) => {
-  res.json({ ok: true, actions: [] });
-});
-
-router.post('/tasks', requireCreditsOnMutation('ai-task'), async (req, res) => {
-  res.json({ ok: true, task: req.body });
-});
-
-router.get('/insights', async (req, res) => {
-  res.json({ ok: true, insights: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'ai-copilot', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/prompts', ah(async (req, res) => res.json({ ok: true, prompts: engine.getSuggestedPrompts(req.query) })));
+router.get('/history', ah(async (req, res) => res.json({ ok: true, history: engine.getConversationHistory(parseInt(req.query.limit) || 20) })));
+router.post('/chat', requireCreditsOnMutation('email-gen'), ah(async (req, res) => { if (!req.body.message) return res.status(400).json({ ok: false, error: 'message required' }); res.json({ ok: true, ...engine.chat(req.body.message, req.body.context || {}) }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

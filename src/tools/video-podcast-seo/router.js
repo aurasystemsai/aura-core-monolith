@@ -1,22 +1,16 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/video-podcast-seo-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/overview', async (req, res) => {
-  res.json({ ok: true, videos: 48, totalViews: 284000 });
-});
-
-router.post('/optimize', requireCreditsOnMutation('video-optimize'), async (req, res) => {
-  res.json({ ok: true, score: 78, recommendations: [] });
-});
-
-router.post('/mine-transcript', requireCreditsOnMutation('transcript-mine'), async (req, res) => {
-  res.json({ ok: true, keywords: [], blogIdeas: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'video-podcast-seo', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/videos', ah(async (req, res) => res.json({ ok: true, videos: engine.getVideos(req.query) })));
+router.get('/videos/:id', ah(async (req, res) => { const v = engine.getVideo(req.params.id); if (!v) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, video: v }); }));
+router.get('/videos/:id/transcript', ah(async (req, res) => res.json({ ok: true, ...engine.analyzeTranscript(req.params.id) })));
+router.post('/videos/:id/description', requireCreditsOnMutation('content-brief'), ah(async (req, res) => res.json({ ok: true, ...engine.generateDescription(req.params.id, req.body.keywords || []) })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

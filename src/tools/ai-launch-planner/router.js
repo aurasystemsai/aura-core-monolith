@@ -1,44 +1,17 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
-const OpenAI = require('openai');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// POST /generate - AI Launch Planner main endpoint
-router.post('/generate', async (req, res) => {
-  try {
-    const { messages, prompt, context } = req.body || {};
-    if (!messages && !prompt) {
-      return res.status(400).json({ ok: false, error: 'Missing messages or prompt' });
-    }
-    const chatMessages = messages || [
-      { role: 'system', content: 'You are an expert AI launch planner for e-commerce merchants.' },
-      { role: 'user', content: prompt }
-    ];
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: chatMessages,
-      max_tokens: 512,
-      temperature: 0.7
-    });
-    const reply = completion.choices[0]?.message?.content?.trim() || '';
-    res.json({ ok: true, reply });
-  } catch (err) {
-    console.error('[AI Launch Planner] Error:', err);
-    res.status(500).json({ ok: false, error: err.message || 'AI error' });
-  }
-});
-
-// GET /docs - API documentation
-router.get('/docs', (req, res) => {
-  res.json({
-    ok: true,
-    docs: 'POST /api/ai-launch-planner/generate { messages: [...], prompt: string } => { ok, reply }'
-  });
-});
-
-// GET /i18n - i18n strings
-router.get('/i18n', (req, res) => {
-  res.json({ ok: true, i18n: { title: 'AI Launch Planner', input: 'Input', run: 'Run Tool' } });
-});
-
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
+const engine = require('./engines/launch-planner-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'ai-launch-planner', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/launches', ah(async (req, res) => res.json({ ok: true, launches: engine.getLaunches(req.query) })));
+router.get('/launches/:id', ah(async (req, res) => { const l = engine.getLaunch(req.params.id); if (!l) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, launch: l }); }));
+router.get('/templates', ah(async (req, res) => res.json({ ok: true, templates: engine.getTemplates() })));
+router.post('/generate', requireCreditsOnMutation('campaign-gen'), ah(async (req, res) => { const { name, launchDate } = req.body; if (!name || !launchDate) return res.status(400).json({ ok: false, error: 'name and launchDate required' }); res.json({ ok: true, ...engine.generateLaunchPlan(name, launchDate, req.body.budget || 1000, req.body.channels, req.body.templateId) }); }));
+router.post('/launches', ah(async (req, res) => { const { name, launchDate } = req.body; if (!name || !launchDate) return res.status(400).json({ ok: false, error: 'name and launchDate required' }); res.json({ ok: true, launch: { id: 'l_' + Date.now(), ...req.body, status: 'planning', progress: 0, createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

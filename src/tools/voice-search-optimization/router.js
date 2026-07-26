@@ -1,28 +1,16 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/voice-search-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/overview', async (req, res) => {
-  res.json({ ok: true, voiceQueries: 12400, featuredSnippets: 8 });
-});
-
-router.post('/generate-answer', requireCreditsOnMutation('voice-answer'), async (req, res) => {
-  try {
-    const { question } = req.body;
-    if (!question) return res.status(400).json({ ok: false, error: 'question required' });
-    res.json({ ok: true, answer: 'Yes, we offer free shipping on all orders over $50 with 2-3 day delivery.' });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.post('/mine-questions', requireCreditsOnMutation('voice-mine'), async (req, res) => {
-  res.json({ ok: true, questions: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'voice-search-optimization', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/queries', ah(async (req, res) => res.json({ ok: true, queries: engine.getVoiceQueries() })));
+router.get('/keywords', ah(async (req, res) => res.json({ ok: true, keywords: engine.getConversationalKeywords() })));
+router.get('/faq-schema', ah(async (req, res) => res.json({ ok: true, faqs: engine.getFaqSchema() })));
+router.post('/faq/generate', requireCreditsOnMutation('content-brief'), ah(async (req, res) => { if (!req.body.question) return res.status(400).json({ ok: false, error: 'question required' }); res.json({ ok: true, ...engine.generateFaqAnswer(req.body.question) }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

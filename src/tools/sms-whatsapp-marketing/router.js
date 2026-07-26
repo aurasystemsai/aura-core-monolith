@@ -1,26 +1,17 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/sms-whatsapp-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/campaigns', async (req, res) => {
-  res.json({ ok: true, campaigns: [] });
-});
-
-router.post('/campaigns', requireCreditsOnMutation('sms-campaign'), async (req, res) => {
-  res.json({ ok: true, campaign: req.body });
-});
-
-router.post('/generate', requireCreditsOnMutation('sms-generate'), async (req, res) => {
-  res.json({ ok: true, message: 'Hey {{first_name}}! Check out our latest offers.' });
-});
-
-router.get('/analytics', async (req, res) => {
-  res.json({ ok: true, delivered: 97.8, opens: 94.2, clicks: 18.4 });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'sms-whatsapp-marketing', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/campaigns', ah(async (req, res) => res.json({ ok: true, campaigns: engine.getCampaigns(req.query) })));
+router.get('/templates', ah(async (req, res) => res.json({ ok: true, templates: engine.getTemplates(req.query) })));
+router.post('/templates/:id/preview', ah(async (req, res) => res.json({ ok: true, ...engine.previewMessage(req.params.id, req.body.sampleData || {}) })));
+router.post('/campaigns', ah(async (req, res) => { const { name, channel } = req.body; if (!name || !channel) return res.status(400).json({ ok: false, error: 'name and channel required' }); res.json({ ok: true, campaign: { id: 'sms_' + Date.now(), name, channel, status: 'draft', createdAt: new Date().toISOString() } }); }));
+router.post('/campaigns/:id/send', requireCreditsOnMutation('campaign-gen'), ah(async (req, res) => res.json({ ok: true, campaignId: req.params.id, status: 'queued', queuedAt: new Date().toISOString() })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

@@ -1,26 +1,16 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/dam-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/assets', async (req, res) => {
-  res.json({ ok: true, assets: [], total: 0 });
-});
-
-router.post('/upload', requireCreditsOnMutation('dam-upload'), async (req, res) => {
-  res.json({ ok: true, asset: req.body });
-});
-
-router.post('/auto-tag', requireCreditsOnMutation('dam-autotag'), async (req, res) => {
-  res.json({ ok: true, tags: ['product', 'lifestyle', 'warm tones'] });
-});
-
-router.get('/collections', async (req, res) => {
-  res.json({ ok: true, collections: [] });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'digital-asset-management', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/assets', ah(async (req, res) => res.json({ ok: true, assets: engine.getAssets(req.query) })));
+router.get('/assets/:id', ah(async (req, res) => { const a = engine.getAsset(req.params.id); if (!a) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, asset: a }); }));
+router.post('/assets/:id/alt-text', requireCreditsOnMutation('seo-scan'), ah(async (req, res) => res.json({ ok: true, ...engine.generateAltText(req.params.id) })));
+router.get('/collections', ah(async (req, res) => res.json({ ok: true, collections: engine.getCollections() })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

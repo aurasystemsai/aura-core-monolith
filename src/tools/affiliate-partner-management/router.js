@@ -1,26 +1,17 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/affiliate-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/affiliates', async (req, res) => {
-  res.json({ ok: true, affiliates: [] });
-});
-
-router.post('/affiliates', requireCreditsOnMutation('affiliate-invite'), async (req, res) => {
-  res.json({ ok: true, affiliate: req.body });
-});
-
-router.get('/analytics', async (req, res) => {
-  res.json({ ok: true, clicks: 0, conversions: 0, revenue: 0, commissions: 0 });
-});
-
-router.post('/payouts', requireCreditsOnMutation('affiliate-payout'), async (req, res) => {
-  res.json({ ok: true, processed: true });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'affiliate-partner-management', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/affiliates', ah(async (req, res) => res.json({ ok: true, affiliates: engine.getAffiliates(req.query) })));
+router.get('/affiliates/:id', ah(async (req, res) => { const a = engine.getAffiliate(req.params.id); if (!a) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, affiliate: a }); }));
+router.get('/tiers', ah(async (req, res) => res.json({ ok: true, tiers: engine.getTiers() })));
+router.get('/payouts', ah(async (req, res) => res.json({ ok: true, payouts: engine.getPayouts(req.query.affiliateId) })));
+router.post('/affiliates/:id/link', ah(async (req, res) => { if (!req.body.campaignSlug) return res.status(400).json({ ok: false, error: 'campaignSlug required' }); res.json({ ok: true, ...engine.generateAffiliateLink(req.params.id, req.body.campaignSlug) }); }));
+router.post('/affiliates', ah(async (req, res) => { const { name, email } = req.body; if (!name || !email) return res.status(400).json({ ok: false, error: 'name and email required' }); res.json({ ok: true, affiliate: { id: 'aff_' + Date.now(), name, email, status: 'pending', tier: 'bronze', commissionRate: 0.08, joinedAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

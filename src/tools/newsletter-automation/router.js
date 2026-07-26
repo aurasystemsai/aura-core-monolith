@@ -1,28 +1,18 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/newsletter-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/newsletters', async (req, res) => {
-  res.json({ ok: true, newsletters: [] });
-});
-
-router.post('/generate', requireCreditsOnMutation('newsletter-generate'), async (req, res) => {
-  try {
-    const { topic } = req.body;
-    if (!topic) return res.status(400).json({ ok: false, error: 'topic required' });
-    res.json({ ok: true, content: 'Generated newsletter content for: ' + topic });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
-
-router.get('/analytics', async (req, res) => {
-  res.json({ ok: true, openRate: 46, clickRate: 9, subscribers: 24800 });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'newsletter-automation', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/newsletters', ah(async (req, res) => res.json({ ok: true, newsletters: engine.getNewsletters(req.query) })));
+router.get('/newsletters/:id', ah(async (req, res) => { const n = engine.getNewsletter(req.params.id); if (!n) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, newsletter: n }); }));
+router.get('/subscribers', ah(async (req, res) => res.json({ ok: true, ...engine.getSubscriberStats() })));
+router.get('/segments', ah(async (req, res) => res.json({ ok: true, segments: engine.getSegments() })));
+router.post('/subject-lines', requireCreditsOnMutation('email-gen'), ah(async (req, res) => { if (!req.body.topic) return res.status(400).json({ ok: false, error: 'topic required' }); res.json({ ok: true, ...engine.generateSubjectLines(req.body.topic, req.body.count || 5) }); }));
+router.post('/newsletters', ah(async (req, res) => { if (!req.body.subject) return res.status(400).json({ ok: false, error: 'subject required' }); res.json({ ok: true, newsletter: { id: 'nl_' + Date.now(), ...req.body, status: 'draft', createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

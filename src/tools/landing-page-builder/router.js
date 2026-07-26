@@ -1,26 +1,18 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
 const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/landing-page-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/pages', async (req, res) => {
-  res.json({ ok: true, pages: [] });
-});
-
-router.post('/generate', requireCreditsOnMutation('page-generate'), async (req, res) => {
-  res.json({ ok: true, page: req.body });
-});
-
-router.post('/ab-test', requireCreditsOnMutation('ab-test'), async (req, res) => {
-  res.json({ ok: true, test: req.body });
-});
-
-router.get('/analytics', async (req, res) => {
-  res.json({ ok: true, visitors: 28400, conversions: 2613, convRate: 9.2 });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'landing-page-builder', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/pages', ah(async (req, res) => res.json({ ok: true, pages: engine.getPages(req.query) })));
+router.get('/pages/:id', ah(async (req, res) => { const p = engine.getPage(req.params.id); if (!p) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, page: p }); }));
+router.get('/templates', ah(async (req, res) => res.json({ ok: true, templates: engine.getTemplates() })));
+router.get('/blocks', ah(async (req, res) => res.json({ ok: true, blocks: engine.getBlocks() })));
+router.post('/generate-copy', requireCreditsOnMutation('content-brief'), ah(async (req, res) => { const { productName } = req.body; if (!productName) return res.status(400).json({ ok: false, error: 'productName required' }); res.json({ ok: true, ...engine.generateCopy(req.body.templateId, productName, req.body.keywords || []) }); }));
+router.post('/pages', ah(async (req, res) => { if (!req.body.name) return res.status(400).json({ ok: false, error: 'name required' }); res.json({ ok: true, page: { id: 'lp_' + Date.now(), ...req.body, status: 'draft', createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

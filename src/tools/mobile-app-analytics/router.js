@@ -1,26 +1,15 @@
+﻿'use strict';
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
-
+const engine = require('./engines/mobile-app-engine');
 router.use(verifyShopifySession);
-
-
-router.get('/overview', async (req, res) => {
-  res.json({ ok: true, mau: 84200, dau: 28628, crashRate: 0.12 });
-});
-
-router.post('/ai-analyze', requireCreditsOnMutation('mobile-analyze'), async (req, res) => {
-  res.json({ ok: true, insights: [] });
-});
-
-router.get('/funnel', async (req, res) => {
-  res.json({ ok: true, steps: [] });
-});
-
-router.post('/push', requireCreditsOnMutation('push-campaign'), async (req, res) => {
-  res.json({ ok: true, sent: true });
-});
-
-
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'mobile-app-analytics', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/metrics', ah(async (req, res) => res.json({ ok: true, metrics: engine.getAppMetrics() })));
+router.get('/screens', ah(async (req, res) => res.json({ ok: true, screens: engine.getScreens() })));
+router.get('/events', ah(async (req, res) => res.json({ ok: true, events: engine.getEvents() })));
+router.get('/push-campaigns', ah(async (req, res) => res.json({ ok: true, campaigns: engine.getPushCampaigns() })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

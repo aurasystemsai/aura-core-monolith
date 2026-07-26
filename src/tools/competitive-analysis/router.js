@@ -1,24 +1,17 @@
-const express = require("express");
+﻿'use strict';
+const express = require('express');
 const router = express.Router();
-const { analyzeCompetition } = require("./competitiveAnalysisService");
-
-// POST /api/competitive-analysis/analyze
-router.post("/analyze", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await analyzeCompetition(query);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Competitive Analysis API running" });
-});
-
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
+const engine = require('./engines/competitive-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'competitive-analysis', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/competitors', ah(async (req, res) => res.json({ ok: true, competitors: engine.getCompetitors(req.query) })));
+router.get('/competitors/:id', ah(async (req, res) => { const c = engine.getCompetitor(req.params.id); if (!c) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, competitor: c }); }));
+router.get('/keyword-gaps', ah(async (req, res) => res.json({ ok: true, gaps: engine.getKeywordGaps() })));
+router.get('/pricing', ah(async (req, res) => res.json({ ok: true, ...engine.analyzePricing() })));
+router.post('/scan', requireCreditsOnMutation('competitive-analysis'), ah(async (req, res) => { if (!req.body.domain) return res.status(400).json({ ok: false, error: 'domain required' }); res.json({ ok: true, status: 'scanning', domain: req.body.domain, queuedAt: new Date().toISOString() }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;
