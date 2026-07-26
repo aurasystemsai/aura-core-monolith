@@ -192,6 +192,10 @@ const toolRouters = [
   { path: '/api/ad-creative-optimizer', router: require('./tools/ad-creative-optimizer/router'), middleware: requireTool('ad-creative-optimizer'), creditAction: 'ad-copy' },
   { path: '/api/ads-anomaly-guard', router: require('./tools/ads-anomaly-guard/router'), middleware: requireTool('ads-anomaly-guard'), creditAction: 'analytics-insight' },
   { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer'), creditAction: 'analytics-insight' },
+  { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router'), middleware: requireTool('visual-workflow-builder'), creditAction: 'analytics-insight' },
+  { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight' },
+  { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router'), middleware: requireTool('workflow-orchestrator'), creditAction: 'analytics-insight' },
+  { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router'), middleware: requireTool('conditional-logic-automation'), creditAction: 'analytics-insight' },
 
   // Pro tier tools
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant'), creditAction: 'ai-support' },

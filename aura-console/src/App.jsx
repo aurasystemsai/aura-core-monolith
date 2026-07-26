@@ -43,6 +43,10 @@ const AIContentBriefGenerator = lazy(() => import("./components/tools/AIContentB
 const BrandMentionTracker = lazy(() => import("./components/tools/BrandMentionTracker.jsx"));
 const LocalSEOToolkit = lazy(() => import("./components/tools/LocalSEOToolkit.jsx"));
 const AutomationTemplates = lazy(() => import("./components/tools/AutomationTemplates.jsx"));
+const VisualWorkflowBuilder = lazy(() => import("./components/tools/VisualWorkflowBuilder.jsx"));
+const WorkflowAutomationBuilder = lazy(() => import("./components/tools/WorkflowAutomationBuilder.jsx"));
+const WorkflowOrchestrator = lazy(() => import("./components/tools/WorkflowOrchestrator.jsx"));
+const ConditionalLogicAutomation = lazy(() => import("./components/tools/ConditionalLogicAutomation.jsx"));
 const WebhookApiTriggers = lazy(() => import("./components/tools/WebhookApiTriggers.jsx"));
 const ReportingIntegrations = lazy(() => import("./components/tools/ReportingIntegrations.jsx"));
 const CustomDashboardBuilder = lazy(() => import("./components/tools/CustomDashboardBuilder.jsx"));
@@ -564,6 +568,10 @@ function App() {
  {activeSection === "returns-rma-automation"&& <ReturnsRMAAutomation />}
  {activeSection === "automation-templates"&& <AutomationTemplates />}
  {activeSection === "collaboration-approval-workflows"&& <CollaborationApprovalWorkflows />}
+ {activeSection === "visual-workflow-builder"&& <VisualWorkflowBuilder />}
+ {activeSection === "workflow-automation-builder"&& <WorkflowAutomationBuilder />}
+ {activeSection === "workflow-orchestrator"&& <WorkflowOrchestrator />}
+ {activeSection === "conditional-logic-automation"&& <ConditionalLogicAutomation />}
 
  {/* -- Customer Support -- */}
  {activeSection === "ai-support-assistant"&& <AiSupportAssistant />}
