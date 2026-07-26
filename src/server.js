@@ -202,6 +202,12 @@ const toolRouters = [
   { path: '/api/affiliate-partner-management', router: require('./tools/affiliate-partner-management/router'), middleware: requireTool('affiliate-partner-management'), creditAction: 'analytics-insight' },
   { path: '/api/subscription-management', router: require('./tools/subscription-management/router'), middleware: requireTool('subscription-management'), creditAction: 'analytics-insight' },
   { path: '/api/digital-asset-management', router: require('./tools/digital-asset-management/router'), middleware: requireTool('digital-asset-management'), creditAction: 'analytics-insight' },
+  { path: '/api/mobile-app-analytics', router: require('./tools/mobile-app-analytics/router'), middleware: requireTool('mobile-app-analytics'), creditAction: 'analytics-insight' },
+  { path: '/api/voice-search-optimization', router: require('./tools/voice-search-optimization/router'), middleware: requireTool('voice-search-optimization'), creditAction: 'voice-answer' },
+  { path: '/api/video-podcast-seo', router: require('./tools/video-podcast-seo/router'), middleware: requireTool('video-podcast-seo'), creditAction: 'analytics-insight' },
+  { path: '/api/newsletter-automation', router: require('./tools/newsletter-automation/router'), middleware: requireTool('newsletter-automation'), creditAction: 'newsletter-generate' },
+  { path: '/api/landing-page-builder', router: require('./tools/landing-page-builder/router'), middleware: requireTool('landing-page-builder'), creditAction: 'page-generate' },
+  { path: '/api/conversion-rate-optimization', router: require('./tools/conversion-rate-optimization/router'), middleware: requireTool('conversion-rate-optimization'), creditAction: 'cro-scan' },
 
   // Pro tier tools
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant'), creditAction: 'ai-support' },

@@ -53,6 +53,12 @@ const SMSWhatsAppMarketing = lazy(() => import("./components/tools/SMSWhatsAppMa
 const AffiliatePartnerManagement = lazy(() => import("./components/tools/AffiliatePartnerManagement.jsx"));
 const SubscriptionManagement = lazy(() => import("./components/tools/SubscriptionManagement.jsx"));
 const DigitalAssetManagement = lazy(() => import("./components/tools/DigitalAssetManagement.jsx"));
+const MobileAppAnalytics = lazy(() => import("./components/tools/MobileAppAnalytics.jsx"));
+const VoiceSearchOptimization = lazy(() => import("./components/tools/VoiceSearchOptimization.jsx"));
+const VideoPodcastSEO = lazy(() => import("./components/tools/VideoPodcastSEO.jsx"));
+const NewsletterAutomation = lazy(() => import("./components/tools/NewsletterAutomation.jsx"));
+const LandingPageBuilder = lazy(() => import("./components/tools/LandingPageBuilder.jsx"));
+const ConversionRateOptimization = lazy(() => import("./components/tools/ConversionRateOptimization.jsx"));
 const WebhookApiTriggers = lazy(() => import("./components/tools/WebhookApiTriggers.jsx"));
 const ReportingIntegrations = lazy(() => import("./components/tools/ReportingIntegrations.jsx"));
 const CustomDashboardBuilder = lazy(() => import("./components/tools/CustomDashboardBuilder.jsx"));
@@ -584,6 +590,12 @@ function App() {
  {activeSection === "affiliate-partner-management"&& <AffiliatePartnerManagement />}
  {activeSection === "subscription-management"&& <SubscriptionManagement />}
  {activeSection === "digital-asset-management"&& <DigitalAssetManagement />}
+ {activeSection === "mobile-app-analytics"&& <MobileAppAnalytics />}
+ {activeSection === "voice-search-optimization"&& <VoiceSearchOptimization />}
+ {activeSection === "video-podcast-seo"&& <VideoPodcastSEO />}
+ {activeSection === "newsletter-automation"&& <NewsletterAutomation />}
+ {activeSection === "landing-page-builder"&& <LandingPageBuilder />}
+ {activeSection === "conversion-rate-optimization"&& <ConversionRateOptimization />}
 
  {/* -- Customer Support -- */}
  {activeSection === "ai-support-assistant"&& <AiSupportAssistant />}
