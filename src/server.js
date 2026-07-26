@@ -196,6 +196,12 @@ const toolRouters = [
   { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight' },
   { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router'), middleware: requireTool('workflow-orchestrator'), creditAction: 'analytics-insight' },
   { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router'), middleware: requireTool('conditional-logic-automation'), creditAction: 'analytics-insight' },
+  { path: '/api/ai-copilot', router: require('./tools/ai-copilot/router'), middleware: requireTool('ai-copilot'), creditAction: 'ai-chat' },
+  { path: '/api/email-deliverability', router: require('./tools/email-deliverability/router'), middleware: requireTool('email-deliverability'), creditAction: 'analytics-insight' },
+  { path: '/api/sms-whatsapp-marketing', router: require('./tools/sms-whatsapp-marketing/router'), middleware: requireTool('sms-whatsapp-marketing'), creditAction: 'sms-campaign' },
+  { path: '/api/affiliate-partner-management', router: require('./tools/affiliate-partner-management/router'), middleware: requireTool('affiliate-partner-management'), creditAction: 'analytics-insight' },
+  { path: '/api/subscription-management', router: require('./tools/subscription-management/router'), middleware: requireTool('subscription-management'), creditAction: 'analytics-insight' },
+  { path: '/api/digital-asset-management', router: require('./tools/digital-asset-management/router'), middleware: requireTool('digital-asset-management'), creditAction: 'analytics-insight' },
 
   // Pro tier tools
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant'), creditAction: 'ai-support' },

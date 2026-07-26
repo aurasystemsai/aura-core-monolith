@@ -47,6 +47,12 @@ const VisualWorkflowBuilder = lazy(() => import("./components/tools/VisualWorkfl
 const WorkflowAutomationBuilder = lazy(() => import("./components/tools/WorkflowAutomationBuilder.jsx"));
 const WorkflowOrchestrator = lazy(() => import("./components/tools/WorkflowOrchestrator.jsx"));
 const ConditionalLogicAutomation = lazy(() => import("./components/tools/ConditionalLogicAutomation.jsx"));
+const AICopilot = lazy(() => import("./components/tools/AICopilot.jsx"));
+const EmailDeliverability = lazy(() => import("./components/tools/EmailDeliverability.jsx"));
+const SMSWhatsAppMarketing = lazy(() => import("./components/tools/SMSWhatsAppMarketing.jsx"));
+const AffiliatePartnerManagement = lazy(() => import("./components/tools/AffiliatePartnerManagement.jsx"));
+const SubscriptionManagement = lazy(() => import("./components/tools/SubscriptionManagement.jsx"));
+const DigitalAssetManagement = lazy(() => import("./components/tools/DigitalAssetManagement.jsx"));
 const WebhookApiTriggers = lazy(() => import("./components/tools/WebhookApiTriggers.jsx"));
 const ReportingIntegrations = lazy(() => import("./components/tools/ReportingIntegrations.jsx"));
 const CustomDashboardBuilder = lazy(() => import("./components/tools/CustomDashboardBuilder.jsx"));
@@ -572,6 +578,12 @@ function App() {
  {activeSection === "workflow-automation-builder"&& <WorkflowAutomationBuilder />}
  {activeSection === "workflow-orchestrator"&& <WorkflowOrchestrator />}
  {activeSection === "conditional-logic-automation"&& <ConditionalLogicAutomation />}
+ {activeSection === "ai-copilot"&& <AICopilot />}
+ {activeSection === "email-deliverability"&& <EmailDeliverability />}
+ {activeSection === "sms-whatsapp-marketing"&& <SMSWhatsAppMarketing />}
+ {activeSection === "affiliate-partner-management"&& <AffiliatePartnerManagement />}
+ {activeSection === "subscription-management"&& <SubscriptionManagement />}
+ {activeSection === "digital-asset-management"&& <DigitalAssetManagement />}
 
  {/* -- Customer Support -- */}
  {activeSection === "ai-support-assistant"&& <AiSupportAssistant />}
