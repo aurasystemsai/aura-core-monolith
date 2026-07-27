@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const store = { settings: new Map() };
 function ok(res,d){res.json({ok:true,...d});}
@@ -14,8 +14,7 @@ router.post('/campaigns/list',(req,res)=>ok(res,{data:{campaigns:Array.from({len
   impressions:Math.floor(rnd(50000,500000)), clicks:Math.floor(rnd(500,8000)),
   ctr:(rnd(0.8,4.2)).toFixed(2), cpm:(rnd(4,18)).toFixed(2),
   conversions:Math.floor(rnd(10,200)), roas:(rnd(1.2,5.4)).toFixed(2),
-}))}});
-});
+}))}}));
 router.post('/creative/spark-ads',(req,res)=>ok(res,{data:{candidates:Array.from({length:8},(_,i)=>({
   id:'org-'+i, type:'Organic Post', author:'@yourbrand',
   views:Math.floor(rnd(5000,200000)), likes:Math.floor(rnd(200,8000)),
@@ -23,8 +22,7 @@ router.post('/creative/spark-ads',(req,res)=>ok(res,{data:{candidates:Array.from
   shares:Math.floor(rnd(50,2000)), comments:Math.floor(rnd(20,500)),
   sparkScore:Math.floor(rnd(60,98)),
   recommendation:i<3?'Top Spark Ad candidate -- high engagement rate and view completion':'Monitor performance before promoting',
-}))}});
-});
+}))}}));
 router.post('/creative/hook-analyzer',(req,res)=>ok(res,{data:{videos:Array.from({length:5},(_,i)=>({
   id:'vid-'+i, title:'Video '+String.fromCharCode(65+i),
   avgWatchTime:(rnd(4,14)).toFixed(1)+'s', completionRate:(rnd(15,55)).toFixed(0)+'%',
@@ -32,8 +30,7 @@ router.post('/creative/hook-analyzer',(req,res)=>ok(res,{data:{videos:Array.from
   hookScore:Math.floor(rnd(40,95)),
   hookType:['Question hook','Shock/surprise open','Trending sound start','Direct address','Visual hook'][i],
   recommendation:i<2?'Strong hook -- repurpose as Spark Ad':'A/B test alternative hook style to improve 3s retention',
-}))}});
-});
+}))}}));
 router.post('/creative/trending-audio',(req,res)=>ok(res,{data:{trends:[
   {sound:'Trending Sound 1',usageCount:2840000,trend:'+284%',genre:'Pop',brandFit:'high',engagement_lift:'+18%'},
   {sound:'Trending Sound 2',usageCount:1240000,trend:'+142%',genre:'Hip-Hop',brandFit:'medium',engagement_lift:'+12%'},

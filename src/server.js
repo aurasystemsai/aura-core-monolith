@@ -222,6 +222,28 @@ const toolRouters = [
   { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai'), creditAction: 'analytics-insight' },
   { path: '/api/main-suite', router: require('./tools/main-suite/router') },
   { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers'), creditAction: 'generic-ai' },
+  // Phase 10 — previously unregistered tools
+  { path: '/api/advanced-personalization-engine', router: require('./tools/advanced-personalization-engine/router'), middleware: requireTool('advanced-personalization-engine'), creditAction: 'analytics-insight' },
+  { path: '/api/ai-segmentation-engine', router: require('./tools/ai-segmentation-engine/router'), middleware: requireTool('ai-segmentation-engine'), creditAction: 'analytics-insight' },
+  { path: '/api/automation-templates', router: require('./tools/automation-templates/router'), middleware: requireTool('automation-templates'), creditAction: 'generic-ai' },
+  { path: '/api/brand-mention-tracker', router: require('./tools/brand-mention-tracker/router'), middleware: requireTool('brand-mention-tracker'), creditAction: 'analytics-insight' },
+  { path: '/api/collaboration-approval-workflows', router: require('./tools/collaboration-approval-workflows/router'), middleware: requireTool('collaboration-approval-workflows'), creditAction: 'generic-ai' },
+  { path: '/api/competitive-analysis', router: require('./tools/competitive-analysis/router'), middleware: requireTool('competitive-analysis'), creditAction: 'competitive-analysis' },
+  { path: '/api/compliance-privacy-suite', router: require('./tools/compliance-privacy-suite/router'), middleware: requireTool('compliance-privacy-suite'), creditAction: 'analytics-insight' },
+  { path: '/api/custom-dashboard-builder', router: require('./tools/custom-dashboard-builder/router'), middleware: requireTool('custom-dashboard-builder'), creditAction: 'analytics-insight' },
+  { path: '/api/customer-data-platform', router: require('./tools/customer-data-platform/router'), middleware: requireTool('customer-data-platform'), creditAction: 'analytics-insight' },
+  { path: '/api/data-warehouse-connector', router: require('./tools/data-warehouse-connector/router'), middleware: requireTool('data-warehouse-connector'), creditAction: 'analytics-insight' },
+  { path: '/api/local-seo-toolkit', router: require('./tools/local-seo-toolkit/router'), middleware: requireTool('local-seo-toolkit'), creditAction: 'seo-scan' },
+  { path: '/api/omnichannel-campaign-builder', router: require('./tools/omnichannel-campaign-builder/router'), middleware: requireTool('omnichannel-campaign-builder'), creditAction: 'campaign-gen' },
+  { path: '/api/personalization-recommendation-engine', router: require('./tools/personalization-recommendation-engine/router'), middleware: requireTool('personalization-recommendation-engine'), creditAction: 'analytics-insight' },
+  { path: '/api/predictive-analytics-widgets', router: require('./tools/predictive-analytics-widgets/router'), middleware: requireTool('predictive-analytics-widgets'), creditAction: 'analytics-insight' },
+  { path: '/api/reporting-integrations', router: require('./tools/reporting-integrations/router'), middleware: requireTool('reporting-integrations'), creditAction: 'analytics-insight' },
+  { path: '/api/scheduled-export', router: require('./tools/scheduled-export/router'), middleware: requireTool('scheduled-export'), creditAction: 'analytics-insight' },
+  { path: '/api/self-service-analytics', router: require('./tools/self-service-analytics/router'), middleware: requireTool('self-service-analytics'), creditAction: 'analytics-insight' },
+  { path: '/api/self-service-portal', router: require('./tools/self-service-portal/router'), middleware: requireTool('self-service-portal'), creditAction: 'generic-ai' },
+  { path: '/api/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
+  { path: '/api/social-media-analytics-listening', router: require('./tools/social-media-analytics-listening/router'), middleware: requireTool('social-media-analytics-listening'), creditAction: 'analytics-insight' },
+  { path: '/api/upsell-cross-sell-engine', router: require('./tools/upsell-cross-sell-engine/router'), middleware: requireTool('upsell-cross-sell-engine'), creditAction: 'analytics-insight' },
 ];
 toolRouters.forEach((t) => {
   const { path, router, middleware, creditAction, noCreditPaths } = t;

@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const store = { settings: new Map(), library: new Map() };
 function ok(res,d){res.json({ok:true,...d});}
@@ -12,8 +12,7 @@ router.post('/library/all',(req,res)=>ok(res,{data:{creatives:Array.from({length
   platform:['Google','Meta','TikTok','All'][i%4], score:Math.floor(rnd(40,98)),
   ctr:(rnd(1,6)).toFixed(2)+'%', conversions:Math.floor(rnd(5,200)),
   status:i<16?'active':'paused', fatigueRisk:i>14?'high':i>10?'medium':'low',
-}))}});
-});
+}))}}));
 router.post('/analyze/creative-dna',(req,res)=>ok(res,{data:{patterns:{
   topPerformers:{
     visualFeatures:['People in action (not static)','Natural lighting over studio','Product in context (not white background)','UGC-style rawness'],
@@ -31,8 +30,7 @@ router.post('/analyze/emotion-analysis',(req,res)=>ok(res,{data:{creatives:Array
   emotions:{joy:Math.floor(rnd(20,80)),trust:Math.floor(rnd(30,90)),surprise:Math.floor(rnd(10,60)),fear:Math.floor(rnd(5,30)),anticipation:Math.floor(rnd(20,70))},
   dominantEmotion:['Joy','Trust','Surprise','Anticipation'][i%4],
   predictedEngagement:['High','Medium','High','Low','Medium','High','Low','Medium'][i],
-}))}});
-});
+}))}}));
 router.post('/analyze/brand-safety',(req,res)=>ok(res,{data:{scan:{
   scanned:20, passed:18, flagged:2,
   flags:[{creative:'Creative 4',issue:'Price claim without substantiation -- "Best price guaranteed"',severity:'medium',action:'Add asterisk and terms, or reword'},

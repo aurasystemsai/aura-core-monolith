@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const store = { settings: new Map(), negatives: new Map() };
 function ok(res,d){res.json({ok:true,...d});}
@@ -15,8 +15,7 @@ router.post('/campaigns/list',(req,res)=>ok(res,{data:{campaigns:Array.from({len
   ctr:(rnd(1,8)).toFixed(2), cpc:(rnd(0.5,8)).toFixed(2),
   conversions:Math.floor(rnd(5,200)), convValue:(rnd(200,8000)).toFixed(0),
   roas:(rnd(1.5,8)).toFixed(2), qualityScore:Math.floor(rnd(5,10)),
-}))}});
-});
+}))}}));
 router.post('/keywords/list',(req,res)=>ok(res,{data:{keywords:Array.from({length:20},(_,i)=>({
   id:'kw-'+i, keyword:['running shoes','buy running shoes online','best trail running shoes','nike running shoes','adidas ultraboost','marathon training shoes','waterproof running shoes','minimalist running shoes','wide width running shoes','running shoes for overpronation'][i%10]+' '+(i>9?'v2':''),
   matchType:['EXACT','PHRASE','BROAD'][i%3], status:'enabled',
@@ -26,15 +25,13 @@ router.post('/keywords/list',(req,res)=>ok(res,{data:{keywords:Array.from({lengt
   qualityScore:Math.floor(rnd(4,10)), adRelevance:['Below average','Average','Above average'][i%3],
   expectedCtr:['Below average','Average','Above average'][(i+1)%3],
   landingPageExp:['Below average','Average','Above average'][(i+2)%3],
-}))}});
-});
+}))}}));
 router.post('/keywords/search-terms',(req,res)=>ok(res,{data:{searchTerms:Array.from({length:25},(_,i)=>({
   term:'search term example '+i, matchedKeyword:'running shoes', matchType:'BROAD',
   impressions:Math.floor(rnd(10,500)), clicks:Math.floor(rnd(1,50)),
   conversions:Math.floor(rnd(0,5)), spend:(rnd(1,80)).toFixed(2),
   recommendation:i%3===0?'Add as EXACT keyword':i%3===1?'Add as negative keyword':'Monitor',
-}))}});
-});
+}))}}));
 router.post('/keywords/ai-mining',(req,res)=>{
   const {model='gpt-4o-mini'}=req.body;
   ok(res,{data:{clusters:[

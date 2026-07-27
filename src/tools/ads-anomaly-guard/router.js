@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const store = { rules: new Map(), settings: new Map(), alerts: [] };
 function ok(res,d){res.json({ok:true,...d});}
@@ -41,8 +41,7 @@ router.post('/rules/list',(req,res)=>ok(res,{data:{rules:[...store.rules.values(
   {id:'r-2',name:'Budget Pacing Guard',condition:'Daily spend > 110% of daily budget by 6pm',action:'Reduce budget to 90%',campaigns:'All',status:'active',triggeredCount:1},
   {id:'r-3',name:'CPC Spike Alert',condition:'CPC > 150% of 7-day average',action:'Send Slack alert',campaigns:'Non-Brand',status:'active',triggeredCount:8},
   {id:'r-4',name:'Click Fraud Guard',condition:'Invalid click rate > 3%',action:'Pause + alert + IP report',campaigns:'Display',status:'active',triggeredCount:0},
-]]}});
-});
+]]}}));
 router.post('/rules/create',(req,res)=>{const id='rule-'+Date.now();const rule={...req.body,id,createdAt:new Date().toISOString()};store.rules.set(id,rule);ok(res,{data:{rule}});});
 router.post('/cannibalization/paid-organic',(req,res)=>ok(res,{data:{keywords:[
   {keyword:'brand name',paidIS:42,organicRank:1,incrementalValue:0.18,recommendation:'Reduce brand bid -- organic #1 captures most value'},

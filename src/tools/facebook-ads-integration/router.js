@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const store = { settings: new Map() };
 function ok(res,d){res.json({ok:true,...d});}
@@ -19,8 +19,7 @@ router.post('/overview/campaigns',(req,res)=>ok(res,{data:{campaigns:Array.from(
   roas:(rnd(1.5,6.5)).toFixed(2), conversions:Math.floor(rnd(20,300)),
   cpa:(rnd(20,80)).toFixed(2), frequency:(rnd(1.2,4.8)).toFixed(1),
   reach:Math.floor(rnd(5000,80000)),
-}))}});
-});
+}))}}));
 router.post('/audiences/overlap',(req,res)=>ok(res,{data:{overlaps:[
   {setA:'LTV Top 20% Lookalike',setB:'Interest: Running',overlapPct:34.2,audienceSizeA:240000,audienceSizeB:180000,recommendation:'High overlap -- exclude LTV Lookalike from Interest campaigns to prevent auction competition'},
   {setA:'Retargeting: ATC','setB':'Retargeting: View Content',overlapPct:68.4,audienceSizeA:12000,audienceSizeB:28000,recommendation:'Very high overlap -- consolidate into single ad set with dynamic creative'},
@@ -37,8 +36,7 @@ router.post('/creative/fatigue',(req,res)=>ok(res,{data:{creatives:Array.from({l
   ctrDrop:i>3?(rnd(15,45)).toFixed(0)+'%':'0%',
   daysRunning:7+i*4, recommendation:i>=4?'Pause and replace -- significant fatigue':'Healthy -- continue running',
   status:i>=5?'fatigued':i>=3?'warning':'healthy',
-}))}});
-});
+}))}}));
 router.post('/creative/dco',(req,res)=>ok(res,{data:{elements:{
   headlines:[{text:'Free Shipping on All Orders',impressions:48200,ctr:3.84,conversions:142},{text:'Shop Now -- Up to 40% Off',impressions:42000,ctr:2.94,conversions:98},{text:'Top-Rated Running Shoes',impressions:38400,ctr:3.24,conversions:118}],
   images:[{url:'hero-product.jpg',impressions:62000,ctr:3.94,conversions:184},{url:'lifestyle-running.jpg',impressions:42000,ctr:3.24,conversions:124},{url:'user-generated.jpg',impressions:24400,ctr:4.44,conversions:108}],
