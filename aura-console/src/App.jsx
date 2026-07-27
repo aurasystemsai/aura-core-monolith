@@ -108,6 +108,9 @@ const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyRef
 const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
 const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTracker.jsx"));
 const BacklinkExplorer = lazy(() => import("./components/tools/BacklinkExplorer.jsx"));
+const AiSegmentationEngine = lazy(() => import("./components/tools/AiSegmentationEngine.jsx"));
+const CompliancePrivacySuite = lazy(() => import("./components/tools/CompliancePrivacySuite.jsx"));
+const OmnichannelCampaignBuilder = lazy(() => import("./components/tools/OmnichannelCampaignBuilder.jsx"));
 const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
 const CompetitiveAnalysis = lazy(() => import("./components/tools/CompetitiveAnalysis.jsx"));
 const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
@@ -568,6 +571,9 @@ function App() {
  {activeSection === "content-scoring-optimization"&& <ContentScoringOptimization />}
  {activeSection === "keyword-research-suite"&& <KeywordResearchSuite />}
  {activeSection === "backlink-explorer"&& <BacklinkExplorer />}
+      {activeSection === "ai-segmentation-engine" && <AiSegmentationEngine />}
+      {activeSection === "compliance-privacy-suite" && <CompliancePrivacySuite />}
+      {activeSection === "omnichannel-campaign-builder" && <OmnichannelCampaignBuilder />}
  {activeSection === "entity-topic-explorer"&& <EntityTopicExplorer />}
  {activeSection === "link-intersect-outreach"&& <LinkIntersectOutreach />}
  {activeSection === "local-seo-toolkit"&& <LocalSEOToolkit />}
