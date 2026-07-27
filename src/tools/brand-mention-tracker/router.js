@@ -2,10 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
-const engine = require('./engines/brand-mention-engine');
-router.use(verifyShopifySession);
+const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
 const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.use(verifyShopifySession);
 router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'brand-mention-tracker', v: '2.0.0' })));
+const engine = require('./engines/brand-mention-engine');
 router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
 router.get('/mentions', ah(async (req, res) => res.json({ ok: true, mentions: engine.getMentions(req.query) })));
 router.get('/mentions/:id', ah(async (req, res) => { const m = engine.getMention(req.params.id); if (!m) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, mention: m }); }));

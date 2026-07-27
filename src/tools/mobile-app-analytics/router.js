@@ -2,9 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
 const engine = require('./engines/mobile-app-engine');
-router.use(verifyShopifySession);
 const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.use(verifyShopifySession);
 router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'mobile-app-analytics', v: '2.0.0' })));
 router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
 router.get('/metrics', ah(async (req, res) => res.json({ ok: true, metrics: engine.getAppMetrics() })));
