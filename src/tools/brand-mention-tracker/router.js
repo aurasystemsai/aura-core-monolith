@@ -1,24 +1,16 @@
-const express = require("express");
+﻿'use strict';
+const express = require('express');
 const router = express.Router();
-const { handleBrandMentionQuery } = require("./brandMentionTrackerService");
-
-// POST /api/brand-mention-tracker/query
-router.post("/query", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await handleBrandMentionQuery(query);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Brand Mention Tracker API running" });
-});
-
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const engine = require('./engines/brand-mention-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'brand-mention-tracker', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/mentions', ah(async (req, res) => res.json({ ok: true, mentions: engine.getMentions(req.query) })));
+router.get('/mentions/:id', ah(async (req, res) => { const m = engine.getMention(req.params.id); if (!m) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, mention: m }); }));
+router.get('/alerts', ah(async (req, res) => res.json({ ok: true, alerts: engine.getAlerts() })));
+router.get('/sentiment-trend', ah(async (req, res) => res.json({ ok: true, trend: engine.getSentimentTrend() })));
+router.get('/sources', ah(async (req, res) => res.json({ ok: true, sources: engine.getSources() })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;

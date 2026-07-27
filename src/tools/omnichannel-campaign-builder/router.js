@@ -1,0 +1,18 @@
+﻿'use strict';
+const express = require('express');
+const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
+const engine = require('./engines/omnichannel-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'omnichannel-campaign-builder', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/campaigns', ah(async (req, res) => res.json({ ok: true, campaigns: engine.getCampaigns(req.query) })));
+router.get('/campaigns/:id', ah(async (req, res) => { const c = engine.getCampaign(req.params.id); if (!c) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, campaign: c }); }));
+router.get('/channels', ah(async (req, res) => res.json({ ok: true, channels: engine.getChannelCatalog() })));
+router.get('/journey-template', ah(async (req, res) => res.json({ ok: true, steps: engine.getJourneyTemplate() })));
+router.post('/campaigns/brief', requireCreditsOnMutation('campaign-gen'), ah(async (req, res) => { const { name, channels, segmentId, budget } = req.body; if (!name || !channels) return res.status(400).json({ ok: false, error: 'name and channels required' }); res.json({ ok: true, ...engine.generateBrief(name, channels, segmentId, budget || 1000) }); }));
+router.post('/campaigns', ah(async (req, res) => { if (!req.body.name) return res.status(400).json({ ok: false, error: 'name required' }); res.json({ ok: true, campaign: { id: 'oc_' + Date.now(), ...req.body, status: 'draft', createdAt: new Date().toISOString() } }); }));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
+module.exports = router;

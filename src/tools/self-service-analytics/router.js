@@ -1,0 +1,17 @@
+﻿'use strict';
+const express = require('express');
+const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const engine = require('./engines/self-service-analytics-engine');
+router.use(verifyShopifySession);
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'self-service-analytics', v: '2.0.0' })));
+router.get('/dashboard', ah(async (req, res) => res.json({ ok: true, ...engine.getDashboardStats() })));
+router.get('/reports', ah(async (req, res) => res.json({ ok: true, reports: engine.getReports(req.query) })));
+router.get('/reports/:id', ah(async (req, res) => { const r = engine.getReport(req.params.id); if (!r) return res.status(404).json({ ok: false, error: 'not found' }); res.json({ ok: true, report: r }); }));
+router.post('/reports/:id/export', ah(async (req, res) => res.json({ ok: true, ...engine.exportReport(req.params.id, req.body.format) })));
+router.get('/queries', ah(async (req, res) => res.json({ ok: true, queries: engine.getQueries() })));
+router.post('/queries/run', ah(async (req, res) => { if (!req.body.sql) return res.status(400).json({ ok: false, error: 'sql required' }); res.json({ ok: true, ...engine.runQuery(req.body.sql) }); }));
+router.get('/metrics', ah(async (req, res) => res.json({ ok: true, metrics: engine.getMetricsCatalog() })));
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
+module.exports = router;
