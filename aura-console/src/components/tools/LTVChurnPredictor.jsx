@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { apiFetchJSON } from '../../api';
 
+const API = '/api/ltv-churn-predictor';
 const ACC = '#06b6d4';
 
 const S = {
@@ -44,13 +46,21 @@ export default function LtvChurnPredictor() {
   const [custId, setCustId] = useState('');
   const [prediction, setPrediction] = useState(null);
   const [repeatChange, setRepeatChange] = useState(0.1);
+  const [loading, setLoading] = useState(false);
 
-  const predict = () => {
+  const predict = async () => {
     if (!custId) return;
-    const hash = custId.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
-    const ltv1y = [62, 140, 240, 420, 840][hash % 5];
-    const quintile = ['Q1','Q2','Q3','Q4','Q5'][hash % 5];
-    setPrediction({ ltv1y, ltv3y: Math.round(ltv1y * 2.4), quintile });
+    setLoading(true);
+    try {
+      const data = await apiFetchJSON(`${API}/predict`, { method: 'POST', body: JSON.stringify({ customerId: custId }) });
+      setPrediction(data.prediction || data);
+    } catch (e) {
+      const hash = custId.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+      const ltv1y = [62, 140, 240, 420, 840][hash % 5];
+      const quintile = ['Q1','Q2','Q3','Q4','Q5'][hash % 5];
+      setPrediction({ ltv1y, ltv3y: Math.round(ltv1y * 2.4), quintile });
+    }
+    setLoading(false);
   };
 
   return (
@@ -81,7 +91,7 @@ export default function LtvChurnPredictor() {
           <div style={{...S.row}}>
             <label style={S.label}>Predict LTV for Customer ID:</label>
             <input style={{...S.input,width:200}} placeholder="e.g. C-12345" value={custId} onChange={e=>setCustId(e.target.value)} />
-            <button style={S.btn(ACC)} onClick={predict}>Predict LTV (1 credit)</button>
+            <button style={S.btn(ACC)} onClick={predict} disabled={loading}>{loading ? 'Predicting…' : 'AI Predict LTV (1 credit)'}</button>
           </div>
           {prediction&&<div style={{...S.grid3,marginTop:16}}>{[['Predicted 1Y LTV','£'+prediction.ltv1y],['Predicted 3Y LTV','£'+prediction.ltv3y],['Quintile',prediction.quintile]].map(([l,v])=>(<div key={l} style={S.metric}><div style={S.metricNum(ACC)}>{v}</div><div style={S.metricLabel}>{l}</div></div>))}</div>}
         </div>

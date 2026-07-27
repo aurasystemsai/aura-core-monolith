@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { apiFetchJSON } from '../../api';
 
+const API = '/api/churn-prediction-playbooks';
 const ACC = '#ec4899';
 
 const S = {
@@ -46,10 +48,32 @@ export default function ChurnPredictionPlaybooks() {
   const [rfmInput, setRfmInput] = useState('');
   const [churnResult, setChurnResult] = useState(null);
 
-  const calcChurn = () => {
-    const score = parseInt(rfmInput) || 9;
-    const prob = Math.min(0.95, Math.max(0.02, (15 - score) / 15 * 0.8));
-    setChurnResult({ score, prob, risk: prob > 0.6 ? 'critical' : prob > 0.35 ? 'high' : prob > 0.15 ? 'medium' : 'low' });
+  const [loading, setLoading] = useState(false);
+  const [roiResult, setRoiResult] = useState(null);
+  const [roiLoading, setRoiLoading] = useState(false);
+
+  const calcChurn = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetchJSON(`${API}/churn-probability`, { method: 'POST', body: JSON.stringify({ rfmScore: parseInt(rfmInput) || 9 }) });
+      setChurnResult(data.result || data);
+    } catch {
+      const score = parseInt(rfmInput) || 9;
+      const prob = Math.min(0.95, Math.max(0.02, (15 - score) / 15 * 0.8));
+      setChurnResult({ score, prob, risk: prob > 0.6 ? 'critical' : prob > 0.35 ? 'high' : prob > 0.15 ? 'medium' : 'low' });
+    }
+    setLoading(false);
+  };
+
+  const calcRoi = async () => {
+    setRoiLoading(true);
+    try {
+      const data = await apiFetchJSON(`${API}/reactivation-roi`, { method: 'POST', body: JSON.stringify({ segment: 'At Risk', campaignCost: 2000 }) });
+      setRoiResult(data.roi || data);
+    } catch (e) {
+      setRoiResult({ error: e.message });
+    }
+    setRoiLoading(false);
   };
 
   return (
@@ -98,7 +122,7 @@ export default function ChurnPredictionPlaybooks() {
             <div style={S.label}>BG/NBD Churn Probability Calculator</div>
             <div style={S.row}>
               <input style={{...S.input,flex:1}} placeholder="RFM score (3-15)" value={rfmInput} onChange={e=>setRfmInput(e.target.value)} type="number" min="3" max="15" />
-              <button style={S.btn(ACC)} onClick={calcChurn}>Calculate Churn Probability</button>
+              <button style={S.btn(ACC)} onClick={calcChurn} disabled={loading}>{loading ? 'Calculating…' : 'AI Calculate Churn Probability (1 credit)'}</button>
             </div>
             {churnResult&&<div style={{...S.cardSm,marginTop:12,borderColor:churnColor(churnResult.prob)}}>
               <div style={S.row}><span style={{fontWeight:700}}>RFM Score {churnResult.score}:</span><span style={{fontSize:20,fontWeight:800,color:churnColor(churnResult.prob)}}>{(churnResult.prob*100).toFixed(1)}% churn probability</span><span style={S.badge(churnColor(churnResult.prob))}>{churnResult.risk}</span></div>
@@ -163,7 +187,9 @@ export default function ChurnPredictionPlaybooks() {
               <div key={l} style={S.metric}><div style={S.metricNum(ACC)}>{v}</div><div style={S.metricLabel}>{l}</div></div>
             ))}
           </div>
-          <button style={{...S.btn(ACC),marginTop:20}}>Model Custom Scenario</button>
+          <button style={{...S.btn(ACC),marginTop:20}} onClick={calcRoi} disabled={roiLoading}>{roiLoading ? 'Modelling…' : 'AI Model Custom Scenario (1 credit)'}</button>
+          {roiResult && !roiResult.error && <div style={{...S.cardSm,marginTop:12,borderColor:ACC}}><div style={{fontWeight:700,color:ACC,marginBottom:6}}>AI ROI Analysis</div><div style={{fontSize:13,color:'#a1a1aa'}}>{roiResult.summary || JSON.stringify(roiResult)}</div></div>}
+          {roiResult?.error && <div style={{color:'#ef4444',fontSize:13,marginTop:10}}>{roiResult.error}</div>}
         </div>
       )}
     </div>

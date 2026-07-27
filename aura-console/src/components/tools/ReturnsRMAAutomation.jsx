@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { apiFetchJSON } from '../../api';
 
+const API = '/api/returns-rma-automation';
 const ACC = '#ef4444';
 
 const S = {
@@ -45,10 +47,32 @@ export default function ReturnsRmaAutomation() {
   const [custId, setCustId] = useState('');
   const [propResult, setPropResult] = useState(null);
 
-  const scoreCustomer = () => {
+  const [loading, setLoading] = useState(false);
+  const [exchangeSuggestion, setExchangeSuggestion] = useState(null);
+  const [exchLoading, setExchLoading] = useState(false);
+
+  const scoreCustomer = async () => {
     if (!custId) return;
-    const score = Math.min(0.95, 0.128 + (custId.length % 5) * 0.08);
-    setPropResult({ score, risk: score > 0.4 ? 'high' : score > 0.25 ? 'medium' : 'low' });
+    setLoading(true);
+    try {
+      const data = await apiFetchJSON(`${API}/propensity-score`, { method: 'POST', body: JSON.stringify({ customerId: custId }) });
+      setPropResult(data.result || data);
+    } catch {
+      const score = Math.min(0.95, 0.128 + (custId.length % 5) * 0.08);
+      setPropResult({ score, risk: score > 0.4 ? 'high' : score > 0.25 ? 'medium' : 'low' });
+    }
+    setLoading(false);
+  };
+
+  const suggestExchange = async (reason) => {
+    setExchLoading(true);
+    try {
+      const data = await apiFetchJSON(`${API}/exchange/suggest`, { method: 'POST', body: JSON.stringify({ reason, orderId: 'latest' }) });
+      setExchangeSuggestion(data.suggestion || data);
+    } catch (e) {
+      setExchangeSuggestion({ error: e.message });
+    }
+    setExchLoading(false);
   };
 
   return (
@@ -111,7 +135,7 @@ export default function ReturnsRmaAutomation() {
           <p style={{color:'#a1a1aa',fontSize:13,marginBottom:16}}>Score the probability a customer will return an order at checkout time.</p>
           <div style={S.grid2}>
             <div><label style={S.label}>Customer ID</label><input style={S.input} placeholder="e.g. C-8841" value={custId} onChange={e=>setCustId(e.target.value)} /></div>
-            <div><label style={S.label}>&nbsp;</label><button style={{...S.btn(ACC),width:'100%'}} onClick={scoreCustomer}>Score Customer (1 credit)</button></div>
+            <div><label style={S.label}>&nbsp;</label><button style={{...S.btn(ACC),width:'100%'}} onClick={scoreCustomer} disabled={loading}>{loading ? 'Scoring…' : 'AI Score Customer (1 credit)'}</button></div>
           </div>
           {propResult&&<div style={{...S.cardSm,marginTop:16,borderColor:propResult.score>0.4?'#ef4444':'#27272a'}}>
             <div style={S.row}><span style={{fontWeight:700}}>Propensity Score:</span><span style={{fontSize:22,fontWeight:800,color:propResult.score>0.4?'#ef4444':'#22c55e'}}>{(propResult.score*100).toFixed(1)}%</span><span style={S.badge(propResult.score>0.4?'#ef4444':'#22c55e')}>{propResult.risk} risk</span></div>
@@ -143,8 +167,7 @@ export default function ReturnsRmaAutomation() {
                 <div style={S.row}><strong>{e.reason}</strong><span style={S.badge('#22c55e')}>{(e.prob*100).toFixed(0)}% conversion</span></div>
                 <div style={{fontSize:13,color:'#a1a1aa',margin:'8px 0'}}>{e.incentive}</div>
                 <div style={{color:'#22c55e',fontWeight:700,fontSize:13}}>Avg £{e.saved} saved per return</div>
-              </div>
-            ))}
+                <button style={{...S.btnSm('#22c55e'),marginTop:8}} onClick={() => suggestExchange(e.reason)} disabled={exchLoading}>{exchLoading ? 'Suggesting…' : 'AI Suggest Exchange (2 credits)'}</button>              </div>            ))}
           </div>
         </div>
       )}

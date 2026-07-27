@@ -50,6 +50,8 @@ export default function WorkflowAutomationBuilder() {
   const [value, setValue] = useState("100");
   const [action, setAction] = useState("send_email");
   const [saving, setSaving] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const saveRule = async () => {
     setSaving(true);
@@ -57,6 +59,17 @@ export default function WorkflowAutomationBuilder() {
       await apiFetchJSON("/api/workflow-automation-builder/rules", { method: "POST", body: JSON.stringify({ ruleName, trigger, operator, value, action }) });
     } catch (_) {}
     setTimeout(() => setSaving(false), 1200);
+  };
+
+  const suggestAutomations = async () => {
+    setAiLoading(true);
+    try {
+      const data = await apiFetchJSON("/api/workflow-automation-builder/automations/suggest", { method: "POST", body: JSON.stringify({ context: "ecommerce", existingRules: RULES.map(r => r.name) }) });
+      setAiSuggestions(data.suggestions || data);
+    } catch (e) {
+      setAiSuggestions({ error: e.message });
+    }
+    setAiLoading(false);
   };
 
   return (
@@ -91,8 +104,15 @@ export default function WorkflowAutomationBuilder() {
             </div>
             <div style={{...S.row, marginTop:16}}>
               <button style={S.btn()} onClick={saveRule} disabled={saving}>{saving?"Saving...":"Save Rule"}</button>
-              <button style={S.btnGhost}>Test Dry Run</button>
+              <button style={S.btnGhost} onClick={suggestAutomations} disabled={aiLoading}>{aiLoading ? "Generating…" : "✨ AI Suggest Automations (2 credits)"}</button>
             </div>
+            {aiSuggestions && !aiSuggestions.error && Array.isArray(aiSuggestions) && (
+              <div style={{marginTop:16}}>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:10,color:'#8b5cf6'}}>AI Suggestions</div>
+                {aiSuggestions.map((s,i) => <div key={i} style={{padding:'8px 10px',background:'#09090b',borderRadius:8,marginBottom:6,fontSize:13}}><strong>{s.name || s.rule}</strong> — {s.description || s.action}</div>)}
+              </div>
+            )}
+            {aiSuggestions?.error && <div style={{color:'#ef4444',fontSize:13,marginTop:10}}>{aiSuggestions.error}</div>}
           </div>
           <div style={S.card}>
             <div style={{fontWeight:700, fontSize:15, marginBottom:16}}>Active Rules</div>

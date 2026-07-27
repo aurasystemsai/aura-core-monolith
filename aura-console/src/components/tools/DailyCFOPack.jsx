@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { apiFetchJSON } from '../../api';
 
+const API = '/api/daily-cfo-pack';
 const ACC = '#f59e0b';
 
 const S = {
@@ -47,13 +49,30 @@ export default function DailyCfoPack() {
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [boardPack, setBoardPack] = useState(null);
+  const [boardLoading, setBoardLoading] = useState(false);
+
   const askQuery = async () => {
     if (!query) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    const q = query.toLowerCase();
-    setAnswer(q.includes('cac') ? 'CAC increased to £41.20 this week (+8.4% vs target). Primary driver: Google CPC increased 14% due to competitor bid increases on "sustainable fashion" keyword cluster. Recommendation: shift budget to branded terms.' : q.includes('revenue') ? 'Revenue is £18,420 today (+8.4% above £17,000 target). Top performing product: Organic Cotton Hoodie (+34% DoD). Top channel: Email campaign "Eco Essentials" (12.4% CTR).' : "Based on today's KPIs: revenue is tracking 8.4% above target, gross margin improved to 62.1%, but CAC pressure at £41.20 vs £38.00 target warrants review of Google Ads bid strategy.");
+    try {
+      const data = await apiFetchJSON(`${API}/query`, { method: 'POST', body: JSON.stringify({ question: query }) });
+      setAnswer(data.answer || data.result || JSON.stringify(data));
+    } catch (e) {
+      setAnswer('Error: ' + e.message);
+    }
     setLoading(false);
+  };
+
+  const generateBoardPack = async () => {
+    setBoardLoading(true);
+    try {
+      const data = await apiFetchJSON(`${API}/board-pack`, { method: 'POST', body: JSON.stringify({ period: 'monthly' }) });
+      setBoardPack(data.pack || data);
+    } catch (e) {
+      setBoardPack({ error: e.message });
+    }
+    setBoardLoading(false);
   };
 
   return (
@@ -138,7 +157,9 @@ export default function DailyCfoPack() {
         <div style={S.card}>
           <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>Board Pack Generator</div>
           <p style={{color:'#a1a1aa',fontSize:13,marginBottom:20}}>One-click AI-generated board presentation with charts, narrative, and YTD vs prior year analysis.</p>
-          <button style={S.btn(ACC)}>Generate Board Pack (5 credits)</button>
+          <button style={S.btn(ACC)} onClick={generateBoardPack} disabled={boardLoading}>{boardLoading ? 'Generating…' : 'AI Generate Board Pack (5 credits)'}</button>
+          {boardPack && !boardPack.error && <div style={{...S.cardSm,marginTop:16,borderColor:ACC}}><div style={{fontWeight:700,color:ACC,marginBottom:8}}>Board Pack Ready</div><div style={{fontSize:13,color:'#a1a1aa'}}>{boardPack.summary || boardPack.sections?.join(' · ') || 'Pack generated successfully.'}</div></div>}
+          {boardPack?.error && <div style={{color:'#ef4444',fontSize:13,marginTop:12}}>{boardPack.error}</div>}
           <div style={{...S.cardSm,marginTop:20}}>
             <div style={S.label}>Last Generated Pack</div>
             <div style={{fontWeight:700,marginBottom:8}}>Board Pack — {new Date().toLocaleDateString()}</div>

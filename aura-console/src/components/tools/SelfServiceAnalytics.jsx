@@ -470,7 +470,7 @@ export default function SelfServiceAnalytics() {
  style={{ width: "100%"}}
  placeholder="e.g. sum(gmv) by channel last 30d"/>
  </div>
- <button onClick={runQuery} style={{ background: "#0ea5e9", color: "white", border: 0, padding: "8px 16px", borderRadius: 4, fontWeight: 700 }}>Run</button>
+ <button onClick={runQuery} style={{ background: "#0ea5e9", color: "white", border: 0, padding: "8px 16px", borderRadius: 4, fontWeight: 700 }}>✨ AI Run Query (1 credit)</button>
  <button onClick={saveView} style={{ marginLeft: 4 }}>Save View</button>
  <button onClick={saveSchedule} style={{ marginLeft: 4 }}>Save Schedule</button>
  <button onClick={share} style={{ marginLeft: 4 }}>Share</button>

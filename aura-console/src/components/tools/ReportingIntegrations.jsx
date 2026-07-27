@@ -1,5 +1,8 @@
 ﻿import React from "react";
 import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
+import { apiFetchJSON } from "../../api";
+
+const API = "/api/reporting-integrations";
 
 export default function ReportingIntegrations() {
  const [showOnboarding, setShowOnboarding] = React.useState(true);
@@ -102,6 +105,20 @@ export default function ReportingIntegrations() {
  const [channelBreakers, setChannelBreakers] = React.useState({ email: false, sms: false, webhook: false });
  const [channelCosts, setChannelCosts] = React.useState({ email: { cost: 6, errors: 0 }, sms: { cost: 4, errors: 1 }, webhook: { cost: 8, errors: 2 } });
  const fileInputRef = React.useRef();
+ const [aiSuggest, setAiSuggest] = React.useState(null);
+ const [aiSuggestLoading, setAiSuggestLoading] = React.useState(false);
+
+ const runAiSuggest = async () => {
+   setAiSuggestLoading(true);
+   try {
+     const data = await apiFetchJSON(`${API}/ai/suggest`, { method: 'POST', body: JSON.stringify({ context: 'reporting', channels }) });
+     setAiSuggest(data.suggestions || data);
+   } catch (e) {
+     setAiSuggest({ error: e.message });
+   }
+   setAiSuggestLoading(false);
+ };
+
  const isReadOnly = role === "viewer";
 
  const restoreSnapshot = (snap) => {
@@ -713,6 +730,9 @@ export default function ReportingIntegrations() {
  <div style={{ marginBottom: 32 }}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8, flexWrap: 'wrap'}}>
  <div style={{ fontWeight: 700, fontSize: 18 }}>Channels</div>
+ <button onClick={runAiSuggest} disabled={aiSuggestLoading} style={{ background: '#4f46e5', color: '#fafafa', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>{aiSuggestLoading ? 'Analysing…' : '✨ AI Suggest Integrations (2 credits)'}</button>
+ {aiSuggest && !aiSuggest.error && <div style={{ marginTop: 10, background: '#1a1a2e', border: '1px solid #4f46e5', borderRadius: 10, padding: 12, color: '#fafafa', fontSize: 13 }}>{typeof aiSuggest === 'string' ? aiSuggest : JSON.stringify(aiSuggest)}</div>}
+ {aiSuggest?.error && <div style={{ color: '#ef4444', fontSize: 13, marginTop: 6 }}>{aiSuggest.error}</div>}
  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap'}}>
  {["email", "sms", "webhook"].map(ch => (
  <button key={ch} onClick={() => setChannelView(ch)} style={{ background: channelView === ch ? '#4f46e5': '#27272a', color: '#fafafa', border: '1px solid #52525b', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer'}}>{ch.toUpperCase()}</button>
