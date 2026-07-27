@@ -1,148 +1,56 @@
-
-const express = require("express");
-const OpenAI = require("openai");
-const db = require("./db");
-const analyticsModel = require("./analyticsModel");
-const notificationModel = require("./notificationModel");
-const rbac = require("./rbac");
-const i18n = require("./i18n");
-const webhookModel = require("./webhookModel");
-const complianceModel = require("./complianceModel");
-const pluginSystem = require("./pluginSystem");
-const { handlePortalQuery } = require("./selfServicePortalService");
+﻿'use strict';
+const express = require('express');
 const router = express.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const db = require('./db');
+const { handlePortalQuery } = require('./selfServicePortalService');
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+const { requireCreditsOnMutation } = require('../../core/creditMiddleware');
+const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+const OpenAI = require('openai');
 
-// CRUD endpoints
-router.get('/requests', (req, res) => {
-  res.json({ ok: true, requests: db.list() });
-});
-router.get('/requests/:id', (req, res) => {
-  const request = db.get(req.params.id);
-  if (!request) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, request });
-});
-router.post('/requests', (req, res) => {
-  const request = db.create(req.body || {});
-  res.json({ ok: true, request });
-});
-router.put('/requests/:id', (req, res) => {
-  const request = db.update(req.params.id, req.body || {});
-  if (!request) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, request });
-});
-router.delete('/requests/:id', (req, res) => {
-  const ok = db.delete(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+router.use(verifyShopifySession);
+
+router.get('/health', ah(async (req, res) => res.json({ ok: true, service: 'self-service-portal', v: '2.0.0' })));
+
+router.get('/requests', ah(async (req, res) => res.json({ ok: true, requests: db.list() })));
+router.get('/requests/:id', ah(async (req, res) => {
+  const item = db.get(req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, request: item });
+}));
+router.post('/requests', ah(async (req, res) => {
+  const item = db.create(req.body || {});
+  res.json({ ok: true, request: item });
+}));
+router.put('/requests/:id', ah(async (req, res) => {
+  const item = db.update(req.params.id, req.body || {});
+  if (!item) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, request: item });
+}));
+router.delete('/requests/:id', ah(async (req, res) => {
+  const result = db.delete(req.params.id);
+  if (!result) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true });
-});
+}));
 
-// AI endpoint: portal query
-router.post('/ai/query', async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query) return res.status(400).json({ ok: false, error: 'Query required' });
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: 'You are a self-service portal expert.' },
-        { role: 'user', content: query }
-      ],
-      max_tokens: 512
-    });
-    const answer = completion.choices[0]?.message?.content?.trim() || '';
-    res.json({ ok: true, answer });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
+router.post('/ai/suggest', requireCreditsOnMutation('generic-ai'), ah(async (req, res) => {
+  const { description } = req.body;
+  if (!description) return res.status(400).json({ ok: false, error: 'description required' });
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const completion = await openai.chat.completions.create({
+    model: req.body.model || 'gpt-4o-mini',
+    messages: [{ role: 'system', content: 'You are a self-service portal expert for e-commerce.' }, { role: 'user', content: description }],
+    max_tokens: 512
+  });
+  res.json({ ok: true, suggestion: completion.choices[0].message.content });
+}));
 
-// Legacy query endpoint
-router.post("/query", async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await handlePortalQuery(query);
-    res.json({ ok: true, result });
-  } catch (err) {
-    res.json({ ok: false, error: err.message });
-  }
-});
+router.post('/query', ah(async (req, res) => {
+  const { query } = req.body;
+  if (!query) return res.status(400).json({ ok: false, error: 'query required' });
+  const result = await handlePortalQuery(query);
+  res.json({ ok: true, result });
+}));
 
-// Analytics endpoints
-router.post('/analytics', (req, res) => {
-  const event = analyticsModel.recordEvent(req.body || {});
-  res.json({ ok: true, event });
-});
-router.get('/analytics', (req, res) => {
-  res.json({ ok: true, analytics: analyticsModel.list() });
-});
-
-
-// Import/export endpoints (live, persistent)
-router.post('/import', (req, res) => {
-  const { items } = req.body || {};
-  if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
-  db.import(items);
-  res.json({ ok: true, count: db.list().length });
-});
-router.get('/export', (req, res) => {
-  res.json({ ok: true, items: db.list() });
-});
-
-
-// Notifications
-router.post('/notify', (req, res) => {
-  notificationModel.send(req.body || {});
-  res.json({ ok: true });
-});
-
-// RBAC example
-router.post('/rbac/check', (req, res) => {
-  const allowed = rbac.check(req.body.user, req.body.action);
-  res.json({ ok: true, allowed });
-});
-
-// i18n example
-router.get('/i18n/:lang', (req, res) => {
-  res.json({ ok: true, strings: i18n.getStrings(req.params.lang) });
-});
-
-// Compliance
-router.get('/compliance', (req, res) => {
-  res.json({ ok: true, compliance: complianceModel.get() });
-});
-
-// Plugins
-router.post('/plugin', (req, res) => {
-  pluginSystem.run(req.body || {});
-  res.json({ ok: true });
-});
-
-// Webhooks
-router.post('/webhook', (req, res) => {
-  webhookModel.trigger(req.body || {});
-  res.json({ ok: true });
-});
-
-// Health check
-router.get("/health", (req, res) => {
-  res.json({ ok: true, status: "Self-Service Portal API running" });
-});
-
-// Onboarding/help
-router.get('/onboarding', (req, res) => {
-  res.json({ ok: true, steps: [
-    'Connect your portal',
-    'Configure portal settings',
-    'Submit your first request',
-    'Analyze responses',
-    'Export or share requests',
-    'Set up notifications and compliance',
-    'Integrate plugins and webhooks'
-  ] });
-});
-
+router.use((err, req, res, next) => res.status(500).json({ ok: false, error: err.message }));
 module.exports = router;
