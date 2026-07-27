@@ -1,5 +1,7 @@
-const express = require("express");
+﻿const express = require("express");
 const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+router.use(verifyShopifySession);
 const tool = require("./index");
 const {
   ingestData,
@@ -50,3 +52,4 @@ router.get('/trends', async (req, res) => {
 });
 
 module.exports = router;
+

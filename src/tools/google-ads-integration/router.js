@@ -1,5 +1,7 @@
 ﻿const express = require('express');
 const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+router.use(verifyShopifySession);
 const store = { settings: new Map(), negatives: new Map() };
 function ok(res,d){res.json({ok:true,...d});}
 function rnd(a,b){return Math.random()*(b-a)+a;}

@@ -1,6 +1,8 @@
-const express = require('express');
+﻿const express = require('express');
 const OpenAI = require('openai');
 const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+router.use(verifyShopifySession);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 let creatives = [];

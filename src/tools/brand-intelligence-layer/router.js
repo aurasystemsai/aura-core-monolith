@@ -1,7 +1,9 @@
-const express = require('express');
+﻿const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
 const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+router.use(verifyShopifySession);
 
 let _openai;
 function getOpenAI() {
@@ -9,7 +11,7 @@ function getOpenAI() {
   return _openai;
 }
 
-// POST /dashboard — AI-powered brand dashboard analysis
+// POST /dashboard â€” AI-powered brand dashboard analysis
 router.post('/dashboard', async (req, res) => {
   try {
     const { input } = req.body || {};
@@ -32,7 +34,7 @@ router.post('/dashboard', async (req, res) => {
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// POST /insights — AI-powered brand insights
+// POST /insights â€” AI-powered brand insights
 router.post('/insights', async (req, res) => {
   try {
     const { input } = req.body || {};
@@ -67,3 +69,4 @@ router.get('/health', (req, res) => {
 });
 
 module.exports = router;
+

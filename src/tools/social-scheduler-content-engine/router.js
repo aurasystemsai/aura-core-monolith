@@ -1,7 +1,9 @@
-const express = require('express');
+﻿const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
 const router = express.Router();
+const verifyShopifySession = require('../../middleware/verifyShopifySession');
+router.use(verifyShopifySession);
 
 let _openai;
 function getOpenAI() {
@@ -9,13 +11,13 @@ function getOpenAI() {
   return _openai;
 }
 
-// GET /history — list scheduled posts
+// GET /history â€” list scheduled posts
 router.get('/history', async (req, res) => {
   try { res.json({ ok: true, history: await db.listHistory() }); }
   catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// POST /history — save a scheduled post
+// POST /history â€” save a scheduled post
 router.post('/history', async (req, res) => {
   try {
     const item = await db.addHistory(req.body || {});
@@ -29,7 +31,7 @@ router.get('/analytics', async (req, res) => {
   catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// POST /ai/schedule — AI-powered content scheduling
+// POST /ai/schedule â€” AI-powered content scheduling
 router.post('/ai/schedule', async (req, res) => {
   try {
     const { content } = req.body || {};
