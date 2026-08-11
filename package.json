@@ -93,7 +93,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "nodemon": "^3.1.11",
     "postcss": "^8.5.6",
-    "postcss-preset-env": "^10.6.0",
+    "postcss-preset-env": "^11.1.2",
     "supertest": "^7.1.4"
   }
 }
