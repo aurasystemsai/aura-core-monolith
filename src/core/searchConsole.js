@@ -25,19 +25,24 @@ const b64 = (b) => Buffer.from(b).toString('base64url');
 const mac = (data) => crypto.createHmac('sha256', secret()).update(data).digest('base64url');
 
 /** Signed, expiring state so the unauthenticated callback can tell which shop started the flow. */
-function signState(shop) {
-  const body = b64(JSON.stringify({ shop, exp: Date.now() + 10 * 60 * 1000, n: crypto.randomBytes(8).toString('hex') }));
+function signState(shop, purpose) {
+  const body = b64(JSON.stringify({ shop, p: purpose || 'gsc', exp: Date.now() + 10 * 60 * 1000, n: crypto.randomBytes(8).toString('hex') }));
   return `${body}.${mac(body)}`;
 }
 
 function verifyState(state) {
+  const p = verifyStatePayload(state);
+  return p ? p.shop : null;
+}
+
+function verifyStatePayload(state) {
   const [body, sig] = String(state || '').split('.');
   if (!body || !sig) return null;
   const expected = mac(body);
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
   try {
     const p = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
-    return p.exp > Date.now() && typeof p.shop === 'string' ? p.shop : null;
+    return p.exp > Date.now() && typeof p.shop === 'string' ? { shop: p.shop, purpose: p.p || 'gsc' } : null;
   } catch { return null; }
 }
 
@@ -57,15 +62,15 @@ function decrypt(blob) {
   return Buffer.concat([d.update(enc), d.final()]).toString('utf8');
 }
 
-function authUrl(req, shop) {
+function authUrl(req, shop, scope = SCOPE, purpose) {
   const qs = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri(req),
     response_type: 'code',
-    scope: SCOPE,
+    scope,
     access_type: 'offline',
     prompt: 'consent',
-    state: signState(shop),
+    state: signState(shop, purpose),
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${qs}`;
 }
@@ -136,5 +141,5 @@ async function queryPositions(token, siteUrl, days = 28, limit = 200) {
 
 module.exports = {
   isConfigured, authUrl, verifyState, signState, completeConnection, getConnection, disconnect,
-  accessToken, findSite, queryPositions, encrypt, decrypt,
+  accessToken, findSite, queryPositions, encrypt, decrypt, verifyStatePayload, tokenRequest, redirectUri,
 };
