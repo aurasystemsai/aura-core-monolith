@@ -73,7 +73,7 @@ router.post('/suggest', withShop(async (req, res, { shop }) => {
   const client = getOpenAIClient();
   if (!client) return res.status(503).json({ ok: false, error: 'AI is not configured on this server.' });
   const campaigns = await report(shop, Number(req.body && req.body.days) || 30);
-  if (!campaigns.length) return res.status(400).json({ ok: false, error: 'There are no campaigns with data in this period.' });
+  if (!campaigns.some((c) => c.spend > 0 || c.impressions > 0 || c.clicks > 0)) return res.status(400).json({ ok: false, error: 'There are no campaigns with data in this period.' });
   let advice;
   try {
     const resp = await client.chat.completions.create({

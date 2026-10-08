@@ -84,6 +84,16 @@ describe('google ads connect', () => {
     expect(deduct).toHaveBeenCalledTimes(1);
   });
 
+  test('suggest refuses campaigns with no activity and charges nothing', async () => {
+    await connect();
+    await request(app()).post('/api/gads/select').send({ customerId: '1234567890' });
+    global.fetch = jest.fn(async (url) => url.includes('oauth2') ? json({ access_token: 'at' }) : json({ results: [{ campaign: { id: '1', name: 'Idle', status: 'ENABLED' }, metrics: {} }] }));
+    const r = await request(app()).post('/api/gads/suggest').send({});
+    expect(r.status).toBe(400);
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(deduct).not.toHaveBeenCalled();
+  });
+
   test('disconnect removes the connection', async () => {
     await connect();
     await request(app()).post('/api/gads/disconnect');

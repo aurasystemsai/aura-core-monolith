@@ -84,7 +84,7 @@ router.post('/suggest', withShop(async (req, res, { shop }) => {
   } catch (e) {
     return res.status(e.status || 502).json({ ok: false, error: e.message });
   }
-  if (!campaigns.length) return res.status(400).json({ ok: false, error: 'There are no campaigns with data in this period.' });
+  if (!campaigns.some((c) => c.spend > 0 || c.impressions > 0 || c.clicks > 0)) return res.status(400).json({ ok: false, error: 'There are no campaigns with data in this period.' });
   let advice;
   try {
     const resp = await client.chat.completions.create({
