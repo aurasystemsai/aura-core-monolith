@@ -11,6 +11,7 @@ export const TOOL_PLAN = {
  // -- Growth ($49/mo) -- core SEO + marketing tools
  "product-seo": "growth",
   "product-feed": "growth",
+  "translations": "growth",
  "blog-seo": "growth",
  "seo-site-crawler": "growth",
  "on-page-seo-engine": "growth",
