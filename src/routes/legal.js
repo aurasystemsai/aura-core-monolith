@@ -7,8 +7,8 @@ const express = require('express');
 
 const LEGAL_NAME = process.env.LEGAL_NAME || 'Darren Prince, trading as Aura Systems AI';
 const APP_NAME = 'AURA';
-const APP_URL = process.env.APP_URL || 'https://aura-core-monolith.onrender.com';
-const CONTACT = process.env.PRIVACY_CONTACT_EMAIL || 'privacy@aurasystems.ai';
+const APP_URL = process.env.APP_URL || 'https://aurasystemsai.com';
+const CONTACT = process.env.PRIVACY_CONTACT_EMAIL || 'privacy@aurasystemsai.com';
 const UPDATED = '8 October 2026';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
