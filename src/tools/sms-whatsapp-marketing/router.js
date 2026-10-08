@@ -1,11 +1,12 @@
 // SMS Marketing: AI writes a short text from the real store, you send yourself a test, then send to customers who
-// agreed to SMS marketing in Shopify. Delivery goes through your own Android phone (SMS gateway); without it set up this runs as a dry run.
+// agreed to SMS marketing in Shopify. Delivery goes through a carrier API (Twilio), charged to the shop in credits; without credentials it runs as a dry run.
 const express = require('express');
 const crypto = require('crypto');
 const { getShopContext } = require('../../core/shopContext');
 const { getOpenAIClient } = require('../../core/openaiClient');
 const { loadStoreEntities, gql } = require('../../core/seoStoreData');
 const store = require('../../core/shopStore');
+const creditLedger = require('../../core/creditLedger');
 const sms = require('../../core/sms');
 const messaging = require('../../core/messaging');
 
@@ -76,12 +77,16 @@ router.post('/send', withShop(async (req, res, { shop, token }) => {
   if (!text) return res.status(400).json({ ok: false, error: 'Write a message first.' });
   const recipients = (await subscribedPhones(shop, token)).slice(0, MAX_RECIPIENTS);
   if (!recipients.length) return res.status(400).json({ ok: false, error: 'No customers have agreed to SMS marketing yet.' });
+  const afford = await creditLedger.checkCredits(shop, 'sms-send', null, recipients.length);
+  if (!afford.allowed) return res.status(402).json({ ok: false, error: `Sending to  customers needs  credits and you have .` });
   if (!messaging.reserve(shop, 'sms', 'campaign', recipients.length)) return res.status(429).json({ ok: false, error: 'Daily sending limit reached.' });
   let sent = 0; const failed = [];
   for (const to of recipients) {
     try { await sms.sendSms({ to, body: text + OPT_OUT }); sent++; } catch (e) { failed.push(e.message); }
   }
-  const entry = { id: crypto.randomUUID(), at: new Date().toISOString(), body: text, recipients: recipients.length, sent, failed: failed.length };
+  // Only texts that were actually handed to the carrier are charged.
+  if (sent > 0) await creditLedger.deductCredits(shop, 'sms-send', { quantity: sent, tool: TOOL });
+  const entry = { id: crypto.randomUUID(), at: new Date().toISOString(), body: text, recipients: recipients.length, sent, failed: failed.length, credits: sent * creditLedger.getEffectiveCost('sms-send') };
   store.pushCapped(TOOL, shop, entry, 100);
   res.json({ ok: true, ...entry, errors: failed.slice(0, 3) });
 }));

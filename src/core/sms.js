@@ -1,10 +1,11 @@
 'use strict';
-// Sends SMS free through your own Android phone running SMSGate (SMS_GATEWAY_USER/PASS).
+// Sends SMS through a carrier API (Twilio) for real customers at scale. The optional Android SMSGate path is for dev/testing only.
+// The cost of each text is charged to the shop in credits (see SMS_CREDITS_PER_SEGMENT in creditLedger).
 // Without credentials nothing is sent and the result says so (dry run).
 const E164 = /^\+[1-9]\d{7,14}$/;
 
 function gatewayOn() { return !!(process.env.SMS_GATEWAY_USER && process.env.SMS_GATEWAY_PASS); }
-function isConfigured() { return gatewayOn(); }
+function isConfigured() { return gatewayOn() || !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && (process.env.TWILIO_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID)); }
 function isPhone(v) { return typeof v === 'string' && E164.test(v); }
 
 async function sendSms({ to, body }) {
@@ -12,7 +13,7 @@ async function sendSms({ to, body }) {
   const text = String(body || '').trim().slice(0, 1000);
   if (!text) throw Object.assign(new Error('Message is empty.'), { status: 400 });
   if (!isConfigured()) return { sent: false, dryRun: true, to };
-  {
+  if (gatewayOn()) {
     const base = (process.env.SMS_GATEWAY_URL || 'https://api.sms-gate.app/3rdparty/v1').replace(/\/+$/, '');
     const g = await fetch(base + '/messages', {
       method: 'POST', headers: { Authorization: 'Basic ' + Buffer.from(process.env.SMS_GATEWAY_USER + ':' + process.env.SMS_GATEWAY_PASS).toString('base64'), 'Content-Type': 'application/json' },
@@ -29,6 +30,15 @@ async function sendSms({ to, body }) {
     }
     return { sent: true, queued: true, id: gd.id, to };
   }
+  const p = new URLSearchParams({ To: to, Body: text });
+  if (process.env.TWILIO_MESSAGING_SERVICE_SID) p.set('MessagingServiceSid', process.env.TWILIO_MESSAGING_SERVICE_SID); else p.set('From', process.env.TWILIO_FROM);
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    method: 'POST', headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' }, body: p,
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data.message || `SMS provider error (${r.status})`), { status: 502 });
+  return { sent: true, id: data.sid, to };
 }
 
 module.exports = { sendSms, isConfigured, isPhone };

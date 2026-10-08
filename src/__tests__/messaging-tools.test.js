@@ -2,6 +2,8 @@ const express = require('express');
 const request = require('supertest');
 
 jest.mock('../core/shopTokens', () => ({ getToken: () => 'tok' }));
+const mockLedger = { allowed: true, balance: 100, cost: 5 };
+jest.mock('../core/creditLedger', () => ({ ...jest.requireActual('../core/creditLedger'), checkCredits: jest.fn(async () => mockLedger), deductCredits: jest.fn(async () => ({ ok: true })) }));
 jest.mock('../core/openaiClient', () => ({ getOpenAIClient: jest.fn() }));
 jest.mock('../core/mailer', () => ({ ...jest.requireActual('../core/mailer'), sendEmail: jest.fn(async ({ to }) => ({ sent: true, id: 'e1', to })), isConfigured: jest.fn(() => true) }));
 jest.mock('../core/sms', () => ({ ...jest.requireActual('../core/sms'), sendSms: jest.fn(async ({ to }) => ({ sent: true, id: 's1', to })), isConfigured: jest.fn(() => true) }));
@@ -118,5 +120,17 @@ describe('sms marketing', () => {
     const r = await request(a).post('/api/sms/send').send({ body: 'hi', confirm: true });
     expect(r.body.sent).toBe(1);
     expect(sms.sendSms.mock.calls[0][0].to).toBe('+447960000001');
+  });
+  test('charges credits per text sent and refuses when the shop cannot afford it', async () => {
+    const ledger = require('../core/creditLedger');
+    ledger.deductCredits.mockClear();
+    const a = app();
+    await request(a).post('/api/sms/send').send({ body: 'hi', confirm: true });
+    expect(ledger.deductCredits).toHaveBeenCalledWith(expect.any(String), 'sms-send', expect.objectContaining({ quantity: 1 }));
+    mockLedger.allowed = false; ledger.deductCredits.mockClear(); sms.sendSms.mockClear();
+    const r = await request(a).post('/api/sms/send').send({ body: 'hi', confirm: true });
+    expect(r.status).toBe(402);
+    expect(sms.sendSms).not.toHaveBeenCalled();
+    mockLedger.allowed = true;
   });
 });

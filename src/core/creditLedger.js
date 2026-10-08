@@ -126,6 +126,8 @@ const ACTION_COSTS = {
   'pricing-optimize':    2,
   'ad-copy':             2,
   'sms-campaign':        1,
+  // Per text actually sent. A carrier charges about 4-6p a text, so this is set to cover that. Adjust to your credit price.
+  'sms-send':            5,
   'campaign-gen':        3,
   'analytics-insight':   2,
   'segmentation':        2,
@@ -241,8 +243,8 @@ function fileLog(account, tx) {
 
 // Public API
 
-async function checkCredits(shop, actionType, model) {
-  const cost = getEffectiveCost(actionType, model);
+async function checkCredits(shop, actionType, model, quantity = 1) {
+  const cost = getEffectiveCost(actionType, model) * Math.max(1, Math.floor(quantity) || 1);
   const pool = getPool();
 
   if (pool) {
@@ -270,7 +272,7 @@ async function checkCredits(shop, actionType, model) {
 
 async function deductCredits(shop, actionType, meta) {
   meta = meta || {};
-  const cost = getEffectiveCost(actionType, meta.model || null);
+  const cost = getEffectiveCost(actionType, meta.model || null) * Math.max(1, Math.floor(meta.quantity) || 1);
   const pool = getPool();
 
   if (pool) {
