@@ -123,6 +123,7 @@ app.use('/terms', require('./routes/legal').terms);
 app.use('/api/webhooks', require('./routes/gdpr-webhooks'));
 app.use('/google', require('./routes/google-oauth'));
 app.use('/meta', require('./routes/meta-oauth'));
+app.use('/tiktok', require('./routes/tiktok-oauth'));
 
 // --- Public healthcheck (no auth) ---
 app.get('/health', (req, res) => {
