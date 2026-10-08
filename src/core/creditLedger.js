@@ -136,15 +136,35 @@ const ACTION_COSTS = {
   'image-gen':           10,
 };
 
-const MODEL_MULTIPLIERS = {
-  'gpt-4o-mini': 1, 'gpt-4.1-mini': 1, 'gpt-4.1-nano': 1, 'gpt-5-mini': 1,
-  'gpt-4o': 2, 'gpt-4.1': 2, 'gpt-4-turbo': 2, 'gpt-4-turbo-preview': 2,
-  'gpt-4': 3, 'gpt-5': 3,
-  'gpt-5.2': 5, 'o1': 5, 'o1-mini': 3, 'o3': 5, 'o3-mini': 3, 'o4-mini': 3,
-  // Image models — multiplier 1: action cost (image-gen=10) already covers real API cost
-  'gpt-image-1': 1, 'dall-e-3': 1, 'dall-e-2': 1,
+// OpenAI list prices in USD per 1M tokens [input, output]. Approximate; update when OpenAI changes prices.
+const MODEL_PRICES = {
+  'gpt-4o-mini': [0.15, 0.6], 'gpt-4.1-mini': [0.4, 1.6], 'gpt-4.1-nano': [0.1, 0.4], 'gpt-5-mini': [0.25, 2],
+  'gpt-4o': [2.5, 10], 'gpt-4.1': [2, 8], 'gpt-4-turbo': [10, 30],
+  'gpt-4': [30, 60], 'gpt-5': [1.25, 10], 'gpt-5.2': [1.75, 14],
+  'o1-mini': [1.1, 4.4], 'o1': [15, 60], 'o3-mini': [1.1, 4.4], 'o3': [2, 8], 'o4-mini': [1.1, 4.4],
 };
+// A typical action sends about 1,500 tokens in and gets about 500 back.
+const TYPICAL = { input: 1500, output: 500 };
+const typicalUsd = (p) => (p[0] * TYPICAL.input + p[1] * TYPICAL.output) / 1e6;
+const BASE_USD = typicalUsd(MODEL_PRICES['gpt-4o-mini']);
 
+function priceFor(model) {
+  if (MODEL_PRICES[model]) return MODEL_PRICES[model];
+  const key = Object.keys(MODEL_PRICES).sort((x, y) => y.length - x.length).find((k) => String(model).startsWith(k));
+  return key ? MODEL_PRICES[key] : null;
+}
+
+// Credits scale with what the model really costs us, relative to the cheapest model (never below 1x).
+const MODEL_MULTIPLIERS = Object.fromEntries(Object.entries(MODEL_PRICES).map(([m, p]) => [m, Math.max(1, Math.round((typicalUsd(p) / BASE_USD) * 10) / 10)]));
+// Image models: the action cost (image-gen = 10 credits) already covers the real API cost.
+Object.assign(MODEL_MULTIPLIERS, { 'gpt-image-1': 1, 'dall-e-3': 1, 'dall-e-2': 1 });
+
+// Rough real cost to us, in USD, of one action on a model. For your own margin tracking.
+function estimateCostUsd(actionType, model) {
+  const base = ACTION_COSTS[actionType || 'generic-ai'] || 1;
+  const p = priceFor(model || 'gpt-4o-mini');
+  return p ? Math.round(base * typicalUsd(p) * 1e6) / 1e6 : null;
+}
 const PLAN_CREDITS = {
   free:       50,      // 50 lifetime credits — enough to try ~5 text actions or 5 images
   growth:     5000,    // 5,000/mo
@@ -158,7 +178,7 @@ function getEffectiveCost(actionType, model) {
   if (!model) return baseCost;
   let mult = MODEL_MULTIPLIERS[model];
   if (mult === undefined) {
-    const prefix = Object.keys(MODEL_MULTIPLIERS).find(k => model.startsWith(k));
+    const prefix = Object.keys(MODEL_MULTIPLIERS).sort((x, y) => y.length - x.length).find(k => model.startsWith(k));
     mult = prefix ? MODEL_MULTIPLIERS[prefix] : 1;
   }
   return Math.max(1, Math.ceil(baseCost * mult));
@@ -261,7 +281,7 @@ async function deductCredits(shop, actionType, meta) {
     }
     if (acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1) {
       await pgSave(pool, shop, { used_this_period: Number(acc.used_this_period)+cost, lifetime_used: Number(acc.lifetime_used)+cost });
-      await pgLog(pool, shop, { type:'deduct', action:actionType, cost, ...meta });
+      await pgLog(pool, shop, { type:'deduct', action:actionType, cost, estUsd: estimateCostUsd(actionType, meta.model), ...meta });
       return { ok:true, cost, balance:999999, unlimited:true };
     }
     const planRem = Math.max(0, acc.plan_credits - acc.used_this_period);
@@ -275,7 +295,7 @@ async function deductCredits(shop, actionType, meta) {
     else { rem -= planRem; newUsed = Number(acc.plan_credits); newTopup = Math.max(0, newTopup - rem); }
 
     await pgSave(pool, shop, { used_this_period: newUsed, topup_credits: newTopup, lifetime_used: Number(acc.lifetime_used)+cost });
-    await pgLog(pool, shop, { type:'deduct', action:actionType, cost, ...meta });
+    await pgLog(pool, shop, { type:'deduct', action:actionType, cost, estUsd: estimateCostUsd(actionType, meta.model), ...meta });
     return { ok:true, cost, balance: Math.max(0, acc.plan_credits - newUsed) + newTopup, unlimited:false };
   }
 
@@ -283,7 +303,7 @@ async function deductCredits(shop, actionType, meta) {
   if (needsReset(acc)) { acc.used_this_period=0; acc.period_start=new Date().toISOString(); }
   if (acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1) {
     acc.used_this_period += cost; acc.lifetime_used = (acc.lifetime_used||0)+cost;
-    fileLog(acc, { type:'deduct', action:actionType, cost, ...meta });
+    fileLog(acc, { type:'deduct', action:actionType, cost, estUsd: estimateCostUsd(actionType, meta.model), ...meta });
     fileSave(shop, acc);
     return { ok:true, cost, balance:999999, unlimited:true };
   }
@@ -294,7 +314,7 @@ async function deductCredits(shop, actionType, meta) {
   if (planRem >= rem) { acc.used_this_period += rem; }
   else { rem -= planRem; acc.used_this_period = acc.plan_credits; acc.topup_credits = Math.max(0, (acc.topup_credits||0) - rem); }
   acc.lifetime_used = (acc.lifetime_used||0)+cost;
-  fileLog(acc, { type:'deduct', action:actionType, cost, ...meta });
+  fileLog(acc, { type:'deduct', action:actionType, cost, estUsd: estimateCostUsd(actionType, meta.model), ...meta });
   fileSave(shop, acc);
   return { ok:true, cost, balance: Math.max(0, acc.plan_credits - acc.used_this_period) + (acc.topup_credits||0), unlimited:false };
 }
@@ -380,6 +400,8 @@ function getShopAccount(shop) {
 module.exports = {
   ACTION_COSTS,
   MODEL_MULTIPLIERS,
+  MODEL_PRICES,
+  estimateCostUsd,
   PLAN_CREDITS,
   getEffectiveCost,
   checkCredits,

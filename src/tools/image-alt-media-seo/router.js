@@ -5814,7 +5814,7 @@ router.get('/security/compliance/certifications', async (req, res) => {
     const certifications = [
       { name: 'SOC 2 Type II', status: 'certified', validUntil: '2026-12-31', auditedBy: 'Deloitte' },
       { name: 'ISO 27001', status: 'certified', validUntil: '2026-09-15', auditedBy: 'BSI' },
-      { name: 'GDPR', status: 'compliant', lastReview: '2025-11-20', dpo: 'privacy@aura.ai' },
+      { name: 'GDPR', status: 'compliant', lastReview: '2025-11-20', dpo: 'privacy@aurasystemsai.com' },
       { name: 'HIPAA', status: 'certified', validUntil: '2026-06-30', auditedBy: 'KPMG' },
       { name: 'PCI DSS', status: 'compliant', level: 'Level 1', validUntil: '2026-08-15' },
       { name: 'FedRAMP', status: 'in-progress', expectedCompletion: '2026-Q3', level: 'Moderate' }
@@ -5968,8 +5968,8 @@ router.post('/developer/sdk/generate', async (req, res) => {
     const sdk = {
       language,
       version: version || '1.0.0',
-      downloadUrl: `https://cdn.aura.ai/sdks/${language}-v${version || '1.0.0'}.zip`,
-      documentation: `https://docs.aura.ai/sdk/${language}`,
+      downloadUrl: `https://aurasystemsai.com/sdks/${language}-v${version || '1.0.0'}.zip`,
+      documentation: `https://aurasystemsai.com/docs/sdk/${language}`,
       examples: [
         'authentication',
         'generate-alt-text',
@@ -6039,8 +6039,8 @@ router.get('/developer/api-docs/openapi', async (req, res) => {
         description: 'Industry-leading image alt text management platform'
       },
       servers: [
-        { url: 'https://api.aura.ai/v2', description: 'Production' },
-        { url: 'https://staging-api.aura.ai/v2', description: 'Staging' }
+        { url: 'https://aurasystemsai.com/api/v2', description: 'Production' },
+        { url: 'https://staging.aurasystemsai.com/api/v2', description: 'Staging' }
       ],
       paths: {
         '/images': {

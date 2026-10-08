@@ -1,5 +1,5 @@
 // SMS Marketing: AI writes a short text from the real store, you send yourself a test, then send to customers who
-// agreed to SMS marketing in Shopify. Delivery goes through Twilio or an Android SMS gateway; without credentials it runs as a dry run.
+// agreed to SMS marketing in Shopify. Delivery goes through your own Android phone (SMS gateway); without it set up this runs as a dry run.
 const express = require('express');
 const crypto = require('crypto');
 const { getShopContext } = require('../../core/shopContext');

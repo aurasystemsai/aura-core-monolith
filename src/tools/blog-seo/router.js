@@ -8015,48 +8015,6 @@ router.post('/ai/full-blog-writer', async (req, res) => {
     const citationsHtml = citationsR.choices[0].message.content.trim();
     if (citationsHtml) fullHtml += '\n' + citationsHtml;
 
-    // ── 5.5. Inject inline images via Unsplash (if key configured) ──
-    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
-    if (unsplashKey) {
-      try {
-        // Find every </h2> position and inject an image after every 2nd one
-        const h2Positions = [];
-        let searchFrom = 0;
-        while (true) {
-          const idx = fullHtml.indexOf('</h2>', searchFrom);
-          if (idx === -1) break;
-          h2Positions.push(idx + 5);
-          searchFrom = idx + 5;
-        }
-        // Pick positions: after 2nd, 4th, 6th H2
-        const insertPositions = h2Positions.filter((_, i) => i % 2 === 1).slice(0, 3);
-        if (insertPositions.length > 0) {
-          // Single search with per_page=10 so each insertion gets a DIFFERENT photo
-          const poolQuery = encodeURIComponent(keyword.slice(0, 60));
-          const poolRes = await fetch(`https://api.unsplash.com/search/photos?query=${poolQuery}&per_page=10&orientation=landscape&content_filter=high`, {
-            headers: { Authorization: `Client-ID ${unsplashKey}` },
-          });
-          if (poolRes.ok) {
-            const poolData = await poolRes.json();
-            const pool = poolData.results || [];
-            // Assign a unique photo to each position (skip index 0 — reserved for cover)
-            const imgResults = insertPositions.map((_, i) => {
-              const photo = pool[i + 1] || pool[i] || null; // +1 to skip the cover photo candidate
-              if (!photo) return null;
-              const sectionHeading = contentSections[i * 2 + 1] || contentSections[i] || keyword;
-              const altText = (photo.alt_description || sectionHeading).replace(/"/g, '&quot;');
-              return `\n<figure style="margin:2em 0;text-align:center"><img src="${photo.urls.regular}" alt="${altText}" style="max-width:100%;border-radius:8px" loading="lazy" /><figcaption style="font-size:0.85em;color:#666;margin-top:0.5em">Photo by <a href="${photo.user.links.html}?utm_source=aura_seo&utm_medium=referral" target="_blank" rel="noopener noreferrer">${photo.user.name}</a> on Unsplash</figcaption></figure>\n`;
-            });
-            // Inject from end to front to preserve string positions
-            const pairs = insertPositions.map((pos, i) => ({ pos, html: imgResults[i] })).filter(p => p.html).reverse();
-            for (const { pos, html: imgHtml } of pairs) {
-              fullHtml = fullHtml.slice(0, pos) + imgHtml + fullHtml.slice(pos);
-            }
-          }
-        }
-      } catch (_) { /* Unsplash injection failed silently — not critical */ }
-    }
-
     // ── 6. Post-process readability — split long sentences/paragraphs deterministically ──
     fullHtml = improveReadability(fullHtml);
 
@@ -9322,34 +9280,7 @@ router.post('/ai/generate-cover-image', async (req, res) => {
     const { title, prompt, ratio, keyword } = req.body || {};
     if (!title && !prompt && !keyword) return res.status(400).json({ ok: false, error: 'title, keyword, or prompt required' });
 
-    // 1. Always try Unsplash first — real photos, no hallucinations
-    //    Use keyword when available (most reliable), fall back to title
-    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
-    const searchSubject = (keyword || title || '').slice(0, 60);
-    if (unsplashKey && searchSubject) {
-      try {
-        const searchQuery = encodeURIComponent(searchSubject);
-        const uRes = await fetch(`https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=10&orientation=landscape&content_filter=high`, {
-          headers: { Authorization: `Client-ID ${unsplashKey}` },
-        });
-        if (uRes.ok) {
-          const uData = await uRes.json();
-          // Pick a random one from top 5 so repeated calls vary
-          const pool = uData.results?.slice(0, 5) || [];
-          const photo = pool[Math.floor(Math.random() * pool.length)];
-          if (photo?.urls?.regular) {
-            return res.json({
-              ok: true,
-              imageUrl: photo.urls.regular,
-              credit: { photographer: photo.user.name, profileUrl: photo.user.links.html },
-              source: 'unsplash',
-            });
-          }
-        }
-      } catch (_) { /* fall through to DALL-E */ }
-    }
-
-    // 2. Fall back to DALL-E — use keyword/title only, never the raw aiImagePrompt
+    // Use keyword/title only, never the raw aiImagePrompt
     //    (Midjourney-style prose pushes DALL-E to illustrate instead of photograph)
     const subjectCtx = keyword || title || '';
     const finalPrompt = `Professional stock photograph for a blog about "${subjectCtx}". Real people, real products, real setting. Shot with a DSLR camera. Clean composition, sharp focus, commercial quality. Absolutely NO text, NO words, NO letters anywhere in the image. NOT a cartoon, NOT an illustration, NOT CGI.`;
@@ -9365,34 +9296,6 @@ router.post('/ai/generate-cover-image', async (req, res) => {
     if (!imageUrl) return res.status(500).json({ ok: false, error: 'No image generated' });
     if (req.deductCredits) req.deductCredits({ action: 'image-gen', model: 'dall-e-3' });
     res.json({ ok: true, imageUrl, source: 'dalle' });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* =========================================================================
-   AI: UNSPLASH SEARCH — free stock photos
-   ========================================================================= */
-router.get('/ai/unsplash-search', async (req, res) => {
-  try {
-    const { query, per_page = 12, page = 1 } = req.query || {};
-    if (!query) return res.status(400).json({ ok: false, error: 'query required' });
-    const key = process.env.UNSPLASH_ACCESS_KEY;
-    if (!key) return res.status(500).json({ ok: false, error: 'UNSPLASH_ACCESS_KEY not configured — add it to environment variables' });
-    const r = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${per_page}&page=${page}&orientation=landscape`, {
-      headers: { Authorization: `Client-ID ${key}` },
-    });
-    if (!r.ok) throw new Error(`Unsplash API error: ${r.status}`);
-    const j = await r.json();
-    const photos = (j.results || []).map(p => ({
-      id: p.id,
-      thumb: p.urls?.small,
-      full: p.urls?.regular,
-      author: p.user?.name,
-      authorUrl: p.user?.links?.html,
-      alt: p.alt_description || p.description || query,
-    }));
-    res.json({ ok: true, photos, total: j.total || 0 });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
