@@ -74,6 +74,7 @@ const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTr
 const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
 const ABTestingSuite = lazy(() => import("./ab-testing-suite/ABTestingSuiteV2.jsx"));
 const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
+const ProductFeed = lazy(() => import("./components/tools/ProductFeed.jsx"));
 const ProductSEOEngine = lazy(() => import("./components/tools/ProductSEOEngine.jsx"));
 const AIContentImageGen = lazy(() => import("./components/tools/AIContentImageGen.jsx"));
 
@@ -83,7 +84,7 @@ const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
 // Groups come from src/tools/main-suite/modules.js (9 suites)
 const toolToMainSuiteGroup = {
  // SEO & Content
- "product-seo": "seo",
+ "product-seo": "seo", "product-feed": "seo",
  "blog-seo": "seo",
  "blog-draft-engine": "seo",
  "weekly-blog-content-engine": "seo",
@@ -322,7 +323,7 @@ function App() {
  'dashboard': 'Dashboard', 'all-tools': 'All Tools', 'main-suite': 'Suite',
  'settings': 'Settings', 'credits': 'Credits', 'pricing': 'Pricing',
  'blog-seo': 'Blog SEO Engine', 'blog-draft-engine': 'Blog Draft Engine',
- 'product-seo': 'Product SEO', 'keyword-research-suite': 'Keyword Research',
+ 'product-seo': 'Product SEO', 'product-feed': 'Product Feed', 'keyword-research-suite': 'Keyword Research',
  'on-page-seo-engine': 'On-Page SEO', 'technical-seo-auditor': 'Technical SEO',
  'schema-rich-results-engine': 'Schema & Rich Results', 'image-alt-media-seo': 'Image Alt Text',
  'rank-visibility-tracker': 'Rank Tracker', 'ai-visibility-tracker': 'AI Visibility',
@@ -462,6 +463,7 @@ function App() {
 
  {/* -- SEO & Content -- */}
  {activeSection === "product-seo"&& <ProductSEOEngine />}
+  {activeSection === "product-feed"&& <ProductFeed />}
  {activeSection === "blog-seo"&& <ErrorBoundary key="blog-seo"><BlogSEO /></ErrorBoundary>}
  {activeSection === "blog-draft-engine"&& <BlogDraftEngine />}
  {activeSection === "weekly-blog-content-engine"&& <WeeklyBlogContentEngine />}

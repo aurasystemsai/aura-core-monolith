@@ -163,6 +163,7 @@ const toolRouters = [
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
+  { path: '/api/product-feed', router: require('./tools/product-feed/router'), middleware: requireTool('product-feed'), creditAction: 'product-description' },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router'), middleware: requireTool('blog-seo'), creditAction: 'seo-analysis',
     // These paths are deterministic (no OpenAI) â€” skip credit check so 0-credit merchants can still use them
     noCreditPaths: ['/serp/preview', '/metadata/analyze', '/keywords/evaluate', '/research/score', '/items'] },
