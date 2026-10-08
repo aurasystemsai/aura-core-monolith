@@ -33,11 +33,8 @@ export const TOOL_PLAN = {
  "dynamic-pricing-engine": "growth",
 
  // -- Pro ($149/mo) -- advanced & intelligence tools
- "backlink-explorer": "pro",
- "link-intersect-outreach": "pro",
  "competitive-analysis": "pro",
  "ai-content-image-gen": "pro",
- "collaboration-approval-workflows": "pro",
  "returns-rma-automation": "pro",
  "ai-support-assistant": "pro",
  "ab-testing-suite": "pro",
@@ -60,7 +57,6 @@ export const TOOL_PLAN = {
  "data-enrichment-suite": "enterprise",
  "aura-operations-ai": "enterprise",
  "ai-launch-planner": "enterprise",
- "aura-api-sdk": "enterprise",
  "webhook-api-triggers": "enterprise",
  "loyalty-referral-programs": "enterprise",
 };

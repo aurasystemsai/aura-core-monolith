@@ -74,12 +74,10 @@ const FacebookAdsIntegration = lazy(() => import("./components/tools/FacebookAds
 const TikTokAdsIntegration = lazy(() => import("./components/tools/TikTokAdsIntegration.jsx"));
 const AdCreativeOptimizer = lazy(() => import("./components/tools/AdCreativeOptimizer.jsx"));
 const AdsAnomalyGuard = lazy(() => import("./components/tools/AdsAnomalyGuard.jsx"));
-const MultiChannelOptimizer = lazy(() => import("./components/tools/MultiChannelOptimizer.jsx"));
 const DynamicPricingEngine = lazy(() => import("./components/tools/DynamicPricingEngine.jsx"));
 const CreativeAutomationEngine = lazy(() => import("./components/tools/CreativeAutomationEngine.jsx"));
 const AutoInsights = lazy(() => import("./components/tools/AutoInsights.jsx"));
 const AuraOperationsAI = lazy(() => import("./components/tools/AuraOperationsAI.jsx"));
-const AuraAPISDK = lazy(() => import("./components/tools/AuraAPISDK.jsx"));
 const AiSupportAssistant = lazy(() => import("./components/tools/AISupportAssistant.jsx"));
 const AiLaunchPlanner = lazy(() => import("./components/tools/AILaunchPlanner.jsx"));
 const AdvancedAnalyticsAttribution = lazy(() => import("./components/tools/AdvancedAnalyticsAttribution.jsx"));
@@ -87,15 +85,12 @@ const ToolScaffold = lazy(() => import("./components/tools/ToolScaffold.jsx"));
 const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyReferralPrograms.jsx"));
 const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
 const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTracker.jsx"));
-const BacklinkExplorer = lazy(() => import("./components/tools/BacklinkExplorer.jsx"));
 const CompliancePrivacySuite = lazy(() => import("./components/tools/CompliancePrivacySuite.jsx"));
 const OmnichannelCampaignBuilder = lazy(() => import("./components/tools/OmnichannelCampaignBuilder.jsx"));
 const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
 const CompetitiveAnalysis = lazy(() => import("./components/tools/CompetitiveAnalysis.jsx"));
 const ABTestingSuite = lazy(() => import("./ab-testing-suite/ABTestingSuiteV2.jsx"));
 const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
-const LinkIntersectOutreach = lazy(() => import("./components/tools/LinkIntersectOutreach.jsx"));
-const CollaborationApprovalWorkflows = lazy(() => import("./components/tools/CollaborationApprovalWorkflows.jsx"));
 const DataEnrichmentSuite = lazy(() => import("./components/tools/DataEnrichmentSuite.jsx"));
 const ProductSEOEngine = lazy(() => import("./components/tools/ProductSEOEngine.jsx"));
 const AIContentImageGen = lazy(() => import("./components/tools/AIContentImageGen.jsx"));
@@ -121,8 +116,6 @@ const toolToMainSuiteGroup = {
  "ai-content-brief-generator": "seo",
  "content-scoring-optimization": "seo",
  "keyword-research-suite": "seo",
- "backlink-explorer": "seo",
- "link-intersect-outreach": "seo",
  "local-seo-toolkit": "seo",
  "competitive-analysis": "seo",
  "ai-content-image-gen": "seo",
@@ -130,7 +123,6 @@ const toolToMainSuiteGroup = {
  "email-automation-builder": "lifecycle",
  "abandoned-checkout-winback": "lifecycle",
  "returns-rma-automation": "lifecycle",
- "collaboration-approval-workflows": "lifecycle",
  // Customer Support
  "ai-support-assistant": "support",
  "review-ugc-engine": "support",
@@ -160,7 +152,6 @@ const toolToMainSuiteGroup = {
  // Platform & Developer
  "aura-operations-ai": "platform",
  "ai-launch-planner": "platform",
- "aura-api-sdk": "platform",
  "webhook-api-triggers": "platform",
  "loyalty-referral-programs": "platform",
 };
@@ -200,7 +191,7 @@ function App() {
  const [sectionHistory, setSectionHistory] = useState([]);
  const sectionHistoryRef = React.useRef([]);
  const { plan, planLoading } = usePlan();
- const { balance, unlimited, loading: creditsLoading } = useCredits();
+ const { balance, loading: creditsLoading } = useCredits();
  const [toolInitUrl, setToolInitUrl] = useState(null);
  const planLoadedRef = React.useRef(false);
  const isPushingFromPopstate = React.useRef(false);
@@ -362,11 +353,10 @@ function App() {
  'blog-seo': 'Blog SEO Engine', 'blog-draft-engine': 'Blog Draft Engine',
  'product-seo': 'Product SEO', 'keyword-research-suite': 'Keyword Research',
  'on-page-seo-engine': 'On-Page SEO', 'technical-seo-auditor': 'Technical SEO',
- 'schema-rich-results-engine': 'Schema & Rich Results', 'image-alt-media-seo': 'Image & Media SEO',
+ 'schema-rich-results-engine': 'Schema & Rich Results', 'image-alt-media-seo': 'Image Alt Text',
  'rank-visibility-tracker': 'Rank Tracker', 'ai-visibility-tracker': 'AI Visibility',
  'seo-site-crawler': 'Site Crawler', 'internal-link-optimizer': 'Internal Links',
  'ai-content-brief-generator': 'Content Brief', 'content-scoring-optimization': 'Content Scoring',
- 'backlink-explorer': 'Backlink Explorer', 'link-intersect-outreach': 'Link Outreach',
  'local-seo-toolkit': 'Local SEO', 'competitive-analysis': 'Competitive Analysis',
  'ai-content-image-gen': 'AI Content & Images', 'weekly-blog-content-engine': 'Weekly Blog Engine',
  'email-automation-builder': 'Email Automation', 'abandoned-checkout-winback': 'Checkout Winback',
@@ -381,7 +371,7 @@ function App() {
  'data-enrichment-suite': 'Data Enrichment', 
  'inventory-forecasting': 'Inventory Forecasting',
  'aura-operations-ai': 'Operations AI', 'ai-launch-planner': 'Launch Planner',
- 'aura-api-sdk': 'API & SDK', 'webhook-api-triggers': 'Webhooks & API',
+ 'webhook-api-triggers': 'Webhooks & API',
  'loyalty-referral-programs': 'Loyalty & Referrals', 'reports': 'Reports',
  'products': 'Products', 'tools': 'Tools',
  };
@@ -433,24 +423,24 @@ function App() {
  <span className="shop-name">{String(project.name).replace(/\.myshopify\.com$/i, '')}</span>
  </div>
  )}
- {/* Persistent credit balance pill — always visible, click → credits page */}
+ {/* Persistent credit balance pill â€” always visible, click â†’ credits page */}
  {!creditsLoading && (
  <button
  onClick={() => setActiveSection('credits')}
  title="View credits & usage"
  style={{
  display: 'flex', alignItems: 'center', gap: 5,
- background: unlimited ? '#052e16' : (balance !== null && balance <= 10) ? '#2d1515' : '#18181b',
- border: `1px solid ${unlimited ? '#166534' : (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}`,
+ background: (balance !== null && balance <= 10) ? '#2d1515' : '#18181b',
+ border: `1px solid ${(balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}`,
  borderRadius: 20, padding: '4px 12px', cursor: 'pointer',
- fontSize: 12, fontWeight: 700, color: unlimited ? '#4ade80' : (balance !== null && balance <= 10) ? '#f87171' : '#a1a1aa',
+ fontSize: 12, fontWeight: 700, color: (balance !== null && balance <= 10) ? '#f87171' : '#a1a1aa',
  transition: 'all 0.2s', whiteSpace: 'nowrap',
  }}
  onMouseEnter={e => e.currentTarget.style.borderColor = '#6366f1'}
- onMouseLeave={e => e.currentTarget.style.borderColor = unlimited ? '#166534' : (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}
+ onMouseLeave={e => e.currentTarget.style.borderColor = (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}
  >
  <span style={{ fontSize: 13 }}></span>
- {unlimited ? 'Unlimited' : balance === null ? '…' : `${balance.toLocaleString()} credits`}
+ {balance === null ? 'â€¦' : `${balance.toLocaleString()} credits`}
  </button>
  )}
  </div>
@@ -521,11 +511,9 @@ function App() {
  {activeSection === "ai-content-brief-generator"&& <AIContentBriefGenerator />}
  {activeSection === "content-scoring-optimization"&& <ContentScoringOptimization />}
  {activeSection === "keyword-research-suite"&& <KeywordResearchSuite />}
- {activeSection === "backlink-explorer"&& <BacklinkExplorer />}
       {activeSection === "compliance-privacy-suite" && <CompliancePrivacySuite />}
       {activeSection === "omnichannel-campaign-builder" && <OmnichannelCampaignBuilder />}
  {activeSection === "entity-topic-explorer"&& <EntityTopicExplorer />}
- {activeSection === "link-intersect-outreach"&& <LinkIntersectOutreach />}
  {activeSection === "local-seo-toolkit"&& <LocalSEOToolkit />}
  {activeSection === "competitive-analysis"&& <CompetitiveAnalysis />}
  {activeSection === "ai-content-image-gen"&& <AIContentImageGen />}
@@ -535,7 +523,6 @@ function App() {
  {activeSection === "ab-testing-suite" && <ABTestingSuite />}
  {activeSection === "abandoned-checkout-winback"&& <AbandonedCheckoutWinback />}
  {activeSection === "returns-rma-automation"&& <ReturnsRMAAutomation />}
- {activeSection === "collaboration-approval-workflows"&& <CollaborationApprovalWorkflows />}
  {activeSection === "workflow-automation-builder"&& <WorkflowAutomationBuilder />}
  {activeSection === "ai-copilot"&& <AICopilot />}
  {activeSection === "email-deliverability"&& <EmailDeliverability />}
@@ -578,7 +565,6 @@ function App() {
  {activeSection === "tiktok-ads-integration"&& <TikTokAdsIntegration />}
  {activeSection === "ad-creative-optimizer"&& <AdCreativeOptimizer />}
  {activeSection === "ads-anomaly-guard"&& <AdsAnomalyGuard />}
- {activeSection === "multi-channel-optimizer"&& <MultiChannelOptimizer />}
 
  {/* -- Finance & Operations -- */}
  {activeSection === "inventory-forecasting"&& <InventoryForecasting />}
@@ -586,7 +572,6 @@ function App() {
  {/* -- Platform & Developer -- */}
  {activeSection === "aura-operations-ai"&& <AuraOperationsAI />}
  {activeSection === "ai-launch-planner"&& <AiLaunchPlanner />}
- {activeSection === "aura-api-sdk"&& <AuraAPISDK />}
  {activeSection === "webhook-api-triggers"&& <WebhookApiTriggers />}
  {(activeSection === "loyalty-referral-programs"|| activeSection === "loyalty-referral-program-v2") && <LoyaltyReferralPrograms />}
  </Suspense>

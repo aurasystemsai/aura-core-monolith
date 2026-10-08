@@ -48,6 +48,8 @@ const PORT = process.env.PORT || 10000;
 
 const express = require('express');
 const app = express();
+// Behind Render's proxy: use the real client IP for rate limiting.
+if (process.env.RENDER || process.env.TRUST_PROXY) app.set('trust proxy', 1);
 // Dynamic CORS for embedded Shopify app
 const allowedOrigins = [
   'https://admin.shopify.com',
@@ -129,8 +131,14 @@ app.get('/health', (req, res) => {
 const planAccessControl = require('./core/planAccessControl');
 app.get('/api/access/check', planAccessControl.checkAccess);
 
+// --- Rate limits: per IP before sign-in checks, then per verified shop. Skipped in tests. ---
+const { rateLimit } = require('./core/rateLimit');
+const limitsOn = process.env.NODE_ENV !== 'test' && process.env.DISABLE_RATE_LIMIT !== 'true';
+if (limitsOn) app.use('/api', rateLimit({ max: Number(process.env.RATE_LIMIT_IP_PER_MIN) || 1200, keyFn: (req) => req.ip }));
+
 // --- Shopify session token verification for all /api routes ---
 app.use('/api', verifyShopifySession);
+if (limitsOn) app.use('/api', rateLimit({ max: Number(process.env.RATE_LIMIT_SHOP_PER_MIN) || 600, keyFn: (req) => (req.shopify && req.shopify.dest) || (req.session && req.session.shop) || req.ip }));
 
 // --- Register integration health API route (requires Shopify auth) ---
 app.use('/api/integration', require('./routes/integration'));
@@ -173,8 +181,6 @@ const toolRouters = [
   { path: '/api/keyword-research-suite', router: require('./tools/keyword-research-suite/router'), middleware: requireTool('keyword-research-suite'), creditAction: 'keyword-research' },
   { path: '/api/ai-visibility-tracker', router: require('./tools/ai-visibility-tracker/router'), middleware: requireTool('ai-visibility-tracker'), creditAction: 'seo-analysis' },
   { path: '/api/content-scoring-optimization', router: require('./tools/content-scoring-optimization/router'), middleware: requireTool('content-scoring-optimization'), creditAction: 'content-brief' },
-  { path: '/api/link-intersect-outreach', router: require('./tools/link-intersect-outreach/router'), middleware: requireTool('link-intersect-outreach'), creditAction: 'keyword-research' },
-  { path: '/api/backlink-explorer', router: require('./tools/backlink-explorer/router'), middleware: requireTool('backlink-explorer'), creditAction: 'competitive-analysis' },
   { path: '/api/entity-topic-explorer', router: require('./tools/entity-topic-explorer/router'), middleware: requireTool('entity-topic-explorer'), creditAction: 'seo-analysis' },
   { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post' },
   { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text' },
@@ -186,7 +192,6 @@ const toolRouters = [
   { path: '/api/tiktok-ads-integration', router: require('./tools/tiktok-ads-integration/router'), middleware: requireTool('tiktok-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/ad-creative-optimizer', router: require('./tools/ad-creative-optimizer/router'), middleware: requireTool('ad-creative-optimizer'), creditAction: 'ad-copy' },
   { path: '/api/ads-anomaly-guard', router: require('./tools/ads-anomaly-guard/router'), middleware: requireTool('ads-anomaly-guard'), creditAction: 'analytics-insight' },
-  { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer'), creditAction: 'analytics-insight' },
   { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight' },
   { path: '/api/ai-copilot', router: require('./tools/ai-copilot/router'), middleware: requireTool('ai-copilot'), creditAction: 'ai-chat' },
   { path: '/api/email-deliverability', router: require('./tools/email-deliverability/router'), middleware: requireTool('email-deliverability'), creditAction: 'analytics-insight' },
@@ -209,7 +214,6 @@ const toolRouters = [
 
   // Enterprise tier tools
   { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router'), middleware: requireTool('ai-launch-planner'), creditAction: 'campaign-gen' },
-  { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router'), middleware: requireTool('aura-api-sdk'), creditAction: 'generic-ai' },
   { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai'), creditAction: 'analytics-insight' },
   { path: '/api/main-suite', router: require('./tools/main-suite/router') },
   { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers'), creditAction: 'generic-ai' },
@@ -219,7 +223,6 @@ const toolRouters = [
   { path: '/api/data-enrichment-suite', router: require('./tools/data-enrichment-suite/router'), middleware: requireTool('data-enrichment-suite') },
   { path: '/api/loyalty-referral', router: require('./routes/loyalty-referral-engine'), middleware: requireTool('loyalty-referral-programs') },
   { path: '/api/brand-mention-tracker', router: require('./tools/brand-mention-tracker/router'), middleware: requireTool('brand-mention-tracker'), creditAction: 'analytics-insight' },
-  { path: '/api/collaboration-approval-workflows', router: require('./tools/collaboration-approval-workflows/router'), middleware: requireTool('collaboration-approval-workflows'), creditAction: 'generic-ai' },
   { path: '/api/competitive-analysis', router: require('./tools/competitive-analysis/router'), middleware: requireTool('competitive-analysis'), creditAction: 'competitive-analysis' },
   { path: '/api/compliance-privacy-suite', router: require('./tools/compliance-privacy-suite/router'), middleware: requireTool('compliance-privacy-suite'), creditAction: 'analytics-insight' },
   { path: '/api/customer-data-platform', router: require('./tools/customer-data-platform/router'), middleware: requireTool('customer-data-platform'), creditAction: 'analytics-insight' },

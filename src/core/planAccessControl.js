@@ -46,8 +46,8 @@ const PLAN_FEATURES = {
       'local-seo-toolkit', 'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'social-scheduler-content-engine', 'brand-mention-tracker',
       'dynamic-pricing-engine', 
-      'backlink-explorer', 'link-intersect-outreach', 'competitive-analysis',
-      'ai-content-image-gen', 'collaboration-approval-workflows',
+      'competitive-analysis',
+      'ai-content-image-gen', 
       'returns-rma-automation', 'ai-support-assistant', 
       'creative-automation-engine',
       'google-ads-integration', 'facebook-ads-integration',
@@ -97,11 +97,8 @@ const TOOL_PLAN_REQUIREMENTS = {
   'dynamic-pricing-engine': 'growth',
 
   // Pro tier
-  'backlink-explorer': 'pro',
-  'link-intersect-outreach': 'pro',
   'competitive-analysis': 'pro',
   'ai-content-image-gen': 'pro',
-  'collaboration-approval-workflows': 'pro',
   'returns-rma-automation': 'pro',
   'ai-support-assistant': 'pro',
   'creative-automation-engine': 'pro',
@@ -124,7 +121,6 @@ const TOOL_PLAN_REQUIREMENTS = {
   'data-enrichment-suite': 'enterprise',
   'aura-operations-ai': 'enterprise',
   'ai-launch-planner': 'enterprise',
-  'aura-api-sdk': 'enterprise',
   'webhook-api-triggers': 'enterprise',
   'loyalty-referral-programs': 'enterprise',
 };

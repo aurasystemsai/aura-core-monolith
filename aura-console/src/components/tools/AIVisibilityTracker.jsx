@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import { apiFetchJSON as _apiFetchJSON } from "../../api";
 import usePlan, { TOOL_PLAN, canUseTool } from "../../hooks/usePlan";
@@ -1164,11 +1164,6 @@ function ActionFunnelButtons({ prompt, contentAction, gapAnalysis }) {
  icon: "", label: "Score & Fix Content", sub: "Content Scoring & Optimization",
  section: "content-scoring-optimization", color: "#a5b4fc", border: "#4338ca",
  why: "Check if your existing content is strong enough to earn citations",
- },
- {
- icon: "", label: "Steal Their Backlinks", sub: "Link Intersect & Outreach",
- section: "link-intersect-outreach", color: "#a5b4fc", border: "#4338ca",
- why: "Find sites linking to competitors but not you — and reach out",
  },
  ];
  return (

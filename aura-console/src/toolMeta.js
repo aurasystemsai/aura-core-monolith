@@ -3,7 +3,7 @@ const toolsMeta = [
  // ── Live tools ──
  { id: "blog-seo", name: "Blog SEO Engine", description: "Optimize blog content with keyword clusters, internal linking, and SEO scoring.", category: "SEO", suite: "seo" },
  { id: "product-seo", name: "Product SEO Engine", description: "Generate and apply SEO metadata to Shopify products.", category: "SEO", suite: "seo" },
- { id: "image-alt-media-seo", name: "Image & Media SEO", description: "AI-powered alt text, image optimization, and media SEO.", category: "SEO", suite: "seo" },
+ { id: "image-alt-media-seo", name: "Image Alt Text", description: "Find product images with missing or poor alt text and fix them with AI.", category: "SEO", suite: "seo" },
  { id: "ab-testing-suite", name: "A/B Testing Suite", description: "Create controlled experiments, allocate traffic and measure conversion outcomes.", category: "Analytics", suite: "analytics" },
  // ── Coming soon (hidden until built & tested) ──
  { id: "blog-draft-engine", name: "Blog Draft Engine", description: "Create and publish SEO-optimized blog content with AI assistance.", category: "Content", suite: "seo" },
@@ -18,8 +18,6 @@ const toolsMeta = [
  { id: "ai-content-brief-generator", name: "AI Content Brief Generator", description: "Generate comprehensive content briefs with keyword strategies.", category: "Content", suite: "seo" },
  { id: "content-scoring-optimization", name: "Content Scoring & Optimization", description: "Analyze and improve content quality with multi-factor scoring.", category: "Content", suite: "seo" },
  { id: "keyword-research-suite", name: "Keyword Research Suite", description: "Cluster your keyword list by topic or intent, plan content silos, and schedule publishing.", category: "SEO", suite: "seo" },
- { id: "backlink-explorer", name: "Backlink Explorer", description: "Analyze your backlink profile and find link-building opportunities.", category: "SEO", suite: "seo" },
- { id: "link-intersect-outreach", name: "Link Intersect & Outreach", description: "Find sites linking to competitors but not you, with outreach templates.", category: "SEO", suite: "seo" },
  { id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Optimize for local search with Google Business Profile management.", category: "SEO", suite: "seo" },
  { id: "competitive-analysis", name: "Competitive Analysis", description: "Benchmark against competitors across SEO, content, and market share.", category: "SEO", suite: "seo" },
  { id: "ai-content-image-gen", name: "AI Content & Image Gen", description: "Generate marketing copy and images with AI.", category: "Content", suite: "seo" },
@@ -28,7 +26,6 @@ const toolsMeta = [
  { id: "email-automation-builder", name: "Email Automation Builder", description: "Build sophisticated multi-channel email campaigns with drag-and-drop automation.", category: "Email", suite: "lifecycle" },
  { id: "abandoned-checkout-winback", name: "Abandoned Checkout Winback", description: "Recover lost sales with automated win-back sequences.", category: "Email", suite: "lifecycle" },
  { id: "returns-rma-automation", name: "Returns", description: "Log return requests, check them against real orders and track them to refund.", category: "Email", suite: "lifecycle" },
- { id: "collaboration-approval-workflows", name: "Collaboration & Approvals", description: "Team collaboration with approval workflows for campaigns.", category: "Email", suite: "lifecycle" },
 
  // ── Customer Support (4 tools) ──
  { id: "ai-support-assistant", name: "AI Support Assistant", description: "Instant AI-powered responses trained on your knowledge base.", category: "Support", suite: "support" },
@@ -66,7 +63,6 @@ const toolsMeta = [
  { id: "entity-topic-explorer", name: "Entity & Topic Explorer", description: "Map semantic entity relationships and topic clusters for SEO authority.", category: "SEO", suite: "seo" },
  { id: "landing-page-builder", name: "Landing Page Builder", description: "Build high-converting landing pages with AI-generated copy and A/B testing.", category: "Content", suite: "seo" },
  { id: "mobile-app-analytics", name: "Mobile App Analytics", description: "Track app retention, screen flows, push campaigns, and crash rates.", category: "Analytics", suite: "analytics" },
- { id: "multi-channel-optimizer", name: "Multi-Channel Optimizer", description: "Bayesian media mix modelling and Shapley attribution across all paid channels.", category: "Analytics", suite: "analytics" },
  { id: "newsletter-automation", name: "Newsletter Automation", description: "Build, segment and send AI-personalised newsletters at scale.", category: "Email", suite: "lifecycle" },
  { id: "sms-whatsapp-marketing", name: "SMS & WhatsApp Marketing", description: "Automate SMS and WhatsApp campaigns with personalised messaging.", category: "Email", suite: "lifecycle" },
  { id: "subscription-management", name: "Subscription Management", description: "Manage recurring subscriptions, billing, plans and churn reduction.", category: "Finance", suite: "finance" },
@@ -81,7 +77,6 @@ const toolsMeta = [
  // ── Platform & Developer (5 tools) ──
  { id: "aura-operations-ai", name: "Aura Operations AI", description: "Platform-wide AI operations assistant and orchestration.", category: "Platform", suite: "platform" },
  { id: "ai-launch-planner", name: "AI Launch Planner", description: "Plan and execute product launches with AI-powered strategies.", category: "Platform", suite: "platform" },
- { id: "aura-api-sdk", name: "Aura API & SDK", description: "Developer API access and white-label SDK.", category: "Platform", suite: "platform" },
  { id: "webhook-api-triggers", name: "Webhook & API Triggers", description: "Create custom webhooks and API-triggered automations.", category: "Platform", suite: "platform" },
  { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Create rewards programs that drive repeat purchases.", category: "Platform", suite: "platform" },
 ];
