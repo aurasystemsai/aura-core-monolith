@@ -304,7 +304,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  <div style={{ position: "relative"}}>
 
  <input
- type="text"placeholder="Search tools\u2026"value={search}
+ type="text"placeholder="Search tools…"value={search}
  onChange={e => setSearch(e.target.value)}
  style={S.searchInput}
  aria-label="Search tools"/>
@@ -313,7 +313,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  onClick={() => setSearch("")}
  style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#71717a", fontSize: 14, cursor: "pointer", padding: 0 }}
  aria-label="Clear search">
- \u2715
+ ✕
  </button>
  )}
  </div>
@@ -345,7 +345,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
 
  {/* Loading skeleton */}
  {loading && !collapsed && (
- <div style={{ padding: "12px 16px", color: "#52525b", fontSize: 12 }}>Loading tools\u2026</div>
+ <div style={{ padding: "12px 16px", color: "#52525b", fontSize: 12 }}>Loading tools…</div>
  )}
 
  {/* Tool groups */}
