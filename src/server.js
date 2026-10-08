@@ -116,7 +116,8 @@ const PUBLIC_BILLING = new Set(['/confirm', '/plans', '/credit-packs', '/credit-
 app.use('/api/billing', (req, res, next) => (PUBLIC_BILLING.has(req.path) ? next() : verifyShopifySession(req, res, next)), billingRouter);
 
 // --- Public privacy policy (no auth â€” must be publicly accessible for Shopify) ---
-app.use('/privacy', require('./routes/privacy'));
+app.use('/privacy', require('./routes/legal').privacy);
+app.use('/terms', require('./routes/legal').terms);
 
 // --- GDPR mandatory webhooks (no Shopify session auth â€” called by Shopify infrastructure) ---
 app.use('/api/webhooks', require('./routes/gdpr-webhooks'));
