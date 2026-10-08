@@ -50,6 +50,9 @@ jest.mock('node-fetch', () => {
 
 const router  = require('../tools/blog-seo/router');
 
+// Production code uses the global fetch; route it through the same synthetic response.
+global.fetch = require('node-fetch').default;
+
 const app = express();
 app.use(express.json());
 app.use('/api/blog-seo', router);

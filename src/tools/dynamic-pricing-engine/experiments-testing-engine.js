@@ -292,7 +292,7 @@ function createSimulation(simulationData) {
   setTimeout(() => {
     simulation.status = 'completed';
     simulation.results = {
-      optimalPrice: (simulationData.priceRange.min + simulationData.priceRange.max) / 2,
+      optimalPrice: (simulation.priceRange.min + simulation.priceRange.max) / 2,
       expectedRevenue: Math.floor(Math.random() * 100000) + 150000,
       confidenceInterval: {
         lower: 140000,

@@ -2,9 +2,10 @@
 const fs = require('fs');
 const path = require('path');
 
-// Default to Render persistent disk mount (`/data`) if not explicitly set.
-// Fallback to repo data folder for local dev.
-const TOKENS_FILE = process.env.SHOP_TOKENS_PATH || '/data/shop-tokens.json' || path.join(__dirname, '../../data/shop-tokens.json');
+// Keep local OAuth tokens out of the tracked sample file; production uses the persistent disk.
+const dataDir = process.env.RENDER_DISK_PATH || path.join(__dirname, '../../data');
+const tokenFileName = process.env.NODE_ENV === 'production' ? 'shop-tokens.json' : 'shop-tokens.local.json';
+const TOKENS_FILE = process.env.SHOP_TOKENS_PATH || path.join(dataDir, tokenFileName);
 
 function ensureDirExists(filePath) {
 	const dir = path.dirname(filePath);

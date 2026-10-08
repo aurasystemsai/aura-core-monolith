@@ -37,12 +37,10 @@ const linkIntersectOutreach = require("../tools/link-intersect-outreach");
 const emailAutomationBuilder = require("../tools/email-automation-builder");
 const abandonedCheckoutWinback = require("../tools/abandoned-checkout-winback");
 const returnsRmaAutomation = require("../tools/returns-rma-automation");
-const ltvChurnPredictor = require("../tools/ltv-churn-predictor");
 const socialSchedulerContentEngine = require("../tools/social-scheduler-content-engine");
 const reviewUgcEngine = require("../tools/review-ugc-engine");
 
 // ==============  Customer Support  ==============
-const inboxAssistant = require("../tools/inbox-assistant");
 const aiSupportAssistant = require("../tools/ai-support-assistant");
 
 // ==============  Ads & Acquisition  ==============
@@ -56,19 +54,16 @@ const omnichannelCampaignBuilder = require("../tools/omnichannel-campaign-builde
 // ==============  Analytics & Intelligence  ==============
 const advancedAnalyticsAttribution = require("../tools/advanced-analytics-attribution");
 const predictiveAnalyticsWidgets = require("../tools/predictive-analytics-widgets");
-const selfServiceAnalytics = require("../tools/self-service-analytics");
-const aiSegmentationEngine = require("../tools/ai-segmentation-engine");
+const dataEnrichmentSuite = require("../tools/data-enrichment-suite");
+const loyaltyReferralPrograms = require("../tools/loyalty-referral-programs");
 const autoInsights = require("../tools/auto-insights");
 
 // ==============  Personalization & Revenue  ==============
 const dynamicPricingEngine = require("../tools/dynamic-pricing-engine");
 
 // ==============  Finance & Operations  ==============
-const financeAutopilot = require("../tools/finance-autopilot");
-const inventorySupplierSync = require("../tools/inventory-supplier-sync");
 
 // ==============  Social & Brand  ==============
-const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
 const creativeAutomationEngine = require("../tools/creative-automation-engine");
 
 // ==============  Platform & Developer  ==============
@@ -92,10 +87,10 @@ const allTools = [
 
   // Email & Lifecycle
   emailAutomationBuilder, abandonedCheckoutWinback, returnsRmaAutomation,
-  ltvChurnPredictor, socialSchedulerContentEngine, reviewUgcEngine,
+  socialSchedulerContentEngine, reviewUgcEngine,
 
   // Customer Support
-  inboxAssistant, aiSupportAssistant,
+  aiSupportAssistant,
 
   // Ads & Acquisition
   googleAdsIntegration, facebookAdsIntegration, tiktokAdsIntegration,
@@ -103,16 +98,16 @@ const allTools = [
 
   // Analytics & Intelligence
   advancedAnalyticsAttribution, predictiveAnalyticsWidgets,
-  selfServiceAnalytics, aiSegmentationEngine, autoInsights,
+  dataEnrichmentSuite, loyaltyReferralPrograms, autoInsights,
 
   // Personalization & Revenue
   dynamicPricingEngine,
 
   // Finance & Operations
-  financeAutopilot, inventorySupplierSync,
+  
 
   // Social & Brand
-  brandIntelligenceLayer, creativeAutomationEngine,
+  creativeAutomationEngine,
 
   // Platform & Developer
   auraOperationsAi, aiLaunchPlanner, compliancePrivacySuite, mainSuite,

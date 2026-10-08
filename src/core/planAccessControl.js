@@ -8,7 +8,7 @@ const shopifyBillingService = require('./shopifyBillingService');
 const PLAN_CHECKS_DISABLED = process.env.DISABLE_PLAN_CHECKS !== 'false';
 
 // Define feature access by plan
-// 4 tiers: free (10 credits) → growth (5,000) → pro (25,000) → enterprise (unlimited)
+// 4 tiers: free (10 credits) â†’ growth (5,000) â†’ pro (25,000) â†’ enterprise (unlimited)
 const PLAN_FEATURES = {
   free: {
     ai_runs_limit: 50,
@@ -29,8 +29,7 @@ const PLAN_FEATURES = {
       'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker',
       'local-seo-toolkit', 'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'social-scheduler-content-engine', 'brand-mention-tracker',
-      'dynamic-pricing-engine', 'inbox-assistant', 'ltv-churn-predictor',
-      'finance-autopilot', 'inventory-supplier-sync'
+      'dynamic-pricing-engine'
     ],
     features: ['basic_analytics', 'advanced_analytics', 'priority_support']
   },
@@ -46,19 +45,17 @@ const PLAN_FEATURES = {
       'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker',
       'local-seo-toolkit', 'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'social-scheduler-content-engine', 'brand-mention-tracker',
-      'dynamic-pricing-engine', 'inbox-assistant', 'ltv-churn-predictor',
-      'finance-autopilot', 'inventory-supplier-sync',
+      'dynamic-pricing-engine', 
       'backlink-explorer', 'link-intersect-outreach', 'competitive-analysis',
-      'ai-content-image-gen', 'automation-templates', 'collaboration-approval-workflows',
-      'returns-rma-automation', 'ai-support-assistant', 'self-service-portal',
-      'social-media-analytics-listening', 'creative-automation-engine',
-      'brand-intelligence-layer', 'google-ads-integration', 'facebook-ads-integration',
+      'ai-content-image-gen', 'collaboration-approval-workflows',
+      'returns-rma-automation', 'ai-support-assistant', 
+      'creative-automation-engine',
+      'google-ads-integration', 'facebook-ads-integration',
       'tiktok-ads-integration', 'ads-anomaly-guard', 'ad-creative-optimizer',
       'omnichannel-campaign-builder', 'advanced-analytics-attribution',
-      'predictive-analytics-widgets', 'self-service-analytics', 'auto-insights',
-      'ai-segmentation-engine', 'upsell-cross-sell-engine', 'customer-data-platform',
-      'personalization-recommendation-engine', 'advanced-personalization-engine',
-      'churn-prediction-playbooks', 'inventory-forecasting', 'compliance-privacy-suite'
+      'predictive-analytics-widgets', 'auto-insights',
+      'upsell-cross-sell-engine', 'customer-data-platform',
+      'inventory-forecasting', 'compliance-privacy-suite'
     ],
     features: ['basic_analytics', 'advanced_analytics', 'priority_support', 'api_access', 'webhooks']
   },
@@ -98,24 +95,16 @@ const TOOL_PLAN_REQUIREMENTS = {
   'social-scheduler-content-engine': 'growth',
   'brand-mention-tracker': 'growth',
   'dynamic-pricing-engine': 'growth',
-  'inbox-assistant': 'growth',
-  'ltv-churn-predictor': 'growth',
-  'finance-autopilot': 'growth',
-  'inventory-supplier-sync': 'growth',
 
   // Pro tier
   'backlink-explorer': 'pro',
   'link-intersect-outreach': 'pro',
   'competitive-analysis': 'pro',
   'ai-content-image-gen': 'pro',
-  'automation-templates': 'pro',
   'collaboration-approval-workflows': 'pro',
   'returns-rma-automation': 'pro',
   'ai-support-assistant': 'pro',
-  'self-service-portal': 'pro',
-  'social-media-analytics-listening': 'pro',
   'creative-automation-engine': 'pro',
-  'brand-intelligence-layer': 'pro',
   'google-ads-integration': 'pro',
   'facebook-ads-integration': 'pro',
   'tiktok-ads-integration': 'pro',
@@ -124,24 +113,15 @@ const TOOL_PLAN_REQUIREMENTS = {
   'omnichannel-campaign-builder': 'pro',
   'advanced-analytics-attribution': 'pro',
   'predictive-analytics-widgets': 'pro',
-  'self-service-analytics': 'pro',
   'auto-insights': 'pro',
-  'ai-segmentation-engine': 'pro',
   'upsell-cross-sell-engine': 'pro',
   'customer-data-platform': 'pro',
-  'personalization-recommendation-engine': 'pro',
-  'advanced-personalization-engine': 'pro',
-  'churn-prediction-playbooks': 'pro',
   'inventory-forecasting': 'pro',
   'compliance-privacy-suite': 'pro',
+  'ab-testing-suite': 'pro',
 
   // Enterprise tier
-  'reporting-integrations': 'enterprise',
-  'custom-dashboard-builder': 'enterprise',
-  'scheduled-export': 'enterprise',
   'data-warehouse-connector': 'enterprise',
-  'customer-segmentation-engine': 'enterprise',
-  'customer-journey-mapping': 'enterprise',
   'data-enrichment-suite': 'enterprise',
   'aura-operations-ai': 'enterprise',
   'ai-launch-planner': 'enterprise',
@@ -461,3 +441,4 @@ module.exports = {
   PLAN_FEATURES,
   TOOL_PLAN_REQUIREMENTS
 };
+

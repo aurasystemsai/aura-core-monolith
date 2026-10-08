@@ -1,14 +1,16 @@
 const { Pool } = require('pg');
 
-const isTest = process.env.NODE_ENV === 'test' || process.env.IMAGE_ALT_MEDIA_SEO_INMEMORY === 'true';
+const isTest = process.env.NODE_ENV === 'test';
 const connectionString = process.env.DATABASE_URL || process.env.AURA_PG_URL;
+const useInMemory = isTest || process.env.IMAGE_ALT_MEDIA_SEO_INMEMORY === 'true' ||
+  (!connectionString || (process.env.NODE_ENV !== 'production' && process.env.IMAGE_ALT_MEDIA_SEO_INMEMORY !== 'false'));
 
 if (!connectionString && !isTest) {
   console.warn('[image-alt-media-seo] No DATABASE_URL or AURA_PG_URL set — using in-memory storage. Data will not persist across restarts.');
 }
 
 // In-memory fallback when no DB is configured or in test mode.
-if (isTest || !connectionString) {
+if (useInMemory) {
   let images = [];
   let runs = [];
   let nextId = 1;

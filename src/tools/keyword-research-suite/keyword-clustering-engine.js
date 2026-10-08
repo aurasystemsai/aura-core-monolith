@@ -1,537 +1,526 @@
 /**
  * Keyword Clustering Engine
- * Groups keywords into semantic clusters and topic silos for content organization
+ * Deterministic keyword clustering based on token similarity. No random or
+ * invented metrics: volume/difficulty are only reported when supplied by the caller.
  */
+
+const STOP_WORDS = new Set([
+  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are', 'my', 'your'
+]);
+const MAX_KEYWORDS = 500;
+const VALID_METHODS = ['semantic', 'topic', 'intent'];
+
+const INTENT_PATTERNS = [
+  ['transactional', /\b(buy|purchase|order|shop|discount|coupon|deal|cheap|price|pricing|sale|for sale)\b/],
+  ['commercial', /\b(best|top|review|reviews|vs|versus|compare|comparison|alternative|alternatives)\b/],
+  ['informational', /\b(how|what|why|when|who|guide|tutorial|tips|ideas|learn|examples?)\b/]
+];
+
+function stem(word) {
+  return word.length > 3 && word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
+}
+
+function tokenize(text) {
+  return new Set(
+    String(text)
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(w => w && !STOP_WORDS.has(w))
+      .map(stem)
+  );
+}
+
+function jaccard(a, b) {
+  if (a.size === 0 && b.size === 0) return 0;
+  let shared = 0;
+  a.forEach(t => { if (b.has(t)) shared++; });
+  return shared / (a.size + b.size - shared);
+}
+
+function classifyIntent(keyword) {
+  const text = String(keyword).toLowerCase();
+  for (const [intent, pattern] of INTENT_PATTERNS) {
+    if (pattern.test(text)) return intent;
+  }
+  return 'navigational';
+}
+
+function normalizeKeywords(input) {
+  if (!Array.isArray(input) || input.length === 0) {
+    throw new Error('keywords must be a non-empty array');
+  }
+  const seen = new Map();
+  input.forEach(item => {
+    const obj = item && typeof item === 'object' ? item : { keyword: item };
+    const keyword = typeof obj.keyword === 'string' ? obj.keyword.trim().replace(/\s+/g, ' ') : '';
+    if (!keyword) return;
+    const key = keyword.toLowerCase();
+    if (!seen.has(key)) {
+      seen.set(key, {
+        keyword,
+        tokens: tokenize(keyword),
+        volume: Number.isFinite(obj.volume) ? obj.volume : null,
+        difficulty: Number.isFinite(obj.difficulty) ? obj.difficulty : null
+      });
+    }
+  });
+  const items = Array.from(seen.values());
+  if (items.length === 0) throw new Error('keywords must contain at least one non-empty string');
+  if (items.length > MAX_KEYWORDS) throw new Error(`A maximum of ${MAX_KEYWORDS} keywords can be clustered at once`);
+  return items;
+}
+
+function sum(values) {
+  return values.length ? values.reduce((total, v) => total + v, 0) : null;
+}
+
+function positiveInt(value, fallback) {
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
 
 class KeywordClusteringEngine {
   constructor() {
-    this.clusters = new Map(); // Map<clusterId, cluster>
-    this.silos = new Map(); // Map<siloId, silo>
+    this.clusters = new Map(); // individual clusters by id
+    this.clusterings = new Map(); // clustering runs by id
+    this.silos = new Map();
+    this._counter = 0;
+  }
+
+  _id(prefix) {
+    this._counter += 1;
+    return `${prefix}_${Date.now().toString(36)}_${this._counter}`;
   }
 
   /**
-   * Create keyword clusters using semantic similarity
+   * clusterKeywords(keywords, method, minClusterSize, maxClusters)
+   * or clusterKeywords(keywords, { method, minClusterSize, maxClusters })
    */
-  async clusterKeywords(keywords, params = {}) {
-    const {
-      method = 'semantic', // semantic, topic, intent
-      minClusterSize = 3,
-      maxClusters = 20
-    } = params;
+  async clusterKeywords(keywords, methodOrParams = 'semantic', minSizeArg, maxClustersArg) {
+    const params = methodOrParams && typeof methodOrParams === 'object'
+      ? methodOrParams
+      : { method: methodOrParams, minClusterSize: minSizeArg, maxClusters: maxClustersArg };
+    const method = params.method || 'semantic';
+    if (!VALID_METHODS.includes(method)) {
+      throw new Error(`Unknown clustering method "${method}". Use one of: ${VALID_METHODS.join(', ')}`);
+    }
+    const minClusterSize = positiveInt(params.minClusterSize, 3);
+    const maxClusters = positiveInt(params.maxClusters, 20);
+    const items = normalizeKeywords(keywords);
 
-    const clusterId = `cluster_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    let groups;
+    if (method === 'semantic') groups = this._groupBySimilarity(items, { maxClusters, threshold: 0.3 });
+    else if (method === 'topic') groups = this._groupByTopic(items, minClusterSize);
+    else groups = this._groupByIntent(items);
 
+    const valid = groups.filter(g => g.length >= minClusterSize);
+    const unclustered = groups.filter(g => g.length < minClusterSize).flatMap(g => g.map(i => i.keyword));
+    const silhouetteScore = this._silhouette(valid);
+
+    const id = this._id('clustering');
+    const clusters = valid
+      .sort((a, b) => b.length - a.length)
+      .slice(0, maxClusters)
+      .map((group, index) => this._buildCluster(`${id}_c${index}`, id, group, method));
+    const clusteredKeywords = clusters.reduce((total, c) => total + c.keywords.length, 0);
+
+    clusters.forEach(c => this.clusters.set(c.id, c));
     const clustering = {
-      id: clusterId,
+      id,
       method,
-      totalKeywords: keywords.length,
-      clusters: [],
-      unclustered: [],
+      totalKeywords: items.length,
+      clusters,
+      unclustered,
+      silhouetteScore,
       metrics: {
-        avgClusterSize: 0,
-        silhouetteScore: 0
+        avgClusterSize: clusters.length ? clusteredKeywords / clusters.length : 0,
+        silhouetteScore,
+        coverage: items.length ? (clusteredKeywords / items.length) * 100 : 0
       },
       timestamp: new Date().toISOString()
     };
-
-    // Create clusters based on method
-    if (method === 'semantic') {
-      clustering.clusters = this._clusterBySemantic(keywords, maxClusters);
-    } else if (method === 'topic') {
-      clustering.clusters = this._clusterByTopic(keywords);
-    } else if (method === 'intent') {
-      clustering.clusters = this._clusterByIntent(keywords);
-    }
-
-    // Filter out small clusters
-    const validClusters = clustering.clusters.filter(c => c.keywords.length >= minClusterSize);
-    const smallClusters = clustering.clusters.filter(c => c.keywords.length < minClusterSize);
-    
-    clustering.clusters = validClusters;
-    clustering.unclustered = smallClusters.flatMap(c => c.keywords);
-
-    // Calculate metrics
-    if (clustering.clusters.length > 0) {
-      clustering.metrics.avgClusterSize = clustering.clusters.reduce((sum, c) => sum + c.keywords.length, 0) / clustering.clusters.length;
-      clustering.metrics.silhouetteScore = this._calculateSilhouetteScore(clustering.clusters);
-    }
-
-    this.clusters.set(clusterId, clustering);
+    this.clusterings.set(id, clustering);
     return clustering;
   }
 
-  /**
-   * Build content silos from keyword clusters
-   */
   async buildContentSilo(clusterIds) {
-    const siloId = `silo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (!Array.isArray(clusterIds) || clusterIds.length === 0) {
+      throw new Error('clusterIds must be a non-empty array');
+    }
+    const resolved = this._resolveClusters(clusterIds);
+    if (resolved.length === 0) throw new Error('No matching clusters found');
 
+    const id = this._id('silo');
     const silo = {
-      id: siloId,
+      id,
       pillarPages: [],
       supportingContent: [],
       structure: {},
-      internalLinkingPlan: [],
-      estimatedContent: {
-        pillarPages: 0,
-        supportingPages: 0,
-        totalPages: 0
-      },
+      internalLinks: [],
+      estimatedContent: { pillarPages: 0, supportingPages: 0, totalPages: 0 },
       timestamp: new Date().toISOString()
     };
 
-    // Process each cluster
-    for (const clusterId of clusterIds) {
-      const clustering = this.clusters.get(clusterId);
-      if (!clustering) continue;
+    resolved.forEach((cluster, index) => {
+      const pillar = {
+        id: `pillar_${id}_${index}`,
+        topic: cluster.primaryTopic,
+        cluster: cluster.name,
+        targetKeywords: cluster.keywords.slice(0, 3),
+        targetWordCount: 3000 + cluster.keywords.length * 100,
+        priority: cluster.volume !== null ? (cluster.volume > 10000 ? 'high' : 'medium') : (cluster.keywords.length >= 8 ? 'high' : 'medium')
+      };
+      silo.pillarPages.push(pillar);
 
-      clustering.clusters.forEach((cluster, index) => {
-        // Create pillar page for each cluster
-        const pillar = {
-          id: `pillar_${siloId}_${index}`,
-          topic: cluster.primaryTopic,
-          targetKeywords: cluster.keywords.slice(0, 3),
-          estimatedWordCount: 3000 + (cluster.keywords.length * 100),
-          priority: cluster.volume > 10000 ? 'high' : 'medium',
-          cluster: cluster.name
+      cluster.keywords.slice(3).forEach((keyword, kwIndex) => {
+        const support = {
+          id: `support_${id}_${index}_${kwIndex}`,
+          keyword,
+          pillarPageId: pillar.id,
+          targetWordCount: 1500,
+          priority: 'medium'
         };
-
-        silo.pillarPages.push(pillar);
-
-        // Create supporting content for remaining keywords
-        cluster.keywords.slice(3).forEach((kw, kwIndex) => {
-          silo.supportingContent.push({
-            id: `support_${siloId}_${index}_${kwIndex}`,
-            keyword: kw,
-            pillarPageId: pillar.id,
-            estimatedWordCount: 1500,
-            priority: 'medium'
-          });
+        silo.supportingContent.push(support);
+        silo.internalLinks.push({
+          from: support.id,
+          to: pillar.id,
+          anchorText: `Learn more about ${cluster.primaryTopic}`,
+          type: 'support-to-pillar'
         });
-
-        // Define internal linking
-        cluster.keywords.forEach((kw, kwIndex) => {
-          if (kwIndex > 0) {
-            silo.internalLinkingPlan.push({
-              from: `support_${siloId}_${index}_${kwIndex}`,
-              to: pillar.id,
-              anchorText: `Learn more about ${cluster.primaryTopic}`,
-              type: 'support-to-pillar'
-            });
-          }
+        silo.internalLinks.push({
+          from: pillar.id,
+          to: support.id,
+          anchorText: keyword,
+          type: 'pillar-to-support'
         });
       });
-    }
+    });
 
-    // Build structure
-    silo.structure = this._buildSiloStructure(silo.pillarPages, silo.supportingContent);
+    silo.internalLinkingPlan = silo.internalLinks;
+    silo.structure = {
+      levels: { pillar: silo.pillarPages.length, supporting: silo.supportingContent.length },
+      hierarchy: Object.fromEntries(silo.pillarPages.map(p => [p.id, {
+        title: p.topic,
+        children: silo.supportingContent.filter(s => s.pillarPageId === p.id).map(s => s.id)
+      }]))
+    };
+    silo.estimatedContent = {
+      pillarPages: silo.pillarPages.length,
+      supportingPages: silo.supportingContent.length,
+      totalPages: silo.pillarPages.length + silo.supportingContent.length
+    };
 
-    // Calculate estimates
-    silo.estimatedContent.pillarPages = silo.pillarPages.length;
-    silo.estimatedContent.supportingPages = silo.supportingContent.length;
-    silo.estimatedContent.totalPages = silo.pillarPages.length + silo.supportingContent.length;
-
-    this.silos.set(siloId, silo);
+    this.silos.set(id, silo);
     return silo;
   }
 
-  /**
-   * Find optimal cluster count
-   */
   async findOptimalClusters(keywords, maxK = 15) {
-    const analysis = {
-      keywords: keywords.length,
-      tested: [],
-      optimalK: 0,
-      optimalScore: 0,
-      recommendation: '',
-      timestamp: new Date().toISOString()
-    };
+    const items = normalizeKeywords(keywords);
+    const upper = Math.min(positiveInt(maxK, 15), Math.floor(items.length / 3));
+    const evaluations = [];
+    let best = null;
 
-    // Test different cluster counts
-    for (let k = 3; k <= Math.min(maxK, keywords.length / 3); k++) {
-      const clustering = await this.clusterKeywords(keywords, { maxClusters: k });
-      
-      analysis.tested.push({
-        k,
-        clusters: clustering.clusters.length,
-        avgSize: clustering.metrics.avgClusterSize,
-        silhouette: clustering.metrics.silhouetteScore
-      });
-
-      // Track best score
-      if (clustering.metrics.silhouetteScore > analysis.optimalScore) {
-        analysis.optimalScore = clustering.metrics.silhouetteScore;
-        analysis.optimalK = k;
-      }
+    for (let k = Math.min(3, upper); k <= upper; k++) {
+      const groups = this._groupBySimilarity(items, { maxClusters: k, threshold: Infinity });
+      const silhouette = this._silhouette(groups);
+      evaluations.push({ k, clusters: groups.length, avgSize: items.length / groups.length, silhouette });
+      if (!best || silhouette > best.silhouette) best = evaluations[evaluations.length - 1];
     }
 
-    analysis.recommendation = `Use ${analysis.optimalK} clusters for optimal grouping (silhouette score: ${analysis.optimalScore.toFixed(3)})`;
-
-    return analysis;
-  }
-
-  /**
-   * Merge similar clusters
-   */
-  async mergeClusters(clusterIds, threshold = 0.7) {
-    const merged = {
-      originalClusters: clusterIds.length,
-      mergedClusters: [],
-      reductions: 0,
+    if (!best) {
+      return {
+        keywords: items.length,
+        optimalK: 0,
+        optimalScore: 0,
+        evaluations,
+        tested: evaluations,
+        recommendation: 'Not enough keywords to evaluate cluster counts (need at least 3).',
+        timestamp: new Date().toISOString()
+      };
+    }
+    return {
+      keywords: items.length,
+      optimalK: best.k,
+      optimalScore: best.silhouette,
+      evaluations,
+      tested: evaluations,
+      recommendation: `Use ${best.k} clusters (silhouette score: ${best.silhouette.toFixed(3)})`,
       timestamp: new Date().toISOString()
     };
+  }
 
-    const clustersToMerge = clusterIds.map(id => this.clusters.get(id)).filter(Boolean);
-    
-    // Simple merge based on semantic similarity of primary topics
-    const remaining = [...clustersToMerge];
-    
+  async mergeClusters(clusterIds, threshold = 0.7) {
+    if (!Array.isArray(clusterIds) || clusterIds.length === 0) {
+      throw new Error('clusterIds must be a non-empty array');
+    }
+    const limit = typeof threshold === 'number' && threshold >= 0 && threshold <= 1 ? threshold : 0.7;
+    const remaining = this._resolveClusters(clusterIds).map(c => ({ ...c }));
+    const originalClusters = remaining.length;
+    const mergedClusters = [];
+
     while (remaining.length > 0) {
       const current = remaining.shift();
-      const similar = [];
-
-      // Find similar clusters
+      const group = [current];
       for (let i = remaining.length - 1; i >= 0; i--) {
-        const similarity = this._calculateClusterSimilarity(current, remaining[i]);
-        if (similarity >= threshold) {
-          similar.push(remaining.splice(i, 1)[0]);
-        }
+        if (this._clusterSimilarity(current, remaining[i]) >= limit) group.push(remaining.splice(i, 1)[0]);
       }
-
-      // Merge if found similar clusters
-      if (similar.length > 0) {
-        const mergedCluster = this._mergeClustersData([current, ...similar]);
-        merged.mergedClusters.push(mergedCluster);
-        merged.reductions += similar.length;
-      } else {
-        merged.mergedClusters.push(current);
+      if (group.length === 1) {
+        mergedClusters.push(current);
+        continue;
       }
+      const keywords = Array.from(new Set(group.flatMap(c => c.keywords)));
+      const volumes = group.map(c => c.volume).filter(v => v !== null);
+      mergedClusters.push({
+        ...current,
+        id: this._id('merged'),
+        keywords,
+        volume: volumes.length ? sum(volumes) : null,
+        mergedFrom: group.map(c => c.id)
+      });
     }
 
-    return merged;
-  }
-
-  /**
-   * Suggest cluster names
-   */
-  async suggestClusterNames(cluster) {
-    const suggestions = {
-      clusterId: cluster.id,
-      suggestions: [],
-      recommended: '',
+    mergedClusters.filter(c => c.mergedFrom).forEach(c => this.clusters.set(c.id, c));
+    return {
+      originalClusters,
+      mergedClusters,
+      reductions: originalClusters - mergedClusters.length,
       timestamp: new Date().toISOString()
     };
+  }
 
-    // Extract common words from cluster keywords
-    const wordFrequency = this._extractCommonWords(cluster.keywords);
-    const topWords = Object.entries(wordFrequency)
-      .sort((a, b) => b[1] - a[1])
+  async suggestClusterNames(cluster) {
+    if (!cluster || !Array.isArray(cluster.keywords) || cluster.keywords.length === 0) {
+      throw new Error('cluster with keywords is required');
+    }
+    const frequency = new Map();
+    cluster.keywords.forEach(kw => tokenize(kw).forEach(t => frequency.set(t, (frequency.get(t) || 0) + 1)));
+    const top = Array.from(frequency.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .slice(0, 3)
       .map(([word]) => word);
+    const lead = top[0] || cluster.primaryTopic || 'topic';
 
-    // Generate name suggestions
-    suggestions.suggestions = [
-      { name: topWords.join(' '), type: 'word-frequency', score: 90 },
-      { name: cluster.primaryTopic || 'Topic Cluster', type: 'primary-topic', score: 85 },
-      { name: `${topWords[0]} Resources`, type: 'descriptive', score: 75 },
-      { name: `Complete ${topWords[0]} Guide`, type: 'content-angle', score: 70 }
+    const suggestions = [
+      { name: top.join(' ') || lead, type: 'word-frequency', score: 90 },
+      { name: cluster.primaryTopic || lead, type: 'primary-topic', score: 85 },
+      { name: `${lead} resources`, type: 'descriptive', score: 75 },
+      { name: `Complete ${lead} guide`, type: 'content-angle', score: 70 }
     ];
-
-    suggestions.recommended = suggestions.suggestions[0].name;
-
-    return suggestions;
-  }
-
-  /**
-   * Analyze cluster quality
-   */
-  async analyzeClusterQuality(clusterId) {
-    const clustering = this.clusters.get(clusterId);
-    if (!clustering) {
-      throw new Error('Cluster not found');
-    }
-
-    const quality = {
-      clusterId,
-      overallScore: 0,
-      metrics: {
-        cohesion: 0,
-        separation: 0,
-        size: 0,
-        coverage: 0
-      },
-      issues: [],
-      recommendations: [],
+    return {
+      clusterId: cluster.id,
+      suggestions,
+      recommended: suggestions[0].name,
       timestamp: new Date().toISOString()
     };
-
-    // Evaluate cohesion (how similar keywords in cluster are)
-    quality.metrics.cohesion = clustering.metrics.silhouetteScore * 100;
-
-    // Evaluate separation (how distinct clusters are)
-    quality.metrics.separation = this._calculateSeparation(clustering.clusters);
-
-    // Evaluate size distribution
-    quality.metrics.size = this._evaluateSizeDistribution(clustering.clusters);
-
-    // Evaluate coverage (% of keywords clustered)
-    quality.metrics.coverage = ((clustering.totalKeywords - clustering.unclustered.length) / clustering.totalKeywords) * 100;
-
-    // Calculate overall score
-    quality.overallScore = (
-      quality.metrics.cohesion * 0.3 +
-      quality.metrics.separation * 0.2 +
-      quality.metrics.size * 0.2 +
-      quality.metrics.coverage * 0.3
-    );
-
-    // Identify issues
-    if (quality.metrics.cohesion < 50) {
-      quality.issues.push({ type: 'low-cohesion', message: 'Clusters lack internal similarity' });
-    }
-    if (quality.metrics.coverage < 80) {
-      quality.issues.push({ type: 'low-coverage', message: `${clustering.unclustered.length} keywords unclustered` });
-    }
-
-    // Generate recommendations
-    if (quality.issues.length > 0) {
-      quality.recommendations.push({
-        action: 'Adjust clustering parameters',
-        priority: 'medium',
-        details: 'Try different methods or cluster counts'
-      });
-    }
-
-    return quality;
   }
 
-  /**
-   * Export clusters to content calendar
-   */
+  async analyzeClusterQuality(clusterId) {
+    const cluster = this.clusters.get(clusterId);
+    const clustering = cluster ? this.clusterings.get(cluster.clusteringId) : this.clusterings.get(clusterId);
+    if (!cluster && !clustering) throw new Error('Cluster not found');
+
+    const siblings = clustering ? clustering.clusters : [cluster];
+    const target = cluster || null;
+    const targets = target ? [target] : siblings;
+
+    const cohesion = (targets.reduce((total, c) => total + this._cohesion(c), 0) / targets.length) * 100;
+    const separation = this._separation(targets, siblings) * 100;
+    const sizes = siblings.map(c => c.keywords.length);
+    const mean = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+    const variance = sizes.reduce((a, s) => a + (s - mean) ** 2, 0) / sizes.length;
+    const sizeBalance = mean > 0 ? Math.max(0, 100 - (Math.sqrt(variance) / mean) * 50) : 0;
+    const coverage = clustering ? clustering.metrics.coverage : 100;
+    const overallQuality = cohesion * 0.3 + separation * 0.2 + sizeBalance * 0.2 + coverage * 0.3;
+
+    const issues = [];
+    if (cohesion < 30) issues.push({ type: 'low-cohesion', message: 'Keywords in this cluster share few terms' });
+    if (coverage < 80) issues.push({ type: 'low-coverage', message: `${clustering.unclustered.length} keywords were left unclustered` });
+    const recommendations = issues.length
+      ? [{ action: 'Adjust clustering parameters', priority: 'medium', details: 'Try a different method, lower the minimum cluster size, or add more related keywords' }]
+      : [];
+
+    return {
+      clusterId,
+      cohesion,
+      separation,
+      sizeBalance,
+      coverage,
+      overallQuality,
+      overallScore: overallQuality,
+      metrics: { cohesion, separation, size: sizeBalance, coverage },
+      issues,
+      recommendations,
+      timestamp: new Date().toISOString()
+    };
+  }
+
   async exportToContentCalendar(siloId, startDate, publishingFrequency = 'weekly') {
     const silo = this.silos.get(siloId);
-    if (!silo) {
-      throw new Error('Silo not found');
-    }
+    if (!silo) throw new Error('Silo not found');
+    const start = new Date(startDate || Date.now());
+    if (Number.isNaN(start.getTime())) throw new Error('startDate is not a valid date');
+    const increments = { daily: 1, weekly: 7, monthly: 30 };
+    const step = increments[publishingFrequency];
+    if (!step) throw new Error('publishingFrequency must be daily, weekly or monthly');
 
-    const calendar = {
+    const timeline = [];
+    const cursor = new Date(start);
+    const push = entry => {
+      timeline.push({ date: cursor.toISOString().split('T')[0], ...entry });
+      cursor.setDate(cursor.getDate() + step);
+    };
+    silo.pillarPages.forEach(p => push({
+      type: 'pillar', contentId: p.id, topic: p.topic, keywords: p.targetKeywords,
+      targetWordCount: p.targetWordCount, priority: p.priority
+    }));
+    silo.supportingContent.forEach(s => push({
+      type: 'supporting', contentId: s.id, keyword: s.keyword, pillarPageId: s.pillarPageId,
+      targetWordCount: s.targetWordCount, priority: s.priority
+    }));
+
+    return {
       siloId,
-      entries: [],
-      timeline: {
-        start: startDate,
-        estimatedCompletion: null,
-        totalWeeks: 0
-      },
+      publishingFrequency,
+      timeline,
+      entries: timeline,
+      estimatedCompletion: timeline.length ? timeline[timeline.length - 1].date : start.toISOString().split('T')[0],
+      totalWeeks: Math.ceil((cursor - start) / (1000 * 60 * 60 * 24 * 7)),
       timestamp: new Date().toISOString()
     };
+  }
 
-    const start = new Date(startDate);
-    let currentDate = new Date(start);
-    const daysIncrement = publishingFrequency === 'daily' ? 1 : publishingFrequency === 'weekly' ? 7 : 30;
+  // === Helpers ===
 
-    // Schedule pillar pages first
-    silo.pillarPages.forEach((pillar, index) => {
-      calendar.entries.push({
-        date: new Date(currentDate).toISOString().split('T')[0],
-        type: 'pillar',
-        contentId: pillar.id,
-        topic: pillar.topic,
-        keywords: pillar.targetKeywords,
-        estimatedWordCount: pillar.estimatedWordCount,
-        priority: pillar.priority
-      });
-      currentDate.setDate(currentDate.getDate() + daysIncrement);
+  _resolveClusters(ids) {
+    const out = [];
+    ids.forEach(id => {
+      const clustering = this.clusterings.get(id);
+      if (clustering) out.push(...clustering.clusters);
+      else if (this.clusters.has(id)) out.push(this.clusters.get(id));
     });
-
-    // Schedule supporting content
-    silo.supportingContent.forEach((support, index) => {
-      calendar.entries.push({
-        date: new Date(currentDate).toISOString().split('T')[0],
-        type: 'supporting',
-        contentId: support.id,
-        keyword: support.keyword,
-        pillarPageId: support.pillarPageId,
-        estimatedWordCount: support.estimatedWordCount,
-        priority: support.priority
-      });
-      currentDate.setDate(currentDate.getDate() + daysIncrement);
-    });
-
-    calendar.timeline.estimatedCompletion = new Date(currentDate).toISOString().split('T')[0];
-    calendar.timeline.totalWeeks = Math.ceil((currentDate - start) / (1000 * 60 * 60 * 24 * 7));
-
-    return calendar;
+    return out;
   }
 
-  // === Helper Methods ===
+  _buildCluster(id, clusteringId, group, method) {
+    const frequency = new Map();
+    group.forEach(item => item.tokens.forEach(t => frequency.set(t, (frequency.get(t) || 0) + 1)));
+    const topWord = Array.from(frequency.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+    const intents = {};
+    group.forEach(item => { const i = classifyIntent(item.keyword); intents[i] = (intents[i] || 0) + 1; });
+    const intent = Object.entries(intents).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+    const primaryTopic = method === 'intent' ? intent : (topWord ? topWord[0] : group[0].keyword);
+    const volumes = group.map(i => i.volume).filter(v => v !== null);
+    const difficulties = group.map(i => i.difficulty).filter(v => v !== null);
 
-  _clusterBySemantic(keywords, maxClusters) {
-    const clusters = [];
-    const wordGroups = {};
-
-    // Group by common words (simplified semantic clustering)
-    keywords.forEach(kw => {
-      const words = kw.toLowerCase().split(' ');
-      const mainWord = words[0]; // Simplified - use first word as key
-
-      if (!wordGroups[mainWord]) {
-        wordGroups[mainWord] = [];
-      }
-      wordGroups[mainWord].push(kw);
-    });
-
-    // Convert to cluster format
-    let clusterIndex = 0;
-    Object.entries(wordGroups).forEach(([word, kws]) => {
-      if (clusterIndex >= maxClusters) return;
-      
-      clusters.push({
-        id: `cluster_${clusterIndex}`,
-        name: `${word} cluster`,
-        primaryTopic: word,
-        keywords: kws,
-        volume: kws.length * 1000, // Simplified volume
-        avgDifficulty: 50
-      });
-      clusterIndex++;
-    });
-
-    return clusters.slice(0, maxClusters);
+    return {
+      id,
+      clusteringId,
+      name: `${primaryTopic} cluster`,
+      primaryTopic,
+      intent,
+      keywords: group.map(i => i.keyword),
+      volume: volumes.length ? sum(volumes) : null,
+      avgDifficulty: difficulties.length ? sum(difficulties) / difficulties.length : null
+    };
   }
 
-  _clusterByTopic(keywords) {
-    // Simplified topic-based clustering
-    const topics = ['basics', 'advanced', 'tools', 'guides', 'reviews'];
-    const clusters = topics.map((topic, index) => ({
-      id: `topic_cluster_${index}`,
-      name: `${topic} cluster`,
-      primaryTopic: topic,
-      keywords: keywords.filter(kw => Math.random() > 0.7),
-      volume: Math.floor(Math.random() * 10000) + 1000,
-      avgDifficulty: Math.floor(Math.random() * 50) + 30
-    })).filter(c => c.keywords.length > 0);
-
-    return clusters;
-  }
-
-  _clusterByIntent(keywords) {
-    const intents = ['informational', 'commercial', 'transactional'];
-    const clusters = intents.map((intent, index) => ({
-      id: `intent_cluster_${index}`,
-      name: `${intent} cluster`,
-      primaryTopic: intent,
-      keywords: keywords.filter(() => Math.random() > 0.6),
-      volume: Math.floor(Math.random() * 8000) + 2000,
-      avgDifficulty: Math.floor(Math.random() * 40) + 40
-    })).filter(c => c.keywords.length > 0);
-
-    return clusters;
-  }
-
-  _calculateSilhouetteScore(clusters) {
-    // Simplified silhouette calculation
-    // Real implementation would calculate actual cohesion/separation
-    if (clusters.length === 0) return 0;
-    
-    const avgSize = clusters.reduce((sum, c) => sum + c.keywords.length, 0) / clusters.length;
-    const sizeVariance = clusters.reduce((sum, c) => {
-      return sum + Math.pow(c.keywords.length - avgSize, 2);
-    }, 0) / clusters.length;
-
-    // Lower variance = better clustering
-    const score = Math.max(0, 1 - (sizeVariance / (avgSize * avgSize)));
-    return score;
-  }
-
-  _buildSiloStructure(pillarPages, supportingContent) {
-    const structure = {
-      levels: {
-        pillar: pillarPages.length,
-        supporting: supportingContent.length
-      },
-      hierarchy: {}
+  // Average-linkage agglomerative clustering on Jaccard similarity.
+  _groupBySimilarity(items, { maxClusters, threshold }) {
+    let groups = items.map((item, index) => ({ members: [index] }));
+    const sim = items.map(a => items.map(b => jaccard(a.tokens, b.tokens)));
+    const linkage = (a, b) => {
+      let total = 0;
+      a.members.forEach(i => b.members.forEach(j => { total += sim[i][j]; }));
+      return total / (a.members.length * b.members.length);
     };
 
-    pillarPages.forEach(pillar => {
-      structure.hierarchy[pillar.id] = {
-        title: pillar.topic,
-        children: supportingContent
-          .filter(s => s.pillarPageId === pillar.id)
-          .map(s => s.id)
-      };
-    });
-
-    return structure;
-  }
-
-  _calculateClusterSimilarity(cluster1, cluster2) {
-    // Simplified similarity calculation
-    const words1 = new Set(cluster1.keywords.flatMap(kw => kw.toLowerCase().split(' ')));
-    const words2 = new Set(cluster2.keywords.flatMap(kw => kw.toLowerCase().split(' ')));
-
-    const intersection = new Set([...words1].filter(w => words2.has(w)));
-    const union = new Set([...words1, ...words2]);
-
-    return intersection.size / union.size;
-  }
-
-  _mergeClustersData(clusters) {
-    const merged = {
-      id: `merged_${Date.now()}`,
-      name: clusters[0].name,
-      primaryTopic: clusters[0].primaryTopic,
-      keywords: [],
-      volume: 0,
-      avgDifficulty: 0
-    };
-
-    clusters.forEach(c => {
-      merged.keywords.push(...c.keywords);
-      merged.volume += c.volume;
-    });
-
-    merged.avgDifficulty = merged.volume / clusters.length;
-
-    return merged;
-  }
-
-  _extractCommonWords(keywords) {
-    const frequency = {};
-    const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for']);
-
-    keywords.forEach(kw => {
-      const words = kw.toLowerCase().split(' ');
-      words.forEach(word => {
-        if (!stopWords.has(word) && word.length > 2) {
-          frequency[word] = (frequency[word] || 0) + 1;
+    while (groups.length > 1) {
+      let best = { score: -1, i: 0, j: 1 };
+      for (let i = 0; i < groups.length; i++) {
+        for (let j = i + 1; j < groups.length; j++) {
+          const score = linkage(groups[i], groups[j]);
+          if (score > best.score) best = { score, i, j };
         }
+      }
+      if (groups.length <= maxClusters && best.score < threshold) break;
+      groups[best.i] = { members: groups[best.i].members.concat(groups[best.j].members) };
+      groups.splice(best.j, 1);
+    }
+    return groups.map(g => g.members.sort((a, b) => a - b).map(i => items[i]));
+  }
+
+  _groupByTopic(items, minClusterSize) {
+    const df = new Map();
+    items.forEach(item => item.tokens.forEach(t => df.set(t, (df.get(t) || 0) + 1)));
+    const buckets = new Map();
+    items.forEach(item => {
+      const candidates = Array.from(item.tokens).filter(t => df.get(t) >= minClusterSize);
+      candidates.sort((a, b) => df.get(b) - df.get(a) || a.localeCompare(b));
+      const key = candidates[0] || `__single:${item.keyword.toLowerCase()}`;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(item);
+    });
+    return Array.from(buckets.values());
+  }
+
+  _groupByIntent(items) {
+    const buckets = new Map();
+    items.forEach(item => {
+      const intent = classifyIntent(item.keyword);
+      if (!buckets.has(intent)) buckets.set(intent, []);
+      buckets.get(intent).push(item);
+    });
+    return Array.from(buckets.values());
+  }
+
+  // Mean silhouette using Jaccard distance, clamped to [0, 1].
+  _silhouette(groups) {
+    if (groups.length < 2) return 0;
+    const dist = (a, b) => 1 - jaccard(a.tokens, b.tokens);
+    const avgDist = (item, group, skipSelf) => {
+      const others = skipSelf ? group.filter(o => o !== item) : group;
+      return others.length ? others.reduce((t, o) => t + dist(item, o), 0) / others.length : 0;
+    };
+    let total = 0;
+    let count = 0;
+    groups.forEach((group, gi) => {
+      group.forEach(item => {
+        count++;
+        if (group.length < 2) return;
+        const a = avgDist(item, group, true);
+        const b = Math.min(...groups.filter((_, i) => i !== gi).map(g => avgDist(item, g, false)));
+        const denom = Math.max(a, b);
+        total += denom === 0 ? 0 : (b - a) / denom;
       });
     });
-
-    return frequency;
+    return Math.min(1, Math.max(0, count ? total / count : 0));
   }
 
-  _calculateSeparation(clusters) {
-    // Simplified - measures how distinct cluster topics are
-    if (clusters.length < 2) return 100;
-
-    const topics = clusters.map(c => c.primaryTopic);
-    const uniqueTopics = new Set(topics);
-    
-    return (uniqueTopics.size / topics.length) * 100;
+  _cohesion(cluster) {
+    const sets = cluster.keywords.map(k => tokenize(k));
+    if (sets.length < 2) return 1;
+    let total = 0;
+    let pairs = 0;
+    for (let i = 0; i < sets.length; i++) {
+      for (let j = i + 1; j < sets.length; j++) { total += jaccard(sets[i], sets[j]); pairs++; }
+    }
+    return total / pairs;
   }
 
-  _evaluateSizeDistribution(clusters) {
-    if (clusters.length === 0) return 0;
+  _separation(targets, all) {
+    if (all.length < 2) return 1;
+    let worst = 0;
+    targets.forEach(t => all.forEach(o => {
+      if (o !== t) worst = Math.max(worst, this._clusterSimilarity(t, o));
+    }));
+    return 1 - worst;
+  }
 
-    const sizes = clusters.map(c => c.keywords.length);
-    const avg = sizes.reduce((sum, s) => sum + s, 0) / sizes.length;
-    const variance = sizes.reduce((sum, s) => sum + Math.pow(s - avg, 2), 0) / sizes.length;
-    
-    // Lower variance = more balanced = higher score
-    const coefficientOfVariation = Math.sqrt(variance) / avg;
-    return Math.max(0, 100 - (coefficientOfVariation * 50));
+  _clusterSimilarity(a, b) {
+    return jaccard(
+      new Set(a.keywords.flatMap(k => Array.from(tokenize(k)))),
+      new Set(b.keywords.flatMap(k => Array.from(tokenize(k))))
+    );
   }
 }
 

@@ -9,14 +9,14 @@ const express = require('express');
 const router = express.Router();
 
 // Import all engines
-const profileEngine = require('./profile-management-engine');
-const eventEngine = require('./event-tracking-engine');
-const segmentEngine = require('./segmentation-engine');
-const integrationEngine = require('./data-integration-engine');
-const privacyEngine = require('./privacy-compliance-engine');
-const analyticsEngine = require('./analytics-insights-engine');
-const activationEngine = require('./activation-engine');
-const aimlEngine = require('./ai-ml-optimization-engine');
+const profileEngine = require('../tools/customer-data-platform/profile-management-engine');
+const eventEngine = require('../tools/customer-data-platform/event-tracking-engine');
+const segmentEngine = require('../tools/customer-data-platform/segmentation-engine');
+const integrationEngine = require('../tools/customer-data-platform/data-integration-engine');
+const privacyEngine = require('../tools/customer-data-platform/privacy-compliance-engine');
+const analyticsEngine = require('../tools/customer-data-platform/analytics-insights-engine');
+const activationEngine = require('../tools/customer-data-platform/activation-engine');
+const aimlEngine = require('../tools/customer-data-platform/ai-ml-optimization-engine');
 
 // ================================================================
 // PROFILE MANAGEMENT ENDPOINTS (31 endpoints)

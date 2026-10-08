@@ -1,10 +1,12 @@
 ﻿import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../api";
+import { getToolCatalogGroups } from "../toolMeta";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../hooks/usePlan";
 
 export default function AllTools({ setActiveSection }) {
- const [modules, setModules] = useState([]);
- const [loading, setLoading] = useState(true);
+ const [modules, setModules] = useState(() => getToolCatalogGroups().flatMap((group) =>
+ group.modules.map((mod) => ({ ...mod, category: group.title, categoryId: group.id }))
+ ));
  const [searchTerm, setSearchTerm] = useState("");
  const [sortBy, setSortBy] = useState("category");
  const { plan, planLoading } = usePlan();
@@ -14,9 +16,9 @@ export default function AllTools({ setActiveSection }) {
  try {
  const resp = await apiFetch("/api/main-suite/modules");
  const data = await resp.json();
- if (data.modules) {
+ if (Array.isArray(data.modules)) {
  // Flatten all modules from groups
- const allModules = data.modules.flatMap((group) =>
+ const allModules = getToolCatalogGroups(data.modules).flatMap((group) =>
  group.modules.map((mod) => ({
  ...mod,
  category: group.title,
@@ -27,8 +29,6 @@ export default function AllTools({ setActiveSection }) {
  }
  } catch (err) {
  console.error("Failed to load tools:", err);
- } finally {
- setLoading(false);
  }
  }
  loadModules();
@@ -84,15 +84,6 @@ export default function AllTools({ setActiveSection }) {
  } catch (e) {}
  setActiveSection(moduleId);
  };
-
- if (loading) {
- return (
- <div className="all-tools-loading">
- <div className="spinner"></div>
- <p>Loading tools...</p>
- </div>
- );
- }
 
  return (
  <div className="all-tools-container">
@@ -204,7 +195,7 @@ export default function AllTools({ setActiveSection }) {
  })}
  </div>
 
- <style jsx>{`
+ <style>{`
  .all-tools-container {
  padding: 32px;
  max-width: 1400px;

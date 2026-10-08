@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const OpenAI = require('openai');
 const cheerio = require('cheerio');
 const rateLimit = require('express-rate-limit');
@@ -18,7 +18,7 @@ const router = express.Router();
 // Key by shop domain — each merchant has their own bucket, no IP needed
 const shopKey = (req) => req.headers['x-shopify-shop-domain'] || 'anonymous';
 
-const _rl = (max, msg) => rateLimit({ windowMs: 60_000, max, keyGenerator: shopKey, standardHeaders: true, legacyHeaders: false, ...(msg ? { message: msg } : {}) });
+const _rl = (max, msg) => rateLimit({ windowMs: 60_000, max, keyGenerator: shopKey, skip: () => process.env.NODE_ENV === 'test', standardHeaders: true, legacyHeaders: false, ...(msg ? { message: msg } : {}) });
 const generalLimiter = _rl(120);
 const aiLimiter      = _rl(30,  { ok: false, error: 'Too many AI requests \u2014 slow down a little' });
 const bulkLimiter    = _rl(8,   { ok: false, error: 'Too many bulk requests \u2014 wait a moment' });
@@ -345,7 +345,7 @@ router.post('/analyze', async (req, res) => {
           || process.env.SHOPIFY_STORE_URL || null;
         const token = shop && (shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null));
         if (shop && token) {
-          const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+          const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
           const apiBase = `https://${shop}/admin/api/${ver}`;
           const hdrs = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
@@ -508,7 +508,8 @@ router.post('/analyze', async (req, res) => {
     const schemaMarkup = schemaTypes.length > 0;
 
     /* ── KEYWORD ANALYSIS ── */
-    const kwList = (keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+    const kwList = (Array.isArray(keywords) ? keywords : String(keywords || '').split(','))
+      .map(k => String(k).trim().toLowerCase()).filter(Boolean);
     const kwDensity = {};
     const lowerBody = bodyText.toLowerCase();
     kwList.forEach(kw => {
@@ -1016,7 +1017,7 @@ router.post('/ai/content-fix', async (req, res) => {
           const shopTokens = require('../../core/shopTokens');
           const token = await shopTokens.getToken(shopD);
           if (token) {
-            const gr = await fetch(`https://${shopD}/admin/api/2023-10/blogs/${bId}/articles/${aId}.json`, {
+            const gr = await fetch(`https://${shopD}/admin/api/2025-10/blogs/${bId}/articles/${aId}.json`, {
               headers: { 'X-Shopify-Access-Token': token },
             });
             if (gr.ok) { const gj = await gr.json(); bodyHtml = gj.article?.body_html || ''; }
@@ -1429,12 +1430,12 @@ router.post('/items', async (req, res) => {
     const { type, url, title, score, grade, issueCount, ts, ...rest } = req.body || {};
     const extra = Object.keys(rest).length ? JSON.stringify(rest) : null;
     const timestamp = ts || new Date().toISOString();
-    await coreDb.query(
-      `INSERT INTO blog_seo_history (shop, type, url, title, score, grade, issue_count, data, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    const item = await coreDb.queryOne(
+      `INSERT INTO blog_seo_history (shop, type, url, title, score, grade, issue_count, data, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
       [shop, type || null, url || null, title || null, score ?? null, grade || null, issueCount ?? null, extra, timestamp]
     );
-    res.json({ ok: true });
-  } catch (e) { res.json({ ok: true }); } // non-fatal
+    res.json({ ok: true, item });
+  } catch (e) { res.status(500).json({ ok: false, error: 'Could not save history item' }); }
 });
 
 router.get('/items', async (req, res) => {
@@ -5930,7 +5931,7 @@ router.get('/shopify-data', async (req, res) => {
 
     if (!token) return res.json({ ok: true, shop, articles: [], products: [], warning: 'No Shopify token — reconnect your store in Settings' });
 
-    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
     const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
     // Fetch blogs
@@ -9057,7 +9058,7 @@ router.post('/implement-schema', async (req, res) => {
 
     if (!token) return res.status(400).json({ ok: false, error: 'No Shopify token — reconnect your store in Settings' });
 
-    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
     const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
     // Fetch current article
@@ -9108,7 +9109,7 @@ router.post('/apply-field', async (req, res) => {
     const resolvedShop = shop || req.headers['x-shopify-shop-domain'];
     const token = await shopTokens.getToken(resolvedShop);
     if (!token) return res.status(403).json({ ok: false, error: 'No Shopify token for this shop' });
-    const ver = '2023-10';
+    const ver = '2025-10';
     const headers = { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token };
     const articleBase = `https://${resolvedShop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}`;
     if (field === 'title' || field === 'h1') {
@@ -9257,7 +9258,7 @@ router.post('/apply-date-refresh', async (req, res) => {
     const resolvedShop = shop || req.headers['x-shopify-shop-domain'];
     const token = await shopTokens.getToken(resolvedShop);
     if (!token) return res.status(403).json({ ok: false, error: 'No Shopify token for this shop' });
-    const ver = '2023-10';
+    const ver = '2025-10';
     const headers = { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token };
     const now = new Date().toISOString();
     const r = await fetch(`https://${resolvedShop}/admin/api/${ver}/blogs/${blogId}/articles/${articleId}.json`, {
@@ -9282,7 +9283,7 @@ router.get('/ai/shop-keywords', async (req, res) => {
     if (!shop) return res.json({ ok: true, keywords: [] });
     const token = shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null);
     if (!token) return res.json({ ok: true, keywords: [] });
-    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
     const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
     const r = await fetch(`https://${shop}/admin/api/${ver}/products.json?limit=20&fields=title,product_type,tags`, { headers });
     if (!r.ok) return res.json({ ok: true, keywords: [] });
@@ -9412,7 +9413,7 @@ router.post('/shopify/publish-article', async (req, res) => {
     const token = shopTokens.getToken ? shopTokens.getToken(shop) : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null);
     if (!token) return res.status(400).json({ ok: false, error: 'No Shopify token — reconnect your store in Settings' });
 
-    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
     const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
     // Get first blog

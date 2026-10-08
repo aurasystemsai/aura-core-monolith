@@ -320,9 +320,9 @@ module.exports = {
         "Sync demand forecast with ops; add 2-week buffer for SKUs flagged as high demand.",
       ],
       playbooks: [
-        { title: "Launch winback journey", action: "Open workflow orchestrator", link: "/#tool-workflow-orchestrator" },
+        { title: "Launch winback journey", action: "Open Automations", link: "/#tool-workflow-automation-builder" },
         { title: "Boost budget on top ads", action: "Go to multi-channel optimizer", link: "/#tool-multi-channel-optimizer" },
-        { title: "Increase inventory buffer", action: "Sync with inventory supplier", link: "/#tool-inventory-supplier-sync" },
+        { title: "Increase inventory buffer", action: "Check inventory and reorder", link: "/#tool-inventory-forecasting" },
       ],
       cohort: cohortSelected,
       cohortBreakdown,
@@ -344,3 +344,4 @@ module.exports = {
     };
   },
 };
+

@@ -197,7 +197,7 @@ describe('A/B Testing Suite', () => {
     
     test('should get variant by ID', async () => {
       const variant = variantManager.createVariant({
-        experimentId: 'exp1',
+        experimentId: experimentEngine.createExperiment({ name: 'Owner', type: 'ab' }).id,
         name: 'Test Variant'
       });
       
@@ -210,7 +210,7 @@ describe('A/B Testing Suite', () => {
     
     test('should update variant', async () => {
       const variant = variantManager.createVariant({
-        experimentId: 'exp1',
+        experimentId: experimentEngine.createExperiment({ name: 'Owner', type: 'ab' }).id,
         name: 'Test'
       });
       
@@ -224,7 +224,7 @@ describe('A/B Testing Suite', () => {
     
     test('should add change to variant', async () => {
       const variant = variantManager.createVariant({
-        experimentId: 'exp1',
+        experimentId: experimentEngine.createExperiment({ name: 'Owner', type: 'ab' }).id,
         name: 'Test'
       });
       
@@ -243,7 +243,7 @@ describe('A/B Testing Suite', () => {
     
     test('should generate variant preview', async () => {
       const variant = variantManager.createVariant({
-        experimentId: 'exp1',
+        experimentId: experimentEngine.createExperiment({ name: 'Owner', type: 'ab' }).id,
         name: 'Test'
       });
       
@@ -258,7 +258,7 @@ describe('A/B Testing Suite', () => {
     
     test('should duplicate variant', async () => {
       const variant = variantManager.createVariant({
-        experimentId: 'exp1',
+        experimentId: experimentEngine.createExperiment({ name: 'Owner', type: 'ab' }).id,
         name: 'Original'
       });
       
@@ -273,7 +273,7 @@ describe('A/B Testing Suite', () => {
     
     test('should validate variant', async () => {
       const variant = variantManager.createVariant({
-        experimentId: 'exp1',
+        experimentId: experimentEngine.createExperiment({ name: 'Owner', type: 'ab' }).id,
         name: 'Test',
         trafficWeight: 50
       });
@@ -286,17 +286,31 @@ describe('A/B Testing Suite', () => {
     });
     
     test('should list variants by experiment', async () => {
-      variantManager.createVariant({ experimentId: 'exp1', name: 'V1' });
-      variantManager.createVariant({ experimentId: 'exp1', name: 'V2' });
-      variantManager.createVariant({ experimentId: 'exp2', name: 'V3' });
-      
-      const res = await request(app)
-        .get('/api/ab-testing/variants/experiment/exp1');
-      
+      const mine = experimentEngine.createExperiment({ name: 'Mine', type: 'ab' });
+      const other = experimentEngine.createExperiment({ name: 'Other', type: 'ab' });
+      variantManager.createVariant({ experimentId: mine.id, name: 'V1' });
+      variantManager.createVariant({ experimentId: mine.id, name: 'V2' });
+      variantManager.createVariant({ experimentId: other.id, name: 'V3' });
+
+      const res = await request(app).get('/api/ab-testing/variants/experiment/' + mine.id);
+
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(2);
     });
-    
+
+    test('hides experiments and variants that belong to another shop', async () => {
+      const exp = experimentEngine.createExperiment({ name: 'Private', type: 'ab', shop: 'a.myshopify.com' });
+      const variant = variantManager.createVariant({ experimentId: exp.id, name: 'V' });
+      const asB = (r) => r.set('x-shopify-shop-domain', 'b.myshopify.com');
+      const asA = (r) => r.set('x-shopify-shop-domain', 'a.myshopify.com');
+
+      expect((await asB(request(app).get('/api/ab-testing/experiments/' + exp.id))).status).toBe(404);
+      expect((await asB(request(app).get('/api/ab-testing/variants/' + variant.id))).status).toBe(404);
+      expect((await asB(request(app).get('/api/ab-testing/variants/experiment/' + exp.id))).status).toBe(404);
+      const listB = await asB(request(app).get('/api/ab-testing/experiments'));
+      expect(listB.body.data.some((e) => e.id === exp.id)).toBe(false);
+      expect((await asA(request(app).get('/api/ab-testing/experiments/' + exp.id))).status).toBe(200);
+    });
   });
   
   // ============================================================================

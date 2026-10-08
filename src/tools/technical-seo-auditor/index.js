@@ -1,52 +1,17 @@
-// src/tools/technical-seo-auditor/index.js
-// ===============================================
-// AURA • Technical SEO Auditor (rule-based)
-// ===============================================
+﻿// Technical SEO Auditor tool entry
+const router = require('./router');
+const { runTechnicalAudit } = require('./audit');
 
-const key = "technical-seo-auditor";
+const key = 'technical-seo-auditor';
 const meta = {
   id: key,
   name: 'Technical SEO Auditor',
-  description: 'Comprehensive technical SEO health checks with AI-powered audit reports.',
+  description: 'Checks your live storefront pages, robots.txt and sitemap for real technical SEO problems.',
 };
 
 async function run(input = {}, ctx = {}) {
-  const env = ctx.environment || process.env.NODE_ENV || "development";
-  const now = new Date().toISOString();
-
-  const url = input.url || "https://example.com";
-
-  const checks = [
-    { id: "https", label: "HTTPS enabled", passed: url.startsWith("https://") },
-    { id: "canonical", label: "Canonical URL present", passed: true },
-    { id: "title", label: "Title tag present", passed: true },
-    { id: "meta-description", label: "Meta description present", passed: true },
-    { id: "h1", label: "Single H1 on page", passed: true },
-    { id: "indexable", label: "Page indexable (no noindex)", passed: true },
-  ];
-
-  const score =
-    Math.round(
-      (checks.filter((c) => c.passed).length / checks.length) * 100
-    ) || 0;
-
-  return {
-    ok: true,
-    tool: key,
-    environment: env,
-    message: "Technical SEO health-check completed (rule-based).",
-    input,
-    output: {
-      url,
-      score,
-      checks,
-      priorityIssues: checks.filter((c) => !c.passed),
-    },
-    meta: {
-      engine: "internal-rule-engine-v1",
-      generatedAt: now,
-    },
-  };
+  if (!ctx.shop || !ctx.token) throw new Error('A connected Shopify shop is required');
+  return runTechnicalAudit(ctx.shop, ctx.token);
 }
 
-module.exports = { key, meta, run };
+module.exports = { key, meta, run, router };

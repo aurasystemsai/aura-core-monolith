@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Loyalty & Referral Programs - World-Class Platform
  * 
  * Tool 3 of 77 - Frontend Implementation (Week 4-6)
@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { apiFetchJSON } from '../../api';
 import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
 import {
  Box,
@@ -65,8 +66,26 @@ import {
  Rating,
  Skeleton,
 } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import { AddIcon, EditIcon, DeleteIcon, ViewIcon, DownloadIcon, UploadIcon, RefreshIcon, SearchIcon, FilterIcon, SettingsIcon, TrendingUpIcon, TrendingDownIcon, PeopleIcon, RewardIcon, StarIcon, ShareIcon, AnalyticsIcon, SecurityIcon, SpeedIcon, NotificationsIcon, CodeIcon, CloudUploadIcon, PlayIcon, TimelineIcon, AssessmentIcon, GroupIcon, LockIcon, KeyIcon, ErrorIcon, SuccessIcon, WarningIcon, InfoIcon, ExpandMoreIcon, CloseIcon, MoreIcon, AutorenewIcon, PublicIcon, EmailIcon, SmsIcon, PieChartIcon, BarChartIcon, ShowChartIcon, TrophyIcon, ThumbUpIcon, CommentIcon, MoneyIcon, AIIcon, NetworkIcon, WebhookIcon, ApiIcon, BrushIcon, StoreIcon, LanguageIcon, ColorIcon, BugIcon, HealthIcon, IdeaIcon, RocketIcon } from '../MuiIconStubs.jsx';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const loyaltyTheme = createTheme({
+ palette: {
+  mode: 'dark',
+  primary: { main: '#6366f1' },
+  secondary: { main: '#a78bfa' },
+  background: { default: '#09090b', paper: '#18181b' },
+  text: { primary: '#fafafa', secondary: '#a1a1aa' },
+  divider: '#27272a',
+ },
+ components: {
+  MuiCard: { styleOverrides: { root: { border: '1px solid #27272a' } } },
+  MuiTab: { styleOverrides: { root: { textTransform: 'none', fontWeight: 600 } } },
+  MuiButton: { styleOverrides: { root: { textTransform: 'none', borderRadius: 8 } } },
+ },
+});
 
 // Lazy-loaded components for performance
 const MonacoEditor = lazy(() => import('@monaco-editor/react'));
@@ -84,6 +103,7 @@ const LoyaltyReferralPrograms = () => {
  const [programs, setPrograms] = useState([]);
  const [referrals, setReferrals] = useState([]);
  const [members, setMembers] = useState([]);
+ const [transactions, setTransactions] = useState([]);
  const [rewards, setRewards] = useState([]);
  const [tiers, setTiers] = useState([]);
  const [workflows, setWorkflows] = useState([]);
@@ -129,16 +149,13 @@ const LoyaltyReferralPrograms = () => {
  // Generic API call wrapper
  const apiCall = async (endpoint, method = 'GET', data = null) => {
  try {
- const options = {
+ const result = await apiFetchJSON(`${apiBaseUrl}${endpoint}`, {
  method,
  headers: { 'Content-Type': 'application/json'},
- };
- if (data) options.body = JSON.stringify(data);
+ ...(data ? { body: JSON.stringify(data) } : {}),
+ });
 
- const response = await fetch(`${apiBaseUrl}${endpoint}`, options);
- const result = await response.json();
-
- if (!response.ok) {
+ if (!result.ok) {
  throw new Error(result.error || 'API request failed');
  }
 
@@ -194,6 +211,15 @@ const LoyaltyReferralPrograms = () => {
  }, []);
 
  // Fetch rewards
+ const fetchTransactions = useCallback(async () => {
+ try {
+ const data = await apiCall('/points/transactions?limit=25');
+ setTransactions(data.transactions || []);
+ } catch (error) {
+ console.error('Error fetching transactions:', error);
+ }
+ }, []);
+
  const fetchRewards = useCallback(async () => {
  setLoading(true);
  try {
@@ -745,6 +771,7 @@ const LoyaltyReferralPrograms = () => {
  fetchReferrals();
  fetchMembers();
  fetchAnalytics();
+ fetchTransactions();
  }, []);
 
  // Load data based on active category
@@ -756,6 +783,8 @@ const LoyaltyReferralPrograms = () => {
  fetchMembers();
  fetchRewards();
  fetchTiers();
+ fetchAnalytics();
+ fetchTransactions();
  break;
  case 'optimize':
  fetchAnalytics();
@@ -1479,25 +1508,30 @@ const LoyaltyReferralPrograms = () => {
  </TableRow>
  </TableHead>
  <TableBody>
- {[...Array(10)].map((_, i) => (
- <TableRow key={i} hover>
- <TableCell>{formatDate(new Date())}</TableCell>
- <TableCell>Member {i + 1}</TableCell>
+ {transactions.length === 0 && (
+ <TableRow>
+ <TableCell colSpan={6} align="center">No points transactions yet</TableCell>
+ </TableRow>
+ )}
+ {transactions.slice(0, 25).map((txn) => (
+ <TableRow key={txn.id} hover>
+ <TableCell>{formatDate(txn.createdAt)}</TableCell>
+ <TableCell>{txn.memberName}</TableCell>
  <TableCell>
  <Chip
- label={i % 2 === 0 ? 'Earned': 'Redeemed'}
- size="small"color={i % 2 === 0 ? 'success': 'error'}
+ label={txn.points >= 0 ? 'Earned': 'Redeemed'}
+ size="small"color={txn.points >= 0 ? 'success': 'error'}
  />
  </TableCell>
  <TableCell>
  <Typography
- variant="body2"color={i % 2 === 0 ? 'success.main': 'error.main'}
+ variant="body2"color={txn.points >= 0 ? 'success.main': 'error.main'}
  >
- {i % 2 === 0 ? '+': '-'}{formatNumber(Math.floor(Math.random() * 500) + 100)}
+ {txn.points >= 0 ? '+': '-'}{formatNumber(Math.abs(txn.points))}
  </Typography>
  </TableCell>
- <TableCell>{formatNumber(Math.floor(Math.random() * 2000) + 500)}</TableCell>
- <TableCell>Purchase reward</TableCell>
+ <TableCell>{formatNumber(txn.balance)}</TableCell>
+ <TableCell>{txn.reason}</TableCell>
  </TableRow>
  ))}
  </TableBody>
@@ -1761,21 +1795,15 @@ const LoyaltyReferralPrograms = () => {
  <Typography variant="body2"color="text.secondary">
  Active Members
  </Typography>
- <Typography variant="caption"color="success.main">
- +12% vs last month
- </Typography>
  </CardContent>
  </Card>
  </Grid>
  <Grid item xs={12} md={3}>
  <Card>
  <CardContent>
- <Typography variant="h4">{analytics.avgEngagementScore || 72}</Typography>
+ <Typography variant="h4">{formatNumber(analytics.totalMembers || 0)}</Typography>
  <Typography variant="body2"color="text.secondary">
- Avg Engagement Score
- </Typography>
- <Typography variant="caption"color="success.main">
- +5 pts vs last month
+ Total Members
  </Typography>
  </CardContent>
  </Card>
@@ -1783,25 +1811,19 @@ const LoyaltyReferralPrograms = () => {
  <Grid item xs={12} md={3}>
  <Card>
  <CardContent>
- <Typography variant="h4">{formatPercentage(analytics.activationRate || 0.79)}</Typography>
+ <Typography variant="h4">{formatPercentage(analytics.activationRate || 0)}</Typography>
  <Typography variant="body2"color="text.secondary">
  Activation Rate
  </Typography>
- <Typography variant="caption"color="warning.main">
- -2% vs last month
- </Typography>
  </CardContent>
  </Card>
  </Grid>
  <Grid item xs={12} md={3}>
  <Card>
  <CardContent>
- <Typography variant="h4">{formatNumber(analytics.tierUpgradesToday || 0)}</Typography>
+ <Typography variant="h4">{formatNumber(analytics.referralsSentToday || 0)}</Typography>
  <Typography variant="body2"color="text.secondary">
- Tier Upgrades Today
- </Typography>
- <Typography variant="caption"color="success.main">
- +8 vs yesterday
+ Referrals Sent Today
  </Typography>
  </CardContent>
  </Card>
@@ -2154,19 +2176,28 @@ const LoyaltyReferralPrograms = () => {
  </TableRow>
  </TableHead>
  <TableBody>
- {[...Array(5)].map((_, i) => (
- <TableRow key={i}>
- <TableCell>Member {i + 1}</TableCell>
+ {members
+ .map(m => ({ m, days: Math.floor((Date.now() - new Date(m.lastActivityAt || m.createdAt).getTime()) / 86400000) }))
+ .filter(x => x.days >= 14)
+ .slice(0, 5)
+ .map(({ m, days }) => (
+ <TableRow key={m.id}>
+ <TableCell>{[m.firstName, m.lastName].filter(Boolean).join(' ') || m.email}</TableCell>
  <TableCell>
  <Chip label="High"color="error"size="small"/>
  </TableCell>
- <TableCell>{Math.floor(Math.random() * 30) + 15}</TableCell>
+ <TableCell>{days}</TableCell>
  <TableCell>Send re-engagement email</TableCell>
  <TableCell align="right">
  <Button size="small"variant="contained">Engage</Button>
  </TableCell>
  </TableRow>
  ))}
+ {members.length === 0 && (
+ <TableRow>
+ <TableCell colSpan={5} align="center">No at-risk members</TableCell>
+ </TableRow>
+ )}
  </TableBody>
  </Table>
  </TableContainer>
@@ -2382,7 +2413,7 @@ const LoyaltyReferralPrograms = () => {
  <Grid item xs={12} md={3}>
  <Card>
  <CardContent>
- <Typography variant="h4">{realtimeMetrics.requestsPerSecond || 0}</Typography>
+ <Typography variant="h4">{realtimeMetrics.requestsPerSecond ?? '—'}</Typography>
  <Typography variant="body2"color="text.secondary">Requests/Sec</Typography>
  <Typography variant="caption"color="success.main">Live</Typography>
  </CardContent>
@@ -2391,7 +2422,7 @@ const LoyaltyReferralPrograms = () => {
  <Grid item xs={12} md={3}>
  <Card>
  <CardContent>
- <Typography variant="h4">{realtimeMetrics.avgLatency || 0}ms</Typography>
+ <Typography variant="h4">{realtimeMetrics.avgLatency == null ? '—' : `${realtimeMetrics.avgLatency}ms`}</Typography>
  <Typography variant="body2"color="text.secondary">Avg Latency</Typography>
  <Typography variant="caption"color="success.main">Live</Typography>
  </CardContent>
@@ -2400,7 +2431,7 @@ const LoyaltyReferralPrograms = () => {
  <Grid item xs={12} md={3}>
  <Card>
  <CardContent>
- <Typography variant="h4">{formatPercentage(parseFloat(realtimeMetrics.errorRate) || 0)}</Typography>
+ <Typography variant="h4">{realtimeMetrics.errorRate == null ? '—' : formatPercentage(parseFloat(realtimeMetrics.errorRate))}</Typography>
  <Typography variant="body2"color="text.secondary">Error Rate</Typography>
  <Typography variant="caption"color="success.main">Live</Typography>
  </CardContent>
@@ -2953,6 +2984,8 @@ const LoyaltyReferralPrograms = () => {
  };
 
  return (
+ <ThemeProvider theme={loyaltyTheme}>
+ <CssBaseline />
  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default'}}>
  {/* Header */}
  <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', px: 3, py: 2 }}>
@@ -2962,7 +2995,7 @@ const LoyaltyReferralPrograms = () => {
  Loyalty & Referral Programs
  </Typography>
  <Typography variant="body2"color="text.secondary">
- World-class platform with 201 endpoints across 8 categories
+ Manage programs, members, rewards and referrals
  </Typography>
  </Box>
  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center'}}>
@@ -3049,20 +3082,57 @@ const LoyaltyReferralPrograms = () => {
  </IconButton>
  </DialogTitle>
  <DialogContent dividers>
- <Typography variant="body2"color="text.secondary">
+ {dialogType === 'createProgram' ? (
+ <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+ <TextField
+  autoFocus
+  required
+  fullWidth
+  label="Program name"
+  value={formData.name || ''}
+  onChange={(event) => handleFormChange('name', event.target.value)}
+ />
+ <TextField
+  fullWidth
+  multiline
+  minRows={2}
+  label="Description"
+  value={formData.description || ''}
+  onChange={(event) => handleFormChange('description', event.target.value)}
+ />
+ <TextField
+  select
+  fullWidth
+  label="Program type"
+  value={formData.type || 'points'}
+  onChange={(event) => handleFormChange('type', event.target.value)}
+ >
+  <MenuItem value="points">Points</MenuItem>
+  <MenuItem value="tiered">Tiered</MenuItem>
+  <MenuItem value="punch-card">Punch card</MenuItem>
+  <MenuItem value="spend-based">Spend based</MenuItem>
+ </TextField>
+ </Box>
+ ) : (
+ <Typography variant="body2" color="text.secondary">
  Form content will be implemented based on dialog type: {dialogType}
  </Typography>
+ )}
  </DialogContent>
  <DialogActions>
  <Button onClick={closeDialog}>Cancel</Button>
- <Button variant="contained"onClick={closeDialog}>
+ <Button
+  variant="contained"
+  disabled={dialogType === 'createProgram' && !formData.name?.trim()}
+  onClick={() => dialogType === 'createProgram' ? createProgram(formData) : closeDialog()}
+ >
  Save
  </Button>
  </DialogActions>
  </Dialog>
  </Box>
+ </ThemeProvider>
  );
 };
 
 export default LoyaltyReferralPrograms;
-

@@ -18,6 +18,19 @@
 
 const express = require('express');
 const router = express.Router();
+const verifyShopifySession = require('../middleware/verifyShopifySession');
+const { createLoyaltyStorage } = require('../core/loyaltyStorage');
+
+router.use(verifyShopifySession);
+router.use((req, res, next) => {
+  const shopId = req.shopify?.dest || req.session?.shop || req.headers['x-shopify-shop-domain'];
+  if (!shopId && process.env.NODE_ENV === 'production') {
+    return res.status(400).json({ error: 'Shop context required' });
+  }
+  req.shopId = shopId || 'local';
+  req.storage = createLoyaltyStorage(process.env.AURA_LOYALTY_DATA_DIR || undefined);
+  next();
+});
 
 // Storage keys for multi-tenant data isolation
 const STORAGE_KEYS = {
@@ -45,6 +58,171 @@ const STORAGE_KEYS = {
   notifications: 'loyalty-referral-notifications',
   sharedAssets: 'loyalty-referral-shared-assets'
 };
+
+const TIER_ORDER = ['Platinum', 'Gold', 'Silver', 'Bronze'];
+const round = (value, digits = 2) => Number(Number(value || 0).toFixed(digits));
+
+function summarizeTiers(members) {
+  return TIER_ORDER.map(tier => {
+    const group = members.filter(m => (m.currentTier || 'Bronze') === tier);
+    const active = group.filter(m => m.status === 'active').length;
+    const lifetime = group.reduce((sum, m) => sum + (m.lifetimePoints || 0), 0);
+    return {
+      tier,
+      segment: tier,
+      memberCount: group.length,
+      activationRate: group.length ? round(active / group.length) : 0,
+      avgScore: group.length ? Math.round(lifetime / group.length) : 0,
+      avgCLV: group.length ? Math.round(lifetime / group.length) : 0
+    };
+  });
+}
+
+function aggregateReferrals(campaigns) {
+  const sum = key => campaigns.reduce((total, c) => total + (Number(c.tracking?.[key]) || 0), 0);
+  const totalReferrals = sum('totalReferrals');
+  const successfulReferrals = sum('successfulReferrals');
+  const totalReferralRevenue = sum('revenueGenerated');
+  return {
+    totalReferrals,
+    successfulReferrals,
+    pendingReferrals: sum('pendingReferrals'),
+    conversionRate: totalReferrals ? round(successfulReferrals / totalReferrals) : 0,
+    avgRevenuePerReferral: successfulReferrals ? round(totalReferralRevenue / successfulReferrals) : 0,
+    totalReferralRevenue
+  };
+}
+
+// Core resources consumed by the Loyalty & Referral console.
+router.post('/members', async (req, res) => {
+  try {
+    const shopId = req.shopId;
+    const { email, firstName, lastName, customerId } = req.body || {};
+    if (typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ ok: false, error: 'Member email is required' });
+    }
+
+    const members = req.storage.get(STORAGE_KEYS.members, shopId) || [];
+    const normalizedEmail = email.trim().toLowerCase();
+    if (members.some(member => member.email?.toLowerCase() === normalizedEmail)) {
+      return res.status(409).json({ ok: false, error: 'A member with this email already exists' });
+    }
+
+    const member = {
+      id: `mem_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+      customerId: customerId || `cust_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+      shopId,
+      email: normalizedEmail,
+      firstName: typeof firstName === 'string' ? firstName.trim() : '',
+      lastName: typeof lastName === 'string' ? lastName.trim() : '',
+      pointsBalance: 0,
+      lifetimePoints: 0,
+      currentTier: 'Bronze',
+      tierProgress: 0,
+      status: 'active',
+      engagement: { rewardsRedeemed: 0 },
+      createdAt: new Date().toISOString(),
+      lastActivityAt: new Date().toISOString(),
+    };
+    members.push(member);
+    req.storage.set(STORAGE_KEYS.members, members, shopId);
+    res.status(201).json({ ok: true, member });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.get('/members', async (req, res) => {
+  try {
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    res.json({ ok: true, members, total: members.length });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.get('/members/:id', async (req, res) => {
+  try {
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const member = members.find(item => item.id === req.params.id || item.customerId === req.params.id);
+    if (!member) return res.status(404).json({ ok: false, error: 'Member not found' });
+    res.json({ ok: true, member });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.post('/rewards', async (req, res) => {
+  try {
+    const { name, type = 'discount', pointsCost, value } = req.body || {};
+    if (typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ ok: false, error: 'Reward name is required' });
+    }
+    const cost = Number(pointsCost);
+    if (!Number.isFinite(cost) || cost < 0) {
+      return res.status(400).json({ ok: false, error: 'pointsCost must be a non-negative number' });
+    }
+
+    const rewards = req.storage.get(STORAGE_KEYS.rewards, req.shopId) || [];
+    const reward = {
+      id: `rew_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+      shopId: req.shopId,
+      name: name.trim(),
+      type,
+      pointsCost: cost,
+      ...(value !== undefined ? { value } : {}),
+      status: 'active',
+      createdAt: new Date().toISOString(),
+    };
+    rewards.push(reward);
+    req.storage.set(STORAGE_KEYS.rewards, rewards, req.shopId);
+    res.status(201).json({ ok: true, reward });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.get('/rewards', async (req, res) => {
+  try {
+    const rewards = req.storage.get(STORAGE_KEYS.rewards, req.shopId) || [];
+    res.json({ ok: true, rewards, total: rewards.length });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.post('/tiers', async (req, res) => {
+  try {
+    const { name, level, threshold = 0, pointsMultiplier = 1 } = req.body || {};
+    if (typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ ok: false, error: 'Tier name is required' });
+    }
+    const tiers = req.storage.get(STORAGE_KEYS.tiers, req.shopId) || [];
+    const tier = {
+      id: `tier_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+      shopId: req.shopId,
+      name: name.trim(),
+      level: Number.isFinite(Number(level)) ? Number(level) : tiers.length + 1,
+      threshold: Number(threshold),
+      pointsMultiplier: Number(pointsMultiplier),
+      createdAt: new Date().toISOString(),
+    };
+    tiers.push(tier);
+    req.storage.set(STORAGE_KEYS.tiers, tiers, req.shopId);
+    res.status(201).json({ ok: true, tier });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.get('/tiers', async (req, res) => {
+  try {
+    const tiers = req.storage.get(STORAGE_KEYS.tiers, req.shopId) || [];
+    res.json({ ok: true, tiers, total: tiers.length });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
 
 // ============================================================================
 // CATEGORY 1: ORIGINAL ENDPOINTS (15 endpoints)
@@ -334,6 +512,26 @@ router.delete('/referrals/:id', async (req, res) => {
 });
 
 // -------------------- Points Management --------------------
+
+// GET /api/loyalty-referral/points/transactions - Recent shop-wide points ledger
+router.get('/points/transactions', async (req, res) => {
+  try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 500);
+    const transactions = req.storage.get(STORAGE_KEYS.transactions, req.shopId) || [];
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const names = new Map(members.map(m => [
+      m.customerId,
+      [m.firstName, m.lastName].filter(Boolean).join(' ') || m.email || m.customerId
+    ]));
+    const recent = transactions
+      .slice(-limit)
+      .reverse()
+      .map(t => ({ ...t, memberName: names.get(t.customerId) || t.customerId }));
+    res.json({ ok: true, transactions: recent, total: transactions.length });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
 
 // POST /api/loyalty-referral/points/award - Award points to customer
 router.post('/points/award', async (req, res) => {
@@ -2802,21 +3000,23 @@ router.post('/analytics/clv/calculate', async (req, res) => {
 router.get('/analytics/clv/trends', async (req, res) => {
   try {
     const { period = '12m' } = req.query;
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
 
     const trends = [];
-    const months = 12;
-
-    for (let i = months - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      const cohort = members.filter(m => new Date(m.createdAt) < end);
+      const lifetime = cohort.reduce((sum, m) => sum + (m.lifetimePoints || 0), 0);
       trends.push({
-        month: date.toISOString().split('T')[0].substring(0, 7),
-        avgCLV: Math.floor(Math.random() * 200) + 600,
-        memberCount: Math.floor(Math.random() * 100) + 500
+        month: new Date(end.getFullYear(), end.getMonth() - 1, 1).toISOString().slice(0, 7),
+        avgCLV: cohort.length ? Math.round(lifetime / cohort.length) : 0,
+        memberCount: cohort.length
       });
     }
 
-    res.json({ trends, period, avgCLV: 720, growth: '+12% YoY' });
+    const totalLifetime = members.reduce((sum, m) => sum + (m.lifetimePoints || 0), 0);
+    res.json({ ok: true, trends, period, avgCLV: members.length ? Math.round(totalLifetime / members.length) : 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2825,14 +3025,16 @@ router.get('/analytics/clv/trends', async (req, res) => {
 // GET /api/loyalty-referral/analytics/clv/segments - CLV by segment
 router.get('/analytics/clv/segments', async (req, res) => {
   try {
-    const segments = [
-      { segment: 'Platinum', avgCLV: 2400, memberCount: 45, percentile: 95 },
-      { segment: 'Gold', avgCLV: 1200, memberCount: 180, percentile: 75 },
-      { segment: 'Silver', avgCLV: 650, memberCount: 420, percentile: 50 },
-      { segment: 'Bronze', avgCLV: 280, memberCount: 680, percentile: 25 }
-    ];
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const segments = summarizeTiers(members).map(({ segment, avgCLV, memberCount }) => ({ segment, avgCLV, memberCount }));
+    const totalLifetime = members.reduce((sum, m) => sum + (m.lifetimePoints || 0), 0);
 
-    res.json({ segments, total: segments.length, overallAvgCLV: 720 });
+    res.json({
+      ok: true,
+      segments,
+      total: segments.length,
+      overallAvgCLV: members.length ? Math.round(totalLifetime / members.length) : 0
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2887,18 +3089,24 @@ router.get('/analytics/clv/distribution', async (req, res) => {
 // GET /api/loyalty-referral/analytics/engagement/overview - Engagement metrics
 router.get('/analytics/engagement/overview', async (req, res) => {
   try {
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const transactions = req.storage.get(STORAGE_KEYS.transactions, req.shopId) || [];
+    const referrals = req.storage.get(STORAGE_KEYS.referrals, req.shopId) || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const isToday = item => typeof item.createdAt === 'string' && item.createdAt.slice(0, 10) === today;
+    const todays = transactions.filter(isToday);
+    const activeMembers = members.filter(m => m.status === 'active').length;
+
     const overview = {
-      activeMembers: 1245,
-      totalMembers: 1580,
-      activationRate: 0.79,
-      avgEngagementScore: 72,
-      pointsEarnedToday: 24580,
-      pointsRedeemedToday: 8420,
-      referralsSentToday: 47,
-      tierUpgradesToday: 8
+      activeMembers,
+      totalMembers: members.length,
+      activationRate: members.length ? Number((activeMembers / members.length).toFixed(2)) : 0,
+      pointsEarnedToday: todays.filter(t => t.points > 0).reduce((sum, t) => sum + t.points, 0),
+      pointsRedeemedToday: todays.filter(t => t.points < 0).reduce((sum, t) => sum - t.points, 0),
+      referralsSentToday: referrals.filter(isToday).length
     };
 
-    res.json(overview);
+    res.json({ ok: true, ...overview });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2909,19 +3117,23 @@ router.get('/analytics/engagement/trends', async (req, res) => {
   try {
     const { period = '30d' } = req.query;
     const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+    const transactions = req.storage.get(STORAGE_KEYS.transactions, req.shopId) || [];
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
 
     const trends = [];
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
+      const day = date.toISOString().slice(0, 10);
+      const dayTxns = transactions.filter(t => typeof t.createdAt === 'string' && t.createdAt.slice(0, 10) === day);
       trends.push({
-        date: date.toISOString().split('T')[0],
-        avgScore: Math.floor(Math.random() * 20) + 65,
-        activeMembers: Math.floor(Math.random() * 200) + 1100
+        date: day,
+        avgScore: dayTxns.reduce((sum, t) => sum + Math.abs(t.points || 0), 0),
+        activeMembers: new Set(dayTxns.map(t => t.customerId)).size
       });
     }
 
-    res.json({ trends, period, avgScore: 72 });
+    res.json({ ok: true, trends, period, activeMembers: members.filter(m => m.status === 'active').length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2930,14 +3142,10 @@ router.get('/analytics/engagement/trends', async (req, res) => {
 // GET /api/loyalty-referral/analytics/engagement/by-tier - Engagement by tier
 router.get('/analytics/engagement/by-tier', async (req, res) => {
   try {
-    const tiers = [
-      { tier: 'Platinum', avgScore: 92, memberCount: 45, activationRate: 0.95 },
-      { tier: 'Gold', avgScore: 84, memberCount: 180, activationRate: 0.88 },
-      { tier: 'Silver', avgScore: 68, memberCount: 420, activationRate: 0.75 },
-      { tier: 'Bronze', avgScore: 52, memberCount: 680, activationRate: 0.68 }
-    ];
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const tiers = summarizeTiers(members).map(({ tier, avgScore, memberCount, activationRate }) => ({ tier, avgScore, memberCount, activationRate }));
 
-    res.json({ tiers, total: tiers.length });
+    res.json({ ok: true, tiers, total: tiers.length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2992,18 +3200,8 @@ router.post('/analytics/engagement/cohort-analysis', async (req, res) => {
 // GET /api/loyalty-referral/analytics/referrals/overview - Referral metrics
 router.get('/analytics/referrals/overview', async (req, res) => {
   try {
-    const overview = {
-      totalReferrals: 3420,
-      successfulReferrals: 1540,
-      pendingReferrals: 380,
-      conversionRate: 0.45,
-      avgRevenuePerReferral: 95,
-      totalReferralRevenue: 146300,
-      viralCoefficient: 1.24,
-      topReferrer: { name: 'Sarah J.', referrals: 42 }
-    };
-
-    res.json(overview);
+    const campaigns = req.storage.get(STORAGE_KEYS.referrals, req.shopId) || [];
+    res.json({ ok: true, ...aggregateReferrals(campaigns), campaigns: campaigns.length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -3012,21 +3210,19 @@ router.get('/analytics/referrals/overview', async (req, res) => {
 // GET /api/loyalty-referral/analytics/referrals/conversion-funnel - Conversion funnel
 router.get('/analytics/referrals/conversion-funnel', async (req, res) => {
   try {
+    const campaigns = req.storage.get(STORAGE_KEYS.referrals, req.shopId) || [];
+    const totals = aggregateReferrals(campaigns);
+    const share = count => (totals.totalReferrals ? round(count / totals.totalReferrals) : 0);
     const funnel = {
       stages: [
-        { stage: 'Invited', count: 3420, percentage: 1.00 },
-        { stage: 'Link Clicked', count: 2280, percentage: 0.67 },
-        { stage: 'Signed Up', count: 1820, percentage: 0.53 },
-        { stage: 'First Purchase', count: 1540, percentage: 0.45 }
+        { stage: 'Invited', count: totals.totalReferrals, percentage: totals.totalReferrals ? 1 : 0 },
+        { stage: 'Pending', count: totals.pendingReferrals, percentage: share(totals.pendingReferrals) },
+        { stage: 'Converted', count: totals.successfulReferrals, percentage: share(totals.successfulReferrals) }
       ],
-      overallConversion: 0.45,
-      dropoffPoints: [
-        { transition: 'Invited -> Clicked', dropoff: 0.33, reason: 'Lack of interest' },
-        { transition: 'Clicked -> Signed Up', dropoff: 0.20, reason: 'Registration friction' }
-      ]
+      overallConversion: totals.conversionRate
     };
 
-    res.json(funnel);
+    res.json({ ok: true, funnel, ...funnel });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -3035,20 +3231,18 @@ router.get('/analytics/referrals/conversion-funnel', async (req, res) => {
 // GET /api/loyalty-referral/analytics/referrals/viral-loop - Viral loop analysis
 router.get('/analytics/referrals/viral-loop', async (req, res) => {
   try {
-    const viralLoop = {
-      kFactor: 1.24,
-      viralCycleTime: 8.4, // days
-      generations: [
-        { generation: 0, customers: 1000, referralsSent: 4200 },
-        { generation: 1, customers: 1890, referralsSent: 7938 },
-        { generation: 2, customers: 3571, referralsSent: 14998 },
-        { generation: 3, customers: 6748, referralsSent: 28342 }
-      ],
-      projectedGrowth30Days: 12400,
-      projectedGrowth90Days: 58200
-    };
+    const campaigns = req.storage.get(STORAGE_KEYS.referrals, req.shopId) || [];
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const totals = aggregateReferrals(campaigns);
 
-    res.json(viralLoop);
+    // K-factor: converted referrals per existing member
+    res.json({
+      ok: true,
+      kFactor: members.length ? round(totals.successfulReferrals / members.length) : 0,
+      viralCycleTime: 0,
+      totalMembers: members.length,
+      convertedReferrals: totals.successfulReferrals
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -4353,18 +4547,22 @@ router.delete('/white-label/email-templates/:id', async (req, res) => {
 // GET /api/loyalty-referral/apm/metrics/real-time - Real-time metrics (5-second updates)
 router.get('/apm/metrics/real-time', async (req, res) => {
   try {
-    const metrics = {
-      timestamp: new Date().toISOString(),
-      activeMembers: Math.floor(Math.random() * 100) + 1200,
-      requestsPerSecond: Math.floor(Math.random() * 50) + 100,
-      avgLatency: Math.floor(Math.random() * 50) + 120,
-      errorRate: (Math.random() * 0.005).toFixed(4),
-      pointsEarnedLastMinute: Math.floor(Math.random() * 1000) + 500,
-      pointsRedeemedLastMinute: Math.floor(Math.random() * 500) + 200,
-      referralsSentLastMinute: Math.floor(Math.random() * 10) + 1
-    };
+    const members = req.storage.get(STORAGE_KEYS.members, req.shopId) || [];
+    const transactions = req.storage.get(STORAGE_KEYS.transactions, req.shopId) || [];
+    const cutoff = Date.now() - 60000;
+    const lastMinute = transactions.filter(t => new Date(t.createdAt).getTime() >= cutoff);
 
-    res.json(metrics);
+    // Request-rate and latency metrics are not collected, so they are reported as unavailable.
+    res.json({
+      ok: true,
+      timestamp: new Date().toISOString(),
+      activeMembers: members.filter(m => m.status === 'active').length,
+      requestsPerSecond: null,
+      avgLatency: null,
+      errorRate: null,
+      pointsEarnedLastMinute: lastMinute.filter(t => t.points > 0).reduce((sum, t) => sum + t.points, 0),
+      pointsRedeemedLastMinute: lastMinute.filter(t => t.points < 0).reduce((sum, t) => sum - t.points, 0)
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

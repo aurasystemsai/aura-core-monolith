@@ -37,5 +37,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-const meta = { id: key, name: "Auto Insights", description: "Automated high-level business insights." };
+const meta = { id: key, name: "Reports & Insights", description: "Sales reports and insights from real orders." };
 module.exports = { key, run, meta };

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * shopifyContentFetcher.js
  * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * Central helper used by every SEO tool that needs to "fetch" a page for
@@ -23,6 +23,45 @@
 
 'use strict';
 
+const dns = require('dns').promises;
+const net = require('net');
+
+function isPrivateIp(ip) {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split('.').map(Number);
+    return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) ||
+      (a === 100 && b >= 64 && b <= 127) || a >= 224;
+  }
+  if (net.isIPv6(ip)) {
+    const l = ip.toLowerCase();
+    if (l === '::1' || l === '::') return true;
+    if (l.startsWith('::ffff:')) return isPrivateIp(l.slice(7));
+    return /^f[cd]/.test(l) || /^fe[89ab]/.test(l);
+  }
+  return true;
+}
+
+/** Throws unless the URL is a public http(s) target. */
+async function assertPublicUrl(rawUrl) {
+  let u;
+  try { u = new URL(rawUrl); } catch { throw new Error('Invalid URL'); }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error('Only http(s) URLs are allowed');
+  if (u.username || u.password) throw new Error('URLs with credentials are not allowed');
+  const host = u.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) {
+    throw new Error('URL host is not allowed');
+  }
+  if (net.isIP(host)) {
+    if (isPrivateIp(host)) throw new Error('URL host is not allowed');
+    return;
+  }
+  if (process.env.NODE_ENV === 'test') return;
+  const addrs = await dns.lookup(host, { all: true });
+  if (!addrs.length || addrs.some(a => isPrivateIp(a.address))) throw new Error('URL host is not allowed');
+}
+
+const MAX_REDIRECTS = 5;
 /** Parse a Shopify storefront URL into its type + handles. */
 function parseShopifyUrl(url) {
   try {
@@ -56,7 +95,10 @@ function resolveShopToken(req, urlHostname) {
     const all = shopTokens.loadAll ? shopTokens.loadAll() : {};
 
     // Prefer explicit session/header shop
+    let verified = null;
+    try { verified = req?.shopify?.dest ? new URL(req.shopify.dest).hostname : null; } catch { /* ignore */ }
     let shop =
+      verified ||
       req?.session?.shop ||
       req?.headers?.['x-shopify-shop-domain'] ||
       null;
@@ -72,19 +114,11 @@ function resolveShopToken(req, urlHostname) {
       }
     }
 
-    // Single-store fallback
-    if (!shop) {
-      const keys = Object.keys(all);
-      if (keys.length === 1) shop = keys[0];
-    }
-
-    if (!shop) shop = process.env.SHOPIFY_STORE_URL || null;
+    // Never guess a shop: a wrong guess would use another merchant's token
     if (!shop) return { shop: null, token: null };
 
     const token = (shopTokens.getToken ? shopTokens.getToken(shop) : null)
       || all[shop]?.token
-      || process.env.SHOPIFY_ACCESS_TOKEN
-      || process.env.SHOPIFY_ADMIN_API_TOKEN
       || null;
 
     return { shop, token };
@@ -175,7 +209,7 @@ async function tryAdminApiFetch(url, req) {
   const { shop, token } = resolveShopToken(req, parsed.host);
   if (!shop || !token) return null;
 
-  const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+  const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
   const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
   try {
@@ -237,19 +271,27 @@ async function fetchForAnalysis(url, req) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'AURA SEO Auditor (+https://aurasystemsai.com)', Accept: 'text/html,application/xhtml+xml' },
-      redirect: 'follow',
-    });
-    clearTimeout(timeout);
+    let current = url;
+    let response;
+    for (let i = 0; ; i++) {
+      await assertPublicUrl(current);
+      response = await fetch(current, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'AURA SEO Auditor (+https://aurasystemsai.com)', Accept: 'text/html,application/xhtml+xml' },
+        redirect: 'manual',
+      });
+      const loc = response.status >= 300 && response.status < 400 && response.headers && response.headers.get && response.headers.get('location');
+      if (!loc) break;
+      if (i >= MAX_REDIRECTS) throw new Error('Too many redirects');
+      current = new URL(loc, current).toString();
+    }    clearTimeout(timeout);
     if (!response.ok) throw new Error(`HTTP ${response.status} from ${url}`);
     const html = await response.text();
     const isPasswordPage = html.includes('password_page') || (html.includes('Shopify') && html.includes('Enter store password'));
     return {
       html,
       fromAdminApi: false,
-      responseUrl: response.url,
+      responseUrl: response.url || current,
       warning: isPasswordPage
         ? 'Store appears to be password-protected. Results may be inaccurate. Connect your store in Settings to enable Admin API access.'
         : undefined,
@@ -260,4 +302,4 @@ async function fetchForAnalysis(url, req) {
   }
 }
 
-module.exports = { fetchForAnalysis, parseShopifyBlogUrl, parseShopifyUrl, resolveShopToken };
+module.exports = { assertPublicUrl, fetchForAnalysis, parseShopifyBlogUrl, parseShopifyUrl, resolveShopToken };

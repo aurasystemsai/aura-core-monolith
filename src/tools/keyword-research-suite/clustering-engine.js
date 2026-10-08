@@ -11,130 +11,101 @@ class ClusteringEngine {
 
   // Create keyword clusters
   async createClusters(params) {
-    const { keywords, method = 'semantic', minClusterSize = 5 } = params;
-    
+    const { keywords, method = 'semantic', minClusterSize = 5, serpData = {} } = params || {};
+    if (!Array.isArray(keywords) || !keywords.length || keywords.some(keyword => typeof keyword !== 'string' || !keyword.trim())) {
+      throw new Error('keywords must be a non-empty array of non-empty strings');
+    }
+    if (!Number.isInteger(minClusterSize) || minClusterSize < 1) {
+      throw new Error('minClusterSize must be a positive integer');
+    }
+    if (!['semantic', 'serp', 'intent'].includes(method)) {
+      throw new Error(`Unsupported clustering method: ${method}`);
+    }
+
+    const uniqueKeywords = [...new Map(keywords.map(keyword => [this.normalizeKeyword(keyword), keyword.trim()])).values()];
+    if (method === 'serp' && uniqueKeywords.some(keyword => {
+      const data = serpData[this.normalizeKeyword(keyword)];
+      return !Array.isArray(data?.topDomains) || data.topDomains.length === 0;
+    })) {
+      throw new Error('SERP clustering requires real SERP data for every keyword');
+    }
+
     const clustering = {
-      id: `cluster_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `cluster_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       method,
-      totalKeywords: keywords.length,
+      totalKeywords: uniqueKeywords.length,
       clusters: [],
+      unclusteredKeywords: [],
       timestamp: new Date().toISOString()
     };
 
     // Choose clustering method
     switch (method) {
       case 'semantic':
-        clustering.clusters = await this.semanticClustering(keywords, minClusterSize);
+        clustering.clusters = await this.semanticClustering(uniqueKeywords, minClusterSize);
         break;
       case 'serp':
-        clustering.clusters = await this.serpBasedClustering(keywords, minClusterSize);
+        clustering.clusters = await this.serpBasedClustering(uniqueKeywords, minClusterSize, serpData);
         break;
       case 'intent':
-        clustering.clusters = await this.intentBasedClustering(keywords, minClusterSize);
+        clustering.clusters = await this.intentBasedClustering(uniqueKeywords, minClusterSize);
         break;
-      default:
-        clustering.clusters = await this.semanticClustering(keywords, minClusterSize);
     }
 
+    clustering.clusters.forEach(cluster => {
+      cluster.id = `${clustering.id}_${cluster.id}`;
+    });
+    const clustered = new Set(clustering.clusters.flatMap(cluster => cluster.keywords));
+    clustering.unclusteredKeywords = uniqueKeywords.filter(keyword => !clustered.has(keyword));
     this.clusters.set(clustering.id, clustering);
     return clustering;
   }
 
   // Semantic clustering (based on word similarity)
   async semanticClustering(keywords, minSize) {
-    const clusters = [];
-    const processed = new Set();
-
-    keywords.forEach(keyword => {
-      if (processed.has(keyword)) return;
-
-      const cluster = {
-        id: `semantic_${clusters.length + 1}`,
-        name: keyword,
-        keywords: [keyword],
-        primaryKeyword: keyword,
-        totalSearchVolume: 0,
-        avgDifficulty: 0
-      };
-
-      processed.add(keyword);
-
-      // Find similar keywords
-      keywords.forEach(otherKeyword => {
-        if (processed.has(otherKeyword)) return;
-        
-        const similarity = this.calculateSimilarity(keyword, otherKeyword);
-        if (similarity > 0.6) {
-          cluster.keywords.push(otherKeyword);
-          processed.add(otherKeyword);
-        }
-      });
-
-      if (cluster.keywords.length >= minSize) {
-        clusters.push(cluster);
-      }
-    });
-
-    // Calculate metrics for each cluster
-    clusters.forEach(cluster => {
-      cluster.totalSearchVolume = cluster.keywords.length * Math.floor(Math.random() * 10000);
-      cluster.avgDifficulty = 30 + Math.floor(Math.random() * 40);
-    });
-
-    return clusters;
+    const components = this.connectedComponents(keywords, (a, b) => this.calculateSimilarity(a, b) > 0.6);
+    return components
+      .filter(component => component.length >= minSize)
+      .map((component, index) => ({
+        id: `semantic_${index + 1}`,
+        name: this.selectRepresentativeKeyword(component),
+        keywords: component,
+        primaryKeyword: this.selectRepresentativeKeyword(component),
+        totalSearchVolume: null,
+        avgDifficulty: null,
+        clusterSize: component.length,
+      }));
   }
 
   // SERP-based clustering (keywords with similar SERP results)
-  async serpBasedClustering(keywords, minSize) {
-    const clusters = [];
-    const serpData = new Map();
-
-    // Simulate SERP data for each keyword
-    keywords.forEach(kw => {
-      serpData.set(kw, {
-        topDomains: this.getTopDomains(),
-        features: this.getSerpFeatures()
-      });
+  async serpBasedClustering(keywords, minSize, serpData) {
+    const components = this.connectedComponents(keywords, (a, b) => {
+      const resultA = serpData[this.normalizeKeyword(a)];
+      const resultB = serpData[this.normalizeKeyword(b)];
+      return this.calculateSerpOverlap(resultA, resultB) > 0.5;
     });
-
-    const processed = new Set();
-
-    keywords.forEach(keyword => {
-      if (processed.has(keyword)) return;
-
-      const cluster = {
-        id: `serp_${clusters.length + 1}`,
-        name: keyword,
-        keywords: [keyword],
-        primaryKeyword: keyword,
-        commonDomains: [],
-        commonFeatures: []
-      };
-
-      processed.add(keyword);
-      const keywordSerp = serpData.get(keyword);
-
-      // Find keywords with similar SERP
-      keywords.forEach(otherKeyword => {
-        if (processed.has(otherKeyword)) return;
-        
-        const otherSerp = serpData.get(otherKeyword);
-        const overlap = this.calculateSerpOverlap(keywordSerp, otherSerp);
-        
-        if (overlap > 0.5) {
-          cluster.keywords.push(otherKeyword);
-          processed.add(otherKeyword);
-        }
+    return components
+      .filter(component => component.length >= minSize)
+      .map((component, index) => {
+        const first = serpData[this.normalizeKeyword(component[0])];
+        const sharedDomains = component.slice(1).reduce((domains, keyword) => {
+          const otherDomains = new Set(serpData[this.normalizeKeyword(keyword)].topDomains || []);
+          return domains.filter(domain => otherDomains.has(domain));
+        }, [...(first.topDomains || [])]);
+        const sharedFeatures = component.slice(1).reduce((features, keyword) => {
+          const otherFeatures = new Set(serpData[this.normalizeKeyword(keyword)].features || []);
+          return features.filter(feature => otherFeatures.has(feature));
+        }, [...(first.features || [])]);
+        return {
+          id: `serp_${index + 1}`,
+          name: this.selectRepresentativeKeyword(component),
+          keywords: component,
+          primaryKeyword: this.selectRepresentativeKeyword(component),
+          commonDomains: sharedDomains,
+          commonFeatures: sharedFeatures,
+          clusterSize: component.length,
+        };
       });
-
-      if (cluster.keywords.length >= minSize) {
-        cluster.commonDomains = keywordSerp.topDomains.slice(0, 3);
-        cluster.commonFeatures = keywordSerp.features;
-        clusters.push(cluster);
-      }
-    });
-
-    return clusters;
   }
 
   // Intent-based clustering
@@ -164,7 +135,8 @@ class ClusteringEngine {
         intent,
         keywords: kwList,
         primaryKeyword: kwList[0],
-        totalSearchVolume: kwList.length * Math.floor(Math.random() * 5000)
+        totalSearchVolume: null,
+        clusterSize: kwList.length,
       });
     });
 
@@ -173,8 +145,9 @@ class ClusteringEngine {
 
   // Calculate keyword similarity
   calculateSimilarity(kw1, kw2) {
-    const words1 = new Set(kw1.toLowerCase().split(' '));
-    const words2 = new Set(kw2.toLowerCase().split(' '));
+    const words1 = new Set(this.normalizeKeyword(kw1).split(' ').filter(Boolean));
+    const words2 = new Set(this.normalizeKeyword(kw2).split(' ').filter(Boolean));
+    if (!words1.size || !words2.size) return 0;
     
     const intersection = new Set([...words1].filter(w => words2.has(w)));
     const union = new Set([...words1, ...words2]);
@@ -185,53 +158,66 @@ class ClusteringEngine {
 
   // Calculate SERP overlap
   calculateSerpOverlap(serp1, serp2) {
-    const domains1 = new Set(serp1.topDomains);
-    const domains2 = new Set(serp2.topDomains);
+    const domains1 = new Set(serp1?.topDomains || []);
+    const domains2 = new Set(serp2?.topDomains || []);
+    if (!domains1.size || !domains2.size) return 0;
     
     const intersection = new Set([...domains1].filter(d => domains2.has(d)));
     return intersection.size / Math.max(domains1.size, domains2.size);
   }
 
-  // Get top domains (mock)
-  getTopDomains() {
-    const domains = [
-      'wikipedia.org', 'youtube.com', 'reddit.com', 'medium.com',
-      'forbes.com', 'nytimes.com', 'techcrunch.com', 'hubspot.com'
-    ];
-    
-    return domains
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 5);
+  normalizeKeyword(keyword) {
+    return keyword.toLowerCase().trim().replace(/\s+/g, ' ');
   }
 
-  // Get SERP features (mock)
-  getSerpFeatures() {
-    const features = [
-      'featured_snippet', 'people_also_ask', 'local_pack',
-      'video_carousel', 'image_pack', 'knowledge_panel'
-    ];
-    
-    return features.filter(() => Math.random() > 0.6);
+  connectedComponents(keywords, areRelated) {
+    const visited = new Set();
+    const components = [];
+    for (const keyword of keywords) {
+      if (visited.has(keyword)) continue;
+      const component = [];
+      const queue = [keyword];
+      visited.add(keyword);
+      while (queue.length) {
+        const current = queue.shift();
+        component.push(current);
+        for (const candidate of keywords) {
+          if (!visited.has(candidate) && areRelated(current, candidate)) {
+            visited.add(candidate);
+            queue.push(candidate);
+          }
+        }
+      }
+      components.push(component);
+    }
+    return components;
   }
 
-  // Classify intent (simple mock)
+  selectRepresentativeKeyword(keywords) {
+    return [...keywords].sort((a, b) => {
+      const wordCount = this.normalizeKeyword(a).split(' ').length - this.normalizeKeyword(b).split(' ').length;
+      return wordCount || a.localeCompare(b);
+    })[0];
+  }
+
   classifyIntent(keyword) {
-    const lower = keyword.toLowerCase();
+    const lower = this.normalizeKeyword(keyword);
     
-    if (/^(what|how|why|when)/.test(lower)) return 'informational';
-    if (/\b(login|sign in)\b/.test(lower)) return 'navigational';
-    if (/\b(best|top|vs|review)\b/.test(lower)) return 'commercial';
-    if (/\b(buy|price|purchase)\b/.test(lower)) return 'transactional';
+    if (/\b(login|log in|sign in|official site|website)\b/.test(lower)) return 'navigational';
+    if (/\b(buy|price|purchase|order|shop|discount|coupon|for sale)\b/.test(lower)) return 'transactional';
+    if (/\b(best|top|vs|versus|review|comparison|compare)\b/.test(lower)) return 'commercial';
+    if (/^(what|how|why|when|where|who|which|guide|tutorial)\b/.test(lower) || /\b(meaning|definition|examples)\b/.test(lower)) return 'informational';
     
     return 'informational';
   }
 
   // Create topic silos
   async createSilos(params) {
-    const { keywords, maxSilos = 10 } = params;
+    const { keywords, maxSilos = 10, minClusterSize = 2 } = params || {};
+    if (!Number.isInteger(maxSilos) || maxSilos < 1) throw new Error('maxSilos must be a positive integer');
     
     // First cluster keywords
-    const clustering = await this.createClusters({ keywords, method: 'semantic' });
+    const clustering = await this.createClusters({ keywords, method: 'semantic', minClusterSize });
     
     const siloStructure = {
       id: `silo_${Date.now()}`,
@@ -259,11 +245,10 @@ class ClusteringEngine {
 
   // Select pillar keyword
   selectPillarKeyword(keywords) {
-    // Select keyword with highest search volume (simulated)
     return {
       keyword: keywords[0],
-      searchVolume: Math.floor(Math.random() * 50000) + 10000,
-      difficulty: Math.floor(Math.random() * 100),
+      searchVolume: null,
+      difficulty: null,
       role: 'pillar'
     };
   }
@@ -300,7 +285,7 @@ class ClusteringEngine {
 
   // Get cluster suggestions
   async getClusterSuggestions(clusterId) {
-    const cluster = this.clusters.get(clusterId);
+    const cluster = this.getCluster(clusterId);
     if (!cluster) throw new Error('Cluster not found');
 
     const suggestions = {
@@ -314,7 +299,7 @@ class ClusteringEngine {
     suggestions.contentSuggestions.push({
       type: 'pillar_page',
       title: `Complete guide to ${cluster.name}`,
-      targetWordCount: 3000 + Math.floor(Math.random() * 2000),
+      targetWordCount: 4000,
       sections: cluster.keywords.slice(0, 10)
     });
 
@@ -322,7 +307,7 @@ class ClusteringEngine {
       suggestions.contentSuggestions.push({
         type: 'supporting_page',
         title: kw,
-        targetWordCount: 1500 + Math.floor(Math.random() * 1000),
+        targetWordCount: 2000,
         keywordFocus: kw
       });
     });
@@ -337,7 +322,7 @@ class ClusteringEngine {
 
     // Expansion opportunities
     suggestions.expansionOpportunities = [
-      `Add ${Math.floor(Math.random() * 20) + 10} more related keywords`,
+      'Research additional related keywords using the keyword discovery workflow',
       'Create video content for top 3 keywords',
       'Build interactive tools/calculators'
     ];
@@ -347,14 +332,17 @@ class ClusteringEngine {
 
   // Merge clusters
   async mergeClusters(clusterIds) {
-    const clustersToMerge = clusterIds.map(id => this.clusters.get(id)).filter(Boolean);
+    if (!Array.isArray(clusterIds) || clusterIds.length < 2) {
+      throw new Error('Need at least 2 cluster IDs to merge');
+    }
+    const clustersToMerge = clusterIds.map(id => this.getCluster(id)).filter(Boolean);
     
     if (clustersToMerge.length < 2) {
       throw new Error('Need at least 2 clusters to merge');
     }
 
     const merged = {
-      id: `merged_${Date.now()}`,
+      id: `merged_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name: clustersToMerge[0].name,
       keywords: [],
       sourceClusters: clusterIds,
@@ -370,6 +358,16 @@ class ClusteringEngine {
 
     this.clusters.set(merged.id, merged);
     return merged;
+  }
+
+  getCluster(clusterId) {
+    const direct = this.clusters.get(clusterId);
+    if (direct && Array.isArray(direct.keywords)) return direct;
+    for (const clustering of this.clusters.values()) {
+      const cluster = clustering.clusters?.find(item => item.id === clusterId);
+      if (cluster) return cluster;
+    }
+    return null;
   }
 }
 

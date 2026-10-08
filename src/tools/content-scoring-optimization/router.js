@@ -1,508 +1,134 @@
+﻿// Content Scoring: grades the real copy on a store's products, pages, collections and articles
+// for length, readability and structure, then offers an AI rewrite that is only applied on request.
+// Scores come from fixed, explainable rules over the actual text; nothing is simulated.
 const express = require('express');
+const { getShopContext } = require('../../core/shopContext');
+const { getOpenAIClient } = require('../../core/openaiClient');
+const { loadStoreEntities } = require('../../core/seoStoreData');
+const { headingsOf } = require('../../core/onPage');
+const { applyProductFields } = require('../../core/shopifyApply');
+
 const router = express.Router();
-let _openai = null;
-function getOpenAI() {
-  if (!_openai) {
-    const OpenAI = require('openai');
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return _openai;
+const MODEL = 'gpt-4o-mini';
+
+function withShop(handler) {
+  return async (req, res) => {
+    const ctx = getShopContext(req);
+    if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
+    try {
+      await handler(req, res, ctx);
+    } catch (err) {
+      res.status(err.status || 500).json({ ok: false, error: err.message });
+    }
+  };
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 14: Real-Time Content Scorer
-   POST /api/content-scoring-optimization/score
-   Scores content across 8 dimensions and returns a 0-100 grade
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/score', async (req, res) => {
-  try {
-    const { content, keyword = '', model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are an expert content quality analyst. Score this content for SEO and quality.
+function syllables(word) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  const groups = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '').match(/[aeiouy]{1,2}/g);
+  return Math.max(1, groups ? groups.length : 1);
+}
 
-Target keyword: "${keyword || '(not specified)'}"
+/** Flesch reading ease (0-100+, higher is easier) plus basic text stats. */
+function readability(text) {
+  const sentences = (String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map((s) => s.trim()).filter(Boolean);
+  const words = String(text).match(/[A-Za-z][A-Za-z'-]*/g) || [];
+  if (!words.length || !sentences.length) return { words: words.length, sentences: sentences.length, flesch: null, avgSentence: 0 };
+  const syl = words.reduce((n, w) => n + syllables(w), 0);
+  const avgSentence = words.length / sentences.length;
+  const flesch = 206.835 - 1.015 * avgSentence - 84.6 * (syl / words.length);
+  return { words: words.length, sentences: sentences.length, flesch: Math.round(Math.max(0, Math.min(100, flesch))), avgSentence: Math.round(avgSentence * 10) / 10 };
+}
 
-Content:
-"""
-${content.slice(0, 4000)}
-"""
+const MIN_WORDS = { product: 80, collection: 50, page: 150, article: 600 };
 
-Return JSON:
-{
-  "overallScore": 0-100,
-  "grade": "A+|A|B+|B|C+|C|D|F",
-  "dimensions": {
-    "readability": { "score": 0-100, "details": "...", "feedback": "..." },
-    "keywordOptimization": { "score": 0-100, "details": "...", "feedback": "..." },
-    "depth": { "score": 0-100, "details": "...", "feedback": "..." },
-    "structure": { "score": 0-100, "details": "...", "feedback": "..." },
-    "eeat": { "score": 0-100, "details": "...", "feedback": "..." },
-    "uniqueness": { "score": 0-100, "details": "...", "feedback": "..." },
-    "entityCoverage": { "score": 0-100, "details": "...", "feedback": "..." },
-    "intentAlignment": { "score": 0-100, "details": "...", "feedback": "..." }
-  },
-  "wordCount": 0,
-  "readingLevel": "Elementary|Middle School|High School|College|Graduate",
-  "topIssues": ["issue1", "issue2", "issue3"],
-  "quickWins": ["win1", "win2", "win3"]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
+function scoreEntity(e) {
+  const r = readability(e.text);
+  const min = MIN_WORDS[e.type] || 100;
+  const heads = headingsOf(e.html).filter((h) => h.level >= 2).length;
+  const bullets = (e.html.match(/<li\b/gi) || []).length;
+  const issues = [];
+  let score = 100;
 
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 15: Entity Auto-Optimizer
-   POST /api/content-scoring-optimization/entity-optimize
-   Identifies and optimizes named entities in content
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/entity-optimize', async (req, res) => {
-  try {
-    const { content, keyword = '', model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are an entity SEO specialist. Analyze entities in this content and suggest optimizations.
-
-Topic/keyword: "${keyword}"
-Content: """${content.slice(0, 3000)}"""
-
-Return JSON:
-{
-  "entitiesFound": [{ "name": "...", "type": "Person|Organization|Product|Place|Concept|Event", "mentions": 0, "prominent": true|false }],
-  "missingKeyEntities": ["entity that should be mentioned but isn't"],
-  "underOptimizedEntities": [{ "entity": "...", "suggestion": "how to use it better" }],
-  "entityDensityScore": 0-100,
-  "optimizedExcerpts": [{ "original": "...", "improved": "...", "reason": "..." }],
-  "topicAuthority": { "score": 0-100, "gaps": ["missing subtopic"], "strengths": ["covered well"] }
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 16: AI Facts Inserter
-   POST /api/content-scoring-optimization/insert-facts
-   Suggests factual additions to improve content authority
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/insert-facts', async (req, res) => {
-  try {
-    const { content, topic = '', model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are an expert fact-checker and content enricher. Suggest facts, statistics, and data points to add to this content.
-
-Topic: "${topic}"
-Content: """${content.slice(0, 3000)}"""
-
-Return JSON:
-{
-  "factSuggestions": [
-    {
-      "fact": "The exact fact or statistic to add",
-      "source": "Type of source (industry report, research study, etc.)",
-      "insertionPoint": "suggested place in content to add it",
-      "impact": "Why this fact improves SEO/authority",
-      "urgency": "high|medium|low"
+  if (r.words === 0) { score = 0; issues.push({ severity: 'high', text: 'No description or body copy at all.' }); }
+  else {
+    if (r.words < min) {
+      const lost = Math.min(40, Math.round(((min - r.words) / min) * 40));
+      score -= lost;
+      issues.push({ severity: r.words < min / 2 ? 'high' : 'medium', text: `Only ${r.words} words; aim for at least ${min} for a ${e.type}.` });
     }
-  ],
-  "claimsToVerify": ["claim in the content that needs a source"],
-  "outdatedClaims": ["claim that may be outdated with suggested update"],
-  "eeatBoostTips": ["specific tips to improve E-E-A-T signals in this content"],
-  "authorityScore": 0-100
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1200,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 17: NLP Term Suggester
-   POST /api/content-scoring-optimization/nlp-terms
-   Suggests semantically related NLP terms to add
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/nlp-terms', async (req, res) => {
-  try {
-    const { content, keyword, model = 'gpt-4o-mini' } = req.body || {};
-    if (!content || !keyword) return res.status(400).json({ ok: false, error: 'content and keyword required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are an NLP/LSI keyword expert. Analyze this content against top-ranking content for "${keyword}".
-
-Content: """${content.slice(0, 2500)}"""
-
-Return JSON:
-{
-  "primaryKeyword": "${keyword}",
-  "termsFound": ["NLP terms already in the content"],
-  "termsMissing": [
-    { "term": "...", "importance": "high|medium|low", "suggestedUsage": "how/where to use it", "frequency": "n times" }
-  ],
-  "semanticClusters": [
-    { "cluster": "cluster name", "terms": ["term1", "term2"], "covered": true|false }
-  ],
-  "nlpScore": 0-100,
-  "topicCompleteness": 0-100,
-  "recommendation": "summary of what NLP terms to prioritize adding"
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 18: Topical Coverage Gap Analyzer
-   POST /api/content-scoring-optimization/topical-gap
-   Finds what subtopics are missing from the content
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/topical-gap', async (req, res) => {
-  try {
-    const { content, keyword, model = 'gpt-4o-mini' } = req.body || {};
-    if (!content || !keyword) return res.status(400).json({ ok: false, error: 'content and keyword required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are a topical authority expert. Identify coverage gaps in this content for the keyword "${keyword}".
-
-Content: """${content.slice(0, 3000)}"""
-
-Analyze what a comprehensive piece about "${keyword}" should cover, then identify what is missing.
-
-Return JSON:
-{
-  "keyword": "${keyword}",
-  "topicsExpected": ["subtopic that top-ranking content covers"],
-  "topicsCovered": ["subtopic this content covers"],
-  "topicsGap": [
-    { "topic": "missing subtopic", "importance": "high|medium|low", "why": "why top content covers this", "wordEstimate": 100 }
-  ],
-  "coverageScore": 0-100,
-  "topicalAuthorityPotential": 0-100,
-  "contentBriefAdditions": ["sections to add with brief description"],
-  "pillarPageOpportunity": true|false,
-  "pillarPageTopics": ["subtopics for supporting content"]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 19 & 20: Search Intent Classifier + Long-Tail Mapper
-   POST /api/content-scoring-optimization/intent-longtail
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/intent-longtail', async (req, res) => {
-  try {
-    const { keyword, content = '', niche = '', model = 'gpt-4o-mini' } = req.body || {};
-    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are a search intent and keyword research expert.
-
-Primary keyword: "${keyword}"
-Niche: "${niche}"
-${content ? `Content excerpt: """${content.slice(0, 1000)}"""` : ''}
-
-Return JSON:
-{
-  "searchIntent": {
-    "primary": "Informational|Navigational|Transactional|Commercial",
-    "secondary": "...",
-    "confidence": 0-100,
-    "explanation": "...",
-    "contentTypeMatch": "Is the content format correct for this intent?"
-  },
-  "intentMismatch": true|false,
-  "intentMismatchFix": "How to better align content with intent",
-  "longTailKeywords": [
-    { "keyword": "...", "intent": "Informational|Transactional|Commercial", "difficulty": "low|medium|high", "estimatedVolume": "...", "contentAngle": "..." }
-  ],
-  "questionKeywords": ["What ...", "How ...", "Why ..."],
-  "modifierKeywords": ["best ...", "cheap ...", "near me"],
-  "programmaticTemplates": ["[city] + keyword", "keyword + [year]"]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 21 & 22: Content Depth Scorer + E-E-A-T Checklist
-   POST /api/content-scoring-optimization/depth-eeat
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/depth-eeat', async (req, res) => {
-  try {
-    const { content, keyword = '', model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are a Google E-E-A-T quality assessment expert. Analyze content depth and E-E-A-T signals.
-
-Keyword: "${keyword}"
-Content: """${content.slice(0, 3500)}"""
-
-Return JSON:
-{
-  "contentDepth": {
-    "score": 0-100,
-    "wordCount": 0,
-    "hasIntro": true|false,
-    "hasConclusion": true|false,
-    "headingCount": 0,
-    "avgSectionLength": 0,
-    "usesLists": true|false,
-    "usesExamples": true|false,
-    "usesDataOrStats": true|false,
-    "depthGrade": "Thin|Basic|Good|Comprehensive|Expert"
-  },
-  "eeat": {
-    "experience": { "score": 0-100, "signals": ["signal found"], "missing": ["signal to add"] },
-    "expertise": { "score": 0-100, "signals": ["signal found"], "missing": ["signal to add"] },
-    "authoritativeness": { "score": 0-100, "signals": ["signal found"], "missing": ["signal to add"] },
-    "trustworthiness": { "score": 0-100, "signals": ["signal found"], "missing": ["signal to add"] },
-    "overallEeat": 0-100
-  },
-  "topPriorityFixes": [
-    { "area": "Experience|Expertise|Authoritativeness|Trustworthiness|Depth", "fix": "...", "impact": "high|medium|low" }
-  ]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1200,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 23: Table & Visual Content Suggester
-   POST /api/content-scoring-optimization/suggest-tables
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/suggest-tables', async (req, res) => {
-  try {
-    const { content, keyword = '', model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are a content structure expert. Suggest tables, comparison charts, and visual elements for this content.
-
-Keyword: "${keyword}"
-Content: """${content.slice(0, 3000)}"""
-
-Return JSON:
-{
-  "tableSuggestions": [
-    { "title": "table name", "purpose": "why this helps SEO", "columns": ["col1","col2"], "sampleRows": [["val1","val2"]], "schemaType": "Table|ItemList|HowTo|FAQPage", "placement": "where in content" }
-  ],
-  "comparisonCharts": [
-    { "title": "chart name", "items": ["item1","item2"], "attributes": ["attr1","attr2"] }
-  ],
-  "infographicIdeas": ["idea for visual that earns backlinks"],
-  "featuredSnippetOpportunities": [
-    { "targetQuery": "query this could rank for", "snippetType": "table|list|paragraph|video", "contentToAdd": "..." }
-  ]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 24: Key Takeaways Generator
-   POST /api/content-scoring-optimization/key-takeaways
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/key-takeaways', async (req, res) => {
-  try {
-    const { content, format = 'bullets', model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `Extract key takeaways from this content in ${format} format for SEO and reader value.
-
-Content: """${content.slice(0, 3000)}"""
-
-Return JSON:
-{
-  "keyTakeaways": ["concise takeaway 1", "concise takeaway 2"],
-  "tldr": "One-sentence summary of the whole piece",
-  "twitterThread": ["tweet 1 (max 280 chars)", "tweet 2"],
-  "metaDescriptionSuggestion": "compelling meta description using key takeaways",
-  "seoTitleOptions": ["title option 1", "title option 2", "title option 3"],
-  "summaryBoxHtml": "<div class='key-takeaways'>...</div> HTML for adding to content",
-  "faqFromContent": [{ "q": "question derived from content", "a": "answer from content" }]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1000,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 25: Competitor Outline Viewer
-   POST /api/content-scoring-optimization/competitor-outline
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/competitor-outline', async (req, res) => {
-  try {
-    const { keyword, numCompetitors = 5, model = 'gpt-4o-mini' } = req.body || {};
-    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `You are an SEO content strategist. Generate what the top ${numCompetitors} ranking articles for "${keyword}" typically cover, based on your knowledge.
-
-Return JSON:
-{
-  "keyword": "${keyword}",
-  "competitorOutlines": [
-    {
-      "position": 1,
-      "titlePattern": "typical title format",
-      "estimatedWordCount": 0,
-      "contentType": "Guide|Listicle|Review|How-To|Comparison",
-      "outline": ["H1: ...", "H2: ...", "H3: ...", "H2: ..."],
-      "uniqueAngle": "what makes this article stand out",
-      "keywordDensity": "approx %"
+    if (r.flesch !== null && r.flesch < 50) {
+      score -= r.flesch < 30 ? 25 : 12;
+      issues.push({ severity: r.flesch < 30 ? 'high' : 'medium', text: `Hard to read (Flesch ${r.flesch}). Use shorter sentences and simpler words.` });
     }
-  ],
-  "commonH2s": ["heading that appears in most top results"],
-  "uniqueOpportunities": ["angle or heading not covered by most competitors"],
-  "recommendedOutline": ["H1: ...", "H2: ...", "H3: ..."],
-  "recommendedWordCount": 0,
-  "contentGapsVsCompetitors": ["gap to exploit"]
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1500,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    if (r.avgSentence > 25) { score -= 10; issues.push({ severity: 'medium', text: `Sentences average ${r.avgSentence} words; keep them under 25.` }); }
+    if (r.words >= 300 && heads < 2) { score -= 10; issues.push({ severity: 'medium', text: 'Long copy with fewer than 2 subheadings; break it up with H2s.' }); }
+    if (e.type === 'product' && r.words >= min && bullets === 0) { score -= 5; issues.push({ severity: 'low', text: 'No bullet list; shoppers scan for key features.' }); }
+    const dup = new Set(); let repeated = 0;
+    String(e.text).split(/(?<=[.!?])\s+/).forEach((s) => { const k = s.toLowerCase().trim(); if (k.length > 20) { if (dup.has(k)) repeated++; dup.add(k); } });
+    if (repeated) { score -= 10; issues.push({ severity: 'medium', text: `${repeated} repeated sentence${repeated > 1 ? 's' : ''}.` }); }
   }
-});
+  return { score: Math.max(0, Math.min(100, score)), ...r, headings: heads, bullets, issues };
+}
 
-/* ═══════════════════════════════════════════════════════════════════
-   FEATURE 26: FAQ Schema Generator
-   POST /api/content-scoring-optimization/faq-schema
-   ═══════════════════════════════════════════════════════════════════ */
-router.post('/faq-schema', async (req, res) => {
-  try {
-    const { content, keyword = '', count = 8, model = 'gpt-4o-mini' } = req.body || {};
-    if (!content) return res.status(400).json({ ok: false, error: 'content required' });
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [{
-        role: 'user',
-        content: `Generate ${count} FAQ pairs from this content, then produce JSON-LD FAQ schema.
+const summary = (e, s) => ({ id: e.id, type: e.type, title: e.title, url: e.url, score: s.score, words: s.words, flesch: s.flesch, issues: s.issues.length });
 
-Keyword context: "${keyword}"
-Content: """${content.slice(0, 3000)}"""
+router.get('/overview', withShop(async (req, res, { shop, token }) => {
+  const { entities, warnings } = await loadStoreEntities(shop, token, { max: 100 });
+  const items = entities.map((e) => summary(e, scoreEntity(e))).sort((a, b) => a.score - b.score);
+  const avg = items.length ? Math.round(items.reduce((n, i) => n + i.score, 0) / items.length) : null;
+  const bands = { good: items.filter((i) => i.score >= 80).length, ok: items.filter((i) => i.score >= 50 && i.score < 80).length, poor: items.filter((i) => i.score < 50).length };
+  res.json({ ok: true, average: avg, total: items.length, bands, items, warnings });
+}));
 
-Return JSON:
-{
-  "faqs": [{ "question": "...", "answer": "concise 1-2 sentence answer for schema", "fullAnswer": "longer answer for page content" }],
-  "jsonLdSchema": { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [] },
-  "htmlMarkup": "<div itemscope itemtype='https://schema.org/FAQPage'>...</div>",
-  "paaTargets": ["People Also Ask questions this could rank for"],
-  "estimatedSnippetCount": 0
-}`
-      }],
-      response_format: { type: 'json_object' },
-      max_tokens: 1500,
-    });
-    const result = JSON.parse(completion.choices[0].message.content);
-    if (req.deductCredits) req.deductCredits({ model });
-    res.json({ ok: true, ...result });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
+router.post('/score', withShop(async (req, res, { shop, token }) => {
+  const id = String(req.body && req.body.id || '');
+  const { entities } = await loadStoreEntities(shop, token, { max: 100 });
+  const e = entities.find((x) => x.id === id);
+  if (!e) return res.status(404).json({ ok: false, error: 'Item not found in your store.' });
+  res.json({ ok: true, item: { id: e.id, type: e.type, title: e.title, url: e.url, text: e.text }, result: scoreEntity(e) });
+}));
 
-// ── Health ────────────────────────────────────────────────────────────────────
-router.get('/health', (req, res) => {
-  res.json({ ok: true, tool: 'content-scoring-optimization', ts: new Date().toISOString() });
-});
+// Rewrites the copy for one item and re-scores the result. Nothing is saved to Shopify here.
+router.post('/ai/rewrite', withShop(async (req, res, { shop, token }) => {
+  const openai = getOpenAIClient();
+  if (!openai) return res.status(503).json({ ok: false, error: 'AI is not configured on the server.' });
+  const id = String(req.body && req.body.id || '');
+  const { entities } = await loadStoreEntities(shop, token, { max: 100 });
+  const e = entities.find((x) => x.id === id);
+  if (!e) return res.status(404).json({ ok: false, error: 'Item not found in your store.' });
+  const before = scoreEntity(e);
+  const completion = await openai.chat.completions.create({
+    model: MODEL, temperature: 0.5, max_tokens: 1400, response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: `You improve ecommerce copy. Rewrite the ${e.type} description so it is clear, easy to read (short sentences), well structured and at least ${MIN_WORDS[e.type] || 100} words. Use only facts present in the original text or title; never invent materials, sizes, dimensions, claims, prices or reviews. If facts are thin, write about benefits and use without specifics. HTML only (<p>,<ul>,<li>,<h2>,<strong>), no <h1>. Return JSON {"html":string}.` },
+      { role: 'user', content: `Title: ${e.title}\nCurrent copy:\n${e.text || '(empty)'}` },
+    ],
+  });
+  let html = '';
+  try { html = JSON.parse(completion.choices[0].message.content).html || ''; } catch { /* handled below */ }
+  html = html.replace(/<\s*(script|style|iframe|object|embed)[\s\S]*?<\/\s*\1\s*>/gi, '').replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '').replace(/javascript:/gi, '');
+  if (!html.trim()) return res.status(502).json({ ok: false, error: 'The AI returned nothing usable. Try again.' });
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const after = scoreEntity({ ...e, html, text });
+  if (req.deductCredits) await req.deductCredits({ model: MODEL, action: 'content-brief' });
+  res.json({ ok: true, id: e.id, html, before: before.score, after: after.score, result: after });
+}));
+
+// Only product descriptions can be written back; other types are copy-and-paste.
+router.post('/apply', withShop(async (req, res, { shop, token }) => {
+  const id = String(req.body && req.body.id || '');
+  const html = String(req.body && req.body.html || '').slice(0, 60000);
+  if (!html.trim()) return res.status(400).json({ ok: false, error: 'No copy to apply.' });
+  const { entities } = await loadStoreEntities(shop, token, { max: 100 });
+  const e = entities.find((x) => x.id === id);
+  if (!e) return res.status(404).json({ ok: false, error: 'Item not found in your store.' });
+  if (e.type !== 'product') return res.status(400).json({ ok: false, error: 'Only product descriptions can be applied automatically. Copy this text into your Shopify admin.' });
+  const safe = html.replace(/<\s*(script|style|iframe|object|embed)[\s\S]*?<\/\s*\1\s*>/gi, '').replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '').replace(/javascript:/gi, '');
+  await applyProductFields(shop, id.split('/').pop(), { body_html: safe });
+  res.json({ ok: true });
+}));
 
 module.exports = router;

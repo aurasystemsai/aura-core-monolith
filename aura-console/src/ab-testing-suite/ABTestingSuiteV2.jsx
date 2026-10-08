@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
  Page,
  Layout,
@@ -10,42 +10,25 @@ import {
  TextField,
  Select,
  Modal,
- TextContainer,
  Stack,
  ButtonGroup,
  Banner,
- ProgressBar,
- Icon,
  Spinner,
- EmptyState,
- ResourceList,
- ResourceItem,
- Thumbnail,
  Text
 } from '@shopify/polaris';
 import {
- ChartVerticalFilledMajor,
  AnalyticsMajor,
- CustomersMinor,
- SettingsMajor,
  ExportMinor,
  ImportMinor,
  NotificationMajor
 } from '@shopify/polaris-icons';
 import './ABTestingSuiteV2.css';
+import { apiFetchJSON } from '../api';
 
 /**
  * Comprehensive AB Testing Suite V2
  * 
- * 42 tabs organized into 8 categories:
- * - Statistical Analysis (6 tabs)
- * - Multi-Armed Bandits (5 tabs)
- * - Experimentation Platform (6 tabs)
- * - Analytics & Reporting (6 tabs)
- * - Traffic Management (5 tabs)
- * - Integration & API (5 tabs)
- * - AI & ML Optimization (5 tabs)
- * - Advanced Features (4 tabs)
+ * Exposes experiment management and statistical workflows backed by the API.
  */
 
 const ABTestingSuiteV2 = () => {
@@ -53,8 +36,10 @@ const ABTestingSuiteV2 = () => {
  const [loading, setLoading] = useState(false);
  const [experiments, setExperiments] = useState([]);
  const [modalActive, setModalActive] = useState(false);
- const [selectedExperiment, setSelectedExperiment] = useState(null);
  const [stats, setStats] = useState({});
+ const [healthStatus, setHealthStatus] = useState('unknown');
+ const [form, setForm] = useState({ name: '', description: '', type: 'ab', variants: 'Control, Variant A' });
+ const [error, setError] = useState('');
 
  // Fetch experiments on mount
  useEffect(() => {
@@ -65,13 +50,15 @@ const ABTestingSuiteV2 = () => {
  const fetchExperiments = async () => {
  try {
  setLoading(true);
- const response = await fetch('/api/tools/ab-testing-suite/experiments');
- const data = await response.json();
+ const data = await apiFetchJSON('/api/tools/ab-testing-suite/experiments');
  if (data.success) {
  setExperiments(data.result || []);
+ } else {
+ setError(data.error || 'Could not load experiments');
  }
  } catch (error) {
  console.error('Error fetching experiments:', error);
+ setError(error.message || 'Could not load experiments');
  } finally {
  setLoading(false);
  }
@@ -79,13 +66,75 @@ const ABTestingSuiteV2 = () => {
 
  const fetchStats = async () => {
  try {
- const response = await fetch('/api/tools/ab-testing-suite/stats');
- const data = await response.json();
+ const data = await apiFetchJSON('/api/tools/ab-testing-suite/stats');
  if (data.success) {
  setStats(data.stats);
+ } else {
+ setError(data.error || 'Could not load experiment stats');
  }
  } catch (error) {
  console.error('Error fetching stats:', error);
+ }
+ };
+
+ const checkHealth = async () => {
+ try {
+ const result = await apiFetchJSON('/api/tools/ab-testing-suite/health');
+ setHealthStatus(result.ok && result.service === 'ab-testing-suite' ? 'healthy' : 'unavailable');
+ } catch (requestError) {
+ setHealthStatus('unavailable');
+ setError(requestError.message || 'Could not check API health');
+ }
+ };
+
+ const runExperimentAction = async (experiment, action) => {
+ try {
+ const requestOptions = action === 'delete' ? { method: 'DELETE' } : { method: 'POST' };
+ const result = await apiFetchJSON(`/api/tools/ab-testing-suite/experiments/${experiment.id}${action === 'delete' ? '' : `/${action}`}`, requestOptions);
+ if (!result.success) {
+ setError(result.error || `Could not ${action} experiment`);
+ return;
+ }
+ await Promise.all([fetchExperiments(), fetchStats()]);
+ } catch (requestError) {
+ setError(requestError.message || `Could not ${action} experiment`);
+ }
+ };
+
+ const createExperiment = async () => {
+ const name = form.name.trim();
+ const variants = form.variants.split(',').map(name => name.trim()).filter(Boolean);
+ if (!name || variants.length < 2) {
+ setError('Enter an experiment name and at least two comma-separated variants.');
+ return;
+ }
+ try {
+ const data = await apiFetchJSON('/api/tools/ab-testing-suite/experiments', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ name,
+ description: form.description.trim(),
+ type: form.type,
+ variants: variants.map((variantName, index) => ({
+ name: variantName,
+ isControl: index === 0,
+ trafficWeight: 100 / variants.length
+ }))
+ })
+ });
+ if (!data.success) {
+ setError(data.error || 'Could not create experiment');
+ return;
+ }
+ setExperiments(current => [data.result, ...current]);
+ setStats(current => ({ ...current, totalExperiments: (current.totalExperiments || 0) + 1 }));
+ setForm({ name: '', description: '', type: 'ab', variants: 'Control, Variant A' });
+ setError('');
+ setModalActive(false);
+ } catch (requestError) {
+ console.error('Error creating experiment:', requestError);
+ setError(requestError.message || 'Could not create experiment');
  }
  };
 
@@ -100,8 +149,9 @@ const ABTestingSuiteV2 = () => {
  const [result, setResult] = useState(null);
 
  const runTest = async () => {
+ try {
  const endpoint = testType === 'z-test' ? '/statistical/z-test' : '/statistical/t-test';
- const response = await fetch(`/api/tools/ab-testing-suite${endpoint}`, {
+ const data = await apiFetchJSON(`/api/tools/ab-testing-suite${endpoint}`, {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
@@ -109,8 +159,11 @@ const ABTestingSuiteV2 = () => {
  treatment: { conversions: parseInt(treatmentConv), samples: parseInt(treatmentSamples) }
  })
  });
- const data = await response.json();
- setResult(data.result);
+ if (data.success) setResult(data.result);
+ else setError(data.error || 'Statistical test failed');
+ } catch (requestError) {
+ setError(requestError.message || 'Statistical test failed');
+ }
  };
 
  return (
@@ -120,8 +173,7 @@ const ABTestingSuiteV2 = () => {
  label="Test Type"
  options={[
  { label: 'Z-Test (Proportions)', value: 'z-test' },
- { label: 'T-Test (Means)', value: 't-test' },
- { label: 'Chi-Square', value: 'chi-square' }
+ { label: 'Welch Test (Conversion Rates)', value: 't-test' }
  ]}
  value={testType}
  onChange={setTestType}
@@ -155,7 +207,8 @@ const ABTestingSuiteV2 = () => {
  const [result, setResult] = useState(null);
 
  const runBayesian = async () => {
- const response = await fetch('/api/tools/ab-testing-suite/statistical/bayesian-ab-test', {
+ try {
+ const data = await apiFetchJSON('/api/tools/ab-testing-suite/statistical/bayesian-ab-test', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
@@ -163,8 +216,11 @@ const ABTestingSuiteV2 = () => {
  treatment: { conversions: parseInt(treatmentConv), samples: parseInt(treatmentSamples) }
  })
  });
- const data = await response.json();
- setResult(data.result);
+ if (data.success) setResult(data.result);
+ else setError(data.error || 'Bayesian analysis failed');
+ } catch (requestError) {
+ setError(requestError.message || 'Bayesian analysis failed');
+ }
  };
 
  return (
@@ -186,7 +242,7 @@ const ABTestingSuiteV2 = () => {
  <p>Probability Treatment Beats Control: {(result.probabilityBBeatsA * 100).toFixed(2)}%</p>
  <p>Expected Loss Control: {result.expectedLossA?.toFixed(4)}</p>
  <p>Expected Loss Treatment: {result.expectedLossB?.toFixed(4)}</p>
- <p>Credible Interval: [{result.credibleInterval?.lower.toFixed(3)}, {result.credibleInterval?.upper.toFixed(3)}]</p>
+ <p>Treatment-control credible interval: [{result.credibleInterval?.lower.toFixed(3)}, {result.credibleInterval?.upper.toFixed(3)}]</p>
  </Card.Section>
  </Card>
  )}
@@ -216,19 +272,23 @@ const ABTestingSuiteV2 = () => {
  const [sampleSize, setSampleSize] = useState(null);
 
  const calculateSample = async () => {
- const response = await fetch('/api/tools/ab-testing-suite/statistical/sample-size', {
+ try {
+ const data = await apiFetchJSON('/api/tools/ab-testing-suite/statistical/sample-size', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
- baselineRate: parseFloat(baselineRate),
- minimumDetectableEffect: parseFloat(mde),
+ baselineRate: parseFloat(baselineRate) / 100,
+ minimumDetectableEffect: parseFloat(mde) / 100,
  alpha: parseFloat(alpha),
  power: parseFloat(power),
  numVariants: 2
  })
  });
- const data = await response.json();
- setSampleSize(data.result);
+ if (data.success) setSampleSize(data.result);
+ else setError(data.error || 'Sample-size calculation failed');
+ } catch (requestError) {
+ setError(requestError.message || 'Sample-size calculation failed');
+ }
  };
 
  return (
@@ -372,18 +432,25 @@ const ABTestingSuiteV2 = () => {
  headings={['Name', 'Status', 'Type', 'Variants', 'Actions']}
  rows={experiments.map(exp => [
  exp.name,
- <Badge status={exp.status === 'active' ? 'success' : 'info'}>{exp.status}</Badge>,
+ <Badge status={exp.status === 'running' ? 'success' : exp.status === 'paused' ? 'attention' : 'info'}>{exp.status}</Badge>,
  exp.type || 'AB',
  exp.variants?.length || 2,
- <Button plain onClick={() => setSelectedExperiment(exp)}>View</Button>
+ <ButtonGroup>
+ {exp.status === 'running'
+ ? <Button onClick={() => runExperimentAction(exp, 'pause')}>Pause</Button>
+ : <Button onClick={() => runExperimentAction(exp, 'start')}>Start</Button>}
+ <Button destructive onClick={() => runExperimentAction(exp, 'stop')}>Stop</Button>
+ <Button destructive onClick={() => runExperimentAction(exp, 'delete')}>Delete</Button>
+ </ButtonGroup>
  ])}
  />
  ) : (
- <EmptyState
- heading="No experiments yet"
- action={{ content: 'Create Experiment', onAction: () => setModalActive(true) }}
- image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
- />
+ <div style={{ textAlign: 'center', padding: '24px' }}>
+ <Text variant="bodyMd">No experiments have been created for this shop.</Text>
+ <div style={{ marginTop: '16px' }}>
+ <Button primary onClick={() => setModalActive(true)}>Create Experiment</Button>
+ </div>
+ </div>
  )}
  </Stack>
  </Card>
@@ -911,72 +978,20 @@ const ABTestingSuiteV2 = () => {
  </Card>
  );
 
- // Tab definitions
+ // Only expose workflows currently backed by the experiment API.
  const tabs = [
- // Statistical Analysis (6)
  { id: 'freq-tests', content: 'Frequentist Tests', component: <FrequentistTestsTab /> },
  { id: 'bayesian', content: 'Bayesian', component: <BayesianAnalysisTab /> },
- { id: 'sequential', content: 'Sequential', component: <SequentialTestingTab /> },
  { id: 'power', content: 'Power Analysis', component: <PowerAnalysisTab /> },
- { id: 'meta', content: 'Meta-Analysis', component: <MetaAnalysisTab /> },
- { id: 'ci', content: 'Confidence Intervals', component: <ConfidenceIntervalsTab /> },
- 
- // Multi-Armed Bandits (5)
- { id: 'thompson', content: 'Thompson', component: <ThompsonSamplingTab /> },
- { id: 'ucb', content: 'UCB', component: <UCBAlgorithmsTab /> },
- { id: 'epsilon', content: 'Epsilon-Greedy', component: <EpsilonGreedyTab /> },
- { id: 'exp3', content: 'Exp3', component: <Exp3Tab /> },
- { id: 'contextual', content: 'Contextual', component: <ContextualBanditsTab /> },
- 
- // Experimentation (6)
  { id: 'experiments', content: 'Experiments', component: <ExperimentsTab /> },
- { id: 'mvt', content: 'MVT', component: <MultivariateTestingTab /> },
- { id: 'holdout', content: 'Holdout', component: <HoldoutGroupsTab /> },
- { id: 'feature-flags', content: 'Feature Flags', component: <FeatureFlagsTab /> },
- { id: 'guardrails', content: 'Guardrails', component: <GuardrailMetricsTab /> },
- { id: 'validation', content: 'Validation', component: <ValidationTab /> },
- 
- // Analytics (6)
- { id: 'metrics', content: 'Metrics', component: <MetricsTab /> },
- { id: 'funnels', content: 'Funnels', component: <FunnelsTab /> },
- { id: 'cohorts', content: 'Cohorts', component: <CohortsTab /> },
- { id: 'timeseries', content: 'Time-Series', component: <TimeSeriesTab /> },
- { id: 'dashboards', content: 'Dashboards', component: <DashboardsTab /> },
- { id: 'reports', content: 'Reports', component: <ReportsTab /> },
- 
- // Traffic (5)
- { id: 'allocation', content: 'Allocation', component: <TrafficAllocationTab /> },
- { id: 'audiences', content: 'Audiences', component: <AudienceTargetingTab /> },
- { id: 'rollout', content: 'Rollout', component: <GradualRolloutTab /> },
- { id: 'cross-device', content: 'Cross-Device', component: <CrossDeviceTab /> },
- { id: 'bot-detection', content: 'Bot Detection', component: <BotDetectionTab /> },
- 
- // Integrations (5)
- { id: 'webhooks', content: 'Webhooks', component: <WebhooksTab /> },
- { id: 'api-keys', content: 'API Keys', component: <APIKeysTab /> },
- { id: 'platforms', content: 'Platforms', component: <PlatformIntegrationsTab /> },
- { id: 'export', content: 'Export', component: <DataExportTab /> },
- { id: 'streaming', content: 'Streaming', component: <StreamingTab /> },
- 
- // AI/ML (5)
- { id: 'winner', content: 'Winner', component: <WinnerSelectionTab /> },
- { id: 'predictions', content: 'Predictions', component: <PredictionsTab /> },
- { id: 'anomalies', content: 'Anomalies', component: <AnomaliesTab /> },
- { id: 'hypotheses', content: 'Hypotheses', component: <HypothesesTab /> },
- { id: 'causal', content: 'Causal', component: <CausalInferenceTab /> },
- 
- // Advanced (4)
- { id: 'versions', content: 'Versions', component: <VersionControlTab /> },
- { id: 'templates', content: 'Templates', component: <TemplatesTab /> },
- { id: 'compliance', content: 'Compliance', component: <ComplianceTab /> },
- { id: 'governance', content: 'Governance', component: <GovernanceTab /> }
  ];
 
  return (
+ <div className="ab-testing-suite-v2">
  <Page
  title="AB Testing Suite V2"
- subtitle="Comprehensive experimentation platform with 246 endpoints"
- primaryAction={{ content: 'View Health', icon: AnalyticsMajor, onAction: () => {} }}
+ subtitle="Create experiments, allocate traffic, and measure conversion outcomes."
+ primaryAction={{ content: healthStatus === 'healthy' ? 'API Healthy' : 'Check API Health', icon: AnalyticsMajor, onAction: checkHealth }}
  >
  <Layout>
  <Layout.Section>
@@ -1000,47 +1015,48 @@ const ABTestingSuiteV2 = () => {
  <Stack vertical>
  <Text variant="bodyMd">Total Experiments: {stats.totalExperiments || 0}</Text>
  <Text variant="bodyMd">Active: {stats.activeExperiments || 0}</Text>
- <Text variant="bodyMd">Bandit Models: {stats.banditModels || 0}</Text>
- <Text variant="bodyMd">Dashboards: {stats.dashboards || 0}</Text>
- <Text variant="bodyMd">AI Models: {stats.aiModels || 0}</Text>
+ <Text variant="bodyMd">Variants: {stats.totalVariants || 0}</Text>
+ <Text variant="bodyMd">Visitor Assignments: {stats.visitorAssignments || 0}</Text>
  </Stack>
  </Card>
 
  <Card title="System Info" sectioned>
  <Stack vertical>
- <Text variant="bodyMd">Version: 2.0.0</Text>
- <Text variant="bodyMd">Total Endpoints: 246</Text>
- <Text variant="bodyMd">Modules: 8</Text>
- <Button plain icon={SettingsMajor}>Settings</Button>
+ <Text variant="bodyMd">API status: {healthStatus}</Text>
+ <Text variant="bodyMd">Experiment API: available</Text>
  </Stack>
  </Card>
  </Layout.Section>
  </Layout>
 
+ {error && <Banner status="critical" onDismiss={() => setError('')}>{error}</Banner>}
  <Modal
  open={modalActive}
  onClose={() => setModalActive(false)}
  title="Create Experiment"
- primaryAction={{ content: 'Create', onAction: () => setModalActive(false) }}
+ primaryAction={{ content: 'Create', onAction: createExperiment }}
  secondaryActions={[{ content: 'Cancel', onAction: () => setModalActive(false) }]}
  >
  <Modal.Section>
  <Stack vertical>
- <TextField label="Experiment Name" placeholder="Homepage CTA Test" />
- <TextField label="Description" multiline={3} />
+ <TextField label="Experiment Name" placeholder="Homepage CTA Test" value={form.name} onChange={name => setForm(current => ({ ...current, name }))} />
+ <TextField label="Description" multiline={3} value={form.description} onChange={description => setForm(current => ({ ...current, description }))} />
  <Select
  label="Type"
+ value={form.type}
+ onChange={type => setForm(current => ({ ...current, type }))}
  options={[
  { label: 'A/B Test', value: 'ab' },
  { label: 'Multivariate Test', value: 'mvt' },
  { label: 'Multi-Armed Bandit', value: 'bandit' }
  ]}
  />
- <TextField label="Variants (comma-separated)" placeholder="control,variant_a,variant_b" />
+ <TextField label="Variants (comma-separated)" placeholder="control,variant_a,variant_b" value={form.variants} onChange={variants => setForm(current => ({ ...current, variants }))} />
  </Stack>
  </Modal.Section>
  </Modal>
  </Page>
+ </div>
  );
 };
 

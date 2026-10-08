@@ -1,4 +1,4 @@
-﻿// Billing & Subscription Management UI
+// Billing & Subscription Management UI
 // Shopify App Billing integration for plan management
 
 import React, { useState, useEffect } from 'react';
@@ -105,7 +105,7 @@ const Billing = () => {
 
  setSubscription(subData);
  setInvoices(invoiceData);
- setUsage(usageData);
+ setUsage(usageData && usageData.ok ? usageData : null);
  } catch (error) {
  console.error('Failed to load billing data:', error);
  } finally {
@@ -255,29 +255,25 @@ const Billing = () => {
  <h3>Current Usage</h3>
  <div className="usage-stats">
  <div className="usage-stat">
- <div className="stat-label">AI Tool Runs</div>
+ <div className="stat-label">AI credits used this period</div>
  <div className="stat-value">
- {usage.aiRuns} {planLimits.aiRuns !== -1 ? `/ ${planLimits.aiRuns}` : ''}
+ {usage.creditsUsed.toLocaleString()} {usage.unlimited ? '' : `/ ${usage.planCredits.toLocaleString()}`}
  </div>
- {planLimits.aiRuns !== -1 && planLimits.aiRuns > 0 && (
+ {!usage.unlimited && usage.planCredits > 0 && (
  <div className="progress-bar">
- <div 
- className="progress-fill"style={{ width: `${Math.min((usage.aiRuns / planLimits.aiRuns) * 100, 100)}%` }}
+ <div
+ className="progress-fill" style={{ width: `${Math.min((usage.creditsUsed / usage.planCredits) * 100, 100)}%` }}
  />
  </div>
  )}
  </div>
  <div className="usage-stat">
- <div className="stat-label">Products</div>
- <div className="stat-value">
- {usage.products} {planLimits.products !== -1 ? `/ ${planLimits.products}` : ''}
- </div>
+ <div className="stat-label">Top-up credits left</div>
+ <div className="stat-value">{usage.topupCredits.toLocaleString()}</div>
  </div>
  <div className="usage-stat">
- <div className="stat-label">Team Members</div>
- <div className="stat-value">
- {usage.users} {planLimits.users !== -1 ? `/ ${planLimits.users}` : ''}
- </div>
+ <div className="stat-label">Lifetime credits used</div>
+ <div className="stat-value">{usage.lifetimeUsed.toLocaleString()}</div>
  </div>
  </div>
  </div>
@@ -373,7 +369,7 @@ const Billing = () => {
  </div>
  )}
 
- <style jsx>{`
+ <style>{`
  .billing-page {
  padding: 32px;
  max-width: 1200px;

@@ -125,6 +125,7 @@ const ACTION_COSTS = {
   'churn-predict':       2,
   'pricing-optimize':    2,
   'ad-copy':             2,
+  'sms-campaign':        1,
   'campaign-gen':        3,
   'analytics-insight':   2,
   'segmentation':        2,

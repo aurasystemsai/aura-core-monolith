@@ -485,7 +485,7 @@ const Settings = ({ setActiveSection }) => {
  </div>
  </div>
 
- <style jsx>{`
+ <style>{`
  .settings-page {
  padding: 32px;
  max-width: 1200px;

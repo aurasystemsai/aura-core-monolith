@@ -240,6 +240,19 @@ router.post('/ai/demand-forecast/update-model', (req, res) => {
 
 // Price Elasticity
 router.post('/ai/elasticity/calculate', (req, res) => {
+  const { priceChanges, demandChanges } = req.body || {};
+  if (
+    !Array.isArray(priceChanges) ||
+    !Array.isArray(demandChanges) ||
+    priceChanges.length === 0 ||
+    priceChanges.length !== demandChanges.length ||
+    [...priceChanges, ...demandChanges].some(value => !Number.isFinite(Number(value)))
+  ) {
+    return res.status(400).json({
+      ok: false,
+      error: 'priceChanges and demandChanges must be non-empty arrays of matching length with numeric values'
+    });
+  }
   const analysis = aiML.calculatePriceElasticity(req.body);
   res.json({ ok: true, analysis });
 });

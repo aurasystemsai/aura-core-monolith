@@ -6,20 +6,24 @@ const router = express.Router();
 const shopifyBillingService = require('../core/shopifyBillingService');
 const shopTokens = require('../core/shopTokens');
 const creditLedger = require('../core/creditLedger');
+const shopStore = require('../core/shopStore');
 
-// Helper: resolve shop from request, falling back to single stored token
+const SHOP_RE = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i;
+
+// The shop comes from the verified session token or the OAuth cookie session. Anything the
+// client sends (header, query, body) is only accepted in non-production, and never overrides
+// an authenticated identity. No "only installed shop" or env fallbacks.
 function resolveShop(req) {
-  const explicit = req.session?.shop || req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'];
-  if (explicit) return explicit;
-  // Last resort: if only one shop is installed, use it
-  try {
-    const all = shopTokens.loadAll && shopTokens.loadAll();
-    if (all && typeof all === 'object') {
-      const shops = Object.keys(all);
-      if (shops.length === 1) return shops[0];
-    }
-  } catch (_) {}
-  return process.env.SHOPIFY_STORE_URL || null;
+  let verified = req.shopify && req.shopify.dest;
+  if (verified) { try { verified = new URL(verified).hostname; } catch { /* bare domain */ } }
+  const authed = verified || (req.session && req.session.shop) || null;
+  const requested = req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || null;
+  if (authed) {
+    if (requested && String(requested).toLowerCase() !== String(authed).toLowerCase()) return null;
+    return SHOP_RE.test(authed) ? String(authed).toLowerCase() : null;
+  }
+  if (process.env.NODE_ENV === 'production') return null;
+  return requested && SHOP_RE.test(requested) ? String(requested).toLowerCase() : null;
 }
 
 /**
@@ -80,12 +84,20 @@ router.get('/invoices', async (req, res) => {
  */
 router.get('/usage', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.query.shop || req.headers['x-shopify-shop-domain'];
-    const usage = await shopifyBillingService.getUsageStats(shop);
-    res.json(usage);
+    const shop = resolveShop(req);
+    if (!shop) return res.status(400).json({ ok: false, error: 'Shop required' });
+    const s = await creditLedger.getCreditStatus(shop);
+    res.json({
+      ok: true,
+      creditsUsed: Number(s.used) || 0,
+      planCredits: Number(s.plan_credits) || 0,
+      topupCredits: Number(s.topup_credits) || 0,
+      lifetimeUsed: Number(s.lifetime_used) || 0,
+      unlimited: !!s.unlimited,
+    });
   } catch (error) {
     console.error('Get usage error:', error);
-    res.json({ ai_runs: 0, products: 0, team_members: 1 });
+    res.status(500).json({ ok: false, error: 'Could not load usage' });
   }
 });
 
@@ -127,7 +139,7 @@ router.post('/subscribe', async (req, res) => {
  */
 router.post('/cancel', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.body.shop || req.headers['x-shopify-shop-domain'];
+    const shop = resolveShop(req);
     const { subscriptionId } = req.body;
     
     if (!shop) {
@@ -165,26 +177,36 @@ router.get('/invoices/:invoiceId/pdf', async (req, res) => {
  * GET /api/billing/confirm
  */
 router.get('/confirm', async (req, res) => {
-  const { charge_id, shop: queryShop, plan, credits } = req.query;
-  const shop = queryShop || req.session?.shop || req.headers['x-shopify-shop-domain'];
+  // Public by necessity (Shopify redirects the browser here), so nothing in the query string is
+  // trusted. Plans and credits are granted only from what Shopify itself reports for this shop.
+  const { charge_id } = req.query;
+  const shop = SHOP_RE.test(String(req.query.shop || '')) ? String(req.query.shop).toLowerCase() : null;
+  let planGranted = null;
 
-  if (shop) {
-    if (plan) {
-      try { await creditLedger.updatePlan(shop, plan); } catch(e) { console.error('[Billing] updatePlan failed:', e.message); }
-    }
-    if (credits) {
-      const creditsNum = parseInt(credits, 10);
-      if (!isNaN(creditsNum) && creditsNum > 0) {
-        try { await creditLedger.addTopupCredits(shop, creditsNum, { source: 'shopify_confirm', charge_id }); } catch(e) { console.error('[Billing] addTopupCredits failed:', e.message); }
+  if (shop && charge_id) {
+    try {
+      const sub = await shopifyBillingService.getSubscription(shop);
+      if (sub.status === 'active' && sub.plan_id && sub.plan_id !== 'free') {
+        await creditLedger.updatePlan(shop, sub.plan_id);
+        planGranted = sub.plan_id;
       }
-    }
+    } catch (e) { console.error('[Billing] plan sync failed:', e.message); }
+
+    try {
+      const paid = await shopifyBillingService.verifyCreditPackCharge(shop, charge_id);
+      const done = shopStore.read('billing-charges', shop, []);
+      if (paid && !done.includes(paid.chargeId)) {
+        shopStore.write('billing-charges', shop, [paid.chargeId, ...done].slice(0, 500));
+        await creditLedger.addTopupCredits(shop, paid.pack.credits, { source: 'shopify_confirm', charge_id: paid.chargeId });
+      }
+    } catch (e) { console.error('[Billing] credit grant failed:', e.message); }
   }
 
   if (charge_id && shop) {
     // Redirect back into the embedded app in Shopify Admin
     const storeHandle = shop.replace('.myshopify.com', '');
     const clientId = process.env.SHOPIFY_API_KEY || '98db68ecd4abcd07721d14949514de8a';
-    const planParam = plan ? `&plan=${encodeURIComponent(plan)}` : '';
+    const planParam = planGranted ? `&plan=${encodeURIComponent(planGranted)}` : '';
     return res.redirect(`https://admin.shopify.com/store/${storeHandle}/apps/${clientId}?billing=success${planParam}`);
   }
 
@@ -196,17 +218,19 @@ router.get('/confirm', async (req, res) => {
 });
 
 /**
- * Manually sync / activate a plan for the current shop.
- * Called by the frontend after ?billing=success redirect, or by admin to fix broken accounts.
+ * Re-sync the plan for the current shop from what Shopify reports (never from the client).
+ * Called by the frontend after ?billing=success redirect.
  * POST /api/billing/sync-plan
  */
 router.post('/sync-plan', async (req, res) => {
   try {
     const shop = resolveShop(req);
     if (!shop) return res.status(400).json({ ok: false, error: 'Shop required' });
-    const { planId } = req.body;
-    if (!planId) return res.status(400).json({ ok: false, error: 'planId required' });
-    await creditLedger.updatePlan(shop, planId);
+    const sub = await shopifyBillingService.getSubscription(shop);
+    // A failed lookup reports "free", so only an active paid subscription ever changes the plan.
+    if (sub.status === 'active' && sub.plan_id && sub.plan_id !== 'free') {
+      await creditLedger.updatePlan(shop, sub.plan_id);
+    }
     const status = await creditLedger.getCreditStatus(shop);
     res.json({ ok: true, ...status });
   } catch (error) {

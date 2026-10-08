@@ -1,10 +1,8 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
-import { apiFetch, apiFetchJSON } from "../../api";
-import { ScoreRing, MetricRow, MozCard, MozTabs, ErrorBox, EmptyState, Spinner, scoreColor as mozScoreColor } from "../MozUI";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { apiFetchJSON } from "../../api";
+import { ScoreRing, MetricRow, MozCard, MozTabs, ErrorBox, EmptyState, Spinner } from "../MozUI";
 
-// -----------------------------------------------------------------------------
-// PRODUCT SEO ENGINE FRONTEND (42 tabs, Week 4-6 scope)
-// -----------------------------------------------------------------------------
+// Product SEO workflows backed by the current API.
 
 const categories = [
  {
@@ -12,14 +10,8 @@ const categories = [
  label: "Manage",
  accent: "#14b8a6",
  tabs: [
- { id: "product-list", label: "Product List"},
- { id: "product-editor", label: "Product Editor"},
- { id: "bulk-operations", label: "Bulk Operations"},
- { id: "templates", label: "Templates"},
- { id: "categories", label: "Categories"},
- { id: "tags-attributes", label: "Tags & Attributes"},
- { id: "version-history", label: "Version History"},
- { id: "trash-recovery", label: "Trash & Recovery"}
+ { id: "product-list", label: "Products"},
+ { id: "product-editor", label: "Product Editor"}
  ]
  },
  {
@@ -27,28 +19,8 @@ const categories = [
  label: "Optimize",
  accent: "#4f46e5",
  tabs: [
- { id: "title-optimization", label: "Title Optimization"},
- { id: "description-enhancement", label: "Description Enhancement"},
- { id: "meta-data", label: "Meta Data"},
- { id: "image-seo", label: "Image SEO"},
- { id: "keyword-density", label: "Keyword Density"},
- { id: "readability-score", label: "Readability Score"},
- { id: "schema-generator", label: "Schema Generator"}
- ]
- },
- {
- id: "advanced",
- label: "Advanced",
- accent: "#f97316",
- tabs: [
- { id: "ai-orchestration", label: "AI Orchestration"},
- { id: "keyword-research", label: "Keyword Research"},
- { id: "serp-analysis", label: "SERP Analysis"},
- { id: "competitor-intel", label: "Competitor Intelligence"},
- { id: "multi-channel-optimizer", label: "Multi-Channel Optimizer"},
- { id: "ab-testing", label: "A/B Testing"},
- { id: "predictive-analytics", label: "Predictive Analytics"},
- { id: "attribution", label: "Attribution Model"}
+ { id: "meta-data", label: "SEO Metadata"},
+ { id: "keyword-research", label: "Keyword Research"}
  ]
  },
  {
@@ -56,44 +28,10 @@ const categories = [
  label: "Tools",
  accent: "#0ea5e9",
  tabs: [
- { id: "bulk-ai-generator", label: "Bulk AI Generator"},
- { id: "import-export", label: "Import/Export"},
- { id: "content-scorer", label: "Content Scorer"},
- { id: "schema-validator", label: "Schema Validator"},
- { id: "rich-results-preview", label: "Rich Results Preview"},
- { id: "keyword-planner", label: "Keyword Planner"}
- ]
- },
- {
- id: "monitoring",
- label: "Monitoring",
- accent: "#22c55e",
- tabs: [
- { id: "analytics-dashboard", label: "Analytics Dashboard"},
- { id: "ranking-tracker", label: "Ranking Tracker"},
- { id: "performance-metrics", label: "Performance Metrics"},
- { id: "anomaly-detection", label: "Anomaly Detection"},
- { id: "reports", label: "Reports"},
- { id: "sla-dashboard", label: "SLA Dashboard"},
- { id: "audit-logs", label: "Audit Logs"}
- ]
- },
- {
- id: "settings",
- label: "Settings",
- accent: "#eab308",
- tabs: [
- { id: "preferences", label: "Preferences"},
- { id: "api-keys", label: "API Keys"},
- { id: "webhooks", label: "Webhooks"},
- { id: "backup-restore", label: "Backup & Restore"},
- { id: "notifications", label: "Notifications"},
- { id: "integrations", label: "Integrations"}
- ]
- }
+ { id: "bulk-operations", label: "Bulk Generate"},
+]
+},
 ];
-
-const optimisticColors = ["#14b8a6", "#4f46e5", "#f97316", "#0ea5e9", "#22c55e", "#eab308", "#f43f5e"];
 
 function SectionCard({ title, description, children, accent }) {
  return (
@@ -134,7 +72,6 @@ function Divider() {
 }
 
 export default function ProductSEOEngine() {
- const [activeCategory, setActiveCategory] = useState("manage");
  const [activeTab, setActiveTab] = useState("product-list");
  const [products, setProducts] = useState([]);
  const [selectedProduct, setSelectedProduct] = useState(null);
@@ -142,19 +79,15 @@ export default function ProductSEOEngine() {
  const [error, setError] = useState("");
  const [toast, setToast] = useState("");
  const [seoScore, setSeoScore] = useState(null);
+ const [seoDraft, setSeoDraft] = useState(null);
  const [schemaPreview, setSchemaPreview] = useState(null);
  const [keywordIdeas, setKeywordIdeas] = useState([]);
  const [serpResults, setSerpResults] = useState(null);
  const [analytics, setAnalytics] = useState(null);
- const [rankings, setRankings] = useState([]);
- const [reports, setReports] = useState([]);
- const [auditLogs, setAuditLogs] = useState([]);
- const [abTests, setAbTests] = useState([]);
  const [orchestration, setOrchestration] = useState(null);
  const [bulkJob, setBulkJob] = useState(null);
  const [focusKeywords, setFocusKeywords] = useState([]);
  const [kwInput, setKwInput] = useState("");
- const [fieldGenerating, setFieldGenerating] = useState({});
  const [shopifyPushing, setShopifyPushing] = useState(false);
  const [shopifyPushResult, setShopifyPushResult] = useState(null);
  const [config, setConfig] = useState({
@@ -166,50 +99,50 @@ export default function ProductSEOEngine() {
 
  const toastTimeout = useRef();
 
- const showToast = (msg) => {
+ const selectProduct = (product) => {
+ setSelectedProduct(product);
+ setSeoDraft(null);
+ setShopifyPushResult(null);
+ };
+
+ const showToast = useCallback((msg) => {
  setToast(msg);
  clearTimeout(toastTimeout.current);
  toastTimeout.current = setTimeout(() => setToast("") , 4000);
- };
+ }, []);
 
- const setAndNormalizeError = (msg) => {
+ const setAndNormalizeError = useCallback((msg) => {
  setError(msg || "Something went wrong");
  showToast(msg || "Something went wrong");
- };
+ }, [showToast]);
 
- const fetchProducts = async () => {
+ const fetchProducts = useCallback(async () => {
  try {
  const res = await apiFetchJSON("/api/product-seo/shopify-products");
- const data = res;
- if (data.ok) {
- setProducts(data.products || []);
- if (!selectedProduct && data.products?.length) setSelectedProduct(data.products[0]);
- }
+ if (!res.ok) throw new Error(res.error || "Could not load Shopify products");
+ const loadedProducts = res.products || [];
+ setProducts(loadedProducts);
+ setSelectedProduct(current => loadedProducts.find(product => product.id === current?.id) || loadedProducts[0] || null);
+ setError("");
  } catch (err) {
  setAndNormalizeError(err.message);
  }
- };
+ }, [setAndNormalizeError]);
 
- const fetchAnalytics = async () => {
+ const fetchAnalytics = useCallback(async () => {
  try {
  const res = await apiFetchJSON("/api/product-seo/analytics");
- const data = res;
- if (data.ok) setAnalytics({ total: (data.events || []).length, recentEvents: data.events || [] });
+ if (!res.ok) throw new Error(res.error || "Could not load Product SEO activity");
+ setAnalytics({ eventCount: (res.events || []).length, recentEvents: res.events || [] });
  } catch (err) {
  setAndNormalizeError(err.message);
  }
- };
-
- const fetchAuditLogs = async () => {
- // Audit log endpoint not yet available — initialise empty
- setAuditLogs([]);
- };
+ }, [setAndNormalizeError]);
 
  useEffect(() => {
  fetchProducts();
  fetchAnalytics();
- fetchAuditLogs();
- }, []);
+ }, [fetchProducts, fetchAnalytics]);
 
  const callEndpoint = async (path, options = {}, onSuccess) => {
  setLoading(true);
@@ -235,17 +168,30 @@ export default function ProductSEOEngine() {
 
  const optimizeTitle = async () => {
  if (!selectedProduct) return;
+ await generateSeoDraft();
+ };
+
+ const generateSeoDraft = async () => {
+ if (!selectedProduct) return;
  setLoading(true);
+ setError("");
  try {
  const res = await apiFetchJSON("/api/product-seo/generate", {
  method: "POST",
  headers: { "Content-Type": "application/json" },
  body: JSON.stringify(_aiGenBody(selectedProduct)),
  });
- if (res.ok && res.parsed?.seoTitle)
- setSelectedProduct(p => ({ ...p, title: res.parsed.seoTitle }));
- showToast("Title optimised");
- } catch (e) { showToast(e.message); } finally { setLoading(false); }
+ if (!res.ok) throw new Error(res.error || "Could not generate SEO metadata");
+ if (!res.parsed?.seoTitle || !res.parsed?.metaDescription) {
+ throw new Error("The AI response did not include both an SEO title and meta description. Please try again.");
+ }
+ setSeoDraft(res.parsed);
+ showToast("SEO metadata generated");
+ } catch (requestError) {
+ setAndNormalizeError(requestError.message);
+ } finally {
+ setLoading(false);
+ }
  };
 
  const runKeywordResearch = async () => {
@@ -329,12 +275,6 @@ export default function ProductSEOEngine() {
  }, (data) => setBulkJob(data.results || []));
  };
 
- const fetchRankings = async () => { setRankings([]); };
-
- const fetchReports = async () => { setReports([]); };
-
- const fetchAbTests = async () => { setAbTests([]); };
-
  const pushToShopify = async () => {
  if (!selectedProduct) return;
  setShopifyPushing(true);
@@ -347,9 +287,9 @@ export default function ProductSEOEngine() {
  productId: selectedProduct.shopifyId || selectedProduct.id,
  title: selectedProduct.title,
  body_html: selectedProduct.description,
- handle: selectedProduct.slug,
- metaDescription: selectedProduct.metaDescription,
- seoTitle: selectedProduct.seoTitle,
+ handle: seoDraft?.slug || selectedProduct.slug || selectedProduct.handle,
+ seoTitle: seoDraft?.seoTitle || selectedProduct.seoTitle,
+ metaDescription: seoDraft?.metaDescription || selectedProduct.metaDescription,
  }),
  });
  if (!res.ok) throw new Error(res.error || "Shopify update failed");
@@ -363,25 +303,7 @@ export default function ProductSEOEngine() {
  }
  };
 
- const createAbTest = async () => {
- if (!selectedProduct) return;
- setLoading(true);
- try {
- const [resA, resB] = await Promise.all([
- apiFetchJSON("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productName: selectedProduct.title + " | Best Price", productDescription: selectedProduct.description || selectedProduct.title || "", focusKeywords: focusKeywords.join(", ") }) }),
- apiFetchJSON("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productName: selectedProduct.title + " | Free Shipping", productDescription: selectedProduct.description || selectedProduct.title || "", focusKeywords: focusKeywords.join(", ") }) }),
- ]);
- setAbTests([
- { name: "Variant A", seoTitle: resA.parsed?.seoTitle || "", metaDescription: resA.parsed?.metaDescription || "" },
- { name: "Variant B", seoTitle: resB.parsed?.seoTitle || "", metaDescription: resB.parsed?.metaDescription || "" },
- ]);
- showToast("A/B variants generated");
- } catch (e) { showToast(e.message); } finally { setLoading(false); }
- };
-
- const activeCategoryTabs = useMemo(() => categories.find(c => c.id === activeCategory)?.tabs || [], [activeCategory]);
-
- const renderList = (items, key) => (
+ const renderList = (items) => (
  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
  {items.map((item, idx) => (
  <div key={idx} style={{ padding: 12, borderRadius: 10, background: "#18181b", border: "1px solid #27272a"}}>
@@ -395,25 +317,26 @@ export default function ProductSEOEngine() {
  switch (activeTab) {
  case "product-list":
  return (
- <SectionCard title="Product List"description="Browse and select products. Uses /api/product-seo/products.">
+ <SectionCard title="Shopify Products"description="Products returned from the connected Shopify shop.">
  <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
  <button onClick={fetchProducts} disabled={loading} className="btn">Refresh</button>
  <button onClick={fetchScore} disabled={loading || !selectedProduct} className="btn">Score Selected</button>
  </div>
- <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+ {products.length ? <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
  {products.map(p => (
  <div key={p.id} style={{ border: `1px solid ${selectedProduct?.id === p.id ? "#4f46e5": "#27272a"}`, background: "#18181b", borderRadius: 12, padding: 12 }}>
  <div style={{ color: "#fafafa", fontWeight: 700 }}>{p.title}</div>
- <div style={{ color: "#a1a1aa", fontSize: 12 }}>{p.slug}</div>
+ <div style={{ color: "#a1a1aa", fontSize: 12 }}>{p.handle ? `/products/${p.handle}` : "No product handle"}</div>
  <Divider />
- <div style={{ color: "#a1a1aa", fontSize: 12 }}>Price: ${p.price || "-"}</div>
+ <div style={{ color: "#a1a1aa", fontSize: 12 }}>Price: ${p.variants?.[0]?.price || "—"}</div>
  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
- <button onClick={() => setSelectedProduct(p)} className="btn-secondary">Select</button>
- <button onClick={() => optimizeTitle()} className="btn-tertiary">AI Title</button>
+ <button onClick={() => selectProduct(p)} className="btn-secondary">Select for optimization</button>
  </div>
  </div>
  ))}
- </div>
+ </div> : <div style={{ color: "#a1a1aa", padding: 12 }}>
+ {error ? "Products could not be loaded. Check the connection and try again." : "No Shopify products were returned. Refresh to retry."}
+ </div>}
  </SectionCard>
  );
  case "product-editor": {
@@ -426,42 +349,15 @@ export default function ProductSEOEngine() {
  };
  const removeKw = kw => setFocusKeywords(prev => prev.filter(k => k !== kw));
 
- const genField = async (field) => {
- if (!selectedProduct) return;
- setFieldGenerating(f => ({ ...f, [field]: true }));
- try {
- const res = await apiFetchJSON("/api/product-seo/generate", {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify(_aiGenBody(selectedProduct)),
- });
- if (!res.ok) throw new Error(res.error || "Failed");
- const fieldMap = {
- title: res.parsed?.seoTitle,
- description: res.parsed?.metaDescription,
- slug: res.parsed?.slug,
- altText: res.parsed?.altText,
- };
- const value = fieldMap[field] || "";
- if (value) setSelectedProduct(sp => ({ ...sp, [field]: value }));
- showToast(`${field} generated`);
- } catch (err) {
- showToast(err.message);
- } finally {
- setFieldGenerating(f => ({ ...f, [field]: false }));
- }
- };
-
  const titleLower = (selectedProduct?.title || "").toLowerCase();
  const descLower = (selectedProduct?.description || "").toLowerCase();
  const slugLower = (selectedProduct?.slug || "").toLowerCase();
- const serpTitle = selectedProduct?.title || "Product Title";
- const serpSlug = selectedProduct?.slug || "product-slug";
- const serpDesc = (selectedProduct?.description || "No description.").slice(0, 160);
- const storeBase = "yourstore.myshopify.com";
+ const serpTitle = seoDraft?.seoTitle || selectedProduct?.title || "Product Title";
+ const serpSlug = seoDraft?.slug || selectedProduct?.slug || selectedProduct?.handle || "product-slug";
+ const serpDesc = (seoDraft?.metaDescription || selectedProduct?.description || "No description.").slice(0, 160);
 
  return (
- <SectionCard title="Product Editor"description="Edit product fields · per-field AI generate · focus keywords · SERP preview">
+ <SectionCard title="Product Editor"description="Edit Shopify product fields, review the search preview, and apply approved changes.">
  {!selectedProduct ? (
  <div style={{ color: "#a1a1aa"}}>Select a product from Product List.</div>
  ) : (
@@ -472,7 +368,6 @@ export default function ProductSEOEngine() {
  <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 }}>Title</div>
  <div style={{ display: "flex", gap: 8 }}>
  <input value={selectedProduct.title || ""} onChange={e => setSelectedProduct({ ...selectedProduct, title: e.target.value })} placeholder="Product title"style={{ flex: 1, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10 }} />
- <button onClick={() => genField("title")} disabled={fieldGenerating.title || loading} className="btn"style={{ whiteSpace: "nowrap", fontSize: 13 }}>{fieldGenerating.title ? "": "Generate"}</button>
  </div>
  </div>
 
@@ -481,7 +376,6 @@ export default function ProductSEOEngine() {
  <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 }}>Description</div>
  <div style={{ display: "flex", gap: 8, alignItems: "flex-start"}}>
  <textarea value={selectedProduct.description || ""} onChange={e => setSelectedProduct({ ...selectedProduct, description: e.target.value })} rows={4} placeholder="Product description"style={{ flex: 1, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10, resize: "vertical"}} />
- <button onClick={() => genField("description")} disabled={fieldGenerating.description || loading} className="btn"style={{ whiteSpace: "nowrap", fontSize: 13 }}>{fieldGenerating.description ? "": "Generate"}</button>
  </div>
  </div>
 
@@ -490,15 +384,13 @@ export default function ProductSEOEngine() {
  <div>
  <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 }}>URL Handle / Slug</div>
  <div style={{ display: "flex", gap: 8 }}>
- <input value={selectedProduct.slug || ""} onChange={e => setSelectedProduct({ ...selectedProduct, slug: e.target.value })} placeholder="url-handle"style={{ flex: 1, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10 }} />
- <button onClick={() => genField("slug")} disabled={fieldGenerating.slug || loading} className="btn"style={{ fontSize: 13 }}>{fieldGenerating.slug ? "": "Gen"}</button>
+ <input value={selectedProduct.slug || selectedProduct.handle || ""} onChange={e => setSelectedProduct({ ...selectedProduct, slug: e.target.value })} placeholder="url-handle"style={{ flex: 1, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10 }} />
  </div>
  </div>
  <div>
  <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 }}>Image Alt Text</div>
  <div style={{ display: "flex", gap: 8 }}>
  <input value={selectedProduct.altText || ""} onChange={e => setSelectedProduct({ ...selectedProduct, altText: e.target.value })} placeholder="Alt text"style={{ flex: 1, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10 }} />
- <button onClick={() => genField("altText")} disabled={fieldGenerating.altText || loading} className="btn"style={{ fontSize: 13 }}>{fieldGenerating.altText ? "": "Gen"}</button>
  </div>
  </div>
  </div>
@@ -545,11 +437,11 @@ export default function ProductSEOEngine() {
 
  {/* Google SERP Preview */}
  <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "14px 16px"}}>
- <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Google SERP Preview</div>
- <div style={{ background: "#4f46e5", borderRadius: 8, padding: "14px 18px", maxWidth: 600 }}>
- <div style={{ fontSize: 12, color: "#27272a", marginBottom: 2 }}>{storeBase}/products/{serpSlug}</div>
- <div style={{ fontSize: 20, color: "#52525b", fontWeight: 500, marginBottom: 3, lineHeight: 1.3, textDecoration: "underline", cursor: "pointer"}}>{serpTitle.slice(0, 60)}{serpTitle.length > 60 ? "": ""}</div>
- <div style={{ fontSize: 14, color: "#4d5156", lineHeight: 1.5 }}>{serpDesc}{serpDesc.length >= 160 ? "": ""}</div>
+ <div style={{ fontSize: 12, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Search result preview (approximate)</div>
+ <div style={{ background: "#09090b", borderRadius: 8, padding: "14px 18px", maxWidth: 600, border: "1px solid #3f3f46" }}>
+ <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 2 }}>/products/{serpSlug}</div>
+ <div style={{ fontSize: 20, color: "#93c5fd", fontWeight: 500, marginBottom: 3, lineHeight: 1.3, textDecoration: "underline"}}>{serpTitle.slice(0, 60)}{serpTitle.length > 60 ? "…": ""}</div>
+ <div style={{ fontSize: 14, color: "#d4d4d8", lineHeight: 1.5 }}>{serpDesc}{serpDesc.length >= 160 ? "…": ""}</div>
  </div>
  <div style={{ marginTop: 6, display: "flex", gap: 12, fontSize: 12 }}>
  <span style={{ color: serpTitle.length > 60 ? "#ef4444": "#22c55e"}}>Title: {serpTitle.length}/60 chars {serpTitle.length > 60 ? "too long": ""}</span>
@@ -563,19 +455,11 @@ export default function ProductSEOEngine() {
  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap"}}>
  <input value={selectedProduct.price || ""} onChange={e => setSelectedProduct({ ...selectedProduct, price: e.target.value })} placeholder="Price"style={{ width: 120, background: "#18181b", border: "1px solid #27272a", color: "#fafafa", padding: "10px 12px", borderRadius: 10 }} />
  <button
- onClick={() => callEndpoint(`/api/product-seo/${selectedProduct.id}`, {
- method: "PUT",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify(selectedProduct)
- }, fetchProducts)}
- className="btn"disabled={loading}
- >Save Product</button>
- <button
  onClick={pushToShopify}
- disabled={shopifyPushing || !selectedProduct.shopifyId && !selectedProduct.id}
+ disabled={shopifyPushing || (!selectedProduct.shopifyId && !selectedProduct.id)}
  style={{ background: shopifyPushResult?.ok ? "#22c55e": "#4f46e5", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: 700, fontSize: 14, cursor: shopifyPushing ? "not-allowed": "pointer", opacity: shopifyPushing ? 0.7 : 1 }}
  >
- {shopifyPushing ? "Pushing": shopifyPushResult?.ok ? "Pushed!": "Push to Shopify"}
+ {shopifyPushing ? "Applying…": shopifyPushResult?.ok ? "Applied to Shopify": "Apply changes to Shopify"}
  </button>
  {shopifyPushResult && !shopifyPushResult.ok && (
  <span style={{ fontSize: 12, color: "#f87171"}}>{shopifyPushResult.message}</span>
@@ -588,18 +472,15 @@ export default function ProductSEOEngine() {
  }
  case "bulk-operations":
  return (
- <SectionCard title="Bulk Operations"description="Bulk regenerate SEO using /ai/batch-process"accent="#4f46e5">
- <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
- <InlineInput value={config.model} onChange={(v) => setConfig({ ...config, model: v })} width="220px"placeholder="Model (e.g., claude-3.5-sonnet)"/>
- <button onClick={startBulk} disabled={loading || !products.length} className="btn">Start Bulk</button>
- </div>
+ <SectionCard title="Bulk Generate"description="Generate SEO metadata drafts for up to five connected Shopify products. Drafts are not applied automatically."accent="#4f46e5">
+ <button onClick={startBulk} disabled={loading || !products.length} className="btn">{loading ? "Generating…" : "Generate drafts for up to 5 products"}</button>
  {bulkJob && <pre className="code-block">{JSON.stringify(bulkJob, null, 2)}</pre>}
  </SectionCard>
  );
  case "templates":
  return (
  <SectionCard title="Templates"description="Prompt templates powered by /ai/prompts">
- <button onClick={() => callEndpoint("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(_aiGenBody(selectedProduct)) }, (d) => showToast("Templates: use the Product Editor to apply AI-generated fields") )} className="btn" disabled={loading || !selectedProduct}>AI Generate</button>
+ <button onClick={() => callEndpoint("/api/product-seo/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(_aiGenBody(selectedProduct)) }, () => showToast("Review the generated fields in SEO Metadata.") )} className="btn" disabled={loading || !selectedProduct}>AI Generate</button>
  <Divider />
  <div style={{ color: "#a1a1aa", fontSize: 12 }}>Use prompt templates to accelerate optimization workflows.</div>
  </SectionCard>
@@ -622,8 +503,7 @@ export default function ProductSEOEngine() {
  case "version-history":
  return (
  <SectionCard title="Version History"description="Audit trail via /products/:id/history"accent="#14b8a6">
- <button onClick={() => { setAuditLogs([]); showToast("Version history not yet available"); }} className="btn" disabled={loading}>Load History</button>
- {auditLogs.length > 0 && renderList(auditLogs, "history")}
+ <div style={{ color: "#a1a1aa" }}>Product version history is not available in the current API.</div>
  </SectionCard>
  );
  case "trash-recovery":
@@ -644,25 +524,38 @@ export default function ProductSEOEngine() {
  );
  case "description-enhancement":
  return (
- <SectionCard title="Description Enhancement"description="Use /description-suggestions to enrich copy."accent="#4f46e5">
- <button onClick={() => genField("description")} className="btn" disabled={loading || !selectedProduct}>AI Generate</button>
+ <SectionCard title="Description Enhancement"description="Generate an SEO title, description, and handle for the selected product."accent="#4f46e5">
+ <button onClick={generateSeoDraft} className="btn" disabled={loading || !selectedProduct}>Generate SEO metadata</button>
  <Divider />
- <textarea value={selectedProduct?.description || ""} onChange={e => setSelectedProduct({ ...selectedProduct, description: e.target.value })} rows={6} className="text-area"/>
+ {seoDraft && <pre className="code-block">{JSON.stringify(seoDraft, null, 2)}</pre>}
  </SectionCard>
  );
  case "meta-data":
  return (
- <SectionCard title="Meta Data"description="Generate meta descriptions and slugs."accent="#4f46e5">
+ <SectionCard title="SEO Metadata"description="Generate an SEO title, meta description, and URL handle for the selected Shopify product."accent="#4f46e5">
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap"}}>
- <button onClick={() => genField("title")} className="btn" disabled={loading || !selectedProduct}>AI Title</button>
- <button onClick={() => genField("slug")} className="btn-secondary" disabled={loading || !selectedProduct}>AI Slug</button>
+ <button onClick={generateSeoDraft} className="btn" disabled={loading || !selectedProduct}>{loading ? "Generating…" : "Generate SEO metadata"}</button>
  </div>
+ {seoDraft && (
+ <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+ <label style={{ color: "#a1a1aa", fontSize: 13 }}>SEO title
+ <div style={{ color: "#fafafa", marginTop: 4 }}>{seoDraft.seoTitle}</div>
+ </label>
+ <label style={{ color: "#a1a1aa", fontSize: 13 }}>Meta description
+ <div style={{ color: "#fafafa", marginTop: 4 }}>{seoDraft.metaDescription}</div>
+ </label>
+ <label style={{ color: "#a1a1aa", fontSize: 13 }}>Suggested handle
+ <div style={{ color: "#fafafa", marginTop: 4 }}>{seoDraft.slug}</div>
+ </label>
+ <div style={{ color: "#71717a", fontSize: 12 }}>Review the draft, then use “Apply changes to Shopify” in Product Editor to save it.</div>
+ </div>
+ )}
  </SectionCard>
  );
  case "image-seo":
  return (
- <SectionCard title="Image SEO"description="Bulk alt text via /bulk-images-alt"accent="#4f46e5">
- <button onClick={() => genField("altText")} className="btn" disabled={loading || !selectedProduct}>Generate Alt Text</button>
+ <SectionCard title="Image SEO"description="Use the Image & Media SEO tool for product image alt-text workflows."accent="#4f46e5">
+ <div style={{ color: "#a1a1aa" }}>Product image alt-text generation is not part of the current Product SEO API.</div>
  </SectionCard>
  );
  case "keyword-density":
@@ -737,11 +630,7 @@ export default function ProductSEOEngine() {
  case "ab-testing":
  return (
  <SectionCard title="A/B Testing"description="Create and monitor SEO experiments."accent="#f97316">
- <div style={{ display: "flex", gap: 10, alignItems: "center"}}>
- <button onClick={createAbTest} className="btn"disabled={loading || !selectedProduct}>Create Title Test</button>
- <button onClick={fetchAbTests} className="btn-secondary"disabled={loading}>Refresh Tests</button>
- </div>
- {abTests.length > 0 && renderList(abTests, "tests")}
+ <div style={{ color: "#a1a1aa" }}>Use the standalone A/B Testing Suite to manage and analyze experiments.</div>
  </SectionCard>
  );
  case "predictive-analytics":
@@ -767,9 +656,8 @@ export default function ProductSEOEngine() {
  );
  case "import-export":
  return (
- <SectionCard title="Import/Export"description="Call /products/import and /products/export"accent="#0ea5e9">
- <button onClick={() => callEndpoint("/api/product-seo/export", {}, (d) => showToast(d.ok ? "Exported" : (d.error || "Export failed")))} className="btn" disabled={loading}>Export JSON</button>
- <button onClick={() => showToast("Import: use the CSV/JSON import panel")} className="btn-secondary" disabled={loading}>Import Sample</button>
+ <SectionCard title="Import & Export"description="Data export is not included in the active Shopify product workflow."accent="#0ea5e9">
+ <div style={{ color: "#a1a1aa" }}>No export action is available here.</div>
  </SectionCard>
  );
  case "content-scorer":
@@ -809,24 +697,20 @@ export default function ProductSEOEngine() {
  );
  case "analytics-dashboard":
  return (
- <SectionCard title="Analytics Dashboard"description="Overview metrics."accent="#22c55e">
+ <SectionCard title="Product SEO Activity"description="Live counts from Shopify product loading and Product SEO API events."accent="#22c55e">
  <button onClick={fetchAnalytics} className="btn"disabled={loading}>Refresh Overview</button>
  {analytics && (
  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
- <StatPill label="Total Products"value={analytics.totalProducts} />
- <StatPill label="Avg SEO Score"value={analytics.avgSeoScore} />
- <StatPill label="Impressions"value={analytics.totalImpressions} />
- <StatPill label="CTR"value={analytics.avgCtr} />
+ <StatPill label="Shopify products loaded"value={products.length} />
+ <StatPill label="Recorded SEO events"value={analytics.eventCount} />
  </div>
  )}
+ {analytics?.recentEvents?.length > 0 && <div style={{ marginTop: 12 }}>{renderList(analytics.recentEvents.slice(0, 10), "events")}</div>}
  </SectionCard>
  );
  case "ranking-tracker":
  return (
- <SectionCard title="Ranking Tracker"description="Monitor keyword rankings."accent="#22c55e">
- <button onClick={fetchRankings} className="btn"disabled={loading}>Refresh Rankings</button>
- {rankings.length > 0 && renderList(rankings, "rankings")}
- </SectionCard>
+ <SectionCard title="Ranking Tracker"description="Keyword rank tracking is not available in the current Product SEO API."accent="#22c55e" />
  );
  case "performance-metrics":
  return (
@@ -844,13 +728,7 @@ export default function ProductSEOEngine() {
  );
  case "reports":
  return (
- <SectionCard title="Reports"description="Scheduled reports overview."accent="#22c55e">
- <div style={{ display: "flex", gap: 10 }}>
- <button onClick={fetchReports} className="btn"disabled={loading}>Load Reports</button>
- <button onClick={() => showToast("Export coming soon — use /api/product-seo/export directly")} className="btn-secondary" disabled={loading}>Export Executive</button>
- </div>
- {reports.length > 0 && renderList(reports, "reports")}
- </SectionCard>
+ <SectionCard title="Reports"description="Reporting is not available in the current Product SEO API."accent="#22c55e" />
  );
  case "sla-dashboard":
  return (
@@ -862,8 +740,7 @@ export default function ProductSEOEngine() {
  case "audit-logs":
  return (
  <SectionCard title="Audit Logs"description="System-wide audit trail."accent="#22c55e">
- <button onClick={fetchAuditLogs} className="btn"disabled={loading}>Refresh Logs</button>
- {auditLogs.length > 0 && renderList(auditLogs, "logs")}
+ <div style={{ color: "#a1a1aa" }}>Audit logs are not available in the current Product SEO API.</div>
  </SectionCard>
  );
  case "preferences":
@@ -919,12 +796,11 @@ export default function ProductSEOEngine() {
  <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
  <div>
  <div style={{ fontSize: 26, fontWeight: 800 }}>Product SEO Engine</div>
- <div style={{ color: "#a1a1aa"}}>42-tab enterprise console · Backed by 200 endpoints</div>
+ <div style={{ color: "#a1a1aa"}}>Optimize Shopify product metadata with AI, then review and apply changes.</div>
  </div>
  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end"}}>
  <StatPill label="Active Tab"value={activeTab} />
- {seoScore?.score && <StatPill label="SEO Score"value={seoScore.score} />}
- {analytics?.avgSeoScore && <StatPill label="Avg Score"value={analytics.avgSeoScore} />}
+ {seoScore?.score && <StatPill label="Generated SEO score"value={seoScore.score} />}
  </div>
  </header>
 
@@ -932,7 +808,7 @@ export default function ProductSEOEngine() {
  <div style={{ background: "#18181b", border: "1px solid #18181b", borderRadius: 14, padding: 12, maxHeight: "82vh", overflow: "auto"}}>
  {categories.map(cat => (
  <div key={cat.id} style={{ marginBottom: 14 }}>
- <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}} onClick={() => { setActiveCategory(cat.id); setActiveTab(cat.tabs[0].id); }}>
+ <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}} onClick={() => setActiveTab(cat.tabs[0].id)}>
  <span style={{ width: 10, height: 10, borderRadius: "50%", background: cat.accent }} />
  <div style={{ fontWeight: 700 }}>{cat.label}</div>
  </div>
@@ -940,7 +816,7 @@ export default function ProductSEOEngine() {
  {cat.tabs.map(tab => (
  <button
  key={tab.id}
- onClick={() => { setActiveCategory(cat.id); setActiveTab(tab.id); }}
+ onClick={() => setActiveTab(tab.id)}
  style={{
  textAlign: "left",
  padding: "9px 10px",
@@ -985,6 +861,3 @@ export default function ProductSEOEngine() {
  </div>
  );
 }
-
-
-

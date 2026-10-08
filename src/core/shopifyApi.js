@@ -26,7 +26,7 @@ function sleep(ms) {
 async function shopifyRequest(shop, endpoint, params = {}, tokenOverride = null) {
   const token = resolveToken(shop, tokenOverride);
   if (!token) throw new Error('No Shopify token for shop: ' + shop);
-  const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+  const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10';
   let url = `https://${shop}/admin/api/${apiVersion}/${endpoint}`;
   if (params && Object.keys(params).length) {
     const usp = new URLSearchParams(params);
@@ -77,7 +77,7 @@ async function shopifyFetchPaginated(shop, endpoint, params = {}, tokenOverride 
 
   const token = resolveToken(shop, tokenOverride);
   if (!token) throw new Error('No Shopify token for shop: ' + shop);
-  const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+  const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10';
   const base = `https://${shop}/admin/api/${apiVersion}/${endpoint}`;
   let nextUrl = null;
   let page = 0;
@@ -140,7 +140,7 @@ async function shopifyFetchPaginated(shop, endpoint, params = {}, tokenOverride 
 async function shopifyUpdate(shop, endpoint, data, tokenOverride = null, method = 'PUT') {
   const token = resolveToken(shop, tokenOverride);
   if (!token) throw new Error('No Shopify token for shop: ' + shop);
-  const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+  const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10';
   const url = `https://${shop}/admin/api/${apiVersion}/${endpoint}`;
   
   const resp = await fetch(url, {

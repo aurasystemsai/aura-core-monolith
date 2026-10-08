@@ -26,7 +26,7 @@ const TABS = [
 
 const INTEGRATION_RECIPES = [
   {
-    name: "Shopify → BigQuery daily sync",
+    name: "Shopify â†’ BigQuery daily sync",
     category: "Data",
     stack: "Shopify Webhooks + AURA + BigQuery",
     description: "Trigger AURA's data warehouse connector to push new orders, customers, and products to BigQuery every day at 6am using a cron job.",
@@ -70,18 +70,18 @@ const blog = await fetch('/api/weekly-blog-content-engine/generate', {
 const { content, title, metaDescription } = await blog.json();`,
   },
   {
-    name: "Churn detection → Klaviyo campaign",
+    name: "Churn detection â†’ Klaviyo campaign",
     category: "Retention",
     stack: "AURA + Klaviyo + Shopify Flow",
     description: "Daily: query AURA's churn prediction endpoint for at-risk customers, then push them into a Klaviyo win-back segment automatically.",
     steps: [
-      "GET /api/churn-prediction-playbooks/customers?risk=high",
+      "GET /api/customer-data-platform/customers?risk=high",
       "Loop through at-risk customers",
       "POST each email to Klaviyo List API (or custom property update)",
       "Klaviyo Flow: trigger win-back sequence when list property = true",
     ],
     code: `// Get high-risk customers
-const { customers } = await apiFetch('/api/churn-prediction-playbooks/customers?risk=high');
+const { customers } = await apiFetch('/api/customer-data-platform/customers?risk=high');
 
 // Push to Klaviyo
 for (const customer of customers) {
@@ -93,7 +93,7 @@ for (const customer of customers) {
 }`,
   },
   {
-    name: "New review → SEO & social automation",
+    name: "New review â†’ SEO & social automation",
     category: "SEO & Social",
     stack: "AURA + Make (Integromat)",
     description: "When a 5-star review is submitted, AURA auto-generates a social proof social post, and updates the product schema markup with the new review.",
@@ -140,18 +140,14 @@ const API_GROUPS = [
   {
     group: "Customers",
     endpoints: [
-      { method: "POST", path: "/api/customer-data-platform/profiles",        desc: "Create a customer profile",    credits: 0, body: '{ "email": "customer@example.com", "name": "Jane Smith" }' },
-      { method: "POST", path: "/api/customer-data-platform/profiles/search", desc: "Search customer profiles",     credits: 0, body: '{ "filters": { "query": "jane" }, "options": { "limit": 20 } }' },
-      { method: "POST", path: "/api/customer-data-platform/events",          desc: "Track a customer event",       credits: 0, body: '{ "profileId": "abc123", "type": "purchase", "properties": { "orderId": "ORD-001" } }' },
-      { method: "POST", path: "/api/customer-data-platform/events/funnel",   desc: "Run funnel analysis",          credits: 0, body: '{ "steps": ["page_view", "add_to_cart", "purchase"] }' },
-      { method: "POST", path: "/api/ltv-churn-predictor/predict",            desc: "Predict customer LTV & churn", credits: 1, body: '{ "customerId": "cust_abc123" }' },
+      { method: "GET", path: "/api/customer-data-platform/customers", desc: "Customers with segment, lifetime value and churn risk", credits: 0 },
     ],
   },
   {
     group: "Inventory & Orders",
     endpoints: [
-      { method: "POST", path: "/api/inventory-forecasting/queries",   desc: "AI demand forecast query",             credits: 2, body: '{ "query": "Forecast demand for winter coats over next 30 days. Current stock: 400 units." }' },
-      { method: "GET",  path: "/api/inventory-supplier-sync/suppliers", desc: "List all configured suppliers",      credits: 0, body: null },
+      { method: "GET",  path: "/api/inventory-forecasting/overview", desc: "Stock, sales speed, reorder flags and 30-day finance", credits: 0, body: null },
+      { method: "POST", path: "/api/inventory-forecasting/brief", desc: "AI daily money and stock brief", credits: 2, body: null },
       { method: "POST", path: "/api/returns-rma-automation/rma",      desc: "Create return/RMA request",            credits: 0, body: '{ "orderId": "ORD-001", "reason": "Wrong item", "resolution": "Replace" }' },
     ],
   },
@@ -161,7 +157,7 @@ const API_GROUPS = [
       { method: "GET",  path: "/api/auto-insights/insights",           desc: "Fetch latest AI-generated insights",  credits: 0, body: null },
       { method: "POST", path: "/api/auto-insights/generate",           desc: "Trigger new insights generation",     credits: 3, body: '{ "scope": "full" }' },
       { method: "GET",  path: "/api/reporting-alerts/alerts",          desc: "List configured metric alerts",       credits: 0, body: null },
-      { method: "POST", path: "/api/churn-prediction-playbooks/analyse", desc: "Run churn analysis on customer cohort", credits: 3, body: '{ "cohort": "high-value", "timeframe": "90d" }' },
+      { method: "POST", path: "/api/customer-data-platform/playbook", desc: "AI win-back playbook for a customer segment", credits: 2, body: '{ "segment": "At Risk" }' },
     ],
   },
 ];
@@ -225,19 +221,14 @@ const aura = axios.create({
   },
 });
 
-// Track a customer event
-async function trackEvent(profileId, eventType, properties) {
-  const { data } = await aura.post('/api/customer-data-platform/events', {
-    profileId,
-    type: eventType,
-    properties,
-    timestamp: new Date().toISOString(),
-  });
-  return data;
+// List customers at high churn risk
+async function atRisk() {
+  const { data } = await aura.get('/api/customer-data-platform/customers?risk=high');
+  return data.customers;
 }
 
 // Example usage
-await trackEvent('cust_abc123', 'purchase', { orderId: 'ORD-001', revenue: 89.99 });`,
+const customers = await atRisk();`,
   },
   {
     lang: "cURL",
@@ -324,7 +315,7 @@ export default function AuraAPISDK() {
       <ErrorBox message={error} />
       <MozTabs tabs={TABS} active={tab} onChange={setTab} />
 
-      {/* ── REFERENCE ── */}
+      {/* â”€â”€ REFERENCE â”€â”€ */}
       {tab === "reference" && (
         <div style={{ marginTop: 20 }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
@@ -358,7 +349,7 @@ export default function AuraAPISDK() {
         </div>
       )}
 
-      {/* ── CONSOLE ── */}
+      {/* â”€â”€ CONSOLE â”€â”€ */}
       {tab === "console" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
@@ -420,12 +411,12 @@ export default function AuraAPISDK() {
           )}
 
           {!consoleResult && !consoleLoading && consoleHistory.length === 0 && (
-            <EmptyState icon="🚀" title="Ready to send" description="Configure your request above and click Send to test any AURA endpoint." />
+            <EmptyState icon="ðŸš€" title="Ready to send" description="Configure your request above and click Send to test any AURA endpoint." />
           )}
         </div>
       )}
 
-      {/* ── CODE SNIPPETS ── */}
+      {/* â”€â”€ CODE SNIPPETS â”€â”€ */}
       {tab === "snippets" && (
         <div style={{ marginTop: 20 }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
@@ -480,7 +471,7 @@ export default function AuraAPISDK() {
         </div>
       )}
 
-      {/* ── INTEGRATION RECIPES ── */}
+      {/* â”€â”€ INTEGRATION RECIPES â”€â”€ */}
       {tab === "recipes" && (
         <div style={{ marginTop: 20 }}>
           <p style={{ fontSize: 13, color: "#71717a", lineHeight: 1.6, marginBottom: 16 }}>
@@ -521,7 +512,7 @@ export default function AuraAPISDK() {
         </div>
       )}
 
-      {/* ── QUICK START ── */}
+      {/* â”€â”€ QUICK START â”€â”€ */}
       {tab === "quickstart" && (
         <div style={{ marginTop: 20 }}>
           <div style={S.card}>
@@ -551,8 +542,8 @@ export default function AuraAPISDK() {
                 { action: "Email generation / keyword research", cost: "2 credits" },
                 { action: "Blog draft / campaign generation",    cost: "3 credits" },
                 { action: "Competitive analysis",                cost: "5 credits" },
-                { action: "Standard model (gpt-4o)",             cost: "2× multiplier" },
-                { action: "Premium model (gpt-4)",               cost: "3× multiplier" },
+                { action: "Standard model (gpt-4o)",             cost: "2Ã— multiplier" },
+                { action: "Premium model (gpt-4)",               cost: "3Ã— multiplier" },
               ].map(({ action, cost }) => (
                 <div key={action} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 12, color: "#a1a1aa" }}>{action}</span>
@@ -561,7 +552,7 @@ export default function AuraAPISDK() {
               ))}
             </div>
             <div style={{ background: "#1e1b4b", border: "1px solid #3730a3", borderRadius: 8, padding: "10px 16px", fontSize: 12, color: "#c7d2fe" }}>
-              Credits are charged after a successful AI response — you never pay for failed requests. Check your balance and usage at <code style={{ fontFamily: "monospace" }}>GET /api/billing/credits</code>.
+              Credits are charged after a successful AI response â€” you never pay for failed requests. Check your balance and usage at <code style={{ fontFamily: "monospace" }}>GET /api/billing/credits</code>.
             </div>
           </div>
 
@@ -583,3 +574,4 @@ export default function AuraAPISDK() {
     </div>
   );
 }
+

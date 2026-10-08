@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../api";
 
 // Maps tool route IDs to minimum plan required
@@ -31,24 +31,17 @@ export const TOOL_PLAN = {
  "social-scheduler-content-engine": "growth",
  "brand-mention-tracker": "growth",
  "dynamic-pricing-engine": "growth",
- "inbox-assistant": "growth",
- "ltv-churn-predictor": "growth",
- "finance-autopilot": "growth",
- "inventory-supplier-sync": "growth",
 
  // -- Pro ($149/mo) -- advanced & intelligence tools
  "backlink-explorer": "pro",
  "link-intersect-outreach": "pro",
  "competitive-analysis": "pro",
  "ai-content-image-gen": "pro",
- "automation-templates": "pro",
  "collaboration-approval-workflows": "pro",
  "returns-rma-automation": "pro",
  "ai-support-assistant": "pro",
- "self-service-portal": "pro",
- "social-media-analytics-listening": "pro",
+ "ab-testing-suite": "pro",
  "creative-automation-engine": "pro",
- "brand-intelligence-layer": "pro",
  "google-ads-integration": "pro",
  "facebook-ads-integration": "pro",
  "tiktok-ads-integration": "pro",
@@ -57,24 +50,14 @@ export const TOOL_PLAN = {
  "omnichannel-campaign-builder": "pro",
  "advanced-analytics-attribution": "pro",
  "predictive-analytics-widgets": "pro",
- "self-service-analytics": "pro",
  "auto-insights": "pro",
- "ai-segmentation-engine": "pro",
  "upsell-cross-sell-engine": "pro",
  "customer-data-platform": "pro",
- "personalization-recommendation-engine": "pro",
- "advanced-personalization-engine": "pro",
- "churn-prediction-playbooks": "pro",
  "inventory-forecasting": "pro",
  "compliance-privacy-suite": "pro",
 
  // -- Enterprise ($349/mo) -- platform, API, ops
- "reporting-integrations": "enterprise",
- "custom-dashboard-builder": "enterprise",
- "scheduled-export": "enterprise",
  "data-warehouse-connector": "enterprise",
- "customer-segmentation-engine": "enterprise",
- "customer-journey-mapping": "enterprise",
  "data-enrichment-suite": "enterprise",
  "aura-operations-ai": "enterprise",
  "ai-launch-planner": "enterprise",

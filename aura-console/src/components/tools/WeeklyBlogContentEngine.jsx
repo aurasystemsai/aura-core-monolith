@@ -1,398 +1,87 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
-import { scoreColor as mozScoreColor, ErrorBox, EmptyState, MozCard, MetricRow } from "../MozUI";
-import BackButton from "./BackButton";
-import { apiFetch, apiFetchJSON } from "../../api";
-import "../../weekly-blog/WeeklyBlogContentEngine.css";
+﻿import React, { useEffect, useState } from "react";
+import { apiFetchJSON } from "../../api";
 
-const TAB_GROUPS = {
- strategy: ["Research", "Intent", "ICP", "Questions", "SERP", "Competitors"],
- production: ["Briefs", "Outlines", "Drafts", "Assets", "Editorial QA", "Compliance"],
- seo: ["Metadata", "Schema", "Density", "Links", "Accessibility", "Page Speed"],
- distribution: ["Channels", "Email", "Social", "Partners", "Paid", "Syndication"],
- collaboration: ["Tasks", "Comments", "Reviewers", "Approvals", "Status", "Activity"],
- qa: ["Health", "SLA", "Audit Logs", "Webhooks", "Plugins", "RBAC"],
- ops: ["Analytics", "Forecast", "Benchmarks", "Snapshots", "Imports", "Exports"],
+const S = {
+  root: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
+  title: { fontSize: 24, fontWeight: 800, margin: "0 0 4px" },
+  subtitle: { color: "#71717a", fontSize: 13, margin: "0 0 20px" },
+  card: { background: "#18181b", border: "1px solid #3f3f46", borderRadius: 14, padding: 20, marginBottom: 20 },
+  h: { fontSize: 15, fontWeight: 700, margin: "0 0 10px" },
+  input: { background: "#09090b", border: "1px solid #3f3f46", borderRadius: 8, color: "#fafafa", padding: "9px 12px", fontSize: 13, width: "100%", boxSizing: "border-box", marginBottom: 10 },
+  btn: { background: "#4f46e5", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", marginRight: 8 },
+  ghost: { background: "transparent", color: "#a1a1aa", border: "1px solid #3f3f46", borderRadius: 10, padding: "8px 14px", fontSize: 12, cursor: "pointer", marginRight: 8 },
+  off: { opacity: 0.5, cursor: "not-allowed" },
+  error: { background: "#1c0c0c", border: "1px solid #7f1d1d", color: "#fca5a5", borderRadius: 10, padding: "10px 14px", fontSize: 13, marginBottom: 14 },
+  empty: { color: "#71717a", fontSize: 13, padding: "20px 0", textAlign: "center" },
+  row: { display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 10px", border: "1px solid #27272a", borderRadius: 8, marginBottom: 6, fontSize: 13 },
+  pill: { background: "#27272a", borderRadius: 999, padding: "3px 10px", fontSize: 12, color: "#d4d4d8", display: "inline-block", margin: "0 6px 6px 0" },
+  muted: { color: "#71717a", fontSize: 12 },
 };
 
-const PROVIDERS = [
- { id: "gpt-4", name: "OpenAI GPT-4", latency: "1.1s", strength: "reasoning"},
- { id: "claude-3", name: "Claude 3", latency: "0.9s", strength: "context"},
- { id: "gemini-pro", name: "Gemini Pro", latency: "0.8s", strength: "multimodal"},
-];
-
-const SAMPLE_CALENDAR = [
- { label: "Week 1", posts: [{ title: "Distribution Playbook", status: "ready"}, { title: "SEO Benchmarks", status: "draft"}] },
- { label: "Week 2", posts: [{ title: "Campaign QA", status: "qa"}, { title: "Partner Syndication", status: "planned"}] },
- { label: "Week 3", posts: [{ title: "Revenue Storytelling", status: "ready"}, { title: "Intent Clusters", status: "ready"}] },
-];
-
-const SAMPLE_TASKS = [
- { id: 1, title: "Add CTA variants", status: "Open"},
- { id: 2, title: "Legal review on claims", status: "Pending"},
- { id: 3, title: "Refresh internal links", status: "In Progress"},
-];
-
-const SAMPLE_BRIEF = {
- title: "Weekly blog cadence for B2B SaaS",
- primaryKeyword: "weekly blog content plan",
- personas: "Content, Demand Gen",
- compliance: "PII clean · claims pending",
- outline: ["Hook", "Framework", "Proof", "CTA"],
-};
-
-const SAMPLE_OUTLINE = [
- { heading: "Hook", notes: "Lead with tension", words: 120 },
- { heading: "Framework", notes: "Explain approach", words: 220 },
- { heading: "Proof", notes: "Add data + quotes", words: 180 },
- { heading: "CTA", notes: "One clear CTA", words: 80 },
-];
-
-const SAMPLE_CHANNELS = [
- { channel: "Blog", status: "ready"},
- { channel: "Email", status: "qa"},
- { channel: "LinkedIn", status: "queued"},
- { channel: "Partners", status: "draft"},
- { channel: "Ads", status: "pending"},
-];
-
-function seededRandom(seed) {
- let hash = (seed || "weekly-blog").split("").reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 42);
- return () => {
- hash = (hash * 1664525 + 1013904223) % 4294967296;
- return hash / 4294967296;
- };
+async function call(setBusy, setError, name, url, options) {
+  setBusy(name); setError("");
+  try {
+    const r = await apiFetchJSON(url, options);
+    if (!r.ok) throw new Error(r.error || `Request failed (${r.status})`);
+    return r;
+  } catch (e) { setError(e.message); return null; } finally { setBusy(""); }
 }
-
-function pick(list, rand) {
- return list[Math.floor(rand() * list.length) % list.length];
-}
-
-function buildPlan(base) {
- const topics = [
- "Scaling content velocity",
- "Distribution flywheels",
- "Revenue storytelling",
- "Data-backed SEO experiments",
- "Thought leadership ops",
- ];
- const angles = ["Playbook", "Benchmark", "Checklist", "Case study", "Retro"];
- const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
- const rand = seededRandom(`${base.brand}-${base.niche}-${base.cadence}`);
- const posts = Array.from({ length: 4 }).map((_, idx) => {
- const topic = pick(topics, rand);
- const angle = pick(angles, rand);
- const title = `${base.brand || base.niche}: ${topic} (${angle})`;
- const meta = `${title} > practical steps, benchmarks, and metrics for ${base.audience}.`.slice(0, 150);
- return {
- title,
- metaDescription: meta,
- slug: title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-"),
- primaryKeyword: `${base.niche || base.brand} ${angle}`.toLowerCase(),
- angle,
- suggestedDate: `${days[idx % days.length]}, Week ${base.weekNumber}`,
- };
- });
-
- return {
- summary: `Weekly plan for ${base.brand || base.niche || "the program"}: ${base.themes}. Tone: ${base.tone}. Market: ${base.market}.`,
- posts,
- };
-}
+const API = "/api/weekly-blog-content-engine";
 
 export default function WeeklyBlogContentEngine() {
- const [brand, setBrand] = useState("AURA Commerce");
- const [niche, setNiche] = useState("B2B SaaS content");
- const [audience, setAudience] = useState("Content & Growth");
- const [cadence, setCadence] = useState("Weekly");
- const [themes, setThemes] = useState("SEO + distribution");
- const [tone, setTone] = useState("Confident, concise");
- const [weekNumber, setWeekNumber] = useState(1);
- const [stats, setStats] = useState(null);
- const [aiRun, setAiRun] = useState(null);
- const [error, setError] = useState("");
- const [publishingSlug, setPublishingSlug] = useState(null);
- const [publishResults, setPublishResults] = useState({});
+  const [items, setItems] = useState(null);
+  const [perWeek, setPerWeek] = useState(3);
+  const [focus, setFocus] = useState("");
+  const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const run = (n, u, o) => call(setBusy, setError, n, API + u, o);
+  const j = (method, body) => ({ method, body: JSON.stringify(body || {}) });
 
- const plan = useMemo(
- () => buildPlan({ brand, niche, audience, cadence, themes, tone, market: "Worldwide", weekNumber }),
- [audience, brand, cadence, niche, themes, tone, weekNumber]
- );
+  const load = async () => { const r = await run("load", "/items"); if (r) setItems(r.items); };
+  useEffect(() => { load(); }, []); // eslint-disable-line
 
- const publishPostToShopify = async (post) => {
- const key = post.slug;
- setPublishingSlug(key);
- try {
- const res = await apiFetchJSON("/api/weekly-blog-content-engine/shopify/publish", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({
- title: post.title,
- bodyHtml: `<h1>${post.title}</h1><p>${post.metaDescription}</p>`,
- metaDescription: post.metaDescription,
- tags: `${post.angle},${post.primaryKeyword}`,
- asDraft: true,
- }),
- });
- setPublishResults(p => ({ ...p, [key]: res.ok ? `ok:${res.handle || "published"}` : `error: ${res.error || "Failed"}` }));
- } catch (e) {
- setPublishResults(p => ({ ...p, [key]: `error: ${e.message}` }));
- } finally {
- setPublishingSlug(null);
- }
- };
+  async function plan() { if (await run("plan", "/plan", j("POST", { postsPerWeek: perWeek, focus }))) load(); }
+  async function add() { if (await run("add", "/items", j("POST", { title }))) { setTitle(""); load(); } }
+  async function setStatus(id, status) { if (await run("s" + id, `/items/${id}`, j("PATCH", { status }))) load(); }
+  async function remove(id) { if (await run("d" + id, `/items/${id}`, { method: "DELETE" })) load(); }
 
- const readiness = useMemo(() => {
- const ready = SAMPLE_CALENDAR.reduce((acc, w) => acc + (w.posts || []).filter((p) => p.status === "ready").length, 0);
- const total = SAMPLE_CALENDAR.reduce((acc, w) => acc + (w.posts || []).length, 0);
- return total ? Math.round((ready / total) * 100) : 0;
- }, []);
+  return (
+    <div style={S.root}>
+      <h1 style={S.title}>Weekly Blog Planner</h1>
+      <p style={S.subtitle}>A week of post ideas based on your real products and what you have already published. Write each one in Blog Draft Engine.</p>
+      {error && <div style={S.error}>{error}</div>}
 
- useEffect(() => {
- const loadStats = async () => {
- try {
- const res = await apiFetchJSON("/api/weekly-blog-content-engine/stats");
- const data = res;
- if (data?.ok) setStats(data.stats);
- } catch (err) {
- setError(err.message);
- }
- };
- loadStats();
- }, []);
+      <div style={S.card}>
+        <h2 style={S.h}>Plan the week</h2>
+        <select style={S.input} value={perWeek} onChange={(e) => setPerWeek(Number(e.target.value))}>
+          {[1, 2, 3, 4, 5, 7].map((n) => <option key={n} value={n}>{n} post{n > 1 ? "s" : ""} this week</option>)}
+        </select>
+        <input style={S.input} placeholder="Focus (optional), e.g. summer gifts" value={focus} onChange={(e) => setFocus(e.target.value)} />
+        <button style={{ ...S.btn, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={plan}>{busy === "plan" ? "Planning…" : "AI plan my week (2 credits)"}</button>
+        <div style={{ marginTop: 14 }}>
+          <input style={S.input} placeholder="Or add your own post idea" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <button style={{ ...S.ghost, ...(busy || !title.trim() ? S.off : {}) }} disabled={!!busy || !title.trim()} onClick={add}>Add manually</button>
+        </div>
+      </div>
 
- const orchestrateRun = async () => {
- setError("");
- try {
- const res = await apiFetchJSON("/api/weekly-blog-content-engine/ai/orchestrate", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ strategy: "best-of-n", posts: 4, primaryKeyword: plan.posts[0]?.primaryKeyword }),
- });
- const data = res;
- if (!data?.success) throw new Error(data?.error || "Failed to run AI orchestrator");
- setAiRun(data.data);
- } catch (err) {
- setError(err.message);
- }
- };
-
- const ensembleRun = async () => {
- setError("");
- try {
- const res = await apiFetchJSON("/api/weekly-blog-content-engine/ai/ensemble", {
- method: "POST",
- headers: { "Content-Type": "application/json"},
- body: JSON.stringify({ posts: 4, primaryKeyword: plan.posts[0]?.primaryKeyword }),
- });
- const data = res;
- if (!data?.success) throw new Error(data?.error || "Failed to run ensemble");
- setAiRun(data.data);
- } catch (err) {
- setError(err.message);
- }
- };
-
- const outlineScore = useMemo(() => {
- const depth = Math.min(100, Math.round(SAMPLE_OUTLINE.reduce((acc, s) => acc + s.words, 0) / 18));
- const coverage = Math.min(100, SAMPLE_OUTLINE.length * 12 + 40);
- const score = Math.round(depth * 0.45 + coverage * 0.35 + 82 * 0.2);
- return { score, grade: score >= 90 ? "A": score >= 80 ? "B": "C"};
- }, []);
-
- const metadataScore = useMemo(() => {
- const titles = plan.posts.map((p) => p.title.length);
- const metas = plan.posts.map((p) => p.metaDescription.length);
- const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
- const titleScore = titles.length ? Math.max(70, 100 - Math.abs(52 - avg(titles))) : 80;
- const metaScore = metas.length ? Math.max(70, 100 - Math.abs(145 - avg(metas))) : 80;
- return Math.round(titleScore * 0.55 + metaScore * 0.45);
- }, [plan.posts]);
-
- return (
- <div className="wbe-shell">
- <div className="wbe-header">
- <div>
- <h2>Weekly Blog Content Engine</h2>
- <div className="wbe-subtitle">Research {'>'} Calendar {'>'} Briefs {'>'} Outlines {'>'} SEO {'>'} Distribution {'>'} Collaboration {'>'} Performance</div>
- </div>
- <div className="wbe-actions">
- <BackButton />
- <button className="wbe-btn"onClick={orchestrateRun}>Route best-of-n</button>
- <button className="wbe-btn"onClick={ensembleRun}>Ensemble</button>
- <button className="wbe-btn primary"onClick={() => setWeekNumber((n) => n + 1)}>Next week</button>
- </div>
- </div>
-
- <div className="wbe-badges">
- <span className="wbe-pill success">Readiness: {readiness}%</span>
- <span className="wbe-pill warning">Metadata: {metadataScore}</span>
- <span className="wbe-pill info">Outline: {outlineScore.grade}</span>
- <span className="wbe-pill">Posts: {plan.posts.length}</span>
- {stats && <span className="wbe-pill muted">Runs: {stats.ai?.totalRuns || 0}</span>}
- </div>
-
- <div className="wbe-tabs">
- {Object.entries(TAB_GROUPS).map(([group, items]) => (
- <div key={group} className="wbe-tab-group">
- <h4>{group.toUpperCase()}</h4>
- <div className="wbe-tab-list">
- {items.map((item) => (
- <div key={item} className="wbe-tab-chip">
- <span>{item}</span>
- <span>{'>'}</span>
- </div>
- ))}
- </div>
- </div>
- ))}
- </div>
-
- {error && <div className="wbe-error">{error}</div>}
-
- <div className="wbe-grid two-column">
- <div className="wbe-card">
- <h3>Research & Intent</h3>
- <div className="wbe-inputs">
- <label>Brand<input value={brand} onChange={(e) => setBrand(e.target.value)} /></label>
- <label>Niche<input value={niche} onChange={(e) => setNiche(e.target.value)} /></label>
- <label>Audience<input value={audience} onChange={(e) => setAudience(e.target.value)} /></label>
- </div>
- <div className="wbe-list">
- <div className="wbe-list-item"><strong>Intent</strong><span>Informational · Benchmarks</span></div>
- <div className="wbe-list-item"><strong>ICP</strong><span>{audience}</span></div>
- <div className="wbe-list-item"><strong>Cadence</strong><span>{cadence}</span></div>
- </div>
- <button className="wbe-btn secondary"onClick={() => setCadence(cadence === "Weekly"? "Bi-weekly": "Weekly")}>Toggle cadence</button>
- </div>
-
- <div className="wbe-card">
- <h3>Weekly Calendar</h3>
- <div className="wbe-status-grid">
- {SAMPLE_CALENDAR.map((week) => (
- <div key={week.label} className="wbe-status-card">
- <div className="wbe-meta-row"><strong>{week.label}</strong><span className="wbe-tag">{week.posts.length} posts</span></div>
- {week.posts.map((p) => (
- <div key={p.title} className="wbe-tag"style={{ marginTop: 6 }}>{p.title} · {p.status}</div>
- ))}
- </div>
- ))}
- </div>
- </div>
-
- <div className="wbe-card">
- <h3>Brief & Compliance</h3>
- <div className="wbe-list">
- <div className="wbe-list-item"><strong>Title</strong><span>{SAMPLE_BRIEF.title}</span></div>
- <div className="wbe-list-item"><strong>Keyword</strong><span>{SAMPLE_BRIEF.primaryKeyword}</span></div>
- <div className="wbe-list-item"><strong>Personas</strong><span>{SAMPLE_BRIEF.personas}</span></div>
- <div className="wbe-list-item"><strong>Compliance</strong><span>{SAMPLE_BRIEF.compliance}</span></div>
- </div>
- <div className="wbe-outline-chips">
- {SAMPLE_BRIEF.outline.map((o) => (<span key={o} className="wbe-chip">{o}</span>))}
- </div>
- </div>
-
- <div className="wbe-card">
- <h3>Outline & Quality</h3>
- <div className="wbe-list">
- {SAMPLE_OUTLINE.map((s) => (
- <div key={s.heading} className="wbe-list-item">
- <strong>{s.heading}</strong>
- <span>{s.notes} · {s.words} words</span>
- </div>
- ))}
- </div>
- <div className="wbe-metrics">
- <div className="metric-pill"><span>Sections</span>{SAMPLE_OUTLINE.length}</div>
- <div className="metric-pill"><span>Score</span>{outlineScore.score}</div>
- <div className="metric-pill"><span>Grade</span>{outlineScore.grade}</div>
- </div>
- </div>
-
- <div className="wbe-card">
- <h3>SEO Optimizer</h3>
- <div className="wbe-metrics">
- <div className="metric-pill"><span>Metadata</span>{metadataScore}</div>
- <div className="metric-pill"><span>Schema</span>Article · FAQ</div>
- <div className="metric-pill"><span>Density</span>Optimal</div>
- <div className="metric-pill"><span>Links</span>Internal 12</div>
- </div>
- <div className="wbe-list">
- {plan.posts.map((p) => {
- const res = publishResults[p.slug];
- const isOk = res?.startsWith("ok:");
- const isErr = res?.startsWith("error:");
- return (
- <div key={p.slug} className="wbe-list-item"style={{ flexWrap: "wrap", gap: 8 }}>
- <div style={{ flex: 1, minWidth: 0 }}>
- <strong style={{ display: "block", marginBottom: 2 }}>{p.title}</strong>
- <span style={{ fontSize: 12 }}>{p.metaDescription}</span>
- {isErr && <div style={{ fontSize: 11, color: "#f87171", marginTop: 3 }}>{res.slice(7)}</div>}
- {isOk && <div style={{ fontSize: 11, color: "#86efac", marginTop: 3 }}> Published as draft on Shopify</div>}
- </div>
- <button
- onClick={() => publishPostToShopify(p)}
- disabled={publishingSlug === p.slug || isOk}
- style={{ background: isOk ? "#22c55e": "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "5px 14px", fontWeight: 700, fontSize: 12, cursor: publishingSlug === p.slug || isOk ? "not-allowed": "pointer", opacity: publishingSlug === p.slug ? 0.7 : 1, flexShrink: 0 }}
- >
- {publishingSlug === p.slug ? "Publishing": isOk ? "Published": "Publish to Shopify"}
- </button>
- </div>
- );
- })}
- </div>
- </div>
-
- <div className="wbe-card">
- <h3>Distribution & Channels</h3>
- <div className="wbe-meta-row">
- <span className="wbe-tag">Channels: {SAMPLE_CHANNELS.length}</span>
- <span className="wbe-tag">Ready: {SAMPLE_CHANNELS.filter((c) => c.status === "ready").length}</span>
- <span className="wbe-tag">Week {weekNumber}</span>
- </div>
- <div className="wbe-list">
- {SAMPLE_CHANNELS.map((c) => (
- <div key={c.channel} className="wbe-list-item">
- <strong>{c.channel}</strong>
- <span>Status: {c.status}</span>
- </div>
- ))}
- </div>
- </div>
-
- <div className="wbe-card">
- <h3>Collaboration</h3>
- <div className="wbe-tasks">
- {SAMPLE_TASKS.map((t) => (
- <div key={t.id} className="wbe-task">
- <span>{t.title}</span>
- <span className="wbe-tag">{t.status}</span>
- </div>
- ))}
- </div>
- <div className="wbe-activity">Reviewers: Content Lead · Legal · Social · Growth</div>
- </div>
-
- <div className="wbe-card">
- <h3>Performance & AI</h3>
- <div className="wbe-metrics">
- <div className="metric-pill"><span>Views (30d)</span>12.4k</div>
- <div className="metric-pill"><span>Engagement</span>44%</div>
- <div className="metric-pill"><span>Conversions</span>9.1%</div>
- <div className="metric-pill"><span>Forecast</span>+24%</div>
- </div>
- <div className="wbe-list">
- {PROVIDERS.map((p) => (
- <div key={p.id} className={`wbe-list-item ${aiRun?.route?.includes(p.id) ? "active": ""}`}>
- <strong>{p.name}</strong>
- <span>Latency: {p.latency} · Strength: {p.strength}</span>
- </div>
- ))}
- </div>
- {aiRun && <div className="wbe-activity">Last run {aiRun.strategy} · Quality {aiRun.qualityScore}</div>}
- </div>
- </div>
- </div>
- );
+      <div style={S.card}>
+        <h2 style={S.h}>Calendar</h2>
+        {items === null ? <div style={S.empty}>Loading…</div> : items.length === 0 ? <div style={S.empty}>Nothing planned yet. Let AI plan your week above.</div> :
+          items.map((i) => (
+            <div key={i.id} style={{ ...S.row, opacity: i.status === "skipped" ? 0.5 : 1 }}>
+              <span>
+                <span style={S.muted}>{i.date}</span> <b>{i.title}</b> {i.status !== "planned" && <span style={S.pill}>{i.status}</span>}
+                <div style={S.muted}>{i.keyword && `Keyword: ${i.keyword}. `}{i.angle}{i.linkedProduct && ` Links to ${i.linkedProduct.title}.`}</div>
+              </span>
+              <span style={{ whiteSpace: "nowrap" }}>
+                {i.status !== "written" && <button style={S.ghost} disabled={!!busy} onClick={() => setStatus(i.id, "written")}>Mark written</button>}
+                {i.status !== "skipped" && <button style={S.ghost} disabled={!!busy} onClick={() => setStatus(i.id, "skipped")}>Skip</button>}
+                <button style={S.ghost} disabled={!!busy} onClick={() => remove(i.id)}>Delete</button>
+              </span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
 }
-

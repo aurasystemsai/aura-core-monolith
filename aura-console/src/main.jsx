@@ -2,6 +2,9 @@
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
+import { installAuthFetch } from "./api.js";
+
+installAuthFetch();
 
 // Production Core API
 export const CORE_API = "https://aura-core-monolith.onrender.com";

@@ -482,7 +482,7 @@ router.get('/shop-info', async (req, res) => {
     if (!token) return res.json({ ok: true, domain: shopDomain.replace('.myshopify.com', ''), name: '' });
 
     // Fetch live shop data from Shopify REST API
-    const response = await fetch(`https://${shopDomain}/admin/api/2024-01/shop.json`, {
+    const response = await fetch(`https://${shopDomain}/admin/api/2025-10/shop.json`, {
       headers: { 'X-Shopify-Access-Token': token }
     });
     if (!response.ok) throw new Error('Shopify API error');

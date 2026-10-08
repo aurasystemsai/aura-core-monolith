@@ -1,146 +1,109 @@
-const express = require('express');
-const OpenAI = require('openai');
-const db = require('./db');
+﻿const express = require('express');
+const { getShopContext } = require('../../core/shopContext');
+const { gql, loadStoreEntities } = require('../../core/seoStoreData');
+const { getOpenAIClient } = require('../../core/openaiClient');
+const sb = require('../../core/schemaBuilder');
+
 const router = express.Router();
 
-let _openai;
-function getOpenAI() {
-  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  return _openai;
+const PRODUCT_Q = `query($id:ID!){ shop{ name currencyCode primaryDomain{url} } product(id:$id){
+  title handle description vendor featuredImage{url} images(first:5){nodes{url}}
+  variants(first:1){nodes{sku barcode price availableForSale}} } }`;
+const ARTICLE_Q = `query($id:ID!){ shop{ name primaryDomain{url} } article(id:$id){
+  title handle body summary publishedAt updatedAt author{name} image{url} blog{handle} } }`;
+const SHOP_Q = `{ shop{ name primaryDomain{url} } }`;
+
+const GID = { Product: /^gid:\/\/shopify\/Product\/\d+$/, Article: /^gid:\/\/shopify\/Article\/\d+$/ };
+
+function withShop(handler) {
+  return async (req, res) => {
+    const ctx = getShopContext(req);
+    if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
+    try {
+      await handler(req, res, ctx);
+    } catch (err) {
+      res.status(500).json({ ok: false, error: err.message });
+    }
+  };
 }
 
-// ── AI Analyze — main endpoint the frontend calls ────────────────────────────
-// POST /api/schema-rich-results-engine/ai/analyze
-// Frontend sends { schema }, expects { ok, schemaReport }
-router.post('/ai/analyze', async (req, res) => {
-  try {
-    const { schema, url, type } = req.body || {};
-    if (!schema && !url) return res.status(400).json({ ok: false, error: 'schema or url is required' });
+const bad = (res, msg) => res.status(400).json({ ok: false, error: msg });
 
-    const model = 'gpt-4o-mini';
-    const context = schema || `URL: ${url}, Type: ${type || 'Product'}`;
+router.get('/items', withShop(async (req, res, { shop, token }) => {
+  const kind = req.query.kind === 'article' ? 'articles' : 'products';
+  const { entities } = await loadStoreEntities(shop, token, { max: 100, types: [kind] });
+  res.json({ ok: true, items: entities.map(e => ({ id: e.id, title: e.title, url: e.url })) });
+}));
 
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content: `You are a schema.org and structured data expert for Shopify e-commerce stores. Analyze the input and provide:
+router.post('/generate', withShop(async (req, res, { shop, token }) => {
+  const { type, id, items, questions, sameAs, logo } = req.body || {};
+  let schema;
 
-1. **Schema Assessment** — What structured data exists or is needed
-2. **Generated JSON-LD** — Complete, valid JSON-LD schema markup (wrapped in a code block)
-3. **Rich Results Eligibility** — Which Google rich results this schema qualifies for (Product, FAQ, Breadcrumb, Article, Review, HowTo, etc.)
-4. **Validation Issues** — Any problems with existing schema
-5. **Enhancement Recommendations** — How to improve the schema for better rich results
-6. **Implementation Guide** — Where to place the schema in Shopify (theme.liquid, product template, etc.)
-
-Always generate valid JSON-LD. For Shopify products, include: name, description, image, sku, brand, offers (price, availability, priceCurrency), aggregateRating if applicable.`
-        },
-        { role: 'user', content: context }
-      ],
-      max_tokens: 1500,
-      temperature: 0.5
-    });
-
-    const schemaReport = completion.choices[0]?.message?.content?.trim() || '';
-    if (req.deductCredits) req.deductCredits({ model });
-    await db.recordEvent({ type: 'ai-analyze', model });
-
-    res.json({ ok: true, schemaReport });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+  if (type === 'Product') {
+    if (!GID.Product.test(String(id))) return bad(res, 'Choose a product.');
+    const d = await gql(shop, token, PRODUCT_Q, { id });
+    if (!d.product) return res.status(404).json({ ok: false, error: 'Product not found' });
+    const base = (d.shop.primaryDomain.url || `https://${shop}`).replace(/\/$/, '');
+    schema = sb.buildProductSchema(d.product, { currency: d.shop.currencyCode, url: `${base}/products/${d.product.handle}` });
+  } else if (type === 'Article') {
+    if (!GID.Article.test(String(id))) return bad(res, 'Choose an article.');
+    const d = await gql(shop, token, ARTICLE_Q, { id });
+    if (!d.article) return res.status(404).json({ ok: false, error: 'Article not found' });
+    const base = (d.shop.primaryDomain.url || `https://${shop}`).replace(/\/$/, '');
+    schema = sb.buildArticleSchema(d.article, { url: `${base}/blogs/${d.article.blog && d.article.blog.handle || 'news'}/${d.article.handle}`, publisherName: d.shop.name, publisherLogo: logo });
+  } else if (type === 'Organization') {
+    const d = await gql(shop, token, SHOP_Q);
+    const sameAsList = Array.isArray(sameAs) ? sameAs.filter(u => /^https?:\/\//i.test(String(u))).slice(0, 10) : [];
+    schema = sb.buildOrganizationSchema({ name: d.shop.name, url: d.shop.primaryDomain.url, logo: /^https?:\/\//i.test(String(logo || '')) ? logo : undefined, sameAs: sameAsList });
+  } else if (type === 'BreadcrumbList') {
+    if (!Array.isArray(items) || !items.length || items.length > 10 || items.some(i => !i || !i.name)) return bad(res, 'Provide 1-10 breadcrumb items with a name.');
+    schema = sb.buildBreadcrumbSchema(items.map(i => ({ name: String(i.name).slice(0, 100), url: i.url })));
+  } else if (type === 'FAQPage') {
+    if (!Array.isArray(questions) || !questions.length || questions.length > 15 || questions.some(q => !q || !String(q.question || '').trim() || !String(q.answer || '').trim())) {
+      return bad(res, 'Provide 1-15 questions, each with an answer.');
+    }
+    schema = sb.buildFaqSchema(questions);
+  } else {
+    return bad(res, 'type must be Product, Article, Organization, BreadcrumbList or FAQPage.');
   }
-});
 
-// ── AI Generate — general schema generation ──────────────────────────────────
-router.post('/ai/generate', async (req, res) => {
-  try {
-    const { type, data, messages, prompt } = req.body || {};
-    const model = 'gpt-4o-mini';
+  if (req.deductCredits) await req.deductCredits({ action: 'schema-gen' });
+  res.json({ ok: true, schema, snippet: sb.toScriptTag(schema), validation: sb.validateSchema(schema) });
+}));
 
-    const chatMessages = messages || [
-      { role: 'system', content: 'You are a schema.org JSON-LD expert for Shopify stores. Generate valid, complete JSON-LD structured data. Always output clean JSON-LD in a code block.' },
-      { role: 'user', content: prompt || `Generate JSON-LD schema for type "${type || 'Product'}" with data: ${JSON.stringify(data || {})}` }
-    ];
+router.post('/validate', withShop(async (req, res) => {
+  const { schema } = req.body || {};
+  if (!schema || (typeof schema === 'string' && schema.length > 100000)) return bad(res, 'Paste JSON-LD to validate (max 100 KB).');
+  res.json({ ok: true, validation: sb.validateSchema(schema) });
+}));
 
-    const completion = await getOpenAI().chat.completions.create({
-      model,
-      messages: chatMessages,
-      max_tokens: 1024,
-      temperature: 0.5
-    });
+// AI drafts FAQ answers from the real product description; the merchant edits before generating schema.
+router.post('/ai/faq', withShop(async (req, res, { shop, token }) => {
+  const { id } = req.body || {};
+  if (!GID.Product.test(String(id))) return bad(res, 'Choose a product.');
+  const openai = getOpenAIClient();
+  if (!openai) return res.status(503).json({ ok: false, error: 'AI is not configured on the server.' });
+  const d = await gql(shop, token, PRODUCT_Q, { id });
+  if (!d.product) return res.status(404).json({ ok: false, error: 'Product not found' });
+  const description = String(d.product.description || '').slice(0, 1500);
+  if (description.length < 40) return bad(res, 'This product needs a longer description before FAQs can be written from it.');
 
-    const reply = completion.choices[0]?.message?.content?.trim() || '';
-    if (req.deductCredits) req.deductCredits({ model });
-
-    res.json({ ok: true, reply, schema: reply });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ── History ──────────────────────────────────────────────────────────────────
-router.get('/history', async (req, res) => {
-  try { res.json({ ok: true, history: await db.listHistory() }); }
-  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-router.post('/history', async (req, res) => {
-  try { res.json({ ok: true, entry: await db.addHistory(req.body || {}) }); }
-  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-
-// ── Analytics ────────────────────────────────────────────────────────────────
-router.get('/analytics', async (req, res) => {
-  try { res.json({ ok: true, analytics: await db.listAnalytics() }); }
-  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-router.post('/analytics', async (req, res) => {
-  try { res.json({ ok: true, event: await db.recordEvent(req.body || {}) }); }
-  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-
-// ── Feedback ─────────────────────────────────────────────────────────────────
-router.post('/feedback', async (req, res) => {
-  try {
-    const { feedback } = req.body || {};
-    if (!feedback) return res.status(400).json({ ok: false, error: 'feedback is required' });
-    res.json({ ok: true, entry: await db.saveFeedback({ feedback }) });
-  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-
-// ── Import / Export ──────────────────────────────────────────────────────────
-router.post('/import', async (req, res) => {
-  try {
-    const { data, items } = req.body || {};
-    const arr = Array.isArray(data) ? data : Array.isArray(items) ? items : null;
-    if (!arr) return res.status(400).json({ ok: false, error: 'data[] or items[] required' });
-    const count = await db.importData(arr);
-    res.json({ ok: true, count });
-  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-router.get('/export', async (req, res) => {
-  try { res.json({ ok: true, history: await db.listHistory() }); }
-  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
-});
-
-// ── Health ───────────────────────────────────────────────────────────────────
-router.get('/health', (req, res) => {
-  res.json({ ok: true, tool: 'schema-rich-results-engine', ts: new Date().toISOString() });
-});
-
-// ── Inject schema into a Shopify article or product body_html ─────────────────
-router.post('/shopify/apply', async (req, res) => {
-  try {
-    const { type, entityId, blogId, schema } = req.body;
-    if (!type || !entityId || !schema) return res.status(400).json({ ok: false, error: 'type, entityId and schema are required' });
-    const shop = req.headers['x-shopify-shop-domain'] || req.body.shop;
-    if (!shop) return res.status(400).json({ ok: false, error: 'No shop domain — add x-shopify-shop-domain header' });
-    const { applySchemaToEntity } = require('../../core/shopifyApply');
-    const result = await applySchemaToEntity(shop, { type, entityId, blogId, schema });
-    res.json(result);
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    temperature: 0.4,
+    max_tokens: 700,
+    response_format: { type: 'json_object' },
+    messages: [{
+      role: 'user',
+      content: `Write 4 customer FAQs for this product. Only use facts stated below; do not invent specifications, prices or policies. Return JSON {"questions":[{"question":"","answer":""}]}.\nProduct: ${d.product.title}\nDescription: ${description}`,
+    }],
+  });
+  let questions = [];
+  try { questions = JSON.parse(completion.choices[0].message.content).questions || []; } catch { /* handled below */ }
+  questions = questions.filter(q => q && q.question && q.answer).slice(0, 6);
+  if (!questions.length) return res.status(502).json({ ok: false, error: 'The AI did not return usable FAQs. Try again.' });
+  if (req.deductCredits) await req.deductCredits({ model: 'gpt-4o-mini', action: 'schema-gen' });
+  res.json({ ok: true, questions });
+}));
 
 module.exports = router;

@@ -46,6 +46,13 @@ class ShopifyBillingService {
   }
 
   /**
+   * Test charges are never billed; only allowed outside production or when explicitly enabled.
+   */
+  useTestCharges() {
+    return process.env.NODE_ENV !== 'production' || process.env.SHOPIFY_TEST_CHARGES === 'true';
+  }
+
+  /**
    * Create app subscription (recurring charge)
    */
   async createSubscription(shop, planId) {
@@ -65,12 +72,12 @@ class ShopifyBillingService {
 
     // GraphQL mutation to create app subscription
     const mutation = `
-      mutation CreateAppSubscription($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!) {
+      mutation CreateAppSubscription($name: String!, $lineItems: [AppSubscriptionLineItemInput!]!, $returnUrl: URL!, $test: Boolean!) {
         appSubscriptionCreate(
           name: $name
           lineItems: $lineItems
           returnUrl: $returnUrl
-          test: true
+          test: $test
         ) {
           appSubscription {
             id
@@ -90,6 +97,7 @@ class ShopifyBillingService {
 
     const variables = {
       name: plan.name,
+      test: this.useTestCharges(),
       returnUrl,
       lineItems: [{
         plan: {
@@ -101,7 +109,7 @@ class ShopifyBillingService {
     };
 
     try {
-      const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
+      const response = await fetch(`https://${shop}/admin/api/2025-10/graphql.json`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +185,7 @@ class ShopifyBillingService {
     `;
 
     try {
-      const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
+      const response = await fetch(`https://${shop}/admin/api/2025-10/graphql.json`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -243,7 +251,7 @@ class ShopifyBillingService {
     const variables = { id: subscriptionId };
 
     try {
-      const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
+      const response = await fetch(`https://${shop}/admin/api/2025-10/graphql.json`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,21 +274,6 @@ class ShopifyBillingService {
   }
 
   /**
-   * Get usage stats (mock for now - can be enhanced with real data)
-   */
-  async getUsageStats(shop) {
-    // In production, query your database for actual usage
-    return {
-      ai_runs: Math.floor(Math.random() * 500),
-      ai_runs_limit: 10000,
-      products: Math.floor(Math.random() * 200),
-      products_limit: 10000,
-      team_members: 1,
-      team_members_limit: 5
-    };
-  }
-
-  /**
    * Get plan details
    */
   getPlan(planId) {
@@ -299,6 +292,32 @@ class ShopifyBillingService {
    */
   listCreditPacks() {
     return this.creditPacks;
+  }
+
+  /**
+   * Confirms with Shopify that a one-time credit-pack charge was really approved.
+   * Returns the pack it paid for (from our own catalogue), or null.
+   */
+  async verifyCreditPackCharge(shop, chargeId) {
+    const token = shopTokens.getToken(shop);
+    if (!token || !/^\d+$/.test(String(chargeId || ''))) return null;
+    const query = 'query($id: ID!) { node(id: $id) { ... on AppPurchaseOneTime { id name status test price { amount } } } }';
+    try {
+      const response = await fetch(`https://${shop}/admin/api/2025-10/graphql.json`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token },
+        body: JSON.stringify({ query, variables: { id: `gid://shopify/AppPurchaseOneTime/${chargeId}` } }),
+      });
+      const charge = (await response.json()).data?.node;
+      if (!charge || charge.status !== 'ACTIVE') return null;
+      if (charge.test && !this.useTestCharges()) return null;
+      const amount = Number(charge.price?.amount);
+      const pack = this.creditPacks.find(p => charge.name === `AURA Credit Top-Up: ${p.label}` && amount === p.price);
+      return pack ? { pack, chargeId: charge.id } : null;
+    } catch (error) {
+      console.error('Verify credit charge error:', error.message);
+      return null;
+    }
   }
 
   /**
@@ -333,17 +352,17 @@ class ShopifyBillingService {
     `;
 
     const backendBase = process.env.APP_URL || process.env.HOST_URL || 'https://aura-core-monolith.onrender.com';
-    const returnUrl = `${backendBase}/api/billing/confirm?shop=${encodeURIComponent(shop)}&credits=${pack.credits}`;
+    const returnUrl = `${backendBase}/api/billing/confirm?shop=${encodeURIComponent(shop)}&pack=${encodeURIComponent(pack.id)}`;
 
     const variables = {
       name: `AURA Credit Top-Up: ${pack.label}`,
       returnUrl,
       price: { amount: pack.price, currencyCode: 'USD' },
-      test: process.env.NODE_ENV !== 'production' || process.env.SHOPIFY_TEST_CHARGES === 'true',
+      test: this.useTestCharges(),
     };
 
     try {
-      const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
+      const response = await fetch(`https://${shop}/admin/api/2025-10/graphql.json`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

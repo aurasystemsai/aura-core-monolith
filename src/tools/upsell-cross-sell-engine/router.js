@@ -1,770 +1,123 @@
-/**
- * Upsell-Cross-Sell Engine Router - 50+ API endpoints
- * Comprehensive REST API for all upsell/cross-sell functionality
- */
-
+// Upsell & Cross-sell: what to recommend next to each product. Uses real "bought together" counts from your
+// recent orders when the store allows order access; otherwise falls back to catalogue similarity (type, tags,
+// title words) and says so. AI only writes the pitch wording. It never invents discounts or numbers.
 const express = require('express');
+const { getShopContext } = require('../../core/shopContext');
+const { getOpenAIClient } = require('../../core/openaiClient');
+const { gql } = require('../../core/seoStoreData');
+
 const router = express.Router();
+const MODEL = 'gpt-4o-mini';
+const STOP = new Set(['the', 'and', 'for', 'with', 'your', 'our', 'set', 'new', 'a', 'of', 'in', 'to']);
 
-const recommendationEngine = require('./recommendation-engine');
-const affinityAnalyzer = require('./affinity-analyzer');
-const cartOptimizer = require('./cart-optimizer');
+function withShop(handler) {
+  return async (req, res) => {
+    const ctx = getShopContext(req);
+    if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
+    try { await handler(req, res, ctx); } catch (err) { res.status(err.status || 500).json({ ok: false, error: err.message }); }
+  };
+}
 
-// ============================================================================
-// RECOMMENDATIONS (15 endpoints)
-// ============================================================================
+async function loadProducts(shop, token) {
+  const d = await gql(shop, token, '{ products(first: 100, query: "status:active") { nodes { id title handle productType tags onlineStoreUrl priceRangeV2 { minVariantPrice { amount currencyCode } } featuredImage { url } } } }');
+  return d.products.nodes.map((p) => ({
+    id: p.id, title: p.title, type: p.productType || '', tags: p.tags || [], url: p.onlineStoreUrl || `https://${shop}/products/${p.handle}`,
+    price: p.priceRangeV2 ? Number(p.priceRangeV2.minVariantPrice.amount) : null, currency: p.priceRangeV2 ? p.priceRangeV2.minVariantPrice.currencyCode : '',
+    image: p.featuredImage ? p.featuredImage.url : null,
+  }));
+}
 
-/**
- * Generate personalized recommendations
- * POST /api/upsell-cross-sell/recommendations/generate
- */
-router.post('/recommendations/generate', async (req, res) => {
+// Returns { baskets: string[][] } of product ids per order, or { unavailable } when orders can't be read.
+async function loadBaskets(shop, token) {
   try {
-    const { customerId, sessionId, context, strategy, maxRecommendations, filters } = req.body;
-    
-    const result = await recommendationEngine.generateRecommendations({
-      customerId,
-      sessionId,
-      context,
-      strategy: strategy || 'hybrid',
-      maxRecommendations: maxRecommendations || 10,
-      filters: filters || {}
-    });
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    const d = await gql(shop, token, '{ orders(first: 250, sortKey: PROCESSED_AT, reverse: true) { nodes { lineItems(first: 25) { nodes { product { id } } } } } }');
+    const baskets = d.orders.nodes.map((o) => [...new Set(o.lineItems.nodes.map((l) => l.product && l.product.id).filter(Boolean))]);
+    return { baskets: baskets.filter((b) => b.length > 0) };
+  } catch (e) {
+    if (/access denied|scope|permission/i.test(e.message)) return { unavailable: e.message };
+    throw e;
   }
-});
+}
 
-/**
- * Collaborative filtering recommendations
- * POST /api/upsell-cross-sell/recommendations/collaborative
- */
-router.post('/recommendations/collaborative', async (req, res) => {
-  try {
-    const { customerId, maxRecommendations, filters } = req.body;
-    
-    const result = await recommendationEngine.collaborativeFiltering(
-      customerId,
-      maxRecommendations || 10,
-      filters || {}
-    );
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Content-based filtering recommendations
- * POST /api/upsell-cross-sell/recommendations/content-based
- */
-router.post('/recommendations/content-based', async (req, res) => {
-  try {
-    const { customerId, context, maxRecommendations, filters } = req.body;
-    
-    const result = await recommendationEngine.contentBasedFiltering(
-      customerId,
-      context || {},
-      maxRecommendations || 10,
-      filters || {}
-    );
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Hybrid recommendations
- * POST /api/upsell-cross-sell/recommendations/hybrid
- */
-router.post('/recommendations/hybrid', async (req, res) => {
-  try {
-    const { customerId, context, maxRecommendations, filters } = req.body;
-    
-    const result = await recommendationEngine.hybridRecommendations(
-      customerId,
-      context || {},
-      maxRecommendations || 10,
-      filters || {}
-    );
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Session-based recommendations
- * POST /api/upsell-cross-sell/recommendations/session-based
- */
-router.post('/recommendations/session-based', async (req, res) => {
-  try {
-    const { sessionId, maxRecommendations, filters } = req.body;
-    
-    const result = await recommendationEngine.sessionBasedRecommendations(
-      sessionId,
-      maxRecommendations || 10,
-      filters || {}
-    );
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Trending products
- * GET /api/upsell-cross-sell/recommendations/trending
- */
-router.get('/recommendations/trending', async (req, res) => {
-  try {
-    const maxRecommendations = parseInt(req.query.max) || 10;
-    const filters = req.query.filters ? JSON.parse(req.query.filters) : {};
-    
-    const result = await recommendationEngine.getTrendingProducts(maxRecommendations, filters);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * New arrivals
- * GET /api/upsell-cross-sell/recommendations/new-arrivals
- */
-router.get('/recommendations/new-arrivals', async (req, res) => {
-  try {
-    const maxRecommendations = parseInt(req.query.max) || 10;
-    const filters = req.query.filters ? JSON.parse(req.query.filters) : {};
-    
-    const result = await recommendationEngine.getNewArrivals(maxRecommendations, filters);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Thompson Sampling (Multi-Armed Bandit)
- * POST /api/upsell-cross-sell/recommendations/thompson-sampling
- */
-router.post('/recommendations/thompson-sampling', async (req, res) => {
-  try {
-    const { products, numSamples } = req.body;
-    
-    const result = recommendationEngine.thompsonSampling(products, numSamples || 5);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Track recommendation performance
- * POST /api/upsell-cross-sell/recommendations/track
- */
-router.post('/recommendations/track', async (req, res) => {
-  try {
-    const { productId, event } = req.body;
-    
-    recommendationEngine.trackRecommendationPerformance(productId, event);
-    
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get model metrics
- * GET /api/upsell-cross-sell/recommendations/metrics
- */
-router.get('/recommendations/metrics', async (req, res) => {
-  try {
-    const metrics = recommendationEngine.getModelMetrics();
-    
-    res.json({ success: true, data: metrics });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// PRODUCT AFFINITY (12 endpoints)
-// ============================================================================
-
-/**
- * Analyze frequently bought together
- * POST /api/upsell-cross-sell/affinity/frequently-bought-together
- */
-router.post('/affinity/frequently-bought-together', async (req, res) => {
-  try {
-    const { orders, minSupport, minConfidence } = req.body;
-    
-    const result = affinityAnalyzer.analyzeFrequentlyBoughtTogether(
-      orders,
-      minSupport || 0.01,
-      minConfidence || 0.3
-    );
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get complementary products
- * GET /api/upsell-cross-sell/affinity/complementary/:productId
- */
-router.get('/affinity/complementary/:productId', async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const maxResults = parseInt(req.query.max) || 10;
-    
-    const result = affinityAnalyzer.getComplementaryProducts(productId, maxResults);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Analyze sequential patterns
- * POST /api/upsell-cross-sell/affinity/sequential-patterns
- */
-router.post('/affinity/sequential-patterns', async (req, res) => {
-  try {
-    const { orders } = req.body;
-    
-    const result = affinityAnalyzer.analyzeSequentialPatterns(orders);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Predict next purchase
- * GET /api/upsell-cross-sell/affinity/predict-next/:productId
- */
-router.get('/affinity/predict-next/:productId', async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const maxResults = parseInt(req.query.max) || 10;
-    
-    const result = affinityAnalyzer.predictNextPurchase(productId, maxResults);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Analyze category affinity
- * POST /api/upsell-cross-sell/affinity/category-analysis
- */
-router.post('/affinity/category-analysis', async (req, res) => {
-  try {
-    const { orders, productCatalog } = req.body;
-    
-    const result = affinityAnalyzer.analyzeCategoryAffinity(orders, productCatalog);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get cross-category recommendations
- * GET /api/upsell-cross-sell/affinity/cross-category/:categoryId
- */
-router.get('/affinity/cross-category/:categoryId', async (req, res) => {
-  try {
-    const { categoryId } = req.params;
-    const maxResults = parseInt(req.query.max) || 5;
-    
-    const result = affinityAnalyzer.getCrossCategoryRecommendations(categoryId, maxResults);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Calculate affinity score
- * POST /api/upsell-cross-sell/affinity/score
- */
-router.post('/affinity/score', async (req, res) => {
-  try {
-    const { productA, productB } = req.body;
-    
-    const result = affinityAnalyzer.calculateAffinityScore(productA, productB);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get affinity matrix
- * POST /api/upsell-cross-sell/affinity/matrix
- */
-router.post('/affinity/matrix', async (req, res) => {
-  try {
-    const { productIds } = req.body;
-    
-    const result = affinityAnalyzer.getAffinityMatrix(productIds);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Find product bundles
- * POST /api/upsell-cross-sell/affinity/find-bundles
- */
-router.post('/affinity/find-bundles', async (req, res) => {
-  try {
-    const { minSupport, minProducts, maxProducts } = req.body;
-    
-    const result = affinityAnalyzer.findProductBundles(
-      minSupport || 0.02,
-      minProducts || 2,
-      maxProducts || 4
-    );
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get all affinity rules
- * GET /api/upsell-cross-sell/affinity/rules
- */
-router.get('/affinity/rules', async (req, res) => {
-  try {
-    const filters = {
-      minLift: parseFloat(req.query.minLift),
-      minConfidence: parseFloat(req.query.minConfidence),
-      minSupport: parseFloat(req.query.minSupport),
-      productId: req.query.productId
-    };
-    
-    const result = affinityAnalyzer.getAllAffinityRules(filters);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Update affinity with new order
- * POST /api/upsell-cross-sell/affinity/update
- */
-router.post('/affinity/update', async (req, res) => {
-  try {
-    const { order } = req.body;
-    
-    affinityAnalyzer.updateAffinityWithOrder(order);
-    
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// CART OPTIMIZATION (10 endpoints)
-// ============================================================================
-
-/**
- * Optimize cart
- * POST /api/upsell-cross-sell/cart/optimize
- */
-router.post('/cart/optimize', async (req, res) => {
-  try {
-    const { cart, context } = req.body;
-    
-    const result = await cartOptimizer.optimizeCart(cart, context || {});
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Generate upsells
- * POST /api/upsell-cross-sell/cart/upsells
- */
-router.post('/cart/upsells', async (req, res) => {
-  try {
-    const { cart, context } = req.body;
-    
-    const result = await cartOptimizer.generateUpsells(cart, context || {});
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Generate cross-sells
- * POST /api/upsell-cross-sell/cart/cross-sells
- */
-router.post('/cart/cross-sells', async (req, res) => {
-  try {
-    const { cart, context } = req.body;
-    
-    const result = await cartOptimizer.generateCrossSells(cart, context || {});
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Generate bundle offers
- * POST /api/upsell-cross-sell/cart/bundles
- */
-router.post('/cart/bundles', async (req, res) => {
-  try {
-    const { cart, context } = req.body;
-    
-    const result = await cartOptimizer.generateBundleOffers(cart, context || {});
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Calculate free shipping nudge
- * POST /api/upsell-cross-sell/cart/free-shipping
- */
-router.post('/cart/free-shipping', async (req, res) => {
-  try {
-    const { cart } = req.body;
-    
-    const result = cartOptimizer.calculateFreeShippingNudge(cart);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Calculate quantity discounts
- * POST /api/upsell-cross-sell/cart/quantity-discounts
- */
-router.post('/cart/quantity-discounts', async (req, res) => {
-  try {
-    const { cart } = req.body;
-    
-    const result = cartOptimizer.calculateQuantityDiscounts(cart);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Generate time-limited offers
- * POST /api/upsell-cross-sell/cart/time-limited-offers
- */
-router.post('/cart/time-limited-offers', async (req, res) => {
-  try {
-    const { cart, context } = req.body;
-    
-    const result = cartOptimizer.generateTimeLimitedOffers(cart, context || {});
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Predict final cart value
- * POST /api/upsell-cross-sell/cart/predict-value
- */
-router.post('/cart/predict-value', async (req, res) => {
-  try {
-    const { cart, suggestions, context } = req.body;
-    
-    const result = cartOptimizer.predictFinalCartValue(cart, suggestions, context || {});
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Recover abandoned cart
- * POST /api/upsell-cross-sell/cart/recover/:cartId
- */
-router.post('/cart/recover/:cartId', async (req, res) => {
-  try {
-    const { cartId } = req.params;
-    const { strategy } = req.body;
-    
-    const result = await cartOptimizer.recoverAbandonedCart(cartId, strategy || 'standard');
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get abandoned carts
- * GET /api/upsell-cross-sell/cart/abandoned
- */
-router.get('/cart/abandoned', async (req, res) => {
-  try {
-    const filters = {
-      minValue: parseFloat(req.query.minValue),
-      maxHoursSince: parseFloat(req.query.maxHoursSince)
-    };
-    
-    const result = cartOptimizer.getAbandonedCarts(filters);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// ML MODELS (8 endpoints)
-// ============================================================================
-
-/**
- * Train collaborative filtering model
- * POST /api/upsell-cross-sell/ml/train-collaborative
- */
-router.post('/ml/train-collaborative', async (req, res) => {
-  try {
-    const { purchases } = req.body;
-    
-    const result = recommendationEngine.trainCollaborativeModel(purchases);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Train content-based model
- * POST /api/upsell-cross-sell/ml/train-content
- */
-router.post('/ml/train-content', async (req, res) => {
-  try {
-    const { products } = req.body;
-    
-    const result = recommendationEngine.trainContentModel(products);
-    
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get model performance
- * GET /api/upsell-cross-sell/ml/performance
- */
-router.get('/ml/performance', async (req, res) => {
-  try {
-    const metrics = recommendationEngine.getModelMetrics();
-    
-    res.json({ success: true, data: metrics });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// ANALYTICS (8 endpoints)
-// ============================================================================
-
-/**
- * Get analytics overview
- * GET /api/upsell-cross-sell/analytics/overview
- */
-router.get('/analytics/overview', async (req, res) => {
-  try {
-    const days = parseInt(req.query.days) || 30;
-    
-    const metrics = recommendationEngine.getModelMetrics();
-    
-    const overview = {
-      period: `Last ${days} days`,
-      recommendations: {
-        totalImpressions: metrics.impressions,
-        totalClicks: metrics.clicks,
-        totalConversions: metrics.conversions,
-        ctr: metrics.ctr,
-        conversionRate: metrics.conversionRate
-      },
-      revenue: {
-        total: metrics.revenue,
-        avgPerConversion: metrics.avgRevenuePerConversion
-      },
-      timestamp: new Date().toISOString()
-    };
-    
-    res.json({ success: true, data: overview });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get revenue attribution
- * GET /api/upsell-cross-sell/analytics/revenue-attribution
- */
-router.get('/analytics/revenue-attribution', async (req, res) => {
-  try {
-    const metrics = recommendationEngine.getModelMetrics();
-    
-    const attribution = {
-      upsellRevenue: metrics.revenue * 0.4, // Placeholder
-      crossSellRevenue: metrics.revenue * 0.6,
-      totalRevenue: metrics.revenue,
-      projectedAnnualImpact: metrics.revenue * 12
-    };
-    
-    res.json({ success: true, data: attribution });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-/**
- * Get conversion funnel
- * GET /api/upsell-cross-sell/analytics/funnel
- */
-router.get('/analytics/funnel', async (req, res) => {
-  try {
-    const metrics = recommendationEngine.getModelMetrics();
-    
-    const funnel = [
-      { stage: 'Impressions', count: metrics.impressions, rate: 1.0 },
-      { stage: 'Clicks', count: metrics.clicks, rate: metrics.ctr },
-      { stage: 'Conversions', count: metrics.conversions, rate: metrics.conversionRate }
-    ];
-    
-    res.json({ success: true, data: funnel });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ============================================================================
-// HEALTH & CONFIG (5 endpoints)
-// ============================================================================
-
-/**
- * Health check
- * GET /api/upsell-cross-sell/health
- */
-router.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    service: 'upsell-cross-sell-engine',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+function coPurchase(baskets) {
+  const pair = {}; const count = {};
+  baskets.forEach((b) => {
+    b.forEach((a) => { count[a] = (count[a] || 0) + 1; });
+    for (let i = 0; i < b.length; i++) for (let j = 0; j < b.length; j++) if (i !== j) { const k = b[i] + '|' + b[j]; pair[k] = (pair[k] || 0) + 1; }
   });
-});
+  return { pair, count };
+}
 
-/**
- * Get configuration
- * GET /api/upsell-cross-sell/config
- */
-router.get('/config', (req, res) => {
-  const config = {
-    freeShippingThreshold: 75,
-    defaultMaxRecommendations: 10,
-    abandonmentThreshold: 30, // minutes
-    minAffinitySupport: 0.01,
-    minAffinityConfidence: 0.3
-  };
-  
-  res.json({ success: true, data: config });
-});
+const words = (t) => new Set(String(t).toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w)));
+function similarity(a, b) {
+  let s = 0; const why = [];
+  if (a.type && a.type === b.type) { s += 3; why.push(`same type (${a.type})`); }
+  const tags = a.tags.filter((t) => b.tags.includes(t));
+  if (tags.length) { s += Math.min(tags.length, 3) * 1.5; why.push(`shared tags: ${tags.slice(0, 3).join(', ')}`); }
+  const wa = words(a.title); const shared = [...words(b.title)].filter((w) => wa.has(w));
+  if (shared.length) { s += shared.length; why.push(`similar name (${shared.slice(0, 2).join(', ')})`); }
+  return { s, why };
+}
 
-/**
- * Update configuration
- * PUT /api/upsell-cross-sell/config
- */
-router.put('/config', (req, res) => {
-  try {
-    const updates = req.body;
-    
-    // In production, persist config changes
-    
-    res.json({ success: true, message: 'Configuration updated' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+function recommend(product, products, orderData, limit = 5) {
+  const others = products.filter((p) => p.id !== product.id);
+  if (orderData && orderData.baskets && orderData.baskets.length) {
+    const { pair, count } = coPurchase(orderData.baskets);
+    const bought = count[product.id] || 0;
+    const ranked = others.map((p) => ({ p, together: pair[product.id + '|' + p.id] || 0 })).filter((x) => x.together > 0).sort((a, b) => b.together - a.together).slice(0, limit);
+    if (ranked.length) {
+      return { basis: 'orders', items: ranked.map((x) => ({ ...x.p, score: x.together, reason: `bought together in ${x.together} of ${bought} recent orders with this product` })) };
+    }
   }
-});
+  const ranked = others.map((p) => ({ p, ...similarity(product, p) })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s).slice(0, limit);
+  return { basis: 'catalogue', items: ranked.map((x) => ({ ...x.p, score: Math.round(x.s * 10) / 10, reason: x.why.join('; ') })) };
+}
 
-/**
- * Get system metrics
- * GET /api/upsell-cross-sell/metrics
- */
-router.get('/metrics', (req, res) => {
-  const metrics = {
-    memory: process.memoryUsage(),
-    uptime: process.uptime(),
-    modelMetrics: recommendationEngine.getModelMetrics()
-  };
-  
-  res.json({ success: true, data: metrics });
-});
+router.get('/products', withShop(async (req, res, { shop, token }) => {
+  const products = await loadProducts(shop, token);
+  res.json({ ok: true, ai: !!getOpenAIClient(), products });
+}));
 
-/**
- * Clear cache
- * POST /api/upsell-cross-sell/cache/clear
- */
-router.post('/cache/clear', (req, res) => {
-  try {
-    // In production, clear recommendation cache
-    
-    res.json({ success: true, message: 'Cache cleared' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+router.get('/related', withShop(async (req, res, { shop, token }) => {
+  const products = await loadProducts(shop, token);
+  const product = products.find((p) => p.id === req.query.productId);
+  if (!product) return res.status(404).json({ ok: false, error: 'Product not found.' });
+  const orderData = await loadBaskets(shop, token);
+  const r = recommend(product, products, orderData);
+  res.json({ ok: true, product, ...r, ordersAvailable: !orderData.unavailable, ordersNote: orderData.unavailable ? 'Order history is not available to this app yet, so suggestions use catalogue similarity.' : null });
+}));
+
+router.get('/bundles', withShop(async (req, res, { shop, token }) => {
+  const orderData = await loadBaskets(shop, token);
+  if (orderData.unavailable) return res.json({ ok: true, bundles: [], ordersAvailable: false, note: 'Bundle ideas need order history, which this app cannot read yet.' });
+  const products = await loadProducts(shop, token);
+  const byId = Object.fromEntries(products.map((p) => [p.id, p]));
+  const { pair } = coPurchase(orderData.baskets);
+  const bundles = Object.entries(pair).map(([k, n]) => { const [a, b] = k.split('|'); return { a, b, n }; })
+    .filter((x) => x.a < x.b && byId[x.a] && byId[x.b]).sort((x, y) => y.n - x.n).slice(0, 10)
+    .map((x) => ({ products: [byId[x.a], byId[x.b]], orders: x.n }));
+  res.json({ ok: true, ordersAvailable: true, ordersAnalysed: orderData.baskets.length, bundles });
+}));
+
+router.post('/pitch', withShop(async (req, res, { shop, token }) => {
+  const openai = getOpenAIClient();
+  if (!openai) return res.status(503).json({ ok: false, error: 'AI is not configured on the server.' });
+  const b = req.body || {};
+  const products = await loadProducts(shop, token);
+  const a = products.find((p) => p.id === b.productId); const c = products.find((p) => p.id === b.relatedId);
+  if (!a || !c) return res.status(404).json({ ok: false, error: 'Product not found.' });
+  const out = await openai.chat.completions.create({
+    model: MODEL, temperature: 0.7, max_tokens: 250, response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: 'Write upsell/cross-sell copy for a small online shop. Return JSON {"cartLine":string,"emailLine":string,"bundleName":string}. cartLine under 90 characters, emailLine under 160. No discounts, prices or claims that are not in the input.' },
+      { role: 'user', content: JSON.stringify({ bought: a.title, suggest: c.title, why: String(b.reason || '').slice(0, 200) }) },
+    ],
+  });
+  let o; try { o = JSON.parse(out.choices[0].message.content); } catch { return res.status(502).json({ ok: false, error: 'The AI returned an unreadable answer. Try again.' }); }
+  if (req.deductCredits) await req.deductCredits({ model: MODEL, action: 'generic-ai' });
+  const t = (v, n) => String(v == null ? '' : v).slice(0, n);
+  res.json({ ok: true, pitch: { cartLine: t(o.cartLine, 120), emailLine: t(o.emailLine, 220), bundleName: t(o.bundleName, 80) } });
+}));
 
 module.exports = router;
+module.exports._recommend = recommend;

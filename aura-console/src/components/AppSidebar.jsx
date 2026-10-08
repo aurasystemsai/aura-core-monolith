@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { apiFetch } from "../api";
-import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "../hooks/usePlan";
+import { getToolCatalogGroups } from "../toolMeta";
+import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_COLOUR } from "../hooks/usePlan";
 
 /* Group icons (none — text-only labels) */
 const GROUP_ICONS = {};
@@ -8,8 +9,8 @@ const GROUP_ICONS = {};
 const SIDEBAR_PREF_KEY = "aura-sidebar-prefs";
 
 export default function AppSidebar({ activeSection, setActiveSection, plan }) {
- const [groups, setGroups] = useState([]);
- const [loading, setLoading] = useState(true);
+ const [groups, setGroups] = useState(() => getToolCatalogGroups());
+ const [loading, setLoading] = useState(false);
  const [collapsed, setCollapsed] = useState(() => {
  try { return JSON.parse(localStorage.getItem(SIDEBAR_PREF_KEY) || "{}").collapsed || false; } catch { return false; }
  });
@@ -25,10 +26,11 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  try {
  const resp = await apiFetch("/api/main-suite/modules");
  const data = await resp.json();
- if (data.modules && mounted) {
- setGroups(data.modules);
+ if (Array.isArray(data.modules) && mounted) {
+ const catalogGroups = getToolCatalogGroups(data.modules);
+ setGroups(catalogGroups);
  // Auto-expand the group containing the active tool
- const activeGroup = data.modules.find(g =>
+ const activeGroup = catalogGroups.find(g =>
  g.modules?.some(m => m.id === activeSection)
  );
  if (activeGroup) {
@@ -348,7 +350,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
 
  {/* Tool groups */}
  {filteredGroups.map(group => {
- const expanded = expandedGroups[group.id] || false;
+ const expanded = Boolean(search.trim()) || expandedGroups[group.id] || false;
  const groupActive = isGroupActive(group.id);
  const icon = GROUP_ICONS[group.id] || "";
  const toolCount = group.modules?.length || 0;
@@ -392,11 +394,11 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  setActiveSection(tool.id);
  }
  }}
- title={locked ? `${tool.name} (${PLAN_LABEL[plan] || "Upgrade"} required)` : tool.name}
+ title={locked ? `${tool.name} (${PLAN_LABEL[requiredPlanFor(tool.id)] || "Upgrade"} plan required)` : tool.name}
  >
  {tool.status && <span style={S.toolDot(tool.status)} />}
  <span style={{ overflow: "hidden", textOverflow: "ellipsis"}}>{tool.name}</span>
- {locked && <span style={S.badge(PLAN_COLOUR.professional)}>PRO</span>}
+ {locked && <span style={S.badge(PLAN_COLOUR[requiredPlanFor(tool.id)] || PLAN_COLOUR.pro)}>{(PLAN_LABEL[requiredPlanFor(tool.id)] || "PRO").toUpperCase()}</span>}
  </button>
  );
  })}

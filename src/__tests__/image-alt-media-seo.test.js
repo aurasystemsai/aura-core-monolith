@@ -4,7 +4,7 @@ jest.mock('better-sqlite3', () => {
   return function MockedDB() {
     return {
       pragma: () => {},
-      prepare: () => ({ run: () => {}, all: () => [], get: () => null }),
+      prepare: () => ({ run: () => {}, all: () => [], get: () => ({ c: 1 }) }),
       exec: () => {},
       close: () => {},
     };

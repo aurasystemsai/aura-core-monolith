@@ -4,7 +4,7 @@
  */
 
 const shopTokens = require('./shopTokens');
-const API_VERSION = process.env.SHOPIFY_API_VERSION || '2023-10';
+const API_VERSION = process.env.SHOPIFY_API_VERSION || '2025-10';
 
 function headers(token) {
   return { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token };
@@ -24,6 +24,7 @@ async function applyProductFields(shop, productId, fields = {}) {
   const token = getToken(shop);
   const base = `https://${shop}/admin/api/${API_VERSION}/products/${productId}`;
   const h = headers(token);
+  const fetchFn = global.fetch || require('node-fetch');
 
   const productPayload = { product: { id: productId } };
   if (fields.title)     productPayload.product.title = fields.title;
@@ -36,26 +37,34 @@ async function applyProductFields(shop, productId, fields = {}) {
 
   // Only PUT if there's something to change
   if (Object.keys(productPayload.product).length > 1) {
-    const r = await fetch(`${base}.json`, { method: 'PUT', headers: h, body: JSON.stringify(productPayload) });
+    const r = await fetchFn(`${base}.json`, { method: 'PUT', headers: h, body: JSON.stringify(productPayload) });
     if (!r.ok) throw new Error(`Product update failed (${r.status}): ${(await r.text()).slice(0, 300)}`);
   }
 
-  // Meta description via metafield
-  if (fields.metaDescription) {
-    const mf = await fetch(`${base}/metafields.json`, {
-      method: 'POST', headers: h,
-      body: JSON.stringify({ metafield: { namespace: 'global', key: 'description_tag', value: fields.metaDescription, type: 'single_line_text_field' } }),
+  const seo = {};
+  if (fields.seoTitle) seo.title = fields.seoTitle;
+  if (fields.metaDescription) seo.description = fields.metaDescription;
+  if (Object.keys(seo).length) {
+    const id = String(productId).startsWith('gid://')
+      ? String(productId)
+      : `gid://shopify/Product/${productId}`;
+    const [apiYear, apiMonth] = API_VERSION.split('-').map(Number);
+    const usesProductUpdateInput = apiYear > 2024 || (apiYear === 2024 && apiMonth >= 10);
+    const argument = usesProductUpdateInput ? 'product' : 'input';
+    const inputType = usesProductUpdateInput ? 'ProductUpdateInput' : 'ProductInput';
+    const response = await fetchFn(`https://${shop}/admin/api/${API_VERSION}/graphql.json`, {
+      method: 'POST',
+      headers: h,
+      body: JSON.stringify({
+        query: `mutation ProductSeoUpdate($${argument}: ${inputType}!) { productUpdate(${argument}: $${argument}) { product { id } userErrors { field message } } }`,
+        variables: { [argument]: { id, seo } },
+      }),
     });
-    if (!mf.ok) console.error('Metafield (metaDescription) update failed:', await mf.text());
-  }
-
-  // SEO title via metafield
-  if (fields.seoTitle) {
-    const mf = await fetch(`${base}/metafields.json`, {
-      method: 'POST', headers: h,
-      body: JSON.stringify({ metafield: { namespace: 'global', key: 'title_tag', value: fields.seoTitle, type: 'single_line_text_field' } }),
-    });
-    if (!mf.ok) console.error('Metafield (seoTitle) update failed:', await mf.text());
+    if (!response.ok) throw new Error(`Shopify SEO update failed (${response.status}): ${(await response.text()).slice(0, 300)}`);
+    const result = await response.json();
+    if (result.errors?.length) throw new Error(`Shopify SEO update failed: ${result.errors.map(error => error.message).join('; ')}`);
+    const userErrors = result.data?.productUpdate?.userErrors || [];
+    if (userErrors.length) throw new Error(`Shopify SEO update failed: ${userErrors.map(error => error.message).join('; ')}`);
   }
 
   return { ok: true, message: 'Product updated on Shopify' };

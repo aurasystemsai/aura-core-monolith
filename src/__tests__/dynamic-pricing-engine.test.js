@@ -95,9 +95,17 @@ describe('Dynamic Pricing Engine - Comprehensive Test Suite', () => {
     test('POST /ai/elasticity/calculate - calculate elasticity', async () => {
       const res = await request(app)
         .post('/api/dynamic-pricing-engine/ai/elasticity/calculate')
-        .send({ productId: 'PROD-123' });
+        .send({ productId: 'PROD-123', priceChanges: [10, -5], demandChanges: [-15, 8] });
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
+    });
+
+    test('POST /ai/elasticity/calculate - rejects invalid series', async () => {
+      const res = await request(app)
+        .post('/api/dynamic-pricing-engine/ai/elasticity/calculate')
+        .send({ productId: 'PROD-123', priceChanges: [10], demandChanges: [] });
+      expect(res.status).toBe(400);
+      expect(res.body.ok).toBe(false);
     });
 
     test('POST /ai/repricing/enable - enable smart repricing', async () => {

@@ -130,7 +130,7 @@ async function getAccessToken(shop, code) {
  * Get shop information
  */
 async function getShopInfo(shop, accessToken) {
-  const url = `https://${shop}/admin/api/2024-01/shop.json`;
+  const url = `https://${shop}/admin/api/2025-10/shop.json`;
   
   const response = await fetch(url, {
     headers: {
@@ -424,7 +424,7 @@ router.post('/sync/:dataType', async (req, res) => {
     const token = await getShopToken(shop);
     if (!token) return res.status(401).json({ error: 'No access token found for this shop. Please reconnect.' });
 
-    const apiVersion = '2024-01';
+    const apiVersion = '2025-10';
     const endpoints = {
       products:  `https://${shop}/admin/api/${apiVersion}/products.json?limit=250&fields=id,title,status,variants,images`,
       orders:    `https://${shop}/admin/api/${apiVersion}/orders.json?limit=250&status=any&fields=id,name,total_price,financial_status,created_at`,

@@ -13,6 +13,17 @@ const moduleGroups = [
       { id: "on-page-seo-engine", name: "On-Page SEO Engine", description: "Audit and optimize on-page SEO factors across your entire store." },
       { id: "technical-seo-auditor", name: "Technical SEO Auditor", description: "Deep technical SEO audits with crawl analysis and fix recommendations." }
     ]
+  },
+  {
+    id: "personalization",
+    title: "Personalization & Revenue",
+    summary: "Customer profiles, segments, and personalized growth workflows.",
+    modules: [
+      { id: "customer-segmentation-engine", name: "Customer Segmentation Engine", description: "Build customer segments with RFM scoring, AI classification, and saved targeting lists." },
+      { id: "customer-journey-mapping", name: "Customer Journey Mapping", description: "Manage customer personas and analyze journey friction with AI." },
+      { id: "data-enrichment-suite", name: "Data Enrichment Suite", description: "Profile supplied customer, product, and order records; enrich sample data and manage field mappings." },
+      { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Create and manage loyalty programs, referral campaigns, rewards, and tiers." }
+    ]
   }
 ];
 

@@ -66,7 +66,7 @@ router.post('/citability-score', async (req, res) => {
 
     if (shop && token) {
       // ── SHOPIFY ADMIN API PATH — never hits the public web ──────────────
-      const apiVersion = '2023-10';
+      const apiVersion = '2025-10';
       const fetchFn = global.fetch || require('node-fetch');
       const apiHeaders = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
@@ -331,7 +331,7 @@ router.post('/citability-auto-fix', async (req, res) => {
     }
     if (!shop || !token) return res.status(400).json({ ok: false, error: 'No connected Shopify store found. Connect your store in Settings first.' });
 
-    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const ver = process.env.SHOPIFY_API_VERSION || '2025-10';
     const fetchFn = global.fetch || require('node-fetch');
     const apiHeaders = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
 
@@ -1253,7 +1253,7 @@ router.get('/shopify-context', async (req, res) => {
       return res.json({ ok: true, available: false, reason: 'No Shopify connection found' });
     }
 
-    const apiVersion = '2023-10';
+    const apiVersion = '2025-10';
     const fetchFn = global.fetch || require('node-fetch');
     const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json', 'Accept': 'application/json' };
 

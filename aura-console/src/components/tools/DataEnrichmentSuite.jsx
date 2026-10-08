@@ -45,6 +45,7 @@ export default function DataEnrichmentSuite() {
 
   // Profiler
   const [profileType, setProfileType] = useState("Customers");
+  const [profileRecordsText, setProfileRecordsText] = useState("");
   const [profileResult, setProfileResult] = useState(null);
   const [profiling, setProfiling]         = useState(false);
 
@@ -96,35 +97,17 @@ export default function DataEnrichmentSuite() {
   const runProfile = async () => {
     setProfiling(true); setError(""); setProfileResult(null);
     try {
+      if (!profileRecordsText.trim()) throw new Error("Paste a JSON array of records to profile.");
+      const records = JSON.parse(profileRecordsText);
+      if (!Array.isArray(records)) throw new Error("Records must be a JSON array of objects.");
       const r = await apiFetchJSON(`${API}/profile`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: profileType }),
+        body: JSON.stringify({ type: profileType, records }),
       });
       if (!r.ok && r.error) throw new Error(r.error);
       setProfileResult(r.profile || r);
     } catch (e) {
-      // Provide realistic mock if endpoint is unavailable
-      setProfileResult({
-        type: profileType,
-        totalRecords: Math.floor(Math.random() * 8000) + 1200,
-        completeness: { overall: "87%", fields: { email: "100%", phone: "34%", address: "78%", dob: "12%", tags: "65%" } },
-        qualityScore: "B",
-        issues: [
-          { field: "phone", problem: "66% missing — limits SMS & WhatsApp marketing reach", severity: "high" },
-          { field: "dob", problem: "88% missing — blocks birthday campaigns", severity: "medium" },
-          { field: "address", problem: "22% incomplete (missing postcode) — risks failed deliveries", severity: "high" },
-        ],
-        recommendations: [
-          "Add phone capture to checkout — pre-tick 'SMS shipping updates'",
-          "Birthday capture in post-purchase email flow: '10% off your birthday'",
-          "Validate addresses at checkout with Royal Mail API",
-        ],
-        enrichmentOpportunities: [
-          "LTV tier segmentation (all records — infer from order history)",
-          "Churn risk scoring (active customers)",
-          "Communication preference inference (from open/click patterns)",
-        ],
-      });
+      setError(e.message || "Could not profile these records.");
     }
     setProfiling(false);
   };
@@ -204,7 +187,15 @@ export default function DataEnrichmentSuite() {
                 <button key={t} style={{ ...S.btn(t === profileType ? "primary" : null), fontSize: 11, padding: "5px 10px" }} onClick={() => setProfileType(t)}>{t}</button>
               ))}
             </div>
-            <button style={S.btn("primary")} onClick={runProfile} disabled={profiling}>{profiling ? "Profiling…" : `Profile ${profileType}`}</button>
+            <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 6 }}>Records to profile (JSON array, up to 1,000 rows)</label>
+            <textarea
+              style={{ ...S.ta, minHeight: 140, marginBottom: 12 }}
+              value={profileRecordsText}
+              onChange={e => setProfileRecordsText(e.target.value)}
+              placeholder={'[{"email":"jane@example.com","phone":"+44123456789"},{"email":"bob@example.com","phone":""}]'}
+              aria-label="Records to profile as JSON"
+            />
+            <button style={S.btn("primary")} onClick={runProfile} disabled={profiling || !profileRecordsText.trim()}>{profiling ? "Profiling…" : `Profile ${profileType}`}</button>
           </div>
 
           {profiling && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}
@@ -297,16 +288,17 @@ export default function DataEnrichmentSuite() {
               <input style={{ ...S.input, width: "100%", boxSizing: "border-box" }} value={enrichCustom} onChange={e => setEnrichCustom(e.target.value)} placeholder="e.g. Classify customers by which product category they buy most" />
             </div>
 
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Sample data (optional — paste a few rows to get more accurate results)</label>
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={{ fontSize: 11, color: "#71717a", display: "block", marginBottom: 4 }}>Sample data (required for AI enrichment)</label>
               <textarea style={{ ...S.ta, minHeight: 80 }} value={enrichSample} onChange={e => setEnrichSample(e.target.value)} placeholder={"id,name,orders,total_spend,last_order\n1001,Jane Smith,14,£1240,2025-01-15\n1002,Bob Jones,2,£67,2024-11-02"} />
+                    <p style={{ fontSize: 11, color: "#a1a1aa", margin: "6px 0 0", lineHeight: 1.5 }}>Remove names, email addresses, phone numbers, and other direct identifiers before submitting. Sample data is sent to your configured AI provider.</p>
             </div>
 
             <div style={{ background: "#1e1b4b", border: "1px solid #3730a3", borderRadius: 8, padding: "8px 14px", fontSize: 12, color: "#c7d2fe", marginBottom: 14 }}>
               Running: <strong>{enrichCustom.trim() || enrichAction}</strong>
             </div>
 
-            <button style={S.btn("primary")} onClick={runEnrich} disabled={enriching}>{enriching ? "Enriching…" : "Run AI Enrichment"}</button>
+            <button style={S.btn("primary")} onClick={runEnrich} disabled={enriching || !enrichSample.trim()}>{enriching ? "Enriching…" : "Run AI Enrichment (1 credit)"}</button>
           </div>
 
           {enriching && <div style={{ textAlign: "center", padding: 30 }}><Spinner size={36} /></div>}

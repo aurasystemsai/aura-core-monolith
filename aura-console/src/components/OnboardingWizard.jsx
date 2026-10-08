@@ -293,7 +293,7 @@ const OnboardingWizard = ({ onComplete }) => {
  </div>
  </div>
 
- <style jsx>{`
+ <style>{`
  .onboarding-overlay {
  position: fixed;
  top: 0;

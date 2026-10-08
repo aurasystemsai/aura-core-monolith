@@ -1,20 +1,19 @@
 // SEO Site Crawler Tool Entry
-
 const router = require('./router');
+const { loadStoreEntities } = require('../../core/seoStoreData');
+const { auditStore } = require('../../core/seoAnalyzers');
 
 exports.meta = {
   id: 'seo-site-crawler',
   name: 'SEO Site Crawler',
   category: 'SEO',
-  description: 'Crawl and analyze any website for SEO insights, issues, and opportunities.'
+  description: 'Audit your Shopify products, pages, collections and articles for SEO issues.'
 };
 
 exports.run = async function run(input = {}, ctx = {}) {
-  // Example: Run a crawl and return results
-  if (!input.url) throw new Error('URL required');
-  // This would call the crawlSite function or the router endpoint
-  // For now, just return a placeholder
-  return { message: 'Crawl started for ' + input.url };
+  if (!ctx.shop || !ctx.token) throw new Error('A connected Shopify shop is required');
+  const { entities } = await loadStoreEntities(ctx.shop, ctx.token, { max: input.limit || 100 });
+  return auditStore(entities);
 };
 
 exports.router = router;

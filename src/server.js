@@ -34,6 +34,7 @@ const fs = require('fs');
 const contentCore = require('./core/content');
 const verifyShopifySession = require('./middleware/verifyShopifySession');
 const shopTokens = require('./core/shopTokens');
+const { getShopifyConfig, isValidShopDomain, verifyOAuthHmac } = require('./core/shopifyConfig');
 const analyticsScheduler = require('./core/analyticsScheduler');
 // Log which Shopify env vars are loaded (no secrets)
 console.log('[Shopify ENV] SHOPIFY_CLIENT_ID:', !!process.env.SHOPIFY_CLIENT_ID);
@@ -108,13 +109,16 @@ app.use(session({
 
 // --- Billing & Subscription Management ---
 const billingRouter = require('./routes/billing');
-app.use('/api/billing', billingRouter);
+// Only the Shopify return URL and the public price catalogue are open; everything else needs a verified session.
+const PUBLIC_BILLING = new Set(['/confirm', '/plans', '/credit-packs', '/credit-costs']);
+app.use('/api/billing', (req, res, next) => (PUBLIC_BILLING.has(req.path) ? next() : verifyShopifySession(req, res, next)), billingRouter);
 
-// --- Public privacy policy (no auth — must be publicly accessible for Shopify) ---
+// --- Public privacy policy (no auth â€” must be publicly accessible for Shopify) ---
 app.use('/privacy', require('./routes/privacy'));
 
-// --- GDPR mandatory webhooks (no Shopify session auth — called by Shopify infrastructure) ---
+// --- GDPR mandatory webhooks (no Shopify session auth â€” called by Shopify infrastructure) ---
 app.use('/api/webhooks', require('./routes/gdpr-webhooks'));
+app.use('/google', require('./routes/google-oauth'));
 
 // --- Public healthcheck (no auth) ---
 app.get('/health', (req, res) => {
@@ -131,8 +135,6 @@ app.use('/api', verifyShopifySession);
 // --- Register integration health API route (requires Shopify auth) ---
 app.use('/api/integration', require('./routes/integration'));
 
-// --- Register winback integrations API route (real backend) ---
-app.use('/api/abandoned-checkout-winback', require('./routes/abandoned-checkout-winback'));
 // --- Register notifications API route ---
 app.use('/api/notifications', require('./routes/notifications'));
 // --- Register analytics API route ---
@@ -147,13 +149,13 @@ const { requireTool } = planAccessControl;
 const { requireCreditsOnMutation } = require('./core/creditMiddleware');
 
 const toolRouters = [
-  // Starter tier (free) — dashboard only, all other tools require paid plan
+  // Starter tier (free) â€” dashboard only, all other tools require paid plan
   // product-seo, blog-seo, seo-site-crawler, on-page-seo-engine moved to Growth
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router'), middleware: requireTool('blog-seo'), creditAction: 'seo-analysis',
-    // These paths are deterministic (no OpenAI) — skip credit check so 0-credit merchants can still use them
+    // These paths are deterministic (no OpenAI) â€” skip credit check so 0-credit merchants can still use them
     noCreditPaths: ['/serp/preview', '/metadata/analyze', '/keywords/evaluate', '/research/score', '/items'] },
   { path: '/api/tools/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
   { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router'), middleware: requireTool('on-page-seo-engine'), creditAction: 'seo-analysis' },
@@ -175,27 +177,17 @@ const toolRouters = [
   { path: '/api/backlink-explorer', router: require('./tools/backlink-explorer/router'), middleware: requireTool('backlink-explorer'), creditAction: 'competitive-analysis' },
   { path: '/api/entity-topic-explorer', router: require('./tools/entity-topic-explorer/router'), middleware: requireTool('entity-topic-explorer'), creditAction: 'seo-analysis' },
   { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post' },
-  { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant'), creditAction: 'support-reply' },
   { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text' },
   { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine'), creditAction: 'pricing-optimize' },
-  { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router'), middleware: requireTool('ltv-churn-predictor'), creditAction: 'churn-predict' },
-  { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync'), creditAction: 'generic-ai' },
-  { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router'), middleware: requireTool('finance-autopilot'), creditAction: 'analytics-insight' },
   { path: '/api/inventory-forecasting', router: require('./tools/inventory-forecasting/router'), middleware: requireTool('inventory-forecasting'), creditAction: 'analytics-insight' },
   { path: '/api/returns-rma-automation', router: require('./tools/returns-rma-automation/router'), middleware: requireTool('returns-rma-automation'), creditAction: 'generic-ai' },
-  { path: '/api/advanced-finance-inventory-planning', router: require('./tools/advanced-finance-inventory-planning/router'), middleware: requireTool('advanced-finance-inventory-planning'), creditAction: 'analytics-insight' },
-  { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router'), middleware: requireTool('daily-cfo-pack'), creditAction: 'analytics-insight' },
-  { path: '/api/churn-prediction-playbooks', router: require('./tools/churn-prediction-playbooks/router'), middleware: requireTool('churn-prediction-playbooks'), creditAction: 'churn-predict' },
   { path: '/api/google-ads-integration', router: require('./tools/google-ads-integration/router'), middleware: requireTool('google-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/facebook-ads-integration', router: require('./tools/facebook-ads-integration/router'), middleware: requireTool('facebook-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/tiktok-ads-integration', router: require('./tools/tiktok-ads-integration/router'), middleware: requireTool('tiktok-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/ad-creative-optimizer', router: require('./tools/ad-creative-optimizer/router'), middleware: requireTool('ad-creative-optimizer'), creditAction: 'ad-copy' },
   { path: '/api/ads-anomaly-guard', router: require('./tools/ads-anomaly-guard/router'), middleware: requireTool('ads-anomaly-guard'), creditAction: 'analytics-insight' },
   { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer'), creditAction: 'analytics-insight' },
-  { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router'), middleware: requireTool('visual-workflow-builder'), creditAction: 'analytics-insight' },
   { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight' },
-  { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router'), middleware: requireTool('workflow-orchestrator'), creditAction: 'analytics-insight' },
-  { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router'), middleware: requireTool('conditional-logic-automation'), creditAction: 'analytics-insight' },
   { path: '/api/ai-copilot', router: require('./tools/ai-copilot/router'), middleware: requireTool('ai-copilot'), creditAction: 'ai-chat' },
   { path: '/api/email-deliverability', router: require('./tools/email-deliverability/router'), middleware: requireTool('email-deliverability'), creditAction: 'analytics-insight' },
   { path: '/api/sms-whatsapp-marketing', router: require('./tools/sms-whatsapp-marketing/router'), middleware: requireTool('sms-whatsapp-marketing'), creditAction: 'sms-campaign' },
@@ -214,7 +206,6 @@ const toolRouters = [
   { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router'), middleware: requireTool('advanced-analytics-attribution'), creditAction: 'analytics-insight' },
   { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router'), middleware: requireTool('creative-automation-engine'), creditAction: 'ad-copy' },
   { path: '/api/auto-insights', router: require('./tools/auto-insights/router'), middleware: requireTool('auto-insights'), creditAction: 'analytics-insight' },
-  { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router'), middleware: requireTool('brand-intelligence-layer'), creditAction: 'competitive-analysis' },
 
   // Enterprise tier tools
   { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router'), middleware: requireTool('ai-launch-planner'), creditAction: 'campaign-gen' },
@@ -222,27 +213,21 @@ const toolRouters = [
   { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai'), creditAction: 'analytics-insight' },
   { path: '/api/main-suite', router: require('./tools/main-suite/router') },
   { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers'), creditAction: 'generic-ai' },
-  // Phase 10 — previously unregistered tools
-  { path: '/api/advanced-personalization-engine', router: require('./tools/advanced-personalization-engine/router'), middleware: requireTool('advanced-personalization-engine'), creditAction: 'analytics-insight' },
-  { path: '/api/ai-segmentation-engine', router: require('./tools/ai-segmentation-engine/router'), middleware: requireTool('ai-segmentation-engine'), creditAction: 'analytics-insight' },
-  { path: '/api/automation-templates', router: require('./tools/automation-templates/router'), middleware: requireTool('automation-templates'), creditAction: 'generic-ai' },
+  // Phase 10 â€” previously unregistered tools
+  { path: '/api/tools/ab-testing-suite', router: require('./tools/ab-testing-suite/router'), middleware: requireTool('ab-testing-suite') },
+  { path: '/api/ab-testing', router: require('./tools/ab-testing-suite/router'), middleware: requireTool('ab-testing-suite') },
+  { path: '/api/data-enrichment-suite', router: require('./tools/data-enrichment-suite/router'), middleware: requireTool('data-enrichment-suite') },
+  { path: '/api/loyalty-referral', router: require('./routes/loyalty-referral-engine'), middleware: requireTool('loyalty-referral-programs') },
   { path: '/api/brand-mention-tracker', router: require('./tools/brand-mention-tracker/router'), middleware: requireTool('brand-mention-tracker'), creditAction: 'analytics-insight' },
   { path: '/api/collaboration-approval-workflows', router: require('./tools/collaboration-approval-workflows/router'), middleware: requireTool('collaboration-approval-workflows'), creditAction: 'generic-ai' },
   { path: '/api/competitive-analysis', router: require('./tools/competitive-analysis/router'), middleware: requireTool('competitive-analysis'), creditAction: 'competitive-analysis' },
   { path: '/api/compliance-privacy-suite', router: require('./tools/compliance-privacy-suite/router'), middleware: requireTool('compliance-privacy-suite'), creditAction: 'analytics-insight' },
-  { path: '/api/custom-dashboard-builder', router: require('./tools/custom-dashboard-builder/router'), middleware: requireTool('custom-dashboard-builder'), creditAction: 'analytics-insight' },
   { path: '/api/customer-data-platform', router: require('./tools/customer-data-platform/router'), middleware: requireTool('customer-data-platform'), creditAction: 'analytics-insight' },
   { path: '/api/data-warehouse-connector', router: require('./tools/data-warehouse-connector/router'), middleware: requireTool('data-warehouse-connector'), creditAction: 'analytics-insight' },
   { path: '/api/local-seo-toolkit', router: require('./tools/local-seo-toolkit/router'), middleware: requireTool('local-seo-toolkit'), creditAction: 'seo-scan' },
   { path: '/api/omnichannel-campaign-builder', router: require('./tools/omnichannel-campaign-builder/router'), middleware: requireTool('omnichannel-campaign-builder'), creditAction: 'campaign-gen' },
-  { path: '/api/personalization-recommendation-engine', router: require('./tools/personalization-recommendation-engine/router'), middleware: requireTool('personalization-recommendation-engine'), creditAction: 'analytics-insight' },
   { path: '/api/predictive-analytics-widgets', router: require('./tools/predictive-analytics-widgets/router'), middleware: requireTool('predictive-analytics-widgets'), creditAction: 'analytics-insight' },
-  { path: '/api/reporting-integrations', router: require('./tools/reporting-integrations/router'), middleware: requireTool('reporting-integrations'), creditAction: 'analytics-insight' },
-  { path: '/api/scheduled-export', router: require('./tools/scheduled-export/router'), middleware: requireTool('scheduled-export'), creditAction: 'analytics-insight' },
-  { path: '/api/self-service-analytics', router: require('./tools/self-service-analytics/router'), middleware: requireTool('self-service-analytics'), creditAction: 'analytics-insight' },
-  { path: '/api/self-service-portal', router: require('./tools/self-service-portal/router'), middleware: requireTool('self-service-portal'), creditAction: 'generic-ai' },
   { path: '/api/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
-  { path: '/api/social-media-analytics-listening', router: require('./tools/social-media-analytics-listening/router'), middleware: requireTool('social-media-analytics-listening'), creditAction: 'analytics-insight' },
   { path: '/api/upsell-cross-sell-engine', router: require('./tools/upsell-cross-sell-engine/router'), middleware: requireTool('upsell-cross-sell-engine'), creditAction: 'analytics-insight' },
 ];
 toolRouters.forEach((t) => {
@@ -349,46 +334,18 @@ app.get('/api/session', async (req, res) => {
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 app.get('/api/product-seo/shopify-products', async (req, res) => {
   try {
-    const shopFromQuery = req.query.shop;
-    const shopFromSession = req.session && req.session.shop;
-    const envShop = process.env.SHOPIFY_STORE_URL;
-    const allTokens = (shopTokens && shopTokens.loadAll) ? shopTokens.loadAll() : {};
-    let shop = shopFromQuery || shopFromSession || envShop;
-    if (!shop && allTokens && Object.keys(allTokens).length === 1) {
-      shop = Object.keys(allTokens)[0];
+    const sessionShop = req.session && req.session.shop;
+    const requestedShop = req.headers['x-shopify-shop-domain'];
+    if (sessionShop && requestedShop && sessionShop !== requestedShop) {
+      return res.status(403).json({ ok: false, error: 'The requested shop does not match the authenticated Shopify session.' });
     }
-
-    const authHeader = req.headers.authorization;
-    const bearerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
-
-    let token =
-      req.query.token ||
-      bearerToken ||
-      (req.session && req.session.shopifyToken) ||
-      (shop ? shopTokens.getToken(shop) : null) ||
-      null;
-
-    if (!token && allTokens && Object.keys(allTokens).length === 1) {
-      const onlyShop = Object.keys(allTokens)[0];
-      token = allTokens[onlyShop]?.token || token;
-      if (!shop) shop = onlyShop;
-    }
-
-    if (!token) token = process.env.SHOPIFY_CLIENT_SECRET || null;
-
-    console.log('[Product SEO] /api/product-seo/shopify-products called', {
-      shop,
-      token: token ? token.slice(0, 6) + '...' : undefined,
-      sessionId: req.sessionID,
-      cookies: req.headers.cookie,
-    });
-
+    const shop = requestedShop || sessionShop || process.env.SHOPIFY_STORE_URL;
+    const token = shop && ((sessionShop === shop && req.session.shopifyToken) || shopTokens.getToken(shop));
     if (!shop || !token) {
-      console.warn('[Product SEO] Missing shop or token');
-      return res.json({ ok: true, products: [], warning: 'Missing shop or token. Please reconnect Shopify.' });
+      return res.status(401).json({ ok: false, error: 'Shopify is not connected. Reconnect the store to load products.' });
     }
 
-    const apiVersion = '2023-10';
+    const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10';
     const limit = Math.max(1, Math.min(250, parseInt(req.query.limit) || 50));
     const url = `https://${shop}/admin/api/${apiVersion}/products.json?limit=${limit}`;
     const fetch = global.fetch || require('node-fetch');
@@ -408,7 +365,9 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
     // Return only essential product fields for UI
     const products = (data.products || []).map(p => ({
       id: p.id,
+      shopifyId: p.id,
       title: p.title,
+      description: p.body_html || '',
       handle: p.handle,
       status: p.status,
       vendor: p.vendor,
@@ -418,7 +377,6 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
       tags: p.tags,
       variants: (p.variants || []).map(v => ({ id: v.id, title: v.title, sku: v.sku, price: v.price })),
     }));
-    console.log(`[Product SEO] Shopify products returned: ${products.length}`);
     res.json({ ok: true, products });
   } catch (err) {
     console.error('[Product SEO] Shopify products fetch error:', err);
@@ -433,15 +391,14 @@ app.post('/api/product-seo/push-to-shopify', async (req, res) => {
     if (!productId) return res.status(400).json({ ok: false, error: 'Missing productId' });
 
     const allTokens = (shopTokens && shopTokens.loadAll) ? shopTokens.loadAll() : {};
-    let shop = req.query.shop || (req.session && req.session.shop) || process.env.SHOPIFY_STORE_URL;
-    if (!shop && Object.keys(allTokens).length === 1) shop = Object.keys(allTokens)[0];
+    const shop = (req.session && req.session.shop) || req.get('x-shopify-shop-domain') || req.query.shop;
 
-    let token = (req.session && req.session.shopifyToken) || (shop ? shopTokens.getToken(shop) : null);
-    if (!token && Object.keys(allTokens).length === 1) token = Object.values(allTokens)[0]?.token || null;
+    if (shop && !/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i.test(shop)) return res.status(400).json({ ok: false, error: 'Invalid shop domain' });
+    const token = (req.session && req.session.shopifyToken) || (shop ? shopTokens.getToken(shop) : null);
 
     if (!shop || !token) return res.status(400).json({ ok: false, error: 'Not connected to Shopify. Please reconnect.' });
 
-    const apiVersion = '2023-10';
+    const apiVersion = '2025-10';
     const fetchFn = global.fetch || require('node-fetch');
 
     // Build update payload - only send fields that are provided
@@ -709,9 +666,9 @@ app.post('/shopify/sync/:dataType', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'No access token for this shop. Please reconnect.' });
 
   try {
-    const apiVersion = '2024-01';
+    const apiVersion = '2025-10';
 
-    // Inventory levels require a location_ids param — fetch locations first
+    // Inventory levels require a location_ids param â€” fetch locations first
     if (dataType === 'inventory') {
       const locRes = await fetch(`https://${shop}/admin/api/${apiVersion}/locations.json`, {
         headers: { 'X-Shopify-Access-Token': token }
@@ -777,31 +734,29 @@ app.post('/shopify/sync/:dataType', async (req, res) => {
 
 // ---------- SHOPIFY AUTHENTICATION ROUTES ----------
 
+const pendingShopifyAuths = new Map();
+
 // Shopify OAuth Authentication - Step 1: Redirect to Shopify OAuth screen
 app.get("/shopify/auth", (req, res) => {
   const { shop } = req.query;
 
-  if (!shop) {
-    return res.status(400).json({ error: "Missing shop parameter" });
+  if (!isValidShopDomain(shop)) {
+    return res.status(400).json({ error: "A valid *.myshopify.com shop parameter is required" });
   }
 
   // Validate critical env vars early and return helpful errors if missing.
-  const clientId = process.env.SHOPIFY_CLIENT_ID;
-  if (!clientId) {
-    console.error("[Core] Missing SHOPIFY_CLIENT_ID environment variable");
+  const { clientId, clientSecret, appUrl, scopes } = getShopifyConfig();
+  if (!clientId || !clientSecret) {
+    console.error("[Core] Missing Shopify API key or secret environment variable");
     return res
       .status(500)
-      .json({ error: "Server misconfiguration: missing SHOPIFY_CLIENT_ID" });
+      .json({ error: "Server misconfiguration: set SHOPIFY_API_KEY and SHOPIFY_API_SECRET (or the SHOPIFY_CLIENT_* aliases)" });
   }
 
   // Derive a safe host URL for the OAuth redirect. Prefer explicit env, then Render,
   // then fall back to the current request's protocol+host. This prevents `undefined`
   // values when HOST_URL isn't set in the environment (e.g. during quick deploys).
-  const hostUrl =
-    process.env.HOST_URL ||
-    process.env.SHOPIFY_APP_URL ||
-    process.env.RENDER_EXTERNAL_URL ||
-    `${req.protocol}://${req.get("host")}`;
+  const hostUrl = appUrl || `${req.protocol}://${req.get("host")}`;
 
   const redirectUri = `${String(hostUrl).replace(/\/$/, "")}/shopify/auth/callback`;
 
@@ -809,16 +764,21 @@ app.get("/shopify/auth", (req, res) => {
   console.log("[Core] Shopify OAuth redirectUri:", redirectUri);
 
   // Allow configuring scopes via env but fall back to sensible defaults.
-  const scope = process.env.SHOPIFY_SCOPES || "read_products,write_products";
-
-  // Sanitize provided shop value (strip protocol/path if present)
-  const safeShop = String(shop).replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  const scope = scopes;
+  const safeShop = shop.toLowerCase();
+  const now = Date.now();
+  for (const [pendingState, pendingAuth] of pendingShopifyAuths) {
+    if (now - pendingAuth.createdAt > 10 * 60 * 1000) pendingShopifyAuths.delete(pendingState);
+  }
+  const state = require('crypto').randomBytes(24).toString('hex');
+  pendingShopifyAuths.set(state, { shop: safeShop, createdAt: Date.now() });
 
   // Build query params with URLSearchParams to ensure proper encoding
   const params = new URLSearchParams({
     client_id: clientId,
     scope,
     redirect_uri: redirectUri,
+    state,
   });
 
   const authUrl = `https://${safeShop}/admin/oauth/authorize?${params.toString()}`;
@@ -831,15 +791,23 @@ app.get("/shopify/auth", (req, res) => {
 
 // Shopify OAuth Callback - Step 2: Receive the code and exchange it for an access token
 app.get("/shopify/auth/callback", async (req, res) => {
-  const { code, shop } = req.query;
-  if (!code || !shop) {
-    return res.status(400).json({ error: "Missing code or shop parameter" });
+  const { code, shop, state } = req.query;
+  if (!code || !isValidShopDomain(shop) || !state) {
+    return res.status(400).json({ error: "Missing or invalid OAuth callback parameters" });
   }
+
+  const pending = pendingShopifyAuths.get(state);
+  pendingShopifyAuths.delete(state);
+  if (!pending || pending.shop !== shop || Date.now() - pending.createdAt > 10 * 60 * 1000) {
+    return res.status(403).json({ error: "Invalid or expired OAuth state" });
+  }
+  const { clientId, clientSecret } = getShopifyConfig();
+  if (!verifyOAuthHmac(req.query, clientSecret)) return res.status(403).json({ error: "Shopify callback HMAC validation failed" });
 
   const tokenUrl = `https://${shop}/admin/oauth/access_token`;
   const payload = {
-    client_id: process.env.SHOPIFY_CLIENT_ID,
-    client_secret: process.env.SHOPIFY_CLIENT_SECRET,
+    client_id: clientId,
+    client_secret: clientSecret,
     code,
   };
 
@@ -858,6 +826,10 @@ app.get("/shopify/auth/callback", async (req, res) => {
       // Log the raw response for debugging
       console.error("[Shopify OAuth] Non-JSON response from Shopify:", text);
       throw new Error("Shopify token endpoint did not return JSON");
+    }
+    if (!tokenRes.ok || !tokenData.access_token) {
+      console.error(`[Shopify OAuth] Token exchange rejected for ${shop}: HTTP ${tokenRes.status}`);
+      return res.status(502).json({ error: "Shopify did not issue an access token" });
     }
     const accessToken = tokenData.access_token;
 
@@ -1493,158 +1465,6 @@ app.post("/run/:toolId", toolRunHandler);
 app.post("/api/run/:toolId", toolRunHandler);
 
 
-// ---------- ABANDONED CHECKOUT WINBACK: GENERATE MESSAGE ENDPOINT ----------
-app.post('/api/winback/generate-message', requireCredits('email-gen'), async (req, res) => {
-  try {
-    const { customerName, cartItems, discountCode, brand, tone, prompt, language } = req.body || {};
-    if (!customerName || !Array.isArray(cartItems) || cartItems.length === 0) {
-      return res.status(400).json({ ok: false, error: 'customerName and cartItems[] are required' });
-    }
-    // Use OpenAI integration for winback message generation
-    const openaiUtil = require('./tools/abandoned-checkout-winback/openai.js');
-    const result = await openaiUtil.generateWinbackMessage({ customerName, cartItems, discountCode, brand, tone, prompt, language });
-    if (req.deductCredits) req.deductCredits();
-    return res.json({ ok: true, message: result });
-  } catch (err) {
-    console.error('Winback message generation error', err);
-    return res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// ---------- RETURNS/RMA AUTOMATION: GENERATE MESSAGE ENDPOINT ----------
-app.post('/api/rma/generate-message', requireCredits('email-gen'), async (req, res) => {
-  try {
-    const { customerName, orderItems, reason, brand, tone, prompt, language } = req.body || {};
-    if (!customerName || !Array.isArray(orderItems) || orderItems.length === 0 || !reason) {
-      return res.status(400).json({ ok: false, error: 'customerName, orderItems[], and reason are required' });
-    }
-    // Use OpenAI integration for RMA message generation
-    const openaiRma = require('./tools/returns-rma-automation/openai.js');
-    const result = await openaiRma.generateRmaMessage({ customerName, orderItems, reason, brand, tone, prompt, language });
-    if (req.deductCredits) req.deductCredits();
-    return res.json({ ok: true, message: result });
-  } catch (err) {
-    console.error('RMA message generation error', err);
-    return res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// ---------- ABANDONED CHECKOUT WINBACK: SCHEDULING ENDPOINTS ----------
-const winbackScheduleModel = require('./tools/abandoned-checkout-winback/scheduleModel.js');
-// Create schedule
-app.post('/api/winback/schedules', (req, res) => {
-  try {
-    const schedule = winbackScheduleModel.createSchedule(req.body || {});
-    res.json({ ok: true, schedule });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List schedules
-app.get('/api/winback/schedules', (req, res) => {
-  res.json({ ok: true, schedules: winbackScheduleModel.listSchedules() });
-});
-// Get schedule by ID
-app.get('/api/winback/schedules/:id', (req, res) => {
-  const schedule = winbackScheduleModel.getSchedule(req.params.id);
-  if (!schedule) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, schedule });
-});
-// Update schedule
-app.put('/api/winback/schedules/:id', (req, res) => {
-  const schedule = winbackScheduleModel.updateSchedule(req.params.id, req.body || {});
-  if (!schedule) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, schedule });
-});
-// Delete schedule
-app.delete('/api/winback/schedules/:id', (req, res) => {
-  const ok = winbackScheduleModel.deleteSchedule(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
-
-// ---------- ABANDONED CHECKOUT WINBACK: SEGMENTATION ENDPOINTS ----------
-const winbackSegmentModel = require('./tools/abandoned-checkout-winback/segmentModel.js');
-// Create segment
-app.post('/api/winback/segments', (req, res) => {
-  try {
-    const segment = winbackSegmentModel.createSegment(req.body || {});
-    res.json({ ok: true, segment });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List segments
-app.get('/api/winback/segments', (req, res) => {
-  res.json({ ok: true, segments: winbackSegmentModel.listSegments() });
-});
-// Get segment by ID
-app.get('/api/winback/segments/:id', (req, res) => {
-  const segment = winbackSegmentModel.getSegment(req.params.id);
-  if (!segment) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, segment });
-});
-// Update segment
-app.put('/api/winback/segments/:id', (req, res) => {
-  const segment = winbackSegmentModel.updateSegment(req.params.id, req.body || {});
-  if (!segment) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, segment });
-});
-// Delete segment
-app.delete('/api/winback/segments/:id', (req, res) => {
-  const ok = winbackSegmentModel.deleteSegment(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
-
-// ---------- ABANDONED CHECKOUT WINBACK: ANALYTICS ENDPOINTS ----------
-const winbackAnalyticsModel = require('./tools/abandoned-checkout-winback/analyticsModel.js');
-// ---------- RETURNS/RMA AUTOMATION: ANALYTICS ENDPOINTS ----------
-const rmaAnalyticsModel = require('./tools/returns-rma-automation/analyticsModel.js');
-// Record analytics event
-app.post('/api/rma/analytics', (req, res) => {
-  try {
-    const event = rmaAnalyticsModel.recordEvent(req.body || {});
-    res.json({ ok: true, event });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List analytics events (optionally filter by rmaId, type)
-app.get('/api/rma/analytics', (req, res) => {
-  const { rmaId, type } = req.query;
-  const events = rmaAnalyticsModel.listEvents({ rmaId, type });
-  res.json({ ok: true, events });
-});
-// Record analytics event
-app.post('/api/winback/analytics', (req, res) => {
-  try {
-    const event = winbackAnalyticsModel.recordEvent(req.body || {});
-    res.json({ ok: true, event });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List analytics events (optionally filter by campaign, variant, etc.)
-app.get('/api/winback/analytics', (req, res) => {
-  const { campaignId, variantId, type } = req.query;
-  const events = winbackAnalyticsModel.listEvents({ campaignId, variantId, type });
-  res.json({ ok: true, events });
-});
-
-// ---------- ABANDONED CHECKOUT WINBACK: SHOPIFY ABANDONED CHECKOUTS ENDPOINT ----------
-const winbackShopify = require('./tools/abandoned-checkout-winback/shopify.js');
-// Fetch abandoned checkouts from Shopify for a given shop
-app.get('/api/winback/shopify/abandoned-checkouts', async (req, res) => {
-  const shop = req.query.shop;
-  let token = req.query.token || process.env.SHOPIFY_CLIENT_SECRET || '';
-  try {
-    const apiVersion = req.query.apiVersion || process.env.SHOPIFY_API_VERSION || '2023-10';
-    const checkouts = await winbackShopify.fetchAbandonedCheckouts({ shop, token, apiVersion });
-    res.json({ ok: true, abandonedCheckouts: checkouts });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
 
 // ---------- PRODUCT SEO SUGGESTION ENDPOINT ----------
 app.post('/api/run/product-seo', async (req, res) => {
@@ -1674,7 +1494,7 @@ app.post('/api/shopify/update-product', async (req, res) => {
   }
   try {
     // Update product title, body_html, handle
-    const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10';
     const url = `https://${shop}/admin/api/${apiVersion}/products/${id}.json`;
     const productPayload = {
       product: {

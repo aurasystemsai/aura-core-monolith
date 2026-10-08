@@ -8,7 +8,7 @@ import ToolScaffold from "./tools/ToolScaffold";
 import MainSuite from "./tools/MainSuite";
 import AbandonedCheckoutWinback from "./tools/AbandonedCheckoutWinback";
 import ProductSeoEngine from "./ProductSeoEngine";
-import InternalLinkOptimizer from "./InternalLinkOptimizer";
+import InternalLinkOptimizer from "./tools/InternalLinkOptimizer";
 import AdvancedAnalyticsAttribution from "./tools/AdvancedAnalyticsAttribution.jsx";
 import Toast from "./Toast";
 import "./ToolsList.css";

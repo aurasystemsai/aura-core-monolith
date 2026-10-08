@@ -1,552 +1,182 @@
-const router = require('express').Router();
-const profiles = require('./profiles');
-const events = require('./events');
-const segments = require('./segments');
-const enrichment = require('./enrichment');
-const privacy = require('./privacy');
+// Customer Intelligence: real Shopify customers and orders turned into RFM segments, lifetime value, churn risk
+// and journey stages. Everything is computed from order history (no trained model, no invented data).
+// AI is used only to write a win-back / nurture playbook for a segment from its real numbers.
+const express = require('express');
+const { getShopContext } = require('../../core/shopContext');
+const { getOpenAIClient } = require('../../core/openaiClient');
+const { gql } = require('../../core/seoStoreData');
 
-/**
- * Customer Data Platform - Main Router
- * Complete API for customer profiles, events, segments, enrichment, and privacy
- */
+const router = express.Router();
+const MODEL = 'gpt-4o-mini';
+const PAGES = 4;
+const DAY = 86400000;
 
-// ============================================================================
-// PROFILES
-// ============================================================================
-
-/**
- * Create a new customer profile
- */
-router.post('/profiles', async (req, res) => {
-  try {
-    const profile = profiles.createProfile(req.body);
-    res.status(201).json(profile);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Get profile by ID
- */
-router.get('/profiles/:id', (req, res) => {
-  const profile = profiles.getProfile(req.params.id);
-  if (!profile) {
-    return res.status(404).json({ error: 'Profile not found' });
-  }
-  res.json(profile);
-});
-
-/**
- * Update profile
- */
-router.put('/profiles/:id', async (req, res) => {
-  try {
-    const profileEvents = events.getProfileEvents(req.params.id);
-    const profile = profiles.updateProfile(req.params.id, req.body, profileEvents);
-    
-    if (!profile) {
-      return res.status(404).json({ error: 'Profile not found' });
-    }
-    
-    res.json(profile);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Delete profile (GDPR)
- */
-router.delete('/profiles/:id', (req, res) => {
-  const deleted = profiles.deleteProfile(req.params.id);
-  if (!deleted) {
-    return res.status(404).json({ error: 'Profile not found' });
-  }
-  res.json({ success: true, message: 'Profile deleted' });
-});
-
-/**
- * Search profiles
- */
-router.post('/profiles/search', (req, res) => {
-  const { filters, options } = req.body;
-  const results = profiles.searchProfiles(filters, options);
-  res.json(results);
-});
-
-/**
- * Merge two profiles
- */
-router.post('/profiles/merge', async (req, res) => {
-  try {
-    const { primaryId, secondaryId } = req.body;
-    
-    if (!primaryId || !secondaryId) {
-      return res.status(400).json({ error: 'Both primaryId and secondaryId required' });
-    }
-    
-    const merged = profiles.mergeProfiles(primaryId, secondaryId);
-    res.json(merged);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Get profile timeline
- */
-router.get('/profiles/:id/timeline', (req, res) => {
-  const options = {
-    limit: parseInt(req.query.limit) || 100,
-    offset: parseInt(req.query.offset) || 0,
-    eventType: req.query.eventType,
-    startDate: req.query.startDate,
-    endDate: req.query.endDate,
+function withShop(handler) {
+  return async (req, res) => {
+    const ctx = getShopContext(req);
+    if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
+    try { await handler(req, res, ctx); } catch (err) { res.status(err.status || 500).json({ ok: false, error: err.message }); }
   };
-  
-  const timeline = events.getProfileTimeline(req.params.id, options);
-  res.json(timeline);
-});
+}
 
-// ============================================================================
-// EVENTS
-// ============================================================================
+const QUERY = `query($after: String) { customers(first: 250, after: $after) {
+  pageInfo { hasNextPage endCursor }
+  nodes { id displayName defaultEmailAddress { emailAddress } numberOfOrders amountSpent { amount currencyCode } createdAt lastOrder { createdAt: processedAt } }
+} }`;
 
-/**
- * Track a single event
- */
-router.post('/events', async (req, res) => {
-  try {
-    const event = events.trackEvent(req.body);
-    res.status(201).json(event);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+async function loadCustomers(shop, token) {
+  const out = []; let after = null; let truncated = false;
+  for (let i = 0; i < PAGES; i++) {
+    const data = await gql(shop, token, QUERY, { after });
+    out.push(...data.customers.nodes);
+    if (!data.customers.pageInfo.hasNextPage) return { customers: out, truncated };
+    after = data.customers.pageInfo.endCursor;
   }
-});
+  return { customers: out, truncated: true };
+}
 
-/**
- * Track events in batch
- */
-router.post('/events/batch', async (req, res) => {
-  try {
-    const { events: eventData } = req.body;
-    
-    if (!Array.isArray(eventData)) {
-      return res.status(400).json({ error: 'events must be an array' });
-    }
-    
-    const results = events.trackEventsBatch(eventData);
-    res.status(201).json(results);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Query events
- */
-router.post('/events/query', (req, res) => {
-  const { filters, options } = req.body;
-  const results = events.queryEvents(filters, options);
-  res.json(results);
-});
-
-/**
- * Get event statistics
- */
-router.get('/events/stats', (req, res) => {
-  const filters = {
-    startDate: req.query.startDate,
-    endDate: req.query.endDate,
+// Percentile rank scored 1 (worst) to 5 (best).
+function scoreBy(values, higherIsBetter) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return (v) => {
+    if (sorted.length < 2) return 3;
+    const below = sorted.filter((x) => x < v).length;
+    const ties = sorted.filter((x) => x === v).length;
+    const pct = (below + (ties - 1) / 2) / (sorted.length - 1);
+    const s = Math.min(5, Math.floor((higherIsBetter ? pct : 1 - pct) * 5) + 1);
+    return s;
   };
-  
-  const stats = events.getEventStats(filters);
-  res.json(stats);
-});
+}
 
-/**
- * Calculate funnel
- */
-router.post('/events/funnel', (req, res) => {
-  try {
-    const { steps, filters } = req.body;
-    
-    if (!Array.isArray(steps)) {
-      return res.status(400).json({ error: 'steps must be an array' });
-    }
-    
-    const funnel = events.calculateFunnel(steps, filters);
-    res.json(funnel);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+function segmentOf(r, f, m) {
+  if (r >= 4 && f >= 4 && m >= 4) return 'Champions';
+  if (r >= 3 && f >= 4) return 'Loyal';
+  if (r >= 4 && f <= 2) return 'New & Promising';
+  if (r >= 3 && f >= 2) return 'Potential Loyalists';
+  if (r <= 2 && f >= 4 && m >= 3) return "Can't Lose Them";
+  if (r <= 2 && f >= 2) return 'At Risk';
+  return 'Hibernating';
+}
 
-/**
- * Get session
- */
-router.get('/sessions/:id', (req, res) => {
-  const session = events.getSession(req.params.id);
-  if (!session) {
-    return res.status(404).json({ error: 'Session not found' });
-  }
-  res.json(session);
-});
+function stageOf(orders) {
+  if (orders === 0) return 'Signed up, no purchase';
+  if (orders === 1) return 'First purchase';
+  if (orders <= 3) return 'Repeat buyer';
+  return 'Loyal buyer';
+}
 
-/**
- * Get profile sessions
- */
-router.get('/profiles/:id/sessions', (req, res) => {
-  const sessions = events.getProfileSessions(req.params.id);
-  res.json({ sessions });
-});
-
-// ============================================================================
-// SEGMENTS
-// ============================================================================
-
-/**
- * Create a new segment
- */
-router.post('/segments', async (req, res) => {
-  try {
-    const segment = segments.createSegment(req.body);
-    res.status(201).json(segment);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Get all segments
- */
-router.get('/segments', (req, res) => {
-  const allSegments = segments.getAllSegments();
-  res.json({ segments: allSegments });
-});
-
-/**
- * Get segment by ID
- */
-router.get('/segments/:id', (req, res) => {
-  const segment = segments.getSegment(req.params.id);
-  if (!segment) {
-    return res.status(404).json({ error: 'Segment not found' });
-  }
-  res.json(segment);
-});
-
-/**
- * Update segment
- */
-router.put('/segments/:id', async (req, res) => {
-  try {
-    const segment = segments.updateSegment(req.params.id, req.body);
-    if (!segment) {
-      return res.status(404).json({ error: 'Segment not found' });
-    }
-    res.json(segment);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Delete segment
- */
-router.delete('/segments/:id', (req, res) => {
-  const deleted = segments.deleteSegment(req.params.id);
-  if (!deleted) {
-    return res.status(404).json({ error: 'Segment not found' });
-  }
-  res.json({ success: true, message: 'Segment deleted' });
-});
-
-/**
- * Get segment members
- */
-router.get('/segments/:id/members', (req, res) => {
-  const options = {
-    limit: parseInt(req.query.limit) || 100,
-    offset: parseInt(req.query.offset) || 0,
-  };
-  
-  const results = segments.getSegmentMembers(req.params.id, options);
-  res.json(results);
-});
-
-/**
- * Get segment size
- */
-router.get('/segments/:id/size', (req, res) => {
-  const size = segments.getSegmentSize(req.params.id);
-  res.json({ segmentId: req.params.id, size });
-});
-
-/**
- * Calculate segment overlap
- */
-router.get('/segments/:id1/overlap/:id2', (req, res) => {
-  try {
-    const overlap = segments.calculateSegmentOverlap(req.params.id1, req.params.id2);
-    res.json(overlap);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Recompute segment membership
- */
-router.post('/segments/:id/recompute', async (req, res) => {
-  try {
-    segments.computeSegmentMembership(req.params.id);
-    const segment = segments.getSegment(req.params.id);
-    res.json(segment);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Recompute all segments
- */
-router.post('/segments/recompute-all', async (req, res) => {
-  try {
-    const result = segments.recomputeAllSegments();
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * Add profile to segment manually
- */
-router.post('/segments/:id/members/:profileId', async (req, res) => {
-  try {
-    segments.addProfileToSegment(req.params.profileId, req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Remove profile from segment
- */
-router.delete('/segments/:id/members/:profileId', async (req, res) => {
-  try {
-    segments.removeProfileFromSegment(req.params.profileId, req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ============================================================================
-// ENRICHMENT
-// ============================================================================
-
-/**
- * Get enrichment providers
- */
-router.get('/enrichment/providers', (req, res) => {
-  const providers = enrichment.getProviders();
-  res.json({ providers });
-});
-
-/**
- * Enrich a single profile
- */
-router.post('/enrichment/profiles/:id', async (req, res) => {
-  try {
-    const result = await enrichment.enrichProfile(req.params.id, req.body);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Enrich profiles in batch
- */
-router.post('/enrichment/batch', async (req, res) => {
-  try {
-    const { profileIds, ...options } = req.body;
-    
-    if (!Array.isArray(profileIds)) {
-      return res.status(400).json({ error: 'profileIds must be an array' });
-    }
-    
-    const results = await enrichment.enrichProfilesBatch(profileIds, options);
-    res.json(results);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ============================================================================
-// PRIVACY & CONSENT
-// ============================================================================
-
-/**
- * Update consent
- */
-router.post('/consent/:profileId', async (req, res) => {
-  try {
-    const result = privacy.updateConsent(req.params.profileId, req.body);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/**
- * Get consent status
- */
-router.get('/consent/:profileId', (req, res) => {
-  try {
-    const consent = privacy.getConsent(req.params.profileId);
-    res.json(consent);
-  } catch (err) {
-    res.status(404).json({ error: err.message });
-  }
-});
-
-/**
- * Export customer data (GDPR)
- */
-router.post('/gdpr/export/:profileId', async (req, res) => {
-  try {
-    const result = privacy.exportCustomerData(req.params.profileId);
-    res.json(result);
-  } catch (err) {
-    res.status(404).json({ error: err.message });
-  }
-});
-
-/**
- * Delete customer data (GDPR)
- */
-router.post('/gdpr/delete/:profileId', async (req, res) => {
-  try {
-    const result = privacy.deleteCustomerData(req.params.profileId, req.body);
-    res.json(result);
-  } catch (err) {
-    res.status(404).json({ error: err.message });
-  }
-});
-
-/**
- * Get GDPR request status
- */
-router.get('/gdpr/requests/:requestId', (req, res) => {
-  const request = privacy.getGDPRRequestStatus(req.params.requestId);
-  if (!request) {
-    return res.status(404).json({ error: 'Request not found' });
-  }
-  res.json(request);
-});
-
-/**
- * List GDPR requests
- */
-router.get('/gdpr/requests', (req, res) => {
-  const filters = {
-    profileId: req.query.profileId,
-    type: req.query.type,
-    status: req.query.status,
-  };
-  
-  const requests = privacy.listGDPRRequests(filters);
-  res.json({ requests });
-});
-
-/**
- * Anonymize profile
- */
-router.post('/gdpr/anonymize/:profileId', async (req, res) => {
-  try {
-    const result = privacy.anonymizeProfile(req.params.profileId);
-    res.json(result);
-  } catch (err) {
-    res.status(404).json({ error: err.message });
-  }
-});
-
-/**
- * Get compliance report
- */
-router.get('/privacy/compliance', (req, res) => {
-  const report = privacy.getComplianceReport();
-  res.json(report);
-});
-
-// ============================================================================
-// ANALYTICS
-// ============================================================================
-
-/**
- * Get analytics overview
- */
-router.get('/analytics/overview', (req, res) => {
-  const allProfiles = profiles.getAllProfiles();
-  const allSegments = segments.getAllSegments();
-  
-  const filters = {
-    startDate: req.query.startDate,
-    endDate: req.query.endDate,
-  };
-  
-  const eventStats = events.getEventStats(filters);
-  const complianceReport = privacy.getComplianceReport();
-  
-  const overview = {
-    profiles: {
-      total: allProfiles.length,
-      withEmail: allProfiles.filter(p => p.attributes.email).length,
-      withPhone: allProfiles.filter(p => p.attributes.phone).length,
-      customers: allProfiles.filter(p => (p.computed.purchaseCount || 0) > 0).length,
-    },
-    segments: {
-      total: allSegments.length,
-    },
-    events: eventStats,
-    compliance: complianceReport.consent,
-    timestamp: new Date().toISOString(),
-  };
-  
-  res.json(overview);
-});
-
-/**
- * Calculate RFM for a profile
- */
-router.get('/analytics/rfm/:profileId', (req, res) => {
-  const profile = profiles.getProfile(req.params.profileId);
-  if (!profile) {
-    return res.status(404).json({ error: 'Profile not found' });
-  }
-  
-  const profileEvents = events.getProfileEvents(req.params.profileId);
-  const rfm = segments.calculateRFM(profile, profileEvents);
-  
-  res.json({ profileId: req.params.profileId, rfm });
-});
-
-// ============================================================================
-// HEALTH & STATUS
-// ============================================================================
-
-router.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'customer-data-platform',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
+function analyse(raw, now = Date.now()) {
+  const rows = raw.map((c) => {
+    const orders = Number(c.numberOfOrders) || 0;
+    const spent = Number(c.amountSpent && c.amountSpent.amount) || 0;
+    const created = Date.parse(c.createdAt);
+    const last = c.lastOrder ? Date.parse(c.lastOrder.createdAt) : null;
+    const daysSince = last ? Math.max(0, Math.round((now - last) / DAY)) : null;
+    const avgGap = orders >= 2 && last ? Math.max(1, Math.round((last - created) / DAY / (orders - 1))) : null;
+    let churn = null;
+    if (orders >= 2 && daysSince != null && avgGap) churn = daysSince > avgGap * 2 ? 'high' : daysSince > avgGap * 1.2 ? 'medium' : 'low';
+    else if (orders === 1 && daysSince != null) churn = daysSince > 180 ? 'high' : daysSince > 90 ? 'medium' : 'low';
+    return {
+      id: c.id, name: c.displayName || 'Customer', email: (c.defaultEmailAddress && c.defaultEmailAddress.emailAddress) || null,
+      orders, spent: Math.round(spent * 100) / 100, aov: orders ? Math.round((spent / orders) * 100) / 100 : 0,
+      daysSinceLastOrder: daysSince, avgDaysBetweenOrders: avgGap, churnRisk: churn, stage: stageOf(orders),
+    };
   });
-});
+  const buyers = rows.filter((r) => r.orders > 0 && r.daysSinceLastOrder != null);
+  const rScore = scoreBy(buyers.map((r) => r.daysSinceLastOrder), false);
+  const fScore = scoreBy(buyers.map((r) => r.orders), true);
+  const mScore = scoreBy(buyers.map((r) => r.spent), true);
+  rows.forEach((r) => {
+    if (r.orders > 0 && r.daysSinceLastOrder != null) { r.rfm = { r: rScore(r.daysSinceLastOrder), f: fScore(r.orders), m: mScore(r.spent) }; r.segment = segmentOf(r.rfm.r, r.rfm.f, r.rfm.m); }
+    else { r.rfm = null; r.segment = 'No purchase yet'; }
+  });
+  return rows;
+}
+
+function summarise(rows, currency) {
+  const group = (key) => {
+    const g = {};
+    rows.forEach((r) => { const k = r[key] || 'Unknown'; (g[k] = g[k] || { name: k, customers: 0, revenue: 0 }); g[k].customers++; g[k].revenue += r.spent; });
+    return Object.values(g).map((x) => ({ ...x, revenue: Math.round(x.revenue * 100) / 100, avgSpend: Math.round((x.revenue / x.customers) * 100) / 100 })).sort((a, b) => b.revenue - a.revenue);
+  };
+  const buyers = rows.filter((r) => r.orders > 0);
+  const total = rows.reduce((s, r) => s + r.spent, 0);
+  const repeat = buyers.filter((r) => r.orders >= 2).length;
+  const top = [...rows].sort((a, b) => b.spent - a.spent).slice(0, Math.max(1, Math.ceil(rows.length * 0.1)));
+  const stageOrder = ['Signed up, no purchase', 'First purchase', 'Repeat buyer', 'Loyal buyer'];
+  const stages = group('stage').sort((a, b) => stageOrder.indexOf(a.name) - stageOrder.indexOf(b.name));
+  return {
+    totals: {
+      customers: rows.length, buyers: buyers.length, revenue: Math.round(total * 100) / 100, currency,
+      repeatRate: buyers.length ? Math.round((repeat / buyers.length) * 1000) / 10 : null,
+      avgLifetimeValue: buyers.length ? Math.round((total / buyers.length) * 100) / 100 : null,
+      top10PercentShare: total ? Math.round((top.reduce((s, r) => s + r.spent, 0) / total) * 1000) / 10 : null,
+      highChurnRisk: rows.filter((r) => r.churnRisk === 'high').length,
+    },
+    segments: group('segment'),
+    stages,
+  };
+}
+
+async function snapshot(shop, token) {
+  const { customers, truncated } = await loadCustomers(shop, token);
+  const currency = (customers.find((c) => c.amountSpent) || { amountSpent: {} }).amountSpent.currencyCode || '';
+  const rows = analyse(customers);
+  return { rows, truncated, currency };
+}
+
+router.get('/overview', withShop(async (req, res, { shop, token }) => {
+  const { rows, truncated, currency } = await snapshot(shop, token);
+  res.json({ ok: true, ai: !!getOpenAIClient(), truncated, ...summarise(rows, currency) });
+}));
+
+router.get('/customers', withShop(async (req, res, { shop, token }) => {
+  const { rows } = await snapshot(shop, token);
+  const seg = String(req.query.segment || ''); const risk = String(req.query.risk || '');
+  let list = rows;
+  if (seg) list = list.filter((r) => r.segment === seg);
+  if (risk) list = list.filter((r) => r.churnRisk === risk);
+  list = [...list].sort((a, b) => b.spent - a.spent);
+  res.json({ ok: true, total: list.length, customers: list.slice(0, 100) });
+}));
+
+const csvCell = (v) => { const s = v == null ? '' : String(v); return /^[=+\-@\t\r]/.test(s) ? `"'${s.replace(/"/g, '""')}"` : /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+
+router.get('/export', withShop(async (req, res, { shop, token }) => {
+  const { rows } = await snapshot(shop, token);
+  const seg = String(req.query.segment || '');
+  const list = rows.filter((r) => !seg || r.segment === seg);
+  const head = ['name', 'email', 'segment', 'orders', 'spent', 'days_since_last_order', 'churn_risk'];
+  const csv = [head.join(','), ...list.map((r) => [r.name, r.email, r.segment, r.orders, r.spent, r.daysSinceLastOrder, r.churnRisk].map(csvCell).join(','))].join('\n');
+  res.set('Content-Type', 'text/csv; charset=utf-8').set('Content-Disposition', 'attachment; filename="customers.csv"').send(csv);
+}));
+
+router.post('/playbook', withShop(async (req, res, { shop, token }) => {
+  const openai = getOpenAIClient();
+  if (!openai) return res.status(503).json({ ok: false, error: 'AI is not configured on the server.' });
+  const segment = String((req.body || {}).segment || '').slice(0, 60);
+  const { rows, currency } = await snapshot(shop, token);
+  const s = summarise(rows, currency).segments.find((x) => x.name === segment);
+  if (!s) return res.status(404).json({ ok: false, error: 'No customers in that segment.' });
+  const members = rows.filter((r) => r.segment === segment);
+  const facts = { segment, customers: s.customers, avgSpend: s.avgSpend, currency, avgDaysSinceLastOrder: Math.round(members.filter((m) => m.daysSinceLastOrder != null).reduce((a, m) => a + m.daysSinceLastOrder, 0) / Math.max(1, members.filter((m) => m.daysSinceLastOrder != null).length)), avgOrders: Math.round((members.reduce((a, m) => a + m.orders, 0) / members.length) * 10) / 10 };
+  const c = await openai.chat.completions.create({
+    model: MODEL, temperature: 0.5, max_tokens: 600, response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: 'You are a retention marketer for a small online shop. Given real numbers for one customer segment, return JSON {"goal":string,"steps":[{"when":string,"channel":"email"|"sms","message":string}],"avoid":[string]}. Max 4 steps. No invented discounts, prices or stats; if you suggest an offer say "consider offering" and leave the amount to the owner.' },
+      { role: 'user', content: JSON.stringify(facts) },
+    ],
+  });
+  let o; try { o = JSON.parse(c.choices[0].message.content); } catch { return res.status(502).json({ ok: false, error: 'The AI returned an unreadable answer. Try again.' }); }
+  if (req.deductCredits) await req.deductCredits({ model: MODEL, action: 'analytics-insight' });
+  const t = (v, n) => String(v == null ? '' : v).slice(0, n);
+  res.json({ ok: true, segment, facts, playbook: {
+    goal: t(o.goal, 300),
+    steps: (Array.isArray(o.steps) ? o.steps : []).slice(0, 4).map((x) => ({ when: t(x.when, 80), channel: x.channel === 'sms' ? 'sms' : 'email', message: t(x.message, 500) })),
+    avoid: (Array.isArray(o.avoid) ? o.avoid : []).slice(0, 4).map((x) => t(x, 200)),
+  } });
+}));
 
 module.exports = router;
+module.exports._analyse = analyse;
+module.exports._summarise = summarise;

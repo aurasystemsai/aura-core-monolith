@@ -8,13 +8,48 @@ const BASE_RETRY_MS = 750;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+async function getSessionToken() {
+ try {
+  if (window.shopify && typeof window.shopify.idToken === 'function') return await window.shopify.idToken();
+ } catch { /* not embedded, or App Bridge unavailable */ }
+ return null;
+}
+
+// Many tool screens call fetch() directly. This adds the session token and shop header to their
+// same-origin /api calls so the server can verify who is asking.
+export function installAuthFetch() {
+ if (window.__auraAuthFetch) return;
+ window.__auraAuthFetch = true;
+ const nativeFetch = window.fetch.bind(window);
+ window.fetch = async (input, init = {}) => {
+  try {
+   const raw = typeof input === 'string' ? input : (input && input.url) || '';
+   const url = new URL(raw, window.location.origin);
+   if (url.origin === window.location.origin && url.pathname.startsWith('/api/')) {
+    const headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
+    if (!headers.has('Authorization')) {
+     const token = await getSessionToken() || localStorage.getItem('accessToken') || localStorage.getItem('shopToken');
+     if (token) headers.set('Authorization', 'Bearer ' + token);
+    }
+    const shop = new URLSearchParams(window.location.search).get('shop') || localStorage.getItem('auraShop');
+    if (shop && !headers.has('x-shopify-shop-domain')) headers.set('x-shopify-shop-domain', shop);
+    if (typeof init.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+    return nativeFetch(input, { ...init, headers, credentials: init.credentials || 'include' });
+   }
+  } catch { /* fall through to the untouched request */ }
+  return nativeFetch(input, init);
+ };
+}
+
 export async function apiFetch(url, options = {}) {
  const headers = options.headers ? { ...options.headers } : {};
 
- // Prefer OAuth/token auth (localStorage) and fall back to cookies
- const bearer = localStorage.getItem('accessToken') || localStorage.getItem('shopToken');
+ // Auth header
+ // Embedded in Shopify: App Bridge issues a short-lived signed session token. Otherwise fall back to stored tokens.
+ const idToken = await getSessionToken();
+ const bearer = idToken || localStorage.getItem('accessToken') || localStorage.getItem('shopToken');
  if (bearer && !headers['Authorization']) {
- headers['Authorization'] = `Bearer ${bearer}`;
+ headers['Authorization'] = 'Bearer ' + bearer;
  }
 
  // Preserve shop domain header for backend multi-tenant logic
@@ -26,6 +61,12 @@ export async function apiFetch(url, options = {}) {
  if (!headers['x-shopify-shop-domain']) {
  headers['x-shopify-shop-domain'] = shopDomain;
  }
+ }
+
+ // JSON string bodies need this or Express leaves req.body empty
+ const hasContentType = Object.keys(headers).some((k) => k.toLowerCase() === 'content-type');
+ if (typeof options.body === 'string' && !hasContentType) {
+ headers['Content-Type'] = 'application/json';
  }
 
  const opts = {

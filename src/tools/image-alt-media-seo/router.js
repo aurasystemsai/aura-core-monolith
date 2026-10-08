@@ -1923,7 +1923,7 @@ router.post('/images/push-shopify', requireWriter, async (req, res) => {
       });
     });
 
-    const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10';
     const results = [];
     let synced = 0;
     let notFound = 0;

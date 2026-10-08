@@ -1,46 +1,16 @@
-// src/tools/schema-rich-results-engine/index.js
-// ===============================================
-// AURA • Schema / Rich Results Engine (rule-based)
-// ===============================================
+﻿// Schema & Rich Results Engine tool entry
+const { validateSchema } = require('../../core/schemaBuilder');
 
-const key = "schema-rich-results-engine";
+const key = 'schema-rich-results-engine';
 const meta = {
   id: key,
   name: 'Schema & Rich Results Engine',
-  description: 'Generate and validate JSON-LD schema markup for Google rich results.',
+  description: 'Generate JSON-LD from your real Shopify data and validate it for Google rich results.',
 };
 
-async function run(input = {}, ctx = {}) {
-  const env = ctx.environment || process.env.NODE_ENV || "development";
-  const now = new Date().toISOString();
-
-  const type = input.type || "Product";
-  const url = input.url || "https://example.com";
-  const name = input.name || input.productTitle || "Item";
-
-  const base = {
-    "@context": "https://schema.org",
-    "@type": type,
-    "@id": `${url}#${type.toLowerCase()}`,
-    "url": url,
-    "name": name,
-  };
-
-  return {
-    ok: true,
-    tool: key,
-    environment: env,
-    message: "Schema snippet generated (rule-based).",
-    input,
-    output: {
-      jsonLd: base,
-      pretty: JSON.stringify(base, null, 2),
-    },
-    meta: {
-      engine: "internal-rule-engine-v1",
-      generatedAt: now,
-    },
-  };
+async function run(input = {}) {
+  if (!input.schema) throw new Error('schema (JSON-LD object or string) is required');
+  return validateSchema(input.schema);
 }
 
 module.exports = { key, meta, run };
