@@ -19,8 +19,6 @@ const S = {
   pill: { background: "#27272a", borderRadius: 999, padding: "3px 10px", fontSize: 12, color: "#d4d4d8", display: "inline-block", margin: "0 6px 6px 0" },
   muted: { color: "#71717a", fontSize: 12 },
 };
-const API = "/api/product-feed";
-const COLOR = { error: "#f87171", warn: "#fbbf24", info: "#a1a1aa" };
 const API = "/api/translations";
 
 async function call(setBusy, setError, name, url, options) {
@@ -54,7 +52,7 @@ export default function Translations() {
 
   async function load(more) {
     if (!locale) return;
-    const r = await run("load", /products?locale= + (more && next ? &after= : ""));
+    const r = await run("load", `/products?locale=${encodeURIComponent(locale)}` + (more && next ? `&after=${encodeURIComponent(next)}` : ""));
     if (r) { setList((l) => (more ? [...l, ...r.products] : r.products)); setNext(r.next); }
   }
   useEffect(() => { setDraft(null); setList([]); setNext(null); if (locale) load(false); }, [locale]); // eslint-disable-line
@@ -101,7 +99,7 @@ export default function Translations() {
               <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ flex: "1 1 260px", minWidth: 200 }}>
                   <div style={{ fontWeight: 600 }}>{p.title}</div>
-                  <div style={{ fontSize: 12, color: p.done === p.total ? "#4ade80" : "#fbbf24" }}>{p.done} of {p.total} fields translated{p.outdated ? ,  out of date : ""}</div>
+                  <div style={{ fontSize: 12, color: p.done === p.total ? "#4ade80" : "#fbbf24" }}>{p.done} of {p.total} fields translated{p.outdated ? `, ${p.outdated} out of date` : ""}</div>
                 </div>
                 <button style={{ ...S.btn, marginRight: 0, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => suggest(p)}>{busy === "s:" + p.id ? "Translating..." : (p.done === p.total ? "Redo with AI" : "AI: translate") + " (2 credits)"}</button>
               </div>
