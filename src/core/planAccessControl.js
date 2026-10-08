@@ -8,7 +8,7 @@ const shopifyBillingService = require('./shopifyBillingService');
 const PLAN_CHECKS_DISABLED = process.env.DISABLE_PLAN_CHECKS !== 'false';
 
 // Define feature access by plan
-// 4 tiers: free (10 credits) â†’ growth (5,000) â†’ pro (25,000) â†’ enterprise (unlimited)
+// 4 tiers: free (10 credits) â†’ growth (5,000) â†’ pro (25,000) â†’ enterprise (100,000 a month, then top-ups)
 const PLAN_FEATURES = {
   free: {
     ai_runs_limit: 50,
@@ -60,7 +60,7 @@ const PLAN_FEATURES = {
     features: ['basic_analytics', 'advanced_analytics', 'priority_support', 'api_access', 'webhooks']
   },
   enterprise: {
-    ai_runs_limit: -1, // unlimited
+    ai_runs_limit: -1, // no separate run cap; the credit balance is the limit
     products_limit: -1, // unlimited
     team_members: -1, // unlimited
     tools: ['*'], // all tools

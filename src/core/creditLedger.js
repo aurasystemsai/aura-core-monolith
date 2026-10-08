@@ -171,7 +171,7 @@ const PLAN_CREDITS = {
   free:       50,      // 50 lifetime credits — enough to try ~5 text actions or 5 images
   growth:     5000,    // 5,000/mo
   pro:        25000,   // 25,000/mo
-  enterprise: -1,      // unlimited
+  enterprise: 100000,  // large monthly allowance, never unlimited: every AI call and text costs real money; top-ups cover the rest
 };
 
 function getEffectiveCost(actionType, model) {
@@ -249,8 +249,6 @@ async function checkCredits(shop, actionType, model, quantity = 1) {
 
   if (pool) {
     const acc = await pgGetAccount(shop);
-    if (acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1)
-      return { allowed:true, cost, balance:999999, unlimited:true };
     if (needsReset(acc)) {
       await pool.query(`UPDATE credit_accounts SET used_this_period=0, period_start=NOW(), updated_at=NOW() WHERE shop=$1`, [shop]);
       acc.used_this_period = 0;
@@ -263,8 +261,6 @@ async function checkCredits(shop, actionType, model, quantity = 1) {
 
   const acc = fileGetAccount(shop);
   if (needsReset(acc)) { acc.used_this_period=0; acc.period_start=new Date().toISOString(); fileSave(shop, acc); }
-  if (acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1)
-    return { allowed:true, cost, balance:999999, unlimited:true };
   const planRem = Math.max(0, acc.plan_credits - acc.used_this_period);
   const total   = planRem + (acc.topup_credits||0);
   return { allowed: total >= cost, cost, balance: total, unlimited:false };
@@ -280,11 +276,6 @@ async function deductCredits(shop, actionType, meta) {
     if (needsReset(acc)) {
       await pool.query(`UPDATE credit_accounts SET used_this_period=0, period_start=NOW(), updated_at=NOW() WHERE shop=$1`, [shop]);
       acc.used_this_period = 0;
-    }
-    if (acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1) {
-      await pgSave(pool, shop, { used_this_period: Number(acc.used_this_period)+cost, lifetime_used: Number(acc.lifetime_used)+cost });
-      await pgLog(pool, shop, { type:'deduct', action:actionType, cost, estUsd: estimateCostUsd(actionType, meta.model), ...meta });
-      return { ok:true, cost, balance:999999, unlimited:true };
     }
     const planRem = Math.max(0, acc.plan_credits - acc.used_this_period);
     const total   = planRem + Number(acc.topup_credits);
@@ -303,12 +294,6 @@ async function deductCredits(shop, actionType, meta) {
 
   const acc = fileGetAccount(shop);
   if (needsReset(acc)) { acc.used_this_period=0; acc.period_start=new Date().toISOString(); }
-  if (acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1) {
-    acc.used_this_period += cost; acc.lifetime_used = (acc.lifetime_used||0)+cost;
-    fileLog(acc, { type:'deduct', action:actionType, cost, estUsd: estimateCostUsd(actionType, meta.model), ...meta });
-    fileSave(shop, acc);
-    return { ok:true, cost, balance:999999, unlimited:true };
-  }
   const planRem = Math.max(0, acc.plan_credits - acc.used_this_period);
   const total   = planRem + (acc.topup_credits||0);
   if (total < cost) return { ok:false, cost, balance:total, error:`Insufficient credits. Need ${cost}, have ${total}.` };
@@ -346,7 +331,7 @@ async function updatePlan(shop, planId) {
     const acc    = await pgGetAccount(shop);
     const oldPlan = acc.plan;
     const isUp   = (PLAN_CREDITS[planId]||0) > (PLAN_CREDITS[oldPlan]||0);
-    const fields = { plan: planId, plan_credits: newCredits < 0 ? 999999 : newCredits };
+    const fields = { plan: planId, plan_credits: newCredits };
     if (isUp) { fields.used_this_period = 0; fields.period_start = new Date().toISOString(); }
     await pgSave(pool, shop, fields);
     await pgLog(pool, shop, { type:'plan_change', description:`${oldPlan} -> ${planId}` });
@@ -368,7 +353,7 @@ async function getCreditStatus(shop) {
       await pool.query(`UPDATE credit_accounts SET used_this_period=0, period_start=NOW(), updated_at=NOW() WHERE shop=$1`, [shop]);
       acc.used_this_period = 0;
     }
-    const isUnlimited = acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1;
+    const isUnlimited = false;
     const planRem = isUnlimited ? 999999 : Math.max(0, acc.plan_credits - acc.used_this_period);
     const balance = isUnlimited ? 999999 : planRem + Number(acc.topup_credits);
     const txRes   = await pool.query(
@@ -383,7 +368,7 @@ async function getCreditStatus(shop) {
   }
   const acc = fileGetAccount(shop);
   if (needsReset(acc)) { acc.used_this_period=0; acc.period_start=new Date().toISOString(); fileSave(shop, acc); }
-  const isUnlimited = acc.plan === 'enterprise' || PLAN_CREDITS[acc.plan] === -1;
+  const isUnlimited = false;
   const planRem = isUnlimited ? 999999 : Math.max(0, acc.plan_credits - acc.used_this_period);
   const balance = isUnlimited ? 999999 : planRem + (acc.topup_credits||0);
   return { ok:true, plan:acc.plan, balance, used:acc.used_this_period,

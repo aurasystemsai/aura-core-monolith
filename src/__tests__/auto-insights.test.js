@@ -56,16 +56,17 @@ describe('auto-insights (Reports & Insights)', () => {
   });
 });
 describe('forecast', () => {
-  const mk = (daysAgo, amt) => ({ name: '#', createdAt: new Date(Date.now() - daysAgo * 86400000).toISOString(), totalPriceSet: { shopMoney: { amount: String(amt), currencyCode: 'GBP' } }, lineItems: { nodes: [] } });
+  const NOW = Date.UTC(2026, 5, 15, 12, 0, 0);
+  const mk = (daysAgo, amt) => ({ name: '#', createdAt: new Date(NOW - daysAgo * 86400000).toISOString(), totalPriceSet: { shopMoney: { amount: String(amt), currencyCode: 'GBP' } }, lineItems: { nodes: [] } });
   const { _forecast } = require('../tools/auto-insights/router');
 
   it('refuses to forecast with too few order days', () => {
-    expect(_forecast([mk(1, 10), mk(2, 10)])).toMatchObject({ enough: false, daysWithOrders: 2 });
+    expect(_forecast([mk(1, 10), mk(2, 10)], NOW)).toMatchObject({ enough: false, daysWithOrders: 2 });
   });
 
   it('projects a rising trend upward with a range around it', () => {
     const orders = []; for (let d = 89; d >= 1; d--) orders.push(mk(d, 100 + (90 - d) * 2));
-    const f = _forecast(orders);
+    const f = _forecast(orders, NOW);
     expect(f.enough).toBe(true);
     expect(f.trend).toBe('up');
     expect(f.next30).toBeGreaterThan(f.last30);
@@ -75,6 +76,6 @@ describe('forecast', () => {
 
   it('calls a steady shop flat', () => {
     const orders = []; for (let d = 89; d >= 1; d--) orders.push(mk(d, 100));
-    expect(_forecast(orders).trend).toBe('flat');
+    expect(_forecast(orders, NOW).trend).toBe('flat');
   });
 });

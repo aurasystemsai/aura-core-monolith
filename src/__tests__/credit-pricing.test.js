@@ -14,4 +14,15 @@ describe('credit pricing follows real model cost', () => {
     expect(ledger.estimateCostUsd('blog-draft', 'gpt-4o-mini')).toBeGreaterThan(0);
     expect(ledger.estimateCostUsd('blog-draft', 'unknown-model')).toBeNull();
   });
-});
+
+  it('has no unlimited plan: enterprise gets a big allowance and is still charged', async () => {
+    const os = require('os'); const path = require('path'); const fs = require('fs');
+    expect(ledger.PLAN_CREDITS.enterprise).toBeGreaterThan(ledger.PLAN_CREDITS.pro);
+    expect(Object.values(ledger.PLAN_CREDITS).every((n) => n > 0)).toBe(true);
+    const shop = `ent-${Date.now()}.myshopify.com`;
+    await ledger.updatePlan(shop, 'enterprise');
+    const before = (await ledger.getCreditStatus(shop)).balance;
+    const d = await ledger.deductCredits(shop, 'sms-send', { quantity: 10 });
+    expect(d).toMatchObject({ ok: true, cost: 50, unlimited: false });
+    expect((await ledger.getCreditStatus(shop)).balance).toBe(before - 50);
+  });});
