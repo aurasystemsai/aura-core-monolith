@@ -40,7 +40,7 @@ const toolsMeta = [
  { id: "google-ads-integration", name: "Google Ads", description: "Manage Google Ads campaigns with AI bidding and optimization.", category: "Ads", suite: "ads" },
  { id: "facebook-ads-integration", name: "Facebook & Instagram Ads", description: "Run and optimize Meta ad campaigns from one dashboard.", category: "Ads", suite: "ads" },
  { id: "tiktok-ads-integration", name: "TikTok Ads", description: "Create and manage TikTok ad campaigns with creative tools.", category: "Ads", suite: "ads" },
- { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Detect ad spend anomalies and protect your budget.", category: "Ads", suite: "ads" },
+ { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Flags spend spikes, wasted spend, falling returns and traffic drops across your connected ad accounts. Free to run.", category: "Ads", suite: "ads" },
  { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "AI-powered ad creative testing and optimization.", category: "Ads", suite: "ads" },
 
  // ── Analytics & Intelligence (9 tools) ──

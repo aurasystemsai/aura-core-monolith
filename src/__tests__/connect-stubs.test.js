@@ -2,7 +2,7 @@ const express = require('express');
 const request = require('supertest');
 
 describe('connect-your-account tools', () => {
-  const ids = ['ads-anomaly-guard', 'ad-creative-optimizer', 'data-warehouse-connector', 'mobile-app-analytics'];
+  const ids = ['ad-creative-optimizer', 'data-warehouse-connector', 'mobile-app-analytics'];
   it.each(ids)('%s reports it is not connected and returns no data', async (id) => {
     const app = express(); app.use('/api/' + id, require('../tools/' + id + '/router'));
     const s = (await request(app).get('/api/' + id + '/status')).body;
