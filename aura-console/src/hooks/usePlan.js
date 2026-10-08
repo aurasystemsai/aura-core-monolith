@@ -49,7 +49,6 @@ export const TOOL_PLAN = {
  "ad-creative-optimizer": "pro",
  "omnichannel-campaign-builder": "pro",
  "advanced-analytics-attribution": "pro",
- "predictive-analytics-widgets": "pro",
  "auto-insights": "pro",
  "upsell-cross-sell-engine": "pro",
  "customer-data-platform": "pro",

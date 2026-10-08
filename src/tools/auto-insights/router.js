@@ -152,8 +152,56 @@ router.post('/insights', withShop(async (req, res, { shop, token }) => {
   res.json({ ok: true, insight: (resp.choices[0].message.content || '').trim() });
 }));
 
+// Straight-line trend through the last 90 days of daily revenue, projected 30 days ahead. It is a simple
+// extrapolation, not a promise: the range shown is the spread the days actually had around that line.
+const FORECAST_HISTORY = 90;
+const FORECAST_AHEAD = 30;
+const MIN_ORDER_DAYS = 14;
+
+function forecast(orders, now = Date.now()) {
+  const start = now - FORECAST_HISTORY * DAY;
+  const byDay = new Array(FORECAST_HISTORY).fill(0).map(() => ({ revenue: 0, orders: 0 }));
+  for (const o of orders) {
+    const idx = Math.floor((Date.parse(o.createdAt) - start) / DAY);
+    if (idx >= 0 && idx < FORECAST_HISTORY) { byDay[idx].revenue += num(o.totalPriceSet.shopMoney.amount); byDay[idx].orders++; }
+  }
+  const daysWithOrders = byDay.filter((d) => d.orders > 0).length;
+  const currency = (orders[0] && orders[0].totalPriceSet.shopMoney.currencyCode) || '';
+  if (daysWithOrders < MIN_ORDER_DAYS) return { enough: false, daysWithOrders, needed: MIN_ORDER_DAYS, currency };
+  const n = byDay.length;
+  const xs = byDay.map((_, i) => i); const ys = byDay.map((d) => d.revenue);
+  const mx = xs.reduce((a, b) => a + b, 0) / n; const my = ys.reduce((a, b) => a + b, 0) / n;
+  let sxy = 0; let sxx = 0;
+  for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; }
+  const slope = sxx ? sxy / sxx : 0; const intercept = my - slope * mx;
+  const resid = ys.map((y, i) => y - (intercept + slope * i));
+  const sd = Math.sqrt(resid.reduce((a, b) => a + b * b, 0) / Math.max(1, n - 2));
+  let next = 0;
+  for (let i = n; i < n + FORECAST_AHEAD; i++) next += Math.max(0, intercept + slope * i);
+  const spread = sd * Math.sqrt(FORECAST_AHEAD);
+  const last30 = ys.slice(-30).reduce((a, b) => a + b, 0);
+  const weekday = [0, 0, 0, 0, 0, 0, 0]; const wcount = [0, 0, 0, 0, 0, 0, 0];
+  byDay.forEach((d, i) => { const w = new Date(start + i * DAY).getUTCDay(); weekday[w] += d.revenue; wcount[w]++; });
+  const names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const strongest = weekday.map((v, i) => ({ day: names[i], avg: round(v / Math.max(1, wcount[i])) })).sort((a, b) => b.avg - a.avg);
+  return {
+    enough: true, currency, daysWithOrders,
+    last30: round(last30), next30: round(next), low: round(Math.max(0, next - spread)), high: round(next + spread),
+    changePct: last30 > 0 ? round(((next - last30) / last30) * 100, 1) : null,
+    trend: Math.abs(slope) < my * 0.002 ? 'flat' : slope > 0 ? 'up' : 'down',
+    bestDay: strongest[0], quietestDay: strongest[strongest.length - 1],
+  };
+}
+
+router.get('/forecast', withShop(async (req, res, { shop, token }) => {
+  const r = await loadOrders(shop, token, FORECAST_HISTORY / 2);
+  if (r.unavailable) return res.json({ ok: true, unavailable: true, note: 'This store has not given AURA access to orders, so a forecast is not possible.' });
+  res.json({ ok: true, ...forecast(r.orders), truncated: r.truncated, ai: !!process.env.OPENAI_API_KEY });
+}));
+
 router.get('/health', (req, res) => res.json({ ok: true, service: 'auto-insights', v: '3.0.0' }));
 
 module.exports = router;
 module.exports._summarise = summarise;
 module.exports._csvCell = csvCell;
+module.exports._forecast = forecast;

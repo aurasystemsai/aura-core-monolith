@@ -27,7 +27,7 @@ const toolsMeta = [
  // ── Email & Lifecycle (5 tools) ──
  { id: "email-automation-builder", name: "Email Automation Builder", description: "Build sophisticated multi-channel email campaigns with drag-and-drop automation.", category: "Email", suite: "lifecycle" },
  { id: "abandoned-checkout-winback", name: "Abandoned Checkout Winback", description: "Recover lost sales with automated win-back sequences.", category: "Email", suite: "lifecycle" },
- { id: "returns-rma-automation", name: "Returns & RMA Automation", description: "Streamline returns and exchanges with automated workflows.", category: "Email", suite: "lifecycle" },
+ { id: "returns-rma-automation", name: "Returns", description: "Log return requests, check them against real orders and track them to refund.", category: "Email", suite: "lifecycle" },
  { id: "collaboration-approval-workflows", name: "Collaboration & Approvals", description: "Team collaboration with approval workflows for campaigns.", category: "Email", suite: "lifecycle" },
 
  // ── Customer Support (4 tools) ──
@@ -49,12 +49,11 @@ const toolsMeta = [
 
  // ── Analytics & Intelligence (9 tools) ──
  { id: "advanced-analytics-attribution", name: "Advanced Attribution", description: "Multi-touch attribution across all marketing channels.", category: "Analytics", suite: "analytics" },
- { id: "predictive-analytics-widgets", name: "Predictive Analytics", description: "AI-powered predictions for revenue, churn, and growth.", category: "Analytics", suite: "analytics" },
- { id: "auto-insights", name: "Reports & Insights", description: "Sales report from real orders, CSV downloads, emailed copies and a plain-English read of the numbers.", category: "Analytics", suite: "analytics" },
+ { id: "auto-insights", name: "Reports & Forecast", description: "Sales report from real orders, 30-day forecast, CSV downloads, emailed copies and a plain-English read of the numbers.", category: "Analytics", suite: "analytics" },
  { id: "data-warehouse-connector", name: "Data Warehouse Connector", description: "Sync data to Snowflake, BigQuery, or Redshift.", category: "Analytics", suite: "analytics" },
 
  // ── Personalization & Revenue (10 tools) ──
- { id: "dynamic-pricing-engine", name: "Dynamic Pricing Engine", description: "Optimize pricing in real-time based on demand and competition.", category: "Personalization", suite: "personalization" },
+ { id: "dynamic-pricing-engine", name: "Pricing Advisor", description: "Price suggestions from real stock and sales, applied to Shopify only when you approve them.", category: "Personalization", suite: "personalization" },
  { id: "upsell-cross-sell-engine", name: "Upsell & Cross-Sell Engine", description: "Increase AOV with AI-powered product recommendations.", category: "Personalization", suite: "personalization" },
  { id: "customer-data-platform", name: "Customer Data Platform", description: "Unify customer data with RFM analysis and behavioral segmentation.", category: "Personalization", suite: "personalization" },
  { id: "data-enrichment-suite", name: "Data Enrichment Suite", description: "Enrich customer profiles with third-party data sources.", category: "Personalization", suite: "personalization" },

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import Toast from "../Toast";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../../hooks/usePlan";
@@ -18,10 +18,7 @@ export default function MainSuite({ setActiveSection }) {
  const { plan, planLoading } = usePlan();
 
  const STATUS_KEYS = {
- "visual-workflow-builder": "suite:status:visual-workflow-builder",
- "workflow-orchestrator": "suite:status:workflow-orchestrator",
  "workflow-automation-builder": "suite:status:workflow-automation-builder",
- "conditional-logic-automation": "suite:status:conditional-logic-automation",
  "webhook-api-triggers": "suite:status:webhook-api-triggers",
  };
 

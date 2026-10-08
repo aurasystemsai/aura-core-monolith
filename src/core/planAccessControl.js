@@ -53,7 +53,7 @@ const PLAN_FEATURES = {
       'google-ads-integration', 'facebook-ads-integration',
       'tiktok-ads-integration', 'ads-anomaly-guard', 'ad-creative-optimizer',
       'omnichannel-campaign-builder', 'advanced-analytics-attribution',
-      'predictive-analytics-widgets', 'auto-insights',
+      'auto-insights',
       'upsell-cross-sell-engine', 'customer-data-platform',
       'inventory-forecasting', 'compliance-privacy-suite'
     ],
@@ -112,7 +112,6 @@ const TOOL_PLAN_REQUIREMENTS = {
   'ad-creative-optimizer': 'pro',
   'omnichannel-campaign-builder': 'pro',
   'advanced-analytics-attribution': 'pro',
-  'predictive-analytics-widgets': 'pro',
   'auto-insights': 'pro',
   'upsell-cross-sell-engine': 'pro',
   'customer-data-platform': 'pro',

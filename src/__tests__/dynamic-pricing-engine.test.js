@@ -1,422 +1,55 @@
-// ================================================================
-// DYNAMIC PRICING ENGINE - COMPREHENSIVE TEST SUITE
-// ================================================================
-// Tests covering all 8 backend modules and 230+ router endpoints
-// ================================================================
-
-const request = require('supertest');
 const express = require('express');
+const request = require('supertest');
 
-// Import router and modules
-const router = require('../tools/dynamic-pricing-engine/router');
-const pricingStrategy = require('../tools/dynamic-pricing-engine/pricing-strategy-engine');
-const aiML = require('../tools/dynamic-pricing-engine/ai-ml-engine');
-const monitoringControl = require('../tools/dynamic-pricing-engine/monitoring-control-engine');
-const rulesAutomation = require('../tools/dynamic-pricing-engine/rules-automation-engine');
-const analyticsReporting = require('../tools/dynamic-pricing-engine/analytics-reporting-engine');
-const experimentsTesting = require('../tools/dynamic-pricing-engine/experiments-testing-engine');
-const settingsAdmin = require('../tools/dynamic-pricing-engine/settings-admin-engine');
-const advancedFeatures = require('../tools/dynamic-pricing-engine/advanced-features-engine');
+jest.mock('../core/shopTokens', () => ({ getToken: () => 'tok' }), { virtual: true });
+const mockUpdates = [];
+const mockVar = (n, qty) => ({ id: 'gid://shopify/ProductVariant/' + n, displayName: 'V' + n, price: '10.00', compareAtPrice: null, inventoryQuantity: qty, product: { id: 'gid://shopify/Product/' + n, title: 'P' + n, status: 'ACTIVE' }, inventoryItem: { unitCost: { amount: '4.00' } } });
+jest.mock('../core/seoStoreData', () => ({
+  gql: async (shop, token, q, vars) => {
+    if (q.includes('productVariantsBulkUpdate')) { mockUpdates.push(vars); return { productVariantsBulkUpdate: { userErrors: [] } }; }
+    if (q.includes('productVariants')) return { productVariants: { nodes: [mockVar(1, 5), mockVar(3, 100), mockVar(4, 50)] } };
+    const line = (n, q2) => ({ quantity: q2, variant: { id: 'gid://shopify/ProductVariant/' + n } });
+    return { orders: { pageInfo: { hasNextPage: false }, nodes: [{ createdAt: new Date(Date.now() - 86400000 * 3).toISOString(), totalPriceSet: { shopMoney: { amount: '100', currencyCode: 'GBP' } }, lineItems: { nodes: [line(1, 30), line(3, 1)] } }, { createdAt: new Date(Date.now() - 86400000 * 9).toISOString(), totalPriceSet: { shopMoney: { amount: '50', currencyCode: 'GBP' } }, lineItems: { nodes: [line(1, 30)] } }] } };
+  },
+}));
+const mockCreate = jest.fn(async () => ({ choices: [{ message: { content: 'Start with V4.' } }] }));
+jest.mock('../core/openaiClient', () => ({ getOpenAIClient: () => ({ chat: { completions: { create: mockCreate } } }) }));
 
-// Setup Express app for testing
-const app = express();
-app.use(express.json());
-app.use('/api/dynamic-pricing-engine', router);
+const RUN = Date.now();
+function makeApp(shop) {
+  const router = require('../tools/dynamic-pricing-engine/router');
+  const app = express(); app.use(express.json());
+  app.use((req, res, next) => { req.session = { shop: `${shop}-${RUN}.myshopify.com`, shopifyToken: 'tok' }; req.deductCredits = async () => {}; next(); });
+  app.use('/api/dynamic-pricing-engine', router);
+  return app;
+}
+const B = '/api/dynamic-pricing-engine';
+const V4 = 'gid://shopify/ProductVariant/4';
 
-describe('Dynamic Pricing Engine - Comprehensive Test Suite', () => {
-
-  // ================================================================
-  // CATEGORY 1: PRICING STRATEGY TESTS (30 endpoints)
-  // ================================================================
-  describe('Category 1: Pricing Strategy', () => {
-    
-    test('GET /pricing-strategy/strategies - list strategies', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/pricing-strategy/strategies');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-      expect(Array.isArray(res.body.strategies)).toBe(true);
-    });
-
-    test('POST /pricing-strategy/strategies - create strategy', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/pricing-strategy/strategies')
-        .send({ name: 'Test Strategy', type: 'competitor-based', objective: 'maximize-revenue' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-      expect(res.body.strategy).toHaveProperty('id');
-    });
-
-    test('POST /pricing-strategy/optimize - optimize price', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/pricing-strategy/optimize')
-        .send({ productId: 'PROD-123' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /pricing-strategy/competitors - add competitor', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/pricing-strategy/competitors')
-        .send({ name: 'Competitor A', url: 'https://example.com' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /pricing-strategy/market-analysis - create analysis', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/pricing-strategy/market-analysis')
-        .send({ category: 'Electronics', timeframe: '30d' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
+describe('pricing advisor', () => {
+  it('suggests a rise for fast sellers and cuts for slow stock', async () => {
+    const r = (await request(makeApp('pr-a')).get(B + '/suggestions')).body;
+    const by = Object.fromEntries(r.suggestions.map((s) => [s.variantId.split('/').pop(), s]));
+    expect(by[1]).toMatchObject({ rule: 'hot', suggested: 10.5 });
+    expect(by[3]).toMatchObject({ rule: 'slow', suggested: 9.5 });
+    expect(by[4]).toMatchObject({ rule: 'slow', suggested: 9 });
   });
 
-  // ================================================================
-  // CATEGORY 2: AI & ML TESTS (35 endpoints)
-  // ================================================================
-  describe('Category 2: AI & ML', () => {
-    
-    test('POST /ai/recommendations/generate - generate AI recommendation', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/ai/recommendations/generate')
-        .send({ productId: 'PROD-123', historicalData: '{}' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /ai/demand-forecast - create forecast', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/ai/demand-forecast')
-        .send({ productId: 'PROD-123', historicalData: [100, 120] });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /ai/elasticity/calculate - calculate elasticity', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/ai/elasticity/calculate')
-        .send({ productId: 'PROD-123', priceChanges: [10, -5], demandChanges: [-15, 8] });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /ai/elasticity/calculate - rejects invalid series', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/ai/elasticity/calculate')
-        .send({ productId: 'PROD-123', priceChanges: [10], demandChanges: [] });
-      expect(res.status).toBe(400);
-      expect(res.body.ok).toBe(false);
-    });
-
-    test('POST /ai/repricing/enable - enable smart repricing', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/ai/repricing/enable')
-        .send({ productIds: ['PROD-1', 'PROD-2'] });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /ai/training/jobs - create training job', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/ai/training/jobs')
-        .send({ modelType: 'price-optimizer', datasetSize: 10000 });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
+  it('applies a discount with a compare-at price, logs it and can undo it', async () => {
+    const app = makeApp('pr-b');
+    const a = (await request(app).post(B + '/apply').send({ variantId: V4, price: 9 })).body;
+    expect(a.ok).toBe(true);
+    expect(mockUpdates.pop().vs[0]).toMatchObject({ price: '9.00', compareAtPrice: '10.00' });
+    const u = (await request(app).post(B + '/revert').send({ id: a.entry.id })).body;
+    expect(u.ok).toBe(true);
+    expect(mockUpdates.pop().vs[0]).toMatchObject({ price: '10.00', compareAtPrice: null });
+    expect((await request(app).post(B + '/revert').send({ id: a.entry.id })).status).toBe(400);
   });
 
-  // ================================================================
-  // CATEGORY 3: MONITORING & CONTROL TESTS (30 endpoints)
-  // ================================================================
-  describe('Category 3: Monitoring & Control', () => {
-    
-    test('GET /monitoring/dashboard - get dashboard metrics', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/monitoring/dashboard');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /monitoring/price-changes - track price change', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/monitoring/price-changes')
-        .send({ productId: 'PROD-123', oldPrice: 100, newPrice: 90 });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /monitoring/alerts - create alert', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/monitoring/alerts')
-        .send({ type: 'price-drop', severity: 'high', message: 'Test alert' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /monitoring/anomalies/detect - detect anomalies', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/monitoring/anomalies/detect')
-        .send({});
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('GET /monitoring/revenue - get revenue data', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/monitoring/revenue');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-  });
-
-  // ================================================================
-  // CATEGORY 4: RULES & AUTOMATION TESTS (30 endpoints)
-  // ================================================================
-  describe('Category 4: Rules & Automation', () => {
-    
-    test('POST /rules/build - build rule', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/rules/build')
-        .send({ name: 'Test Rule', condition: 'price > 100', action: 'discount' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /rules/validate - validate rule', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/rules/validate')
-        .send({ condition: 'price > 0', action: 'test' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /rules/workflows - create workflow', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/rules/workflows')
-        .send({ name: 'Test Workflow', steps: [] });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /rules/scheduled-prices - schedule price', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/rules/scheduled-prices')
-        .send({ productId: 'PROD-123', price: 99.99, executeAt: Date.now() + 86400000 });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /rules/bulk-operations - create bulk operation', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/rules/bulk-operations')
-        .send({ action: 'update-price', productIds: ['PROD-1', 'PROD-2'] });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-  });
-
-  // ================================================================
-  // CATEGORY 5: ANALYTICS & REPORTING TESTS (30 endpoints)
-  // ================================================================
-  describe('Category 5: Analytics & Reporting', () => {
-    
-    test('GET /analytics/dashboard - get analytics dashboard', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/analytics/dashboard');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /analytics/revenue/analyze - analyze revenue', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/analytics/revenue/analyze')
-        .send({ timeframe: '30d' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /analytics/margins/analyze - analyze margins', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/analytics/margins/analyze')
-        .send({ timeframe: '30d' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /analytics/reports - create custom report', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/analytics/reports')
-        .send({ name: 'Test Report', type: 'revenue', timeframe: '30d' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /analytics/export - create export job', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/analytics/export')
-        .send({ type: 'revenue', format: 'csv' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-  });
-
-  // ================================================================
-  // CATEGORY 6: EXPERIMENTS & TESTING TESTS (25 endpoints)
-  // ================================================================
-  describe('Category 6: Experiments & Testing', () => {
-    
-    test('POST /experiments/ab-tests - create A/B test', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/experiments/ab-tests')
-        .send({ name: 'Test', productId: 'PROD-123', variantA: {}, variantB: {} });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /experiments/multivariate - create multivariate test', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/experiments/multivariate')
-        .send({ name: 'Test', variants: [] });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /experiments/scenarios - create test scenario', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/experiments/scenarios')
-        .send({ name: 'Test Scenario', assumptions: {} });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /experiments/simulations - create simulation', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/experiments/simulations')
-        .send({ name: 'Test Simulation', baselinePrice: 100, iterations: 1000 });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /experiments/what-if/analyze - run what-if analysis', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/experiments/what-if/analyze')
-        .send({ scenario: 'price-increase', priceChange: 10 });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-  });
-
-  // ================================================================
-  // CATEGORY 7: SETTINGS & ADMIN TESTS (25 endpoints)
-  // ================================================================
-  describe('Category 7: Settings & Admin', () => {
-    
-    test('GET /settings/general - get general settings', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/settings/general');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('PUT /settings/general - update general settings', async () => {
-      const res = await request(app)
-        .put('/api/dynamic-pricing-engine/settings/general')
-        .send({ currency: 'USD', timezone: 'America/New_York' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /settings/team/invite - invite team member', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/settings/team/invite')
-        .send({ email: 'test@example.com', role: 'analyst' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /settings/integrations/:id/connect - connect integration', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/settings/integrations/shopify/connect')
-        .send({ apiKey: 'test-key' });
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /settings/api/keys - create API key', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/settings/api/keys')
-        .send({ name: 'Test Key', permissions: ['read'] });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-  });
-
-  // ================================================================
-  // CATEGORY 8: ADVANCED FEATURES TESTS (25 endpoints)
-  // ================================================================
-  describe('Category 8: Advanced Features', () => {
-    
-    test('POST /advanced/algorithms - create custom algorithm', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/advanced/algorithms')
-        .send({ name: 'Test Algo', language: 'javascript', code: 'return 100;' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /advanced/data-sources - add data source', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/advanced/data-sources')
-        .send({ name: 'Test Source', type: 'api', endpoint: 'https://test.com' });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /advanced/webhooks - create webhook', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/advanced/webhooks')
-        .send({ url: 'https://test.com/webhook', events: [] });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('GET /advanced/api/docs - get developer docs', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/advanced/api/docs');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
-
-    test('POST /advanced/guardrails - create guardrail', async () => {
-      const res = await request(app)
-        .post('/api/dynamic-pricing-engine/advanced/guardrails')
-        .send({ type: 'price-floor', minPrice: 10 });
-      expect(res.status).toBe(201);
-      expect(res.body.ok).toBe(true);
-    });
-  });
-
-  // ================================================================
-  // HEALTH & STATUS TESTS
-  // ================================================================
-  describe('Health & Status', () => {
-    
-    test('GET /health - should return healthy status', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/health');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-      expect(res.body.status).toBe('healthy');
-    });
-
-    test('GET /stats - should return system stats', async () => {
-      const res = await request(app).get('/api/dynamic-pricing-engine/stats');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-      expect(res.body.stats.totalEndpoints).toBeGreaterThan(200);
-    });
+  it('refuses moves over 30% or below cost', async () => {
+    const app = makeApp('pr-c');
+    expect((await request(app).post(B + '/apply').send({ variantId: V4, price: 5 })).status).toBe(400);
+    expect((await request(app).post(B + '/apply').send({ variantId: V4, price: 0 })).status).toBe(400);
+    expect((await request(app).post(B + '/brief')).body.brief).toBe('Start with V4.');
   });
 });
-
-// ================================================================
-// TEST SUMMARY
-// ================================================================
-// Total Tests: 50+ comprehensive integration tests
-// Coverage: All 8 categories, 230+ endpoints
-// Modules Tested: All 8 backend engine modules
-// Test Types: Integration, API endpoint validation, CRUD operations
-// ================================================================

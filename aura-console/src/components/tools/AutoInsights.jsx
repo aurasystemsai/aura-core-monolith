@@ -40,9 +40,11 @@ export default function ReportsInsights() {
   const [insight, setInsight] = useState("");
   const [to, setTo] = useState("");
   const [msg, setMsg] = useState("");
+  const [fc, setFc] = useState(null);
   const run = (n, u, o) => call(setBusy, setError, n, API + u, o);
   const send = (body) => ({ method: "POST", body: JSON.stringify(body) });
 
+  useEffect(() => { run("fc", "/forecast").then((r) => r && setFc(r)); }, []); // eslint-disable-line
   useEffect(() => { setData(null); setInsight(""); setMsg(""); run("load", "/summary?days=" + days).then((r) => r && setData(r)); }, [days]); // eslint-disable-line
 
   async function getInsight() { setInsight(""); const r = await run("ai", "/insights", send({ days })); if (r) setInsight(r.insight); }
@@ -95,6 +97,18 @@ export default function ReportsInsights() {
             </>
           )}
           <div style={S.card}>
+            <h2 style={S.h}>Next 30 days (forecast)</h2>
+            {!fc ? <div style={S.empty}>{busy === "fc" ? "Working it out..." : "Forecast not available."}</div> : fc.unavailable ? <div style={S.warn}>{fc.note}</div> : !fc.enough ? (
+              <div style={S.empty}>Not enough history yet. A forecast needs orders on at least {fc.needed} different days in the last 90; this store has {fc.daysWithOrders}.</div>
+            ) : (
+              <>
+                <div style={S.row}><span>Expected revenue {fc.currency} {fc.next30.toLocaleString()}</span><span style={S.muted}>likely range {fc.low.toLocaleString()} to {fc.high.toLocaleString()}</span></div>
+                <div style={S.row}><span>Last 30 days {fc.currency} {fc.last30.toLocaleString()}</span><span style={S.muted}>{fc.changePct === null ? "" : (fc.changePct >= 0 ? "+" : "") + fc.changePct + "% expected change"}, trend {fc.trend}</span></div>
+                <div style={S.row}><span>Strongest day: {fc.bestDay.day}</span><span style={S.muted}>Quietest: {fc.quietestDay.day}</span></div>
+                <div style={S.muted}>A straight-line projection of your last 90 days. It cannot see promotions, stock-outs or seasons.</div>
+              </>
+            )}
+          </div>          <div style={S.card}>
             <h2 style={S.h}>Take it with you</h2>
             <button style={{ ...S.ghost, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => download("orders")}>Download orders (CSV)</button>
             <button style={{ ...S.ghost, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => download("products")}>Download products (CSV)</button>

@@ -190,4 +190,5 @@ router.post('/brief', withShop(async (req, res, { shop, token }) => {
 
 module.exports = router;
 module.exports._forecast = forecast;
+module.exports._loadOrders = loadOrders;
 module.exports._finance = finance;

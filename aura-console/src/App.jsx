@@ -83,7 +83,6 @@ const AuraAPISDK = lazy(() => import("./components/tools/AuraAPISDK.jsx"));
 const AiSupportAssistant = lazy(() => import("./components/tools/AISupportAssistant.jsx"));
 const AiLaunchPlanner = lazy(() => import("./components/tools/AILaunchPlanner.jsx"));
 const AdvancedAnalyticsAttribution = lazy(() => import("./components/tools/AdvancedAnalyticsAttribution.jsx"));
-const PredictiveAnalyticsWidgets = lazy(() => import("./components/tools/PredictiveAnalyticsWidgets.jsx"));
 const ToolScaffold = lazy(() => import("./components/tools/ToolScaffold.jsx"));
 const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyReferralPrograms.jsx"));
 const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
@@ -148,7 +147,6 @@ const toolToMainSuiteGroup = {
  "omnichannel-campaign-builder": "ads",
  // Analytics & Intelligence
  "advanced-analytics-attribution": "analytics",
- "predictive-analytics-widgets": "analytics",
  "auto-insights": "analytics",
  "data-warehouse-connector": "analytics",
  // Personalization & Revenue
@@ -377,7 +375,6 @@ function App() {
  'review-ugc-engine': 'Reviews & UGC', 
  'social-scheduler-content-engine': 'Social Scheduler', 'brand-mention-tracker': 'Brand Mentions',
  'creative-automation-engine': 'Creative Automation', 'advanced-analytics-attribution': 'Analytics Attribution',
- 'predictive-analytics-widgets': 'Predictive Analytics', 
  'auto-insights': 'Auto Insights', 
  'data-warehouse-connector': 'Data Warehouse', 'dynamic-pricing-engine': 'Dynamic Pricing',
  'upsell-cross-sell-engine': 'Upsell & Cross-sell', 'customer-data-platform': 'Customer Data Platform',
@@ -566,7 +563,6 @@ function App() {
 
  {/* -- Analytics & Intelligence -- */}
  {activeSection === "advanced-analytics-attribution"&& <AdvancedAnalyticsAttribution />}
- {activeSection === "predictive-analytics-widgets"&& <PredictiveAnalyticsWidgets />}
  {activeSection === "auto-insights"&& <AutoInsights />}
  {activeSection === "data-warehouse-connector"&& <DataWarehouseConnector />}
 

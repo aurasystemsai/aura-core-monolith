@@ -226,7 +226,6 @@ const toolRouters = [
   { path: '/api/data-warehouse-connector', router: require('./tools/data-warehouse-connector/router'), middleware: requireTool('data-warehouse-connector'), creditAction: 'analytics-insight' },
   { path: '/api/local-seo-toolkit', router: require('./tools/local-seo-toolkit/router'), middleware: requireTool('local-seo-toolkit'), creditAction: 'seo-scan' },
   { path: '/api/omnichannel-campaign-builder', router: require('./tools/omnichannel-campaign-builder/router'), middleware: requireTool('omnichannel-campaign-builder'), creditAction: 'campaign-gen' },
-  { path: '/api/predictive-analytics-widgets', router: require('./tools/predictive-analytics-widgets/router'), middleware: requireTool('predictive-analytics-widgets'), creditAction: 'analytics-insight' },
   { path: '/api/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
   { path: '/api/upsell-cross-sell-engine', router: require('./tools/upsell-cross-sell-engine/router'), middleware: requireTool('upsell-cross-sell-engine'), creditAction: 'analytics-insight' },
 ];
@@ -1421,21 +1420,6 @@ async function toolRunHandler(req, res) {
 
     const result = await tool.run(input, ctx);
 
-    // Record simple metrics for predictive analytics tool
-    if (toolId === "predictive-analytics-widgets") {
-      try {
-        const { recordHttp } = require("./core/metrics");
-        const latency = Date.now() - start;
-        recordHttp(`/api/run/${toolId}`, latency, true);
-        if (result?.anomalies?.length !== undefined) {
-          result.meta = result.meta || {};
-          result.meta.anomalyCount = result.anomalies.length;
-        }
-      } catch (err) {
-        console.warn("[metrics] failed to record predictive analytics metrics", err.message);
-      }
-    }
-
     return res.json({
       ok: true,
       toolId,
@@ -1443,16 +1427,6 @@ async function toolRunHandler(req, res) {
     });
   } catch (err) {
     console.error(`[Core] Tool error: ${toolId}`, err);
-
-    if (toolId === "predictive-analytics-widgets") {
-      try {
-        const { recordHttp } = require("./core/metrics");
-        const latency = Date.now() - start;
-        recordHttp(`/api/run/${toolId}`, latency, false);
-      } catch (err2) {
-        console.warn("[metrics] failed to record predictive analytics error metric", err2.message);
-      }
-    }
 
     return res.status(500).json({
       ok: false,

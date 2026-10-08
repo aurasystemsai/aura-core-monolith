@@ -53,7 +53,6 @@ const omnichannelCampaignBuilder = require("../tools/omnichannel-campaign-builde
 
 // ==============  Analytics & Intelligence  ==============
 const advancedAnalyticsAttribution = require("../tools/advanced-analytics-attribution");
-const predictiveAnalyticsWidgets = require("../tools/predictive-analytics-widgets");
 const dataEnrichmentSuite = require("../tools/data-enrichment-suite");
 const loyaltyReferralPrograms = require("../tools/loyalty-referral-programs");
 const autoInsights = require("../tools/auto-insights");
@@ -97,7 +96,7 @@ const allTools = [
   adsAnomalyGuard, adCreativeOptimizer, omnichannelCampaignBuilder,
 
   // Analytics & Intelligence
-  advancedAnalyticsAttribution, predictiveAnalyticsWidgets,
+  advancedAnalyticsAttribution, 
   dataEnrichmentSuite, loyaltyReferralPrograms, autoInsights,
 
   // Personalization & Revenue
