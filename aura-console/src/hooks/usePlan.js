@@ -13,6 +13,7 @@ export const TOOL_PLAN = {
   "product-feed": "growth",
   "translations": "growth",
   "discounts-bundles": "growth",
+  "order-tracking": "growth",
  "blog-seo": "growth",
  "seo-site-crawler": "growth",
  "on-page-seo-engine": "growth",
