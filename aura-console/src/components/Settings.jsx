@@ -1,4 +1,4 @@
-// Settings Page - Shopify Integration
+﻿// Settings Page - Shopify Integration
 // Platform configuration and integrations management
 
 import React, { useState, useEffect } from 'react';
@@ -25,7 +25,7 @@ const PLANS = [
  price: 149,
  colour: '#4f46e5',
  badge: 'Most Popular',
- features: ['25,000 AI credits / month', 'All Growth tools', 'Advanced analytics & forecasting', 'Personalization engine', 'Advanced automations', '10 team members', 'Priority support'],
+ features: ['25,000 AI credits / month', 'All Growth tools', 'Ads & analytics suite', 'Personalization engine', 'Advanced automations', '10 team members', 'Priority support'],
  },
  {
  id: 'enterprise',

@@ -33,9 +33,15 @@ const toolsMeta = [
  { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track brand mentions with sentiment analysis and crisis alerts.", category: "Brand", suite: "social" },
 
  // ── Ads & Acquisition (6 tools) ──
+ { id: "google-ads-integration", name: "Google Ads", description: "Manage Google Ads campaigns with AI bidding and optimization.", category: "Ads", suite: "ads" },
+ { id: "facebook-ads-integration", name: "Facebook & Instagram Ads", description: "Run and optimize Meta ad campaigns from one dashboard.", category: "Ads", suite: "ads" },
+ { id: "tiktok-ads-integration", name: "TikTok Ads", description: "Create and manage TikTok ad campaigns with creative tools.", category: "Ads", suite: "ads" },
+ { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Detect ad spend anomalies and protect your budget.", category: "Ads", suite: "ads" },
+ { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "AI-powered ad creative testing and optimization.", category: "Ads", suite: "ads" },
 
  // ── Analytics & Intelligence (9 tools) ──
  { id: "auto-insights", name: "Reports & Forecast", description: "Sales report from real orders, 30-day forecast, CSV downloads, emailed copies and a plain-English read of the numbers.", category: "Analytics", suite: "analytics" },
+ { id: "data-warehouse-connector", name: "Data Warehouse Connector", description: "Sync data to Snowflake, BigQuery, or Redshift.", category: "Analytics", suite: "analytics" },
 
  // ── Personalization & Revenue (10 tools) ──
  { id: "dynamic-pricing-engine", name: "Pricing Advisor", description: "Price suggestions from real stock and sales, applied to Shopify only when you approve them.", category: "Personalization", suite: "personalization" },
@@ -47,6 +53,7 @@ const toolsMeta = [
  { id: "email-deliverability", name: "Email Deliverability", description: "Monitor domain health, blacklist status, and ISP metrics to maximise inbox rates.", category: "Email", suite: "lifecycle" },
  { id: "entity-topic-explorer", name: "Entity & Topic Explorer", description: "Map semantic entity relationships and topic clusters for SEO authority.", category: "SEO", suite: "seo" },
  { id: "landing-page-builder", name: "Landing Page Builder", description: "Build high-converting landing pages with AI-generated copy and A/B testing.", category: "Content", suite: "seo" },
+ { id: "mobile-app-analytics", name: "Mobile App Analytics", description: "Track app retention, screen flows, push campaigns, and crash rates.", category: "Analytics", suite: "analytics" },
  { id: "sms-whatsapp-marketing", name: "SMS & WhatsApp Marketing", description: "Automate SMS and WhatsApp campaigns with personalised messaging.", category: "Email", suite: "lifecycle" },
  { id: "workflow-automation-builder", name: "Automations", description: "Rules that check your real store data (low stock, lapsed customers, big orders) and email you or tag the matches.", category: "Automation", suite: "automation" },
  { id: "ai-copilot", name: "AI Copilot", description: "Your AI-powered store assistant — ask anything about your data, campaigns, and strategy.", category: "AI", suite: "ai" },
