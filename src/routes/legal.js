@@ -5,7 +5,7 @@
  */
 const express = require('express');
 
-const LEGAL_NAME = process.env.LEGAL_NAME || 'Aura Systems AI';
+const LEGAL_NAME = process.env.LEGAL_NAME || 'Darren Prince, trading as Aura Systems AI';
 const APP_NAME = 'AURA';
 const APP_URL = process.env.APP_URL || 'https://aura-core-monolith.onrender.com';
 const CONTACT = process.env.PRIVACY_CONTACT_EMAIL || 'privacy@aurasystems.ai';
