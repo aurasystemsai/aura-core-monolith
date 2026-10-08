@@ -12,6 +12,7 @@ export const TOOL_PLAN = {
  "product-seo": "growth",
   "product-feed": "growth",
   "translations": "growth",
+  "discounts-bundles": "growth",
  "blog-seo": "growth",
  "seo-site-crawler": "growth",
  "on-page-seo-engine": "growth",

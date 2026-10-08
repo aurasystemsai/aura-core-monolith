@@ -74,6 +74,7 @@ const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTr
 const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
 const ABTestingSuite = lazy(() => import("./ab-testing-suite/ABTestingSuiteV2.jsx"));
 const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
+const DiscountsBundles = lazy(() => import("./components/tools/DiscountsBundles.jsx"));
 const Translations = lazy(() => import("./components/tools/Translations.jsx"));
 const ProductFeed = lazy(() => import("./components/tools/ProductFeed.jsx"));
 const ProductSEOEngine = lazy(() => import("./components/tools/ProductSEOEngine.jsx"));
@@ -121,7 +122,7 @@ const toolToMainSuiteGroup = {
  "data-warehouse-connector": "analytics",
  // Personalization & Revenue
  "dynamic-pricing-engine": "personalization",
- "upsell-cross-sell-engine": "personalization",
+ "upsell-cross-sell-engine": "personalization", "discounts-bundles": "personalization",
  "customer-data-platform": "personalization",
  // Finance & Operations
  "inventory-forecasting": "finance",
@@ -324,7 +325,7 @@ function App() {
  'dashboard': 'Dashboard', 'all-tools': 'All Tools', 'main-suite': 'Suite',
  'settings': 'Settings', 'credits': 'Credits', 'pricing': 'Pricing',
  'blog-seo': 'Blog SEO Engine', 'blog-draft-engine': 'Blog Draft Engine',
- 'product-seo': 'Product SEO', 'product-feed': 'Product Feed', 'translations': 'Translations', 'google-ads-integration': 'Google Ads', 'facebook-ads-integration': 'Facebook & Instagram Ads', 'tiktok-ads-integration': 'TikTok Ads', 'keyword-research-suite': 'Keyword Research',
+ 'product-seo': 'Product SEO', 'product-feed': 'Product Feed', 'translations': 'Translations', 'discounts-bundles': 'Discounts & Bundles', 'google-ads-integration': 'Google Ads', 'facebook-ads-integration': 'Facebook & Instagram Ads', 'tiktok-ads-integration': 'TikTok Ads', 'keyword-research-suite': 'Keyword Research',
  'on-page-seo-engine': 'On-Page SEO', 'technical-seo-auditor': 'Technical SEO',
  'schema-rich-results-engine': 'Schema & Rich Results', 'image-alt-media-seo': 'Image Alt Text',
  'rank-visibility-tracker': 'Rank Tracker', 'ai-visibility-tracker': 'AI Visibility',
@@ -466,6 +467,7 @@ function App() {
  {activeSection === "product-seo"&& <ProductSEOEngine />}
   {activeSection === "product-feed"&& <ProductFeed />}
         {activeSection === "translations"&& <Translations />}
+  {activeSection === "discounts-bundles"&& <DiscountsBundles />}
  {activeSection === "blog-seo"&& <ErrorBoundary key="blog-seo"><BlogSEO /></ErrorBoundary>}
  {activeSection === "blog-draft-engine"&& <BlogDraftEngine />}
  {activeSection === "weekly-blog-content-engine"&& <WeeklyBlogContentEngine />}

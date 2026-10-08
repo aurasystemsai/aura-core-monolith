@@ -22,7 +22,7 @@ const PLAN_FEATURES = {
     products_limit: 5000,
     team_members: 3,
     tools: [
-      'blog-seo', 'image-alt-media-seo', 'product-seo', 'product-feed', 'translations', 'seo-site-crawler',
+      'blog-seo', 'image-alt-media-seo', 'product-seo', 'product-feed', 'translations', 'discounts-bundles', 'seo-site-crawler',
       'on-page-seo-engine', 'blog-draft-engine', 'weekly-blog-content-engine',
       'ai-content-brief-generator', 'content-scoring-optimization',
       'keyword-research-suite', 'internal-link-optimizer', 'technical-seo-auditor',
@@ -38,7 +38,7 @@ const PLAN_FEATURES = {
     products_limit: 50000,
     team_members: 10,
     tools: [
-      'blog-seo', 'image-alt-media-seo', 'product-seo', 'product-feed', 'translations', 'seo-site-crawler',
+      'blog-seo', 'image-alt-media-seo', 'product-seo', 'product-feed', 'translations', 'discounts-bundles', 'seo-site-crawler',
       'on-page-seo-engine', 'blog-draft-engine', 'weekly-blog-content-engine',
       'ai-content-brief-generator', 'content-scoring-optimization',
       'keyword-research-suite', 'internal-link-optimizer', 'technical-seo-auditor',
@@ -75,6 +75,7 @@ const TOOL_PLAN_REQUIREMENTS = {
   'product-seo': 'growth',
   'product-feed': 'growth',
   'translations': 'growth',
+  'discounts-bundles': 'growth',
   'seo-site-crawler': 'growth',
   'on-page-seo-engine': 'growth',
   'blog-draft-engine': 'growth',

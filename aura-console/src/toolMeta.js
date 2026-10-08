@@ -2,6 +2,7 @@
 const toolsMeta = [
  // ── Live tools ──
  { id: "blog-seo", name: "Blog SEO Engine", description: "Optimize blog content with keyword clusters, internal linking, and SEO scoring.", category: "SEO", suite: "seo" },
+ { id: "discounts-bundles", name: "Discounts & Bundles", description: "AI offers built from what your customers really buy together. Create, pause and delete real Shopify discount codes.", category: "Personalization", suite: "personalization" },
  { id: "translations", name: "Translations", description: "Translate products into your store languages with AI, review each one, and undo any change.", category: "SEO", suite: "seo" },
   { id: "product-feed", name: "Product Feed", description: "Check every product against Google Shopping rules, fix weak listings with AI, and export a ready-to-upload feed.", category: "SEO", suite: "seo" },
   { id: "product-seo", name: "Product SEO Engine", description: "Generate and apply SEO metadata to Shopify products.", category: "SEO", suite: "seo" },

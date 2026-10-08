@@ -165,6 +165,7 @@ const toolRouters = [
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
+  { path: '/api/discounts-bundles', router: require('./tools/discounts-bundles/router'), middleware: requireTool('discounts-bundles'), creditAction: 'campaign-gen' },
   { path: '/api/translations', router: require('./tools/translations/router'), middleware: requireTool('translations'), creditAction: 'product-description' },
   { path: '/api/product-feed', router: require('./tools/product-feed/router'), middleware: requireTool('product-feed'), creditAction: 'product-description' },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router'), middleware: requireTool('blog-seo'), creditAction: 'seo-analysis',
