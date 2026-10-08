@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, Suspense, lazy } from "react";
 import ErrorBoundary from "./ErrorBoundary";
 import { useGlobalApiError } from "../globalApiError";
@@ -9,7 +9,6 @@ import MainSuite from "./tools/MainSuite";
 import AbandonedCheckoutWinback from "./tools/AbandonedCheckoutWinback";
 import ProductSeoEngine from "./ProductSeoEngine";
 import InternalLinkOptimizer from "./tools/InternalLinkOptimizer";
-import AdvancedAnalyticsAttribution from "./tools/AdvancedAnalyticsAttribution.jsx";
 import Toast from "./Toast";
 import "./ToolsList.css";
 
@@ -19,7 +18,6 @@ const toolComponents = {
  "main-suite": MainSuite,
  "product-seo": ProductSeoEngine,
  "internal-link-optimizer": InternalLinkOptimizer,
- "advanced-analytics-attribution": AdvancedAnalyticsAttribution,
  // Add more mappings as you build more UIs
 };
 

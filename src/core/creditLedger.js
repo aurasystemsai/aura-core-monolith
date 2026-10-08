@@ -136,6 +136,8 @@ const ACTION_COSTS = {
   'generic-ai':          1,
   // Image generation — flat 10 credits regardless of model (API cost ~$0.04-0.08/image)
   'image-gen':           10,
+  'ai-chat':             2,
+  'page-generate':       3,
 };
 
 // OpenAI list prices in USD per 1M tokens [input, output]. Approximate; update when OpenAI changes prices.

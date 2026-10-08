@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch, apiFetchJSON } from '../api';
 import { PLAN_LABEL, PLAN_CREDITS, PLAN_COLOUR } from '../hooks/usePlan';
 
@@ -25,7 +25,7 @@ const ACTION_LABELS = {
  'link-suggestion': 'Link suggestion',
  'internal-link': 'Internal link',
  'competitive-report': 'Competitive report',
- 'competitive-analysis':'Competitive analysis',
+ 'competitive-analysis':'Competitive analysis', 'ai-chat':'AI Copilot answer', 'page-generate':'Landing page draft',
  'support-reply': 'Support reply',
  'ai-support': 'AI support',
  'product-description': 'Product description',

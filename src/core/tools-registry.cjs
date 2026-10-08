@@ -36,7 +36,6 @@ const aiVisibilityTracker = require("../tools/ai-visibility-tracker");
 const emailAutomationBuilder = require("../tools/email-automation-builder");
 const abandonedCheckoutWinback = require("../tools/abandoned-checkout-winback");
 const returnsRmaAutomation = require("../tools/returns-rma-automation");
-const socialSchedulerContentEngine = require("../tools/social-scheduler-content-engine");
 const reviewUgcEngine = require("../tools/review-ugc-engine");
 
 // ==============  Customer Support  ==============
@@ -48,11 +47,8 @@ const facebookAdsIntegration = require("../tools/facebook-ads-integration");
 const tiktokAdsIntegration = require("../tools/tiktok-ads-integration");
 const adsAnomalyGuard = require("../tools/ads-anomaly-guard");
 const adCreativeOptimizer = require("../tools/ad-creative-optimizer");
-const omnichannelCampaignBuilder = require("../tools/omnichannel-campaign-builder");
 
 // ==============  Analytics & Intelligence  ==============
-const advancedAnalyticsAttribution = require("../tools/advanced-analytics-attribution");
-const dataEnrichmentSuite = require("../tools/data-enrichment-suite");
 const loyaltyReferralPrograms = require("../tools/loyalty-referral-programs");
 const autoInsights = require("../tools/auto-insights");
 
@@ -62,12 +58,8 @@ const dynamicPricingEngine = require("../tools/dynamic-pricing-engine");
 // ==============  Finance & Operations  ==============
 
 // ==============  Social & Brand  ==============
-const creativeAutomationEngine = require("../tools/creative-automation-engine");
 
 // ==============  Platform & Developer  ==============
-const auraOperationsAi = require("../tools/aura-operations-ai");
-const aiLaunchPlanner = require("../tools/ai-launch-planner");
-const compliancePrivacySuite = require("../tools/compliance-privacy-suite");
 const mainSuite = require("../tools/main-suite");
 
 // ------------------------------------------------------
@@ -85,18 +77,18 @@ const allTools = [
 
   // Email & Lifecycle
   emailAutomationBuilder, abandonedCheckoutWinback, returnsRmaAutomation,
-  socialSchedulerContentEngine, reviewUgcEngine,
+  reviewUgcEngine,
 
   // Customer Support
   aiSupportAssistant,
 
   // Ads & Acquisition
   googleAdsIntegration, facebookAdsIntegration, tiktokAdsIntegration,
-  adsAnomalyGuard, adCreativeOptimizer, omnichannelCampaignBuilder,
+  adsAnomalyGuard, adCreativeOptimizer, 
 
   // Analytics & Intelligence
-  advancedAnalyticsAttribution, 
-  dataEnrichmentSuite, loyaltyReferralPrograms, autoInsights,
+  
+  loyaltyReferralPrograms, autoInsights,
 
   // Personalization & Revenue
   dynamicPricingEngine,
@@ -105,10 +97,10 @@ const allTools = [
   
 
   // Social & Brand
-  creativeAutomationEngine,
+  
 
   // Platform & Developer
-  auraOperationsAi, aiLaunchPlanner, compliancePrivacySuite, mainSuite,
+  mainSuite,
 ];
 
 // ------------------------------------------------------

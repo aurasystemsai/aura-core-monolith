@@ -19,7 +19,6 @@ export default function MainSuite({ setActiveSection }) {
 
  const STATUS_KEYS = {
  "workflow-automation-builder": "suite:status:workflow-automation-builder",
- "webhook-api-triggers": "suite:status:webhook-api-triggers",
  };
 
  useEffect(() => {

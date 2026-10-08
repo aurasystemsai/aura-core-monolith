@@ -18,8 +18,6 @@ const toolsMeta = [
  { id: "ai-content-brief-generator", name: "AI Content Brief Generator", description: "Generate comprehensive content briefs with keyword strategies.", category: "Content", suite: "seo" },
  { id: "content-scoring-optimization", name: "Content Scoring & Optimization", description: "Analyze and improve content quality with multi-factor scoring.", category: "Content", suite: "seo" },
  { id: "keyword-research-suite", name: "Keyword Research Suite", description: "Cluster your keyword list by topic or intent, plan content silos, and schedule publishing.", category: "SEO", suite: "seo" },
- { id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Optimize for local search with Google Business Profile management.", category: "SEO", suite: "seo" },
- { id: "competitive-analysis", name: "Competitive Analysis", description: "Benchmark against competitors across SEO, content, and market share.", category: "SEO", suite: "seo" },
  { id: "ai-content-image-gen", name: "AI Content & Image Gen", description: "Generate marketing copy and images with AI.", category: "Content", suite: "seo" },
 
  // ── Email & Lifecycle (5 tools) ──
@@ -32,9 +30,7 @@ const toolsMeta = [
  { id: "review-ugc-engine", name: "Review & UGC Engine", description: "Manage reviews and user content with moderation and sentiment analysis.", category: "Support", suite: "support" },
 
  // ── Social & Brand (5 tools) ──
- { id: "social-scheduler-content-engine", name: "Social Scheduler & Content", description: "Schedule and manage social content across all platforms.", category: "Social", suite: "social" },
  { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track brand mentions with sentiment analysis and crisis alerts.", category: "Brand", suite: "social" },
- { id: "creative-automation-engine", name: "Creative Automation Engine", description: "Automate creative asset generation and A/B testing.", category: "Brand", suite: "social" },
 
  // ── Ads & Acquisition (6 tools) ──
  { id: "google-ads-integration", name: "Google Ads", description: "Manage Google Ads campaigns with AI bidding and optimization.", category: "Ads", suite: "ads" },
@@ -42,10 +38,8 @@ const toolsMeta = [
  { id: "tiktok-ads-integration", name: "TikTok Ads", description: "Create and manage TikTok ad campaigns with creative tools.", category: "Ads", suite: "ads" },
  { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Detect ad spend anomalies and protect your budget.", category: "Ads", suite: "ads" },
  { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "AI-powered ad creative testing and optimization.", category: "Ads", suite: "ads" },
- { id: "omnichannel-campaign-builder", name: "Omnichannel Campaign Builder", description: "Build coordinated campaigns across email, ads, and social.", category: "Ads", suite: "ads" },
 
  // ── Analytics & Intelligence (9 tools) ──
- { id: "advanced-analytics-attribution", name: "Advanced Attribution", description: "Multi-touch attribution across all marketing channels.", category: "Analytics", suite: "analytics" },
  { id: "auto-insights", name: "Reports & Forecast", description: "Sales report from real orders, 30-day forecast, CSV downloads, emailed copies and a plain-English read of the numbers.", category: "Analytics", suite: "analytics" },
  { id: "data-warehouse-connector", name: "Data Warehouse Connector", description: "Sync data to Snowflake, BigQuery, or Redshift.", category: "Analytics", suite: "analytics" },
 
@@ -53,31 +47,18 @@ const toolsMeta = [
  { id: "dynamic-pricing-engine", name: "Pricing Advisor", description: "Price suggestions from real stock and sales, applied to Shopify only when you approve them.", category: "Personalization", suite: "personalization" },
  { id: "upsell-cross-sell-engine", name: "Upsell & Cross-Sell Engine", description: "Increase AOV with AI-powered product recommendations.", category: "Personalization", suite: "personalization" },
  { id: "customer-data-platform", name: "Customer Data Platform", description: "Unify customer data with RFM analysis and behavioral segmentation.", category: "Personalization", suite: "personalization" },
- { id: "data-enrichment-suite", name: "Data Enrichment Suite", description: "Enrich customer profiles with third-party data sources.", category: "Personalization", suite: "personalization" },
 
  // ── Finance & Operations (4 tools) ──
  { id: "inventory-forecasting", name: "Inventory Forecasting", description: "AI-powered demand forecasting to prevent stockouts.", category: "Finance", suite: "finance" },
- { id: "compliance-privacy-suite", name: "Compliance & Privacy Suite", description: "GDPR/CCPA compliance, consent management, and data governance.", category: "Finance", suite: "finance" },
- { id: "digital-asset-management", name: "Digital Asset Management", description: "Centralise and manage brand assets, images and creative files with AI tagging.", category: "Content", suite: "seo" },
  { id: "email-deliverability", name: "Email Deliverability", description: "Monitor domain health, blacklist status, and ISP metrics to maximise inbox rates.", category: "Email", suite: "lifecycle" },
  { id: "entity-topic-explorer", name: "Entity & Topic Explorer", description: "Map semantic entity relationships and topic clusters for SEO authority.", category: "SEO", suite: "seo" },
  { id: "landing-page-builder", name: "Landing Page Builder", description: "Build high-converting landing pages with AI-generated copy and A/B testing.", category: "Content", suite: "seo" },
  { id: "mobile-app-analytics", name: "Mobile App Analytics", description: "Track app retention, screen flows, push campaigns, and crash rates.", category: "Analytics", suite: "analytics" },
- { id: "newsletter-automation", name: "Newsletter Automation", description: "Build, segment and send AI-personalised newsletters at scale.", category: "Email", suite: "lifecycle" },
  { id: "sms-whatsapp-marketing", name: "SMS & WhatsApp Marketing", description: "Automate SMS and WhatsApp campaigns with personalised messaging.", category: "Email", suite: "lifecycle" },
- { id: "subscription-management", name: "Subscription Management", description: "Manage recurring subscriptions, billing, plans and churn reduction.", category: "Finance", suite: "finance" },
- { id: "video-podcast-seo", name: "Video & Podcast SEO", description: "Optimise video and podcast content for search with AI-generated descriptions and transcripts.", category: "SEO", suite: "seo" },
- { id: "voice-search-optimization", name: "Voice Search Optimization", description: "Optimise for voice queries with conversational keywords and FAQ schema.", category: "SEO", suite: "seo" },
  { id: "workflow-automation-builder", name: "Automations", description: "Rules that check your real store data (low stock, lapsed customers, big orders) and email you or tag the matches.", category: "Automation", suite: "automation" },
  { id: "ai-copilot", name: "AI Copilot", description: "Your AI-powered store assistant — ask anything about your data, campaigns, and strategy.", category: "AI", suite: "ai" },
- { id: "conversion-rate-optimization", name: "Conversion Rate Optimization", description: "Run A/B tests, heatmaps and CRO scans to lift conversion rates.", category: "Analytics", suite: "analytics" },
- { id: "affiliate-partner-management", name: "Affiliate & Partner Management", description: "Manage affiliate partners, track commissions and automate payouts.", category: "Marketing", suite: "lifecycle" },
- { id: "omnichannel-campaign-builder", name: "Omnichannel Campaign Builder", description: "Plan and launch coordinated campaigns across 7+ channels with AI-generated briefs.", category: "Marketing", suite: "lifecycle" },
 
  // ── Platform & Developer (5 tools) ──
- { id: "aura-operations-ai", name: "Aura Operations AI", description: "Platform-wide AI operations assistant and orchestration.", category: "Platform", suite: "platform" },
- { id: "ai-launch-planner", name: "AI Launch Planner", description: "Plan and execute product launches with AI-powered strategies.", category: "Platform", suite: "platform" },
- { id: "webhook-api-triggers", name: "Webhook & API Triggers", description: "Create custom webhooks and API-triggered automations.", category: "Platform", suite: "platform" },
  { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Create rewards programs that drive repeat purchases.", category: "Platform", suite: "platform" },
 ];
 

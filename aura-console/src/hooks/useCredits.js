@@ -24,6 +24,8 @@ export const ACTION_COSTS = {
  'internal-link': 1,
  'competitive-report': 5,
  'competitive-analysis': 5,
+  'ai-chat': 2,
+  'page-generate': 3,
  'support-reply': 1,
  'ai-support': 1,
  'product-description': 2,
