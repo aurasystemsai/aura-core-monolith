@@ -122,6 +122,7 @@ app.use('/terms', require('./routes/legal').terms);
 // --- GDPR mandatory webhooks (no Shopify session auth â€” called by Shopify infrastructure) ---
 app.use('/api/webhooks', require('./routes/gdpr-webhooks'));
 app.use('/google', require('./routes/google-oauth'));
+app.use('/meta', require('./routes/meta-oauth'));
 
 // --- Public healthcheck (no auth) ---
 app.get('/health', (req, res) => {
