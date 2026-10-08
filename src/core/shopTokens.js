@@ -59,8 +59,18 @@ function getToken(shop) {
 	return tokens[shop]?.token || null;
 }
 
+function removeToken(shop) {
+	if (!shop) return false;
+	const tokens = loadTokens();
+	if (!(shop in tokens)) return false;
+	delete tokens[shop];
+	saveTokens(tokens);
+	return true;
+}
+
 module.exports = {
 	upsertToken,
+	removeToken,
 	getToken,
 	loadAll: loadAllTokens,
 	_loadAll: loadAllTokens,

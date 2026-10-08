@@ -1,80 +1,55 @@
 /**
- * GDPR Mandatory Webhooks
- * Shopify requires these three endpoints for ALL apps in the App Store.
- * They are registered via shopify.app.toml and called by Shopify's infrastructure.
- *
+ * GDPR mandatory webhooks, called by Shopify's infrastructure (no session auth).
+ * Every request must carry a valid HMAC signature over the raw body, otherwise it is rejected with 401.
  * Docs: https://shopify.dev/docs/apps/build/privacy-law-compliance
  */
-
 const express = require('express');
-const crypto  = require('crypto');
-const router  = express.Router();
+const crypto = require('crypto');
+const privacy = require('../core/dataPrivacy');
+const shopTokens = require('../core/shopTokens');
 
-// Verify the request came from Shopify using HMAC signature
+const router = express.Router();
+
 function verifyShopifyWebhook(req) {
-  const hmac     = req.headers['x-shopify-hmac-sha256'];
-  const secret   = process.env.SHOPIFY_API_SECRET || '';
-  if (!hmac || !secret) return false;
-  const body     = req.rawBody || JSON.stringify(req.body);
-  const digest   = crypto.createHmac('sha256', secret).update(body).digest('base64');
-  return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(hmac));
+  const hmac = req.headers['x-shopify-hmac-sha256'];
+  const secret = process.env.SHOPIFY_API_SECRET || process.env.SHOPIFY_CLIENT_SECRET || '';
+  if (!hmac || !secret || !req.rawBody) return false;
+  const digest = crypto.createHmac('sha256', secret).update(req.rawBody).digest();
+  const given = Buffer.from(String(hmac), 'base64');
+  return given.length === digest.length && crypto.timingSafeEqual(digest, given);
 }
 
-/**
- * POST /api/webhooks/customers/data-request
- * Shopify is asking what data we hold for a specific customer.
- * Blog SEO Engine does not store customer PII — we only store blog post metadata
- * keyed by shop domain, not by customer ID.
- */
-router.post('/customers/data-request', express.json({ type: '*/*' }), (req, res) => {
-  // Log for audit trail — do not expose in production logs
-  const shop = req.headers['x-shopify-shop-domain'] || 'unknown';
-  console.log(`[GDPR] customers/data-request from shop: ${shop}`);
-
-  // We hold no customer PII — respond 200 to confirm receipt
-  res.status(200).json({ acknowledged: true, data_held: false });
-});
-
-/**
- * POST /api/webhooks/customers/redact
- * Shopify is requesting we delete data for a specific customer.
- * We hold no customer PII so nothing to delete.
- */
-router.post('/customers/redact', express.json({ type: '*/*' }), (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || 'unknown';
-  console.log(`[GDPR] customers/redact from shop: ${shop}`);
-  res.status(200).json({ acknowledged: true });
-});
-
-/**
- * POST /api/webhooks/shop/redact
- * The merchant has uninstalled the app — delete all their data.
- * Blog SEO Engine stores: scan history, keyword research, content briefs (in-memory
- * until Step 4 adds SQLite — once SQLite is added, delete rows WHERE shop = ?).
- */
-router.post('/shop/redact', express.json({ type: '*/*' }), async (req, res) => {
-  const shop = req.headers['x-shopify-shop-domain'] || req.body?.shop_domain || 'unknown';
-  console.log(`[GDPR] shop/redact for shop: ${shop}`);
-
-  try {
-    // Remove stored OAuth token for this shop
-    const shopTokens = require('../core/shopTokens');
-    if (shopTokens.removeToken) {
-      shopTokens.removeToken(shop);
+function guard(handler) {
+  return (req, res) => {
+    if (!verifyShopifyWebhook(req)) return res.status(401).json({ ok: false, error: 'Invalid webhook signature.' });
+    try { handler(req, res); } catch (err) {
+      console.error('[GDPR] handler error:', err.message);
+      res.status(500).json({ ok: false, error: 'Failed to process request.' });
     }
+  };
+}
+const shopOf = (req) => String((req.body && req.body.shop_domain) || req.headers['x-shopify-shop-domain'] || '');
 
-    // Once SQLite persistence is added (Step 4), this is where we run:
-    //   db.prepare('DELETE FROM scan_history WHERE shop = ?').run(shop);
-    //   db.prepare('DELETE FROM keyword_research WHERE shop = ?').run(shop);
-    //   db.prepare('DELETE FROM content_briefs WHERE shop = ?').run(shop);
+// Reports which stored records mention the customer. Shopify's merchant sends the data on to the customer.
+router.post('/customers/data-request', guard((req, res) => {
+  const found = privacy.exportCustomer(shopOf(req), req.body.customer);
+  console.log(`[GDPR] customers/data-request shop=${shopOf(req)} records=${found.reduce((n, f) => n + f.records, 0)}`);
+  res.status(200).json({ acknowledged: true, data_held: found.length > 0, locations: found });
+}));
 
-    console.log(`[GDPR] shop/redact complete for shop: ${shop}`);
-    res.status(200).json({ acknowledged: true });
-  } catch (err) {
-    console.error(`[GDPR] shop/redact error for ${shop}:`, err.message);
-    // Still return 200 — Shopify requires 200 or it will retry
-    res.status(200).json({ acknowledged: true, warning: 'partial deletion' });
-  }
-});
+router.post('/customers/redact', guard((req, res) => {
+  const found = privacy.redactCustomer(shopOf(req), req.body.customer);
+  console.log(`[GDPR] customers/redact shop=${shopOf(req)} records=${found.reduce((n, f) => n + f.records, 0)}`);
+  res.status(200).json({ acknowledged: true, redacted: found });
+}));
+
+router.post('/shop/redact', guard((req, res) => {
+  const shop = shopOf(req);
+  const files = privacy.deleteShopData(shop);
+  const token = shopTokens.removeToken(shop);
+  console.log(`[GDPR] shop/redact shop=${shop} files=${files} token=${token}`);
+  res.status(200).json({ acknowledged: true, files_deleted: files, token_removed: token });
+}));
 
 module.exports = router;
+module.exports._verify = verifyShopifyWebhook;
