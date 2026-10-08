@@ -107,4 +107,12 @@ describe('translations', () => {
     expect(r.status).toBe(422);
     expect((await request(app()).get('/api/tr/log')).body.log.length).toBe(before);
   });
+
+  test('missing Shopify permissions give a clear 403 instead of a raw error', async () => {
+    mockGql.mockRejectedValue(new Error('Access denied for shopLocales field. Required access: `read_locales` access scope.'));
+    const r = await request(app()).get('/api/tr/status');
+    expect(r.status).toBe(403);
+    expect(r.body.needsScopes).toBe(true);
+    expect(r.body.error).toMatch(/approve the updated permissions/);
+  });
 });

@@ -324,7 +324,7 @@ function App() {
  'dashboard': 'Dashboard', 'all-tools': 'All Tools', 'main-suite': 'Suite',
  'settings': 'Settings', 'credits': 'Credits', 'pricing': 'Pricing',
  'blog-seo': 'Blog SEO Engine', 'blog-draft-engine': 'Blog Draft Engine',
- 'product-seo': 'Product SEO', 'product-feed': 'Product Feed', 'translations': 'Translations', 'keyword-research-suite': 'Keyword Research',
+ 'product-seo': 'Product SEO', 'product-feed': 'Product Feed', 'translations': 'Translations', 'google-ads-integration': 'Google Ads', 'facebook-ads-integration': 'Facebook & Instagram Ads', 'tiktok-ads-integration': 'TikTok Ads', 'keyword-research-suite': 'Keyword Research',
  'on-page-seo-engine': 'On-Page SEO', 'technical-seo-auditor': 'Technical SEO',
  'schema-rich-results-engine': 'Schema & Rich Results', 'image-alt-media-seo': 'Image Alt Text',
  'rank-visibility-tracker': 'Rank Tracker', 'ai-visibility-tracker': 'AI Visibility',

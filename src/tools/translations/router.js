@@ -21,7 +21,10 @@ function withShop(handler) {
   return async (req, res) => {
     const ctx = getShopContext(req);
     if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
-    try { await handler(req, res, ctx); } catch (err) { res.status(err.status || 500).json({ ok: false, error: err.message }); }
+    try { await handler(req, res, ctx); } catch (err) {
+      if (/access denied|required access/i.test(err.message)) return res.status(403).json({ ok: false, needsScopes: true, error: 'Translations needs new permissions. Open AURA from your Shopify admin and approve the updated permissions, then try again.' });
+      res.status(err.status || 500).json({ ok: false, error: err.message });
+    }
   };
 }
 
