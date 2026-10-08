@@ -48,8 +48,6 @@ const PLAN_FEATURES = {
       'dynamic-pricing-engine', 
       'ai-content-image-gen', 
       'returns-rma-automation', 'ai-support-assistant', 
-      'google-ads-integration', 'facebook-ads-integration',
-      'tiktok-ads-integration', 'ads-anomaly-guard', 'ad-creative-optimizer',
       'auto-insights',
       'upsell-cross-sell-engine', 'customer-data-platform',
       'inventory-forecasting'
@@ -95,11 +93,6 @@ const TOOL_PLAN_REQUIREMENTS = {
   'ai-content-image-gen': 'pro',
   'returns-rma-automation': 'pro',
   'ai-support-assistant': 'pro',
-  'google-ads-integration': 'pro',
-  'facebook-ads-integration': 'pro',
-  'tiktok-ads-integration': 'pro',
-  'ads-anomaly-guard': 'pro',
-  'ad-creative-optimizer': 'pro',
   'auto-insights': 'pro',
   'upsell-cross-sell-engine': 'pro',
   'customer-data-platform': 'pro',
@@ -107,7 +100,6 @@ const TOOL_PLAN_REQUIREMENTS = {
   'ab-testing-suite': 'pro',
 
   // Enterprise tier
-  'data-warehouse-connector': 'enterprise',
   'loyalty-referral-programs': 'enterprise',
 };
 

@@ -35,14 +35,12 @@ const Settings = lazy(() => import("./components/Settings.jsx"));
 // Tool components organized by suite
 const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
 const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
-const DataWarehouseConnector = lazy(() => import("./components/tools/DataWarehouseConnector.jsx"));
 const AIContentBriefGenerator = lazy(() => import("./components/tools/AIContentBriefGenerator.jsx"));
 const BrandMentionTracker = lazy(() => import("./components/tools/BrandMentionTracker.jsx"));
 const WorkflowAutomationBuilder = lazy(() => import("./components/tools/WorkflowAutomationBuilder.jsx"));
 const AICopilot = lazy(() => import("./components/tools/AICopilot.jsx"));
 const EmailDeliverability = lazy(() => import("./components/tools/EmailDeliverability.jsx"));
 const SMSWhatsAppMarketing = lazy(() => import("./components/tools/SMSWhatsAppMarketing.jsx"));
-const MobileAppAnalytics = lazy(() => import("./components/tools/MobileAppAnalytics.jsx"));
 const LandingPageBuilder = lazy(() => import("./components/tools/LandingPageBuilder.jsx"));
 const UpsellCrossSellEngine = lazy(() => import("./components/tools/UpsellCrossSellEngine.jsx"));
 const InventoryForecasting = lazy(() => import("./components/tools/InventoryForecasting.jsx"));
@@ -59,11 +57,6 @@ const ReturnsRMAAutomation = lazy(() => import("./components/tools/ReturnsRMAAut
 const RankVisibilityTracker = lazy(() => import("./components/tools/RankVisibilityTracker.jsx"));
 const ImageAltMediaSEO = lazy(() => import("./components/tools/ImageAltMediaSEO.jsx"));
 const EmailAutomationBuilder = lazy(() => import("./components/tools/EmailAutomationBuilder.jsx"));
-const GoogleAdsIntegration = lazy(() => import("./components/tools/GoogleAdsIntegration.jsx"));
-const FacebookAdsIntegration = lazy(() => import("./components/tools/FacebookAdsIntegration.jsx"));
-const TikTokAdsIntegration = lazy(() => import("./components/tools/TikTokAdsIntegration.jsx"));
-const AdCreativeOptimizer = lazy(() => import("./components/tools/AdCreativeOptimizer.jsx"));
-const AdsAnomalyGuard = lazy(() => import("./components/tools/AdsAnomalyGuard.jsx"));
 const DynamicPricingEngine = lazy(() => import("./components/tools/DynamicPricingEngine.jsx"));
 const AutoInsights = lazy(() => import("./components/tools/AutoInsights.jsx"));
 const AiSupportAssistant = lazy(() => import("./components/tools/AISupportAssistant.jsx"));
@@ -109,14 +102,8 @@ const toolToMainSuiteGroup = {
  // Social & Brand
  "brand-mention-tracker": "social",
  // Ads & Acquisition
- "google-ads-integration": "ads",
- "facebook-ads-integration": "ads",
- "tiktok-ads-integration": "ads",
- "ads-anomaly-guard": "ads",
- "ad-creative-optimizer": "ads",
  // Analytics & Intelligence
  "auto-insights": "analytics",
- "data-warehouse-connector": "analytics",
  // Personalization & Revenue
  "dynamic-pricing-engine": "personalization",
  "upsell-cross-sell-engine": "personalization",
@@ -335,7 +322,7 @@ function App() {
  'review-ugc-engine': 'Reviews & UGC', 
  'brand-mention-tracker': 'Brand Mentions',
  'auto-insights': 'Auto Insights', 
- 'data-warehouse-connector': 'Data Warehouse', 'dynamic-pricing-engine': 'Dynamic Pricing',
+ 'dynamic-pricing-engine': 'Dynamic Pricing',
  'upsell-cross-sell-engine': 'Upsell & Cross-sell', 'customer-data-platform': 'Customer Data Platform',
  'inventory-forecasting': 'Inventory Forecasting',
  'loyalty-referral-programs': 'Loyalty & Referrals', 'reports': 'Reports',
@@ -489,7 +476,6 @@ function App() {
  {activeSection === "ai-copilot"&& <AICopilot />}
  {activeSection === "email-deliverability"&& <EmailDeliverability />}
  {activeSection === "sms-whatsapp-marketing"&& <SMSWhatsAppMarketing />}
- {activeSection === "mobile-app-analytics"&& <MobileAppAnalytics />}
  {activeSection === "landing-page-builder"&& <LandingPageBuilder />}
 
  {/* -- Customer Support -- */}
@@ -503,7 +489,6 @@ function App() {
 
  {/* -- Analytics & Intelligence -- */}
  {activeSection === "auto-insights"&& <AutoInsights />}
- {activeSection === "data-warehouse-connector"&& <DataWarehouseConnector />}
 
  {/* -- Personalization & Revenue -- */}
  {activeSection === "dynamic-pricing-engine"&& <DynamicPricingEngine />}
@@ -511,11 +496,6 @@ function App() {
  {activeSection === "customer-data-platform"&& <CustomerDataPlatform />}
 
  {/* -- Advertising & Paid Media -- */}
- {activeSection === "google-ads-integration"&& <GoogleAdsIntegration />}
- {activeSection === "facebook-ads-integration"&& <FacebookAdsIntegration />}
- {activeSection === "tiktok-ads-integration"&& <TikTokAdsIntegration />}
- {activeSection === "ad-creative-optimizer"&& <AdCreativeOptimizer />}
- {activeSection === "ads-anomaly-guard"&& <AdsAnomalyGuard />}
 
  {/* -- Finance & Operations -- */}
  {activeSection === "inventory-forecasting"&& <InventoryForecasting />}

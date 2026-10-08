@@ -42,11 +42,6 @@ const reviewUgcEngine = require("../tools/review-ugc-engine");
 const aiSupportAssistant = require("../tools/ai-support-assistant");
 
 // ==============  Ads & Acquisition  ==============
-const googleAdsIntegration = require("../tools/google-ads-integration");
-const facebookAdsIntegration = require("../tools/facebook-ads-integration");
-const tiktokAdsIntegration = require("../tools/tiktok-ads-integration");
-const adsAnomalyGuard = require("../tools/ads-anomaly-guard");
-const adCreativeOptimizer = require("../tools/ad-creative-optimizer");
 
 // ==============  Analytics & Intelligence  ==============
 const loyaltyReferralPrograms = require("../tools/loyalty-referral-programs");
@@ -83,8 +78,8 @@ const allTools = [
   aiSupportAssistant,
 
   // Ads & Acquisition
-  googleAdsIntegration, facebookAdsIntegration, tiktokAdsIntegration,
-  adsAnomalyGuard, adCreativeOptimizer, 
+  
+  
 
   // Analytics & Intelligence
   

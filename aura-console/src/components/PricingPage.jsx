@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import "./PricingPage.css";
 
 const plans = [
@@ -22,7 +22,7 @@ const plans = [
  features: [
  "25,000 AI credits / month",
  "Everything in Growth",
- "Ads & analytics suite",
+ "Advanced analytics & forecasting",
  "Personalization engine",
  "Advanced automations",
  "10 team members"],

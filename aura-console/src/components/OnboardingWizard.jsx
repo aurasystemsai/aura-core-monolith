@@ -1,4 +1,4 @@
-﻿// Onboarding Wizard - 3-Step Setup Flow
+// Onboarding Wizard - 3-Step Setup Flow
 // Guides new users through connecting Shopify and choosing a plan
 
 import React, { useState } from 'react';
@@ -36,7 +36,7 @@ const PLANS = [
  price: 149,
  period: 'month',
  popular: true,
- features: ['25,000 AI credits/month', 'All Growth tools', 'Ads & analytics suite', 'Personalization engine', 'Priority support']
+ features: ['25,000 AI credits/month', 'All Growth tools', 'Advanced analytics & forecasting', 'Personalization engine', 'Priority support']
  },
  {
  id: 'enterprise',

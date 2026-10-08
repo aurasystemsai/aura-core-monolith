@@ -35,18 +35,12 @@ export const TOOL_PLAN = {
  "returns-rma-automation": "pro",
  "ai-support-assistant": "pro",
  "ab-testing-suite": "pro",
- "google-ads-integration": "pro",
- "facebook-ads-integration": "pro",
- "tiktok-ads-integration": "pro",
- "ads-anomaly-guard": "pro",
- "ad-creative-optimizer": "pro",
  "auto-insights": "pro",
  "upsell-cross-sell-engine": "pro",
  "customer-data-platform": "pro",
  "inventory-forecasting": "pro",
 
  // -- Enterprise ($349/mo) -- platform, API, ops
- "data-warehouse-connector": "enterprise",
  "loyalty-referral-programs": "enterprise",
 };
 

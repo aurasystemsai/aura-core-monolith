@@ -49,7 +49,7 @@ const PLANS = [
  features: [
  '25,000 AI credits / month',
  'All Growth tools',
- 'Ads & analytics suite',
+ 'Advanced analytics & forecasting',
  'Personalization engine',
  'Advanced automations',
  '10 team members',

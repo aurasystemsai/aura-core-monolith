@@ -186,16 +186,10 @@ const toolRouters = [
   { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine'), creditAction: 'pricing-optimize' },
   { path: '/api/inventory-forecasting', router: require('./tools/inventory-forecasting/router'), middleware: requireTool('inventory-forecasting'), creditAction: 'analytics-insight' },
   { path: '/api/returns-rma-automation', router: require('./tools/returns-rma-automation/router'), middleware: requireTool('returns-rma-automation'), creditAction: 'generic-ai' },
-  { path: '/api/google-ads-integration', router: require('./tools/google-ads-integration/router'), middleware: requireTool('google-ads-integration'), creditAction: 'analytics-insight' },
-  { path: '/api/facebook-ads-integration', router: require('./tools/facebook-ads-integration/router'), middleware: requireTool('facebook-ads-integration'), creditAction: 'analytics-insight' },
-  { path: '/api/tiktok-ads-integration', router: require('./tools/tiktok-ads-integration/router'), middleware: requireTool('tiktok-ads-integration'), creditAction: 'analytics-insight' },
-  { path: '/api/ad-creative-optimizer', router: require('./tools/ad-creative-optimizer/router'), middleware: requireTool('ad-creative-optimizer'), creditAction: 'ad-copy' },
-  { path: '/api/ads-anomaly-guard', router: require('./tools/ads-anomaly-guard/router'), middleware: requireTool('ads-anomaly-guard'), creditAction: 'analytics-insight' },
   { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight' },
   { path: '/api/ai-copilot', router: require('./tools/ai-copilot/router'), middleware: requireTool('ai-copilot'), creditAction: 'ai-chat' },
   { path: '/api/email-deliverability', router: require('./tools/email-deliverability/router'), middleware: requireTool('email-deliverability'), creditAction: 'analytics-insight' },
   { path: '/api/sms-whatsapp-marketing', router: require('./tools/sms-whatsapp-marketing/router'), middleware: requireTool('sms-whatsapp-marketing'), creditAction: 'sms-campaign' },
-  { path: '/api/mobile-app-analytics', router: require('./tools/mobile-app-analytics/router'), middleware: requireTool('mobile-app-analytics'), creditAction: 'analytics-insight' },
   { path: '/api/landing-page-builder', router: require('./tools/landing-page-builder/router'), middleware: requireTool('landing-page-builder'), creditAction: 'page-generate' },
 
   // Pro tier tools
@@ -210,7 +204,6 @@ const toolRouters = [
   { path: '/api/loyalty-referral', router: require('./routes/loyalty-referral-engine'), middleware: requireTool('loyalty-referral-programs') },
   { path: '/api/brand-mention-tracker', router: require('./tools/brand-mention-tracker/router'), middleware: requireTool('brand-mention-tracker'), creditAction: 'analytics-insight' },
   { path: '/api/customer-data-platform', router: require('./tools/customer-data-platform/router'), middleware: requireTool('customer-data-platform'), creditAction: 'analytics-insight' },
-  { path: '/api/data-warehouse-connector', router: require('./tools/data-warehouse-connector/router'), middleware: requireTool('data-warehouse-connector'), creditAction: 'analytics-insight' },
   { path: '/api/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
   { path: '/api/upsell-cross-sell-engine', router: require('./tools/upsell-cross-sell-engine/router'), middleware: requireTool('upsell-cross-sell-engine'), creditAction: 'analytics-insight' },
 ];
