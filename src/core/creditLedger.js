@@ -220,6 +220,7 @@ async function pgLog(pool, shop, tx) {
 }
 
 function needsReset(account) {
+  if ((account.plan || 'free') === 'free' && account.period_start) return false; // free credits are lifetime
   if (!account.period_start) return true;
   return (Date.now() - new Date(account.period_start).getTime()) / 86400000 >= 30;
 }
@@ -387,6 +388,7 @@ function getShopAccount(shop) {
 }
 
 module.exports = {
+  _needsReset: needsReset,
   ACTION_COSTS,
   MODEL_MULTIPLIERS,
   MODEL_PRICES,
