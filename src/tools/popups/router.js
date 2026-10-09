@@ -106,22 +106,28 @@ router.post('/ai-write', withShop(async (req, res, { shop }) => {
   const b = req.body || {};
   const goal = clean(b.goal, 160) || 'grow the email list';
   const offer = clean(b.offer, 80);
-  let out;
-  try {
+  // Words that promise something. Allowed only when the merchant gave an offer.
+  const PROMISE = /exclusive|discount|% ?off|\bsale\b|\bfree\b|\bdeals?\b|\bsave\b|savings|special offer|limited|last chance|\bgift\b|reward/i;
+  const ask = async (strict) => {
     const resp = await client.chat.completions.create({
       model: MODEL, temperature: 0.7, max_tokens: 300, response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: 'You write short website popup copy for a small online shop. Use only what is given. Never invent a discount, deadline, scarcity or stock claim. Mention an offer, savings, updates or news only if one is provided, using its exact wording; otherwise just invite the visitor to join the list. Reply as JSON {"headline":string (max 60 chars),"body":string (max 160 chars),"button":string (max 20 chars)}. Plain text only.' },
+        { role: 'system', content: 'You write short website popup copy for a small online shop. Use only what is given. Never invent a discount, offer, deadline, scarcity, stock claim or benefit.' + (offer ? ' Mention the offer using its exact wording.' : ' No offer was provided, so do not mention offers, deals, savings, news or perks. Just invite the visitor to join the list.') + (strict ? ' Your last answer promised something that was not provided. Remove it.' : '') + ' Reply as JSON {"headline":string (max 60 chars),"body":string (max 160 chars),"button":string (max 20 chars)}. Plain text only.' },
         { role: 'user', content: JSON.stringify({ goal, offer: offer || undefined, popupType: b.type === 'announcement' ? 'announcement' : 'email signup' }) },
       ],
     });
-    out = JSON.parse(resp.choices[0].message.content);
+    return JSON.parse(resp.choices[0].message.content);
+  };
+  let out;
+  try {
+    out = await ask(false);
+    if (!offer && PROMISE.test(`${out.headline} ${out.body} ${out.button}`)) out = await ask(true);
   } catch (e) {
     return res.status(502).json({ ok: false, error: `AI could not write the popup: ${e.message}` });
   }
   const headline = clean(out.headline, 80); const body = clean(out.body, 240); const button = clean(out.button, 30);
   if (!headline || !body) return res.status(502).json({ ok: false, error: 'AI returned no copy. Try again, you were not charged.' });
-  if (req.deductCredits) await req.deductCredits({ model: MODEL, action: 'email-gen' });
+  if (!offer && PROMISE.test(`${headline} ${body} ${button}`)) return res.status(502).json({ ok: false, error: 'AI promised something you did not offer. Try again, you were not charged.' });  if (req.deductCredits) await req.deductCredits({ model: MODEL, action: 'email-gen' });
   res.json({ ok: true, headline, body, button });
 }));
 

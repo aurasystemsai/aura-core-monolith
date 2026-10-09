@@ -84,7 +84,19 @@ describe('popups', () => {
     expect((await request(app()).post('/api/pop/ai-write').send({})).status).toBe(502);
     expect(deduct).toHaveBeenCalledTimes(1);
   });
-  test('serves the storefront script and back-in-stock signup', async () => {
+  test('AI copy that promises an offer nobody gave is retried, then refused without charge', async () => {
+    const ans = (headline) => ({ choices: [{ message: { content: JSON.stringify({ headline, body: 'Join our list', button: 'Join' }) } }] });
+    mockCreate.mockResolvedValueOnce(ans('Get exclusive deals')).mockResolvedValueOnce(ans('Join our list'));
+    expect((await request(app()).post('/api/pop/ai-write').send({})).body.headline).toBe('Join our list');
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(deduct).toHaveBeenCalledTimes(1);
+    mockCreate.mockReset(); deduct.mockClear();
+    mockCreate.mockResolvedValue(ans('Save 20% today'));
+    expect((await request(app()).post('/api/pop/ai-write').send({})).status).toBe(502);
+    expect(deduct).not.toHaveBeenCalled();
+    mockCreate.mockReset(); mockCreate.mockResolvedValue(ans('Save 20% today'));
+    expect((await request(app()).post('/api/pop/ai-write').send({ offer: 'Save 20% today' })).body.ok).toBe(true);
+  });  test('serves the storefront script and back-in-stock signup', async () => {
     const js = await request(app()).get('/storefront/popup.js');
     expect(js.headers['content-type']).toMatch(/javascript/);
     expect(js.text).not.toMatch(/innerHTML/);
