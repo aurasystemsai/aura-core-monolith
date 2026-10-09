@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { apiFetchJSON } from "../../api";
+import PurchaseOrders from "./PurchaseOrders.jsx";
 
 const S = {
   root: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
@@ -113,10 +114,12 @@ export default function InventoryCash() {
             <strong>Order for {po.supplier.name}</strong>
             <ul style={{ margin: "4px 0 0 18px", fontSize: 13, color: "#d4d4d8" }}>{po.lines.map((l, i) => <li key={i}>{l.qty} × {l.title}</li>)}</ul>
             <textarea style={{ ...S.input, minHeight: 140, marginTop: 6 }} defaultValue={po.email} />
-            <div style={S.muted}>Copy this into your own email. Nothing is sent from here.</div>
+            <div style={S.muted}>Copy this into your own email, or save a purchase order below to email it from here.</div>
           </div>
         )}
       </div>
+
+      {data && <PurchaseOrders items={data.items} suppliers={data.suppliers} onStockChanged={load} />}
     </div>
   );
 }

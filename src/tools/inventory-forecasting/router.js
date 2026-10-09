@@ -188,6 +188,8 @@ router.post('/brief', withShop(async (req, res, { shop, token }) => {
   res.json({ ok: true, brief: clean(out.choices[0].message.content, 2000), facts });
 }));
 
+require('./purchase-orders').mount(router, { withShop, gql });
+
 module.exports = router;
 module.exports._forecast = forecast;
 module.exports._loadOrders = loadOrders;
