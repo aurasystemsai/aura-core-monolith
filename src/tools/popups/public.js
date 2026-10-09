@@ -133,4 +133,91 @@ router.get('/popup.js', (req, res) => {
   res.send(SCRIPT);
 });
 
+// First active guide for the product type on the page (a guide set to "all" matches any product).
+router.get('/size-guide', (req, res) => {
+  const shop = shopOf(req.query.shop);
+  if (!shop) return res.json({ ok: true, guide: null });
+  const type = String(req.query.type || '').toLowerCase().trim().slice(0, 60);
+  const guides = store.read('size-guides', shop, []).filter((g) => g.active);
+  const g = guides.find((x) => type && x.match.toLowerCase() === type) || guides.find((x) => x.match.toLowerCase() === 'all');
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json({ ok: true, guide: g ? { title: g.title, note: g.note, columns: g.columns, rows: g.rows } : null });
+});
+
+// Whether a variant is sold out right now, so the product page knows to offer the alert form.
+router.get('/stock', async (req, res) => {
+  const shop = shopOf(req.query.shop);
+  if (!shop) return res.json({ ok: true, soldOut: false });
+  const id = String(req.query.variantId || '').replace(/\D/g, '').slice(0, 20);
+  try {
+    res.json({ ok: true, soldOut: !!id && await backInStock.soldOut(shop, shopTokens.getToken(shop), `gid://shopify/ProductVariant/${id}`) });
+  } catch { res.json({ ok: true, soldOut: false }); }
+});
+
+const SIZE_SCRIPT = `(function(){
+  var s=document.currentScript,origin=new URL(s.src).origin,shop=window.Shopify&&window.Shopify.shop;
+  var m=window.ShopifyAnalytics&&window.ShopifyAnalytics.meta,p=m&&m.product;
+  if(!shop||!p||window.__auraSize)return;window.__auraSize=1;
+  function el(t,css,txt){var e=document.createElement(t);if(css)e.style.cssText=css;if(txt!=null)e.textContent=txt;return e}
+  fetch(origin+'/storefront/size-guide?shop='+encodeURIComponent(shop)+'&type='+encodeURIComponent(p.type||'')).then(function(r){return r.json()}).then(function(r){
+    var g=r&&r.guide;if(!g)return;
+    var btn=el('button','margin:12px 0;padding:8px 14px;border:1px solid #111;background:#fff;color:#111;border-radius:6px;cursor:pointer;font-size:14px',g.title);
+    btn.type='button';
+    btn.onclick=function(){
+      var wrap=el('div','position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px');
+      var box=el('div','background:#fff;color:#111;max-width:560px;width:100%;max-height:85vh;overflow:auto;border-radius:12px;padding:24px;font-family:Arial,sans-serif;box-sizing:border-box');
+      var x=el('button','float:right;border:0;background:none;font-size:24px;cursor:pointer','\\u00d7');x.setAttribute('aria-label','Close');
+      x.onclick=function(){wrap.remove()};wrap.onclick=function(e){if(e.target===wrap)wrap.remove()};
+      box.appendChild(x);box.appendChild(el('h2','margin:0 0 12px;font-size:20px',g.title));
+      var t=el('table','width:100%;border-collapse:collapse;font-size:14px'),h=el('tr');
+      g.columns.forEach(function(c){h.appendChild(el('th','border-bottom:2px solid #111;padding:6px;text-align:left',c))});t.appendChild(h);
+      g.rows.forEach(function(row){var tr=el('tr');row.forEach(function(c){tr.appendChild(el('td','border-bottom:1px solid #ddd;padding:6px',c))});t.appendChild(tr)});
+      box.appendChild(t);if(g.note)box.appendChild(el('p','margin:12px 0 0;font-size:12px;color:#555',g.note));
+      wrap.appendChild(box);document.body.appendChild(wrap);
+    };
+    var form=document.querySelector('form[action*="/cart/add"]');
+    (form&&form.parentNode?form.parentNode:document.body).insertBefore(btn,form||null);
+  }).catch(function(){});
+})();`;
+router.get('/size-guide.js', (req, res) => {
+  res.set('Content-Type', 'application/javascript; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=300');
+  res.send(SIZE_SCRIPT);
+});
+
+const STOCK_SCRIPT = `(function(){
+  var s=document.currentScript,origin=new URL(s.src).origin,shop=window.Shopify&&window.Shopify.shop;
+  var m=window.ShopifyAnalytics&&window.ShopifyAnalytics.meta;
+  if(!shop||!m||!m.product||window.__auraStock)return;window.__auraStock=1;
+  function el(t,css,txt){var e=document.createElement(t);if(css)e.style.cssText=css;if(txt!=null)e.textContent=txt;return e}
+  var shown=null;
+  function check(){
+    var v=(new URL(location.href).searchParams.get('variant'))||m.selectedVariantId||(m.product.variants&&m.product.variants[0]&&m.product.variants[0].id);
+    if(!v||v===shown)return;shown=v;
+    var old=document.getElementById('aura-bis');if(old)old.remove();
+    fetch(origin+'/storefront/stock?shop='+encodeURIComponent(shop)+'&variantId='+encodeURIComponent(v)).then(function(r){return r.json()}).then(function(r){
+      if(!r||!r.soldOut||shown!==v)return;
+      var box=el('div','margin:12px 0;padding:14px;border:1px solid #ddd;border-radius:8px;font-family:inherit');box.id='aura-bis';
+      box.appendChild(el('p','margin:0 0 8px;font-weight:600','Sold out. Email me when it is back.'));
+      var inp=el('input','padding:9px;border:1px solid #ccc;border-radius:6px;width:100%;box-sizing:border-box;margin-bottom:8px');inp.type='email';inp.placeholder='Your email';inp.setAttribute('aria-label','Your email');
+      var btn=el('button','padding:9px 16px;border:0;border-radius:6px;background:#111;color:#fff;cursor:pointer','Notify me');btn.type='button';
+      var msg=el('p','margin:8px 0 0;font-size:13px');
+      box.appendChild(inp);box.appendChild(btn);box.appendChild(el('p','margin:8px 0 0;font-size:11px;color:#777','We will email you once about this item.'));box.appendChild(msg);
+      btn.onclick=function(){btn.disabled=true;msg.textContent='';
+        fetch(origin+'/storefront/back-in-stock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({shop:shop,variantId:v,email:inp.value,consent:true})})
+          .then(function(r){return r.json()}).then(function(r){
+            if(r.ok){box.textContent='';box.appendChild(el('p','margin:0;font-weight:600','Thanks, we will email you when it is back.'));return}
+            btn.disabled=false;msg.style.color='#b00020';msg.textContent=r.error||'Something went wrong.';
+          }).catch(function(){btn.disabled=false;msg.textContent='Could not reach the server. Try again.'});};
+      var form=document.querySelector('form[action*="/cart/add"]');
+      if(form&&form.parentNode)form.parentNode.insertBefore(box,form.nextSibling);else document.body.appendChild(box);
+    }).catch(function(){});
+  }
+  check();setInterval(check,1500);
+})();`;
+router.get('/back-in-stock.js', (req, res) => {
+  res.set('Content-Type', 'application/javascript; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=300');
+  res.send(STOCK_SCRIPT);
+});
 module.exports = router;

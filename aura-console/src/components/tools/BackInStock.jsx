@@ -74,6 +74,14 @@ export default function BackInStock() {
       {note && <div style={S.ok}>{note}</div>}
       {status && !status.sending && <div style={S.error}>Email sending is not set up on the server yet, so alerts cannot be sent.</div>}
 
+      {status && status.scriptUrl && (
+        <div style={S.card}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Let shoppers sign up themselves</div>
+          <div style={{ ...S.muted, marginBottom: 8 }}>In Shopify go to Online Store, Themes, Edit code, open theme.liquid and paste this just before the closing &lt;/body&gt; tag. Sold-out product pages then show an email box.</div>
+          <div style={{ background: '#09090b', border: '1px solid #3f3f46', borderRadius: 8, padding: 10, fontSize: 12, fontFamily: 'monospace', wordBreak: 'break-all', color: '#d4d4d8' }}>{`<script src="${status.scriptUrl}" defer></script>`}</div>
+        </div>
+      )}
+
       <div style={S.card}>
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Add a shopper</div>
         <div style={S.muted}>For someone who has asked you to tell them. Signups from your storefront will land here too once the live app is connected.</div>

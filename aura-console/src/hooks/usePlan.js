@@ -16,6 +16,7 @@ export const TOOL_PLAN = {
   "order-tracking": "growth",
   "back-in-stock": "growth",
   "popups": "growth",
+  "size-guides": "growth",
  "blog-seo": "growth",
  "seo-site-crawler": "growth",
  "on-page-seo-engine": "growth",

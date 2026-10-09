@@ -42,7 +42,8 @@ const label = (v) => (v.title && v.title !== 'Default Title' ? `${v.product.titl
 
 router.get('/status', withShop(async (req, res, { shop }) => {
   const list = load(shop);
-  res.json({ ok: true, sending: mailer.isConfigured(), waiting: list.filter((s) => !s.notifiedAt).length, notified: list.filter((s) => s.notifiedAt).length });
+  const base = (process.env.APP_URL || '').replace(/\/+$/, '');
+  res.json({ ok: true, scriptUrl: base ? base + '/storefront/back-in-stock.js' : '', sending: mailer.isConfigured(), waiting: list.filter((s) => !s.notifiedAt).length, notified: list.filter((s) => s.notifiedAt).length });
 }));
 
 // Variants that are sold out right now, for choosing what a shopper is waiting for.
@@ -113,3 +114,8 @@ router.post('/send', withShop(async (req, res, { shop, token }) => {
 
 module.exports = router;
 module.exports.subscribe = subscribe;
+module.exports.soldOut = async (shop, token, variantId) => {
+  if (!VARIANT.test(variantId)) return false;
+  const v = (await variantsById(shop, token, [variantId])).get(variantId);
+  return !!v && v.product.status === 'ACTIVE' && !isBack(v);
+};

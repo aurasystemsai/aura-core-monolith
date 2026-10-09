@@ -167,6 +167,7 @@ const toolRouters = [
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
+  { path: '/api/size-guides', router: require('./tools/size-guides/router'), middleware: requireTool('size-guides'), creditAction: 'product-description' },
   { path: '/api/popups', router: require('./tools/popups/router'), middleware: requireTool('popups'), creditAction: 'email-gen' },
   { path: '/api/back-in-stock', router: require('./tools/back-in-stock/router'), middleware: requireTool('back-in-stock'), creditAction: 'email-gen' },
   { path: '/api/order-tracking', router: require('./tools/order-tracking/router'), middleware: requireTool('order-tracking'), creditAction: 'email-gen' },
