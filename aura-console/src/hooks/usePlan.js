@@ -57,7 +57,12 @@ export const TOOL_PLAN = {
  "loyalty-referral-programs": "enterprise",
 };
 
+import { HUBS } from "../hubs.js";
 const PLAN_RANK = { free: 0, growth: 1, pro: 2, enterprise: 3 };
+for (const hub of HUBS) {
+ const tiers = hub.tabs.map((x) => TOOL_PLAN[x.id] || "free");
+ TOOL_PLAN[hub.id] = tiers.sort((a, b) => PLAN_RANK[a] - PLAN_RANK[b])[0];
+}
 export const PLAN_LABEL = { free: "Starter", growth: "Growth", pro: "Pro", enterprise: "Enterprise" };
 export const PLAN_PRICE = { free: "$0", growth: "$49/mo", pro: "$149/mo", enterprise: "$349/mo" };
 export const PLAN_COLOUR = { free: "#71717a", growth: "#38bdf8", pro: "#4f46e5", enterprise: "#a78bfa" };

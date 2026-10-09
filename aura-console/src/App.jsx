@@ -5,6 +5,8 @@ import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
 import { useCredits } from "./hooks/useCredits";
 
 import toolsMeta from "./toolMeta";
+import { HUBS, hubById, resolveSection } from "./hubs.js";
+import HubTool from "./components/HubTool.jsx";
 import AiChatbot from "./components/AiChatbot.jsx";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
@@ -33,56 +35,24 @@ const Credits = lazy(() => import("./credits/Credits.jsx"));
 const Settings = lazy(() => import("./components/Settings.jsx"));
 
 // Tool components organized by suite
-const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
-const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
 const DataWarehouseConnector = lazy(() => import("./components/tools/DataWarehouseConnector.jsx"));
-const AIContentBriefGenerator = lazy(() => import("./components/tools/AIContentBriefGenerator.jsx"));
 const BrandMentionTracker = lazy(() => import("./components/tools/BrandMentionTracker.jsx"));
 const WorkflowAutomationBuilder = lazy(() => import("./components/tools/WorkflowAutomationBuilder.jsx"));
 const AICopilot = lazy(() => import("./components/tools/AICopilot.jsx"));
-const EmailDeliverability = lazy(() => import("./components/tools/EmailDeliverability.jsx"));
-const SMSWhatsAppMarketing = lazy(() => import("./components/tools/SMSWhatsAppMarketing.jsx"));
 const MobileAppAnalytics = lazy(() => import("./components/tools/MobileAppAnalytics.jsx"));
 const LandingPageBuilder = lazy(() => import("./components/tools/LandingPageBuilder.jsx"));
-const UpsellCrossSellEngine = lazy(() => import("./components/tools/UpsellCrossSellEngine.jsx"));
 const InventoryForecasting = lazy(() => import("./components/tools/InventoryForecasting.jsx"));
-const BlogDraftEngine = lazy(() => import("./components/tools/BlogDraftEngine.jsx"));
-const BlogSEO = lazy(() => import("./components/tools/BlogSEO.jsx"));
-const WeeklyBlogContentEngine = lazy(() => import("./components/tools/WeeklyBlogContentEngine.jsx"));
-const OnPageSEOEngine = lazy(() => import("./components/tools/OnPageSEOEngine.jsx"));
-const TechnicalSEOAuditor = lazy(() => import("./components/tools/TechnicalSEOAuditor.jsx"));
-const SEOSiteCrawler = lazy(() => import("./components/tools/SEOSiteCrawler.jsx"));
 const SiteAuditFixer = lazy(() => import("./components/tools/SiteAuditFixer.jsx"));
 const SchemaRichResultsEngine = lazy(() => import("./components/tools/SchemaRichResultsEngine.jsx"));
-const ReviewUGCEngine = lazy(() => import("./components/tools/ReviewUGCEngine.jsx"));
 const ReturnsRMAAutomation = lazy(() => import("./components/tools/ReturnsRMAAutomation.jsx"));
-const RankVisibilityTracker = lazy(() => import("./components/tools/RankVisibilityTracker.jsx"));
-const ImageAltMediaSEO = lazy(() => import("./components/tools/ImageAltMediaSEO.jsx"));
-const EmailAutomationBuilder = lazy(() => import("./components/tools/EmailAutomationBuilder.jsx"));
-const GoogleAdsIntegration = lazy(() => import("./components/tools/GoogleAdsIntegration.jsx"));
-const FacebookAdsIntegration = lazy(() => import("./components/tools/FacebookAdsIntegration.jsx"));
-const TikTokAdsIntegration = lazy(() => import("./components/tools/TikTokAdsIntegration.jsx"));
-const AdCreativeOptimizer = lazy(() => import("./components/tools/AdCreativeOptimizer.jsx"));
-const AdsAnomalyGuard = lazy(() => import("./components/tools/AdsAnomalyGuard.jsx"));
-const DynamicPricingEngine = lazy(() => import("./components/tools/DynamicPricingEngine.jsx"));
 const AutoInsights = lazy(() => import("./components/tools/AutoInsights.jsx"));
 const AiSupportAssistant = lazy(() => import("./components/tools/AISupportAssistant.jsx"));
 const ToolScaffold = lazy(() => import("./components/tools/ToolScaffold.jsx"));
-const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyReferralPrograms.jsx"));
-const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
-const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTracker.jsx"));
-const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
 const ABTestingSuite = lazy(() => import("./ab-testing-suite/ABTestingSuiteV2.jsx"));
-const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
 const SizeGuides = lazy(() => import("./components/tools/SizeGuides.jsx"));
-const Popups = lazy(() => import("./components/tools/Popups.jsx"));
-const BackInStock = lazy(() => import("./components/tools/BackInStock.jsx"));
 const OrderTracking = lazy(() => import("./components/tools/OrderTracking.jsx"));
-const DiscountsBundles = lazy(() => import("./components/tools/DiscountsBundles.jsx"));
 const Translations = lazy(() => import("./components/tools/Translations.jsx"));
 const ProductFeed = lazy(() => import("./components/tools/ProductFeed.jsx"));
-const ProductSEOEngine = lazy(() => import("./components/tools/ProductSEOEngine.jsx"));
-const AIContentImageGen = lazy(() => import("./components/tools/AIContentImageGen.jsx"));
 
 const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
 
@@ -171,6 +141,7 @@ function App() {
  const { plan, planLoading } = usePlan();
  const { balance, loading: creditsLoading } = useCredits();
  const [toolInitUrl, setToolInitUrl] = useState(null);
+ const [hubTabs, setHubTabs] = useState({});
  const planLoadedRef = React.useRef(false);
  const isPushingFromPopstate = React.useRef(false);
 
@@ -179,7 +150,11 @@ function App() {
 
  // Core navigate pushes current page to history then goes to new page
  // This is the ONLY place that should call setActiveSectionRaw for forward navigation
- function navigateTo(section, url, opts = {}) {
+ function navigateTo(rawSection, url, opts = {}) {
+ // An old tool id opens its hub on the matching tab.
+ const resolved = resolveSection(rawSection);
+ const section = resolved ? resolved.hub.id : rawSection;
+ if (resolved && resolved.tab) setHubTabs(prev => ({ ...prev, [resolved.hub.id]: resolved.tab }));
  if (url) setToolInitUrl(url);
  // Skip plan gate while plan is loading to avoid false redirects
  if (!planLoading && !canUseTool(plan, section)) {
@@ -349,6 +324,7 @@ function App() {
  'products': 'Products', 'tools': 'Tools',
  };
 
+ Object.assign(SECTION_LABELS, Object.fromEntries(HUBS.map(h => [h.id, h.name])));
  const currentPageLabel = SECTION_LABELS[activeSection] || activeSection;
  const prevPageLabel = sectionHistory.length > 0 ? (SECTION_LABELS[sectionHistory[sectionHistory.length - 1]] || sectionHistory[sectionHistory.length - 1]) : null;
  // Tell per-tool BackButton components whether the App top bar already shows a back button
@@ -467,48 +443,36 @@ function App() {
  )}
  {activeSection === "tools"&& project && <ToolsList />}
 
+ {hubById(activeSection) && (
+ <HubTool
+ hub={hubById(activeSection)}
+ tab={hubTabs[activeSection]}
+ plan={plan}
+ onTab={(tabId) => setHubTabs(prev => ({ ...prev, [activeSection]: tabId }))}
+ onUpgrade={() => setActiveSection("pricing")}
+ toolProps={{ "on-page-seo-engine": { initialUrl: toolInitUrl, onUrlConsumed: () => setToolInitUrl(null) } }}
+ />
+ )}
+
  {/* -- SEO & Content -- */}
- {activeSection === "product-seo"&& <ProductSEOEngine />}
   {activeSection === "product-feed"&& <ProductFeed />}
         {activeSection === "translations"&& <Translations />}
-  {activeSection === "discounts-bundles"&& <DiscountsBundles />}
   {activeSection === "order-tracking"&& <OrderTracking />}
-  {activeSection === "back-in-stock"&& <BackInStock />}
-  {activeSection === "popups"&& <Popups />}
   {activeSection === "size-guides"&& <SizeGuides />}
- {activeSection === "blog-seo"&& <ErrorBoundary key="blog-seo"><BlogSEO /></ErrorBoundary>}
- {activeSection === "blog-draft-engine"&& <BlogDraftEngine />}
- {activeSection === "weekly-blog-content-engine"&& <WeeklyBlogContentEngine />}
- {activeSection === "on-page-seo-engine"&& <OnPageSEOEngine initialUrl={toolInitUrl} onUrlConsumed={() => setToolInitUrl(null)} />}
- {activeSection === "technical-seo-auditor"&& <TechnicalSEOAuditor />}
  {activeSection === "schema-rich-results-engine"&& <SchemaRichResultsEngine />}
- {(activeSection === "image-alt-media-seo"|| activeSection === "ai-alt-text-engine") && <ImageAltMediaSEO />}
- {activeSection === "rank-visibility-tracker"&& <RankVisibilityTracker />}
- {activeSection === "ai-visibility-tracker"&& <AIVisibilityTracker />}
- {activeSection === "seo-site-crawler"&& <SEOSiteCrawler />}
  {activeSection === "site-audit-fixer"&& <SiteAuditFixer />}
  {activeSection === "internal-link-optimizer"&& <InternalLinkOptimizer />}
- {activeSection === "ai-content-brief-generator"&& <AIContentBriefGenerator />}
- {activeSection === "content-scoring-optimization"&& <ContentScoringOptimization />}
- {activeSection === "keyword-research-suite"&& <KeywordResearchSuite />}
- {activeSection === "entity-topic-explorer"&& <EntityTopicExplorer />}
- {activeSection === "ai-content-image-gen"&& <AIContentImageGen />}
 
  {/* -- Email & Lifecycle -- */}
- {activeSection === "email-automation-builder" && <EmailAutomationBuilder />}
  {activeSection === "ab-testing-suite" && <ABTestingSuite />}
- {activeSection === "abandoned-checkout-winback"&& <AbandonedCheckoutWinback />}
  {activeSection === "returns-rma-automation"&& <ReturnsRMAAutomation />}
  {activeSection === "workflow-automation-builder"&& <WorkflowAutomationBuilder />}
  {activeSection === "ai-copilot"&& <AICopilot />}
- {activeSection === "email-deliverability"&& <EmailDeliverability />}
- {activeSection === "sms-whatsapp-marketing"&& <SMSWhatsAppMarketing />}
  {activeSection === "mobile-app-analytics"&& <MobileAppAnalytics />}
  {activeSection === "landing-page-builder"&& <LandingPageBuilder />}
 
  {/* -- Customer Support -- */}
  {activeSection === "ai-support-assistant"&& <AiSupportAssistant />}
- {activeSection === "review-ugc-engine"&& <ReviewUGCEngine />}
 
  {/* -- Social & Brand -- */}
  {activeSection === "brand-mention-tracker"&& <BrandMentionTracker />}
@@ -516,26 +480,16 @@ function App() {
  {/* -- Ads & Acquisition -- */}
 
  {/* -- Analytics & Intelligence -- */}
- {activeSection === "auto-insights"&& <AutoInsights />}
  {activeSection === "data-warehouse-connector"&& <DataWarehouseConnector />}
 
  {/* -- Personalization & Revenue -- */}
- {activeSection === "dynamic-pricing-engine"&& <DynamicPricingEngine />}
- {activeSection === "upsell-cross-sell-engine"&& <UpsellCrossSellEngine />}
- {activeSection === "customer-data-platform"&& <CustomerDataPlatform />}
 
  {/* -- Advertising & Paid Media -- */}
- {activeSection === "google-ads-integration"&& <GoogleAdsIntegration />}
- {activeSection === "facebook-ads-integration"&& <FacebookAdsIntegration />}
- {activeSection === "tiktok-ads-integration"&& <TikTokAdsIntegration />}
- {activeSection === "ad-creative-optimizer"&& <AdCreativeOptimizer />}
- {activeSection === "ads-anomaly-guard"&& <AdsAnomalyGuard />}
 
  {/* -- Finance & Operations -- */}
  {activeSection === "inventory-forecasting"&& <InventoryForecasting />}
 
  {/* -- Platform & Developer -- */}
- {(activeSection === "loyalty-referral-programs"|| activeSection === "loyalty-referral-program-v2") && <LoyaltyReferralPrograms />}
  </Suspense>
  </section>
  </div>

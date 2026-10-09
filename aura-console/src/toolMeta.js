@@ -1,3 +1,4 @@
+import { HUBS, hiddenToolIds } from "./hubs.js";
 // Only tools with verified UI and API workflows are listed as live.
 const toolsMeta = [
  // ── Live tools ──
@@ -91,7 +92,7 @@ export function getToolCatalogGroups(serverGroups = []) {
   return groups.get(id);
  };
 
- for (const tool of toolsMeta) {
+ for (const tool of [...toolsMeta.filter(x => !hiddenToolIds.has(x.id)), ...HUBS.map(h => ({ id: h.id, name: h.name, description: h.description, category: h.category, suite: h.suite }))]) {
   const id = tool.suite || tool.category?.toLowerCase() || "other";
   const group = addGroup(id, suiteTitles[id] || tool.category || "Other");
   if (moduleLocations.has(tool.id)) continue;
@@ -102,7 +103,7 @@ export function getToolCatalogGroups(serverGroups = []) {
  for (const serverGroup of serverGroups) {
   const groupId = serverGroup.id || "other";
   const group = addGroup(groupId, serverGroup.title || suiteTitles[groupId] || "Other", serverGroup.summary);
-  for (const serverTool of serverGroup.modules || []) {
+  for (const serverTool of (serverGroup.modules || []).filter(x => !hiddenToolIds.has(x.id))) {
    const existingGroup = moduleLocations.get(serverTool.id);
    if (existingGroup) {
 	const index = existingGroup.modules.findIndex(tool => tool.id === serverTool.id);
