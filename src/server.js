@@ -191,6 +191,8 @@ const toolRouters = [
   { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router'), middleware: requireTool('schema-rich-results-engine'), creditAction: 'schema-gen' },
   { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router'), middleware: requireTool('rank-visibility-tracker'), creditAction: 'rank-check' },
   { path: '/api/keyword-research-suite', router: require('./tools/keyword-research-suite/router'), middleware: requireTool('keyword-research-suite'), creditAction: 'keyword-research' },
+  { path: '/api/profit-analytics', router: require('./tools/profit-analytics/router'), middleware: requireTool('profit-analytics') },
+  { path: '/api/ai-shopping-readiness', router: require('./tools/ai-shopping-readiness/router'), middleware: requireTool('ai-shopping-readiness') },
   { path: '/api/ai-visibility-tracker', router: require('./tools/ai-visibility-tracker/router'), middleware: requireTool('ai-visibility-tracker'), creditAction: 'seo-analysis' },
   { path: '/api/content-scoring-optimization', router: require('./tools/content-scoring-optimization/router'), middleware: requireTool('content-scoring-optimization'), creditAction: 'content-brief' },
   { path: '/api/entity-topic-explorer', router: require('./tools/entity-topic-explorer/router'), middleware: requireTool('entity-topic-explorer'), creditAction: 'seo-analysis' },

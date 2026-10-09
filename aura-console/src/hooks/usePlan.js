@@ -30,12 +30,14 @@ export const TOOL_PLAN = {
  "schema-rich-results-engine": "growth",
  "rank-visibility-tracker": "growth",
  "ai-visibility-tracker": "growth",
+ "ai-shopping-readiness": "growth",
  "image-alt-media-seo": "growth",
  "email-automation-builder": "growth",
  "abandoned-checkout-winback": "growth",
  "review-ugc-engine": "growth",
  "brand-mention-tracker": "growth",
  "dynamic-pricing-engine": "growth",
+ "profit-analytics": "growth",
 
  // -- Pro ($149/mo) -- advanced & intelligence tools
  "ai-content-image-gen": "pro",

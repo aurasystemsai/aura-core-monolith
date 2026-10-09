@@ -26,10 +26,10 @@ const PLAN_FEATURES = {
       'on-page-seo-engine', 'blog-draft-engine', 'weekly-blog-content-engine',
       'ai-content-brief-generator', 'content-scoring-optimization',
       'keyword-research-suite', 'internal-link-optimizer', 'technical-seo-auditor',
-      'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker',
+      'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker', 'ai-shopping-readiness',
       'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'brand-mention-tracker',
-      'dynamic-pricing-engine'
+      'dynamic-pricing-engine', 'profit-analytics'
     ],
     features: ['basic_analytics', 'advanced_analytics', 'priority_support']
   },
@@ -42,10 +42,10 @@ const PLAN_FEATURES = {
       'on-page-seo-engine', 'blog-draft-engine', 'weekly-blog-content-engine',
       'ai-content-brief-generator', 'content-scoring-optimization',
       'keyword-research-suite', 'internal-link-optimizer', 'technical-seo-auditor',
-      'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker',
+      'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker', 'ai-shopping-readiness',
       'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'brand-mention-tracker',
-      'dynamic-pricing-engine', 
+      'dynamic-pricing-engine', 'profit-analytics',
       'ai-content-image-gen', 
       'returns-rma-automation', 'ai-support-assistant', 
       'google-ads-integration', 'facebook-ads-integration',
@@ -92,11 +92,13 @@ const TOOL_PLAN_REQUIREMENTS = {
   'schema-rich-results-engine': 'growth',
   'rank-visibility-tracker': 'growth',
   'ai-visibility-tracker': 'growth',
+  'ai-shopping-readiness': 'growth',
   'email-automation-builder': 'growth',
   'abandoned-checkout-winback': 'growth',
   'review-ugc-engine': 'growth',
   'brand-mention-tracker': 'growth',
   'dynamic-pricing-engine': 'growth',
+  'profit-analytics': 'growth',
 
   // Pro tier
   'ai-content-image-gen': 'pro',

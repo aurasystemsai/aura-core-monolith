@@ -44,6 +44,7 @@ export const HUBS = [
     tabs: [
       { id: "rank-visibility-tracker", label: "Google rankings" },
       { id: "ai-visibility-tracker", label: "AI answers" },
+      { id: "ai-shopping-readiness", label: "AI shopping" },
     ],
   },
   {
@@ -87,6 +88,7 @@ export const HUBS = [
       { id: "customer-data-platform", label: "Customers" },
       { id: "dynamic-pricing-engine", label: "Pricing" },
       { id: "auto-insights", label: "Reports" },
+      { id: "profit-analytics", label: "Profit" },
     ],
   },
   {
