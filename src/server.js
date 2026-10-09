@@ -124,6 +124,8 @@ app.use('/api/webhooks', require('./routes/gdpr-webhooks'));
 app.use('/google', require('./routes/google-oauth'));
 app.use('/meta', require('./routes/meta-oauth'));
 app.use('/tiktok', require('./routes/tiktok-oauth'));
+// Public storefront endpoints for popups and back-in-stock signups (no login, validated and rate limited inside).
+app.use('/storefront', require('./tools/popups/public'));
 
 // --- Public healthcheck (no auth) ---
 app.get('/health', (req, res) => {
@@ -165,6 +167,7 @@ const toolRouters = [
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
+  { path: '/api/popups', router: require('./tools/popups/router'), middleware: requireTool('popups'), creditAction: 'email-gen' },
   { path: '/api/back-in-stock', router: require('./tools/back-in-stock/router'), middleware: requireTool('back-in-stock'), creditAction: 'email-gen' },
   { path: '/api/order-tracking', router: require('./tools/order-tracking/router'), middleware: requireTool('order-tracking'), creditAction: 'email-gen' },
   { path: '/api/discounts-bundles', router: require('./tools/discounts-bundles/router'), middleware: requireTool('discounts-bundles'), creditAction: 'campaign-gen' },

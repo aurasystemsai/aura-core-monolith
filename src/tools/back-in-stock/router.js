@@ -59,24 +59,28 @@ router.get('/subscribers', withShop(async (req, res, { shop, token }) => {
   res.json({ ok: true, subscribers, readyToSend: subscribers.filter((s) => s.inStockNow).length });
 }));
 
-// The merchant records a shopper who asked to be told. Storefront signups use the same store.
-router.post('/add', withShop(async (req, res, { shop, token }) => {
-  const b = req.body || {};
-  const email = clean(b.email, 254).toLowerCase();
-  if (!mailer.isEmail(email)) return res.status(400).json({ ok: false, error: 'Enter a valid email address.' });
-  if (!VARIANT.test(clean(b.variantId, 80))) return res.status(400).json({ ok: false, error: 'Choose a sold-out product.' });
-  if (b.consent !== true) return res.status(400).json({ ok: false, error: 'Confirm the shopper asked to be emailed.' });
-  const v = (await variantsById(shop, token, [b.variantId])).get(b.variantId);
-  if (!v) return res.status(404).json({ ok: false, error: 'Product not found.' });
-  if (isBack(v)) return res.status(409).json({ ok: false, error: 'This product is already in stock.' });
+// Shared by the merchant screen and the public storefront signup. Throws errors that carry an HTTP status.
+async function subscribe(shop, token, { email, variantId, consent }) {
+  const fail = (status, message) => Object.assign(new Error(message), { status });
+  email = clean(email, 254).toLowerCase();
+  variantId = clean(variantId, 80);
+  if (!mailer.isEmail(email)) throw fail(400, 'Enter a valid email address.');
+  if (!VARIANT.test(variantId)) throw fail(400, 'Choose a sold-out product.');
+  if (consent !== true) throw fail(400, 'Confirm the shopper asked to be emailed.');
+  const v = (await variantsById(shop, token, [variantId])).get(variantId);
+  if (!v) throw fail(404, 'Product not found.');
+  if (isBack(v)) throw fail(409, 'This product is already in stock.');
   const list = load(shop);
-  if (list.filter((s) => !s.notifiedAt).length >= MAX_WAITING) return res.status(429).json({ ok: false, error: 'Too many shoppers waiting. Send some alerts first.' });
-  if (list.some((s) => !s.notifiedAt && s.email === email && s.variantId === b.variantId)) return res.status(409).json({ ok: false, error: 'This shopper is already waiting for that product.' });
-  const entry = { id: crypto.randomUUID(), email, variantId: b.variantId, product: label(v), createdAt: new Date().toISOString(), notifiedAt: null };
+  if (list.filter((s) => !s.notifiedAt).length >= MAX_WAITING) throw fail(429, 'Too many shoppers waiting. Send some alerts first.');
+  if (list.some((s) => !s.notifiedAt && s.email === email && s.variantId === variantId)) throw fail(409, 'This shopper is already waiting for that product.');
+  const entry = { id: crypto.randomUUID(), email, variantId, product: label(v), createdAt: new Date().toISOString(), notifiedAt: null };
   store.write(TOOL, shop, [entry, ...list]);
-  res.json({ ok: true, subscriber: entry });
-}));
+  return entry;
+}
 
+router.post('/add', withShop(async (req, res, { shop, token }) => {
+  res.json({ ok: true, subscriber: await subscribe(shop, token, req.body || {}) });
+}));
 router.delete('/subscribers/:id', withShop(async (req, res, { shop }) => {
   const list = load(shop);
   if (!list.some((s) => s.id === req.params.id)) return res.status(404).json({ ok: false, error: 'Not found.' });
@@ -108,3 +112,4 @@ router.post('/send', withShop(async (req, res, { shop, token }) => {
 }));
 
 module.exports = router;
+module.exports.subscribe = subscribe;
