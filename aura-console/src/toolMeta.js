@@ -20,6 +20,7 @@ const toolsMeta = [
  { id: "technical-seo-auditor", name: "Technical SEO Auditor", description: "Deep technical SEO audits with crawl analysis and fix recommendations.", category: "SEO", suite: "seo" },
  { id: "schema-rich-results-engine", name: "Schema & Rich Results", description: "Generate and validate structured data for enhanced search listings.", category: "SEO", suite: "seo" },
  { id: "rank-visibility-tracker", name: "Rank & Visibility Tracker", description: "Track keyword rankings and search visibility over time.", category: "SEO", suite: "seo" },
+ { id: "order-risk", name: "Order Risk", description: "Flag orders worth a second look before they ship, from Shopify fraud checks plus plain rules. Never cancels anything.", category: "Personalization", suite: "personalization" },
  { id: "profit-analytics", name: "Profit Analytics", description: "See what you actually keep: real orders minus product cost, payment fees, shipping and ad spend.", category: "Personalization", suite: "personalization" },
  { id: "ai-shopping-readiness", name: "AI Shopping Readiness", description: "Check every product for the details ChatGPT and Google AI Mode need, and build an llms.txt for your store.", category: "SEO", suite: "seo" },
  { id: "ai-visibility-tracker", name: "AI Visibility Tracker", description: "Track and optimize your brand's visibility in AI-generated answers, ChatGPT, Perplexity, and Google AI Overviews.", category: "SEO", suite: "seo" },

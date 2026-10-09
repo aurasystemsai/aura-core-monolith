@@ -89,6 +89,7 @@ export const HUBS = [
       { id: "dynamic-pricing-engine", label: "Pricing" },
       { id: "auto-insights", label: "Reports" },
       { id: "profit-analytics", label: "Profit" },
+      { id: "order-risk", label: "Order risk" },
     ],
   },
   {

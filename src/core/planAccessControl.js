@@ -29,7 +29,7 @@ const PLAN_FEATURES = {
       'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker', 'ai-shopping-readiness',
       'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'brand-mention-tracker',
-      'dynamic-pricing-engine', 'profit-analytics'
+      'dynamic-pricing-engine', 'profit-analytics', 'order-risk'
     ],
     features: ['basic_analytics', 'advanced_analytics', 'priority_support']
   },
@@ -45,7 +45,7 @@ const PLAN_FEATURES = {
       'schema-rich-results-engine', 'rank-visibility-tracker', 'ai-visibility-tracker', 'ai-shopping-readiness',
       'email-automation-builder', 'abandoned-checkout-winback',
       'review-ugc-engine', 'brand-mention-tracker',
-      'dynamic-pricing-engine', 'profit-analytics',
+      'dynamic-pricing-engine', 'profit-analytics', 'order-risk',
       'ai-content-image-gen', 
       'returns-rma-automation', 'ai-support-assistant', 
       'google-ads-integration', 'facebook-ads-integration',
@@ -99,6 +99,7 @@ const TOOL_PLAN_REQUIREMENTS = {
   'brand-mention-tracker': 'growth',
   'dynamic-pricing-engine': 'growth',
   'profit-analytics': 'growth',
+  'order-risk': 'growth',
 
   // Pro tier
   'ai-content-image-gen': 'pro',

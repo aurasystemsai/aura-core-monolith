@@ -38,6 +38,7 @@ export const TOOL_PLAN = {
  "brand-mention-tracker": "growth",
  "dynamic-pricing-engine": "growth",
  "profit-analytics": "growth",
+ "order-risk": "growth",
 
  // -- Pro ($149/mo) -- advanced & intelligence tools
  "ai-content-image-gen": "pro",

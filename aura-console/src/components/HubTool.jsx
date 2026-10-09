@@ -32,6 +32,7 @@ const TOOLS = {
   "loyalty-referral-programs": t(() => import("./tools/LoyaltyReferralPrograms.jsx")),
   "customer-data-platform": t(() => import("./tools/CustomerDataPlatform.jsx")),
   "dynamic-pricing-engine": t(() => import("./tools/DynamicPricingEngine.jsx")),
+  "order-risk": t(() => import("./tools/OrderRisk.jsx")),
   "profit-analytics": t(() => import("./tools/ProfitAnalytics.jsx")),
   "auto-insights": t(() => import("./tools/AutoInsights.jsx")),
   "facebook-ads-integration": t(() => import("./tools/FacebookAdsIntegration.jsx")),
