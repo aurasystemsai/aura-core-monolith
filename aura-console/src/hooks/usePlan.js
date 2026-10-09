@@ -14,6 +14,7 @@ export const TOOL_PLAN = {
   "translations": "growth",
   "discounts-bundles": "growth",
   "order-tracking": "growth",
+  "back-in-stock": "growth",
  "blog-seo": "growth",
  "seo-site-crawler": "growth",
  "on-page-seo-engine": "growth",
