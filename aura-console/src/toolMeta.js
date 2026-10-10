@@ -3,9 +3,9 @@ import { HUBS, hiddenToolIds } from "./hubs.js";
 const toolsMeta = [
  // ── Live tools ──
  { id: "blog-seo", name: "Blog SEO Engine", description: "Optimize blog content with keyword clusters, internal linking, and SEO scoring.", category: "SEO", suite: "seo" },
- { id: "size-guides", name: "Size Guides", description: "Size tables shown on your product pages, with an optional AI first draft. Free to run.", category: "Personalization", suite: "personalization" },
+ { id: "size-guides", name: "Size Guides", description: "Size tables shown on your product pages, with an optional AI first draft.", category: "Personalization", suite: "personalization" },
  { id: "popups", name: "Popups & Email Capture", description: "Email signup and announcement popups for your storefront, with an optional AI copywriter and your list of signups.", category: "Personalization", suite: "personalization" },
- { id: "back-in-stock", name: "Back-in-Stock Alerts", description: "Tell shoppers once when a sold-out item is available again. Stock is checked live. Free to run.", category: "Personalization", suite: "personalization" },
+ { id: "back-in-stock", name: "Back-in-Stock Alerts", description: "Tell shoppers once when a sold-out item is available again. Stock is checked live.", category: "Personalization", suite: "personalization" },
  { id: "order-tracking", name: "Order Tracking", description: "See every order's fulfilment and tracking, spot late ones, and have AI draft a customer update.", category: "Personalization", suite: "personalization" },
  { id: "discounts-bundles", name: "Discounts & Bundles", description: "AI offers built from what your customers really buy together. Create, pause and delete real Shopify discount codes.", category: "Personalization", suite: "personalization" },
  { id: "translations", name: "Translations", description: "Translate products into your store languages with AI, review each one, and undo any change.", category: "SEO", suite: "seo" },
@@ -47,7 +47,7 @@ const toolsMeta = [
  { id: "google-ads-integration", name: "Google Ads", description: "Manage Google Ads campaigns with AI bidding and optimization.", category: "Ads", suite: "ads" },
  { id: "facebook-ads-integration", name: "Facebook & Instagram Ads", description: "Run and optimize Meta ad campaigns from one dashboard.", category: "Ads", suite: "ads" },
  { id: "tiktok-ads-integration", name: "TikTok Ads", description: "Create and manage TikTok ad campaigns with creative tools.", category: "Ads", suite: "ads" },
- { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Flags spend spikes, wasted spend, falling returns and traffic drops across your connected ad accounts. Free to run.", category: "Ads", suite: "ads" },
+ { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Flags spend spikes, wasted spend, falling returns and traffic drops across your connected ad accounts.", category: "Ads", suite: "ads" },
  { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "AI writes headlines and descriptions for your real products, cut to Google, Meta and TikTok character limits.", category: "Ads", suite: "ads" },
 
  // ── Analytics & Intelligence (9 tools) ──
@@ -75,14 +75,14 @@ const toolsMeta = [
 
 const suiteTitles = {
  seo: "SEO & Content",
- lifecycle: "Email & Lifecycle",
+ lifecycle: "Email & lifecycle",
  support: "Customer Support",
- social: "Social & Brand",
+ social: "Social & brand",
  ads: "Ads & Acquisition",
- analytics: "Analytics & Intelligence",
- personalization: "Personalization & Revenue",
- finance: "Finance & Operations",
- automation: "Workflow & Automation",
+ analytics: "Analytics",
+ personalization: "Store growth",
+ finance: "Finance & stock",
+ automation: "Automation",
  ai: "AI Tools",
  platform: "Platform & Developer",
 };

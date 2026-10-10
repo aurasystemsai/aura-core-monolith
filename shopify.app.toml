@@ -10,15 +10,15 @@ api_version = "2025-10"
 
   # GDPR mandatory webhooks — required for Shopify App Store approval
   [[webhooks.subscriptions]]
-  topics = ["customers/data_request"]
+  compliance_topics = ["customers/data_request"]
   uri = "/api/webhooks/customers/data-request"
 
   [[webhooks.subscriptions]]
-  topics = ["customers/redact"]
+  compliance_topics = ["customers/redact"]
   uri = "/api/webhooks/customers/redact"
 
   [[webhooks.subscriptions]]
-  topics = ["shop/redact"]
+  compliance_topics = ["shop/redact"]
   uri = "/api/webhooks/shop/redact"
 
 [access_scopes]
@@ -34,3 +34,5 @@ redirect_urls = [
   "https://aura-core-monolith.onrender.com/shopify/callback"
 ]
 
+[build]
+automatically_update_urls_on_dev = true

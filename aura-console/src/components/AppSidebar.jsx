@@ -1,10 +1,38 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import {
+ FiActivity,
+ FiBarChart2,
+ FiBox,
+ FiBriefcase,
+ FiCode,
+ FiGrid,
+ FiHeart,
+ FiHelpCircle,
+ FiHome,
+ FiMail,
+ FiMessageCircle,
+ FiSearch,
+ FiSettings,
+ FiTrendingUp,
+ FiUsers,
+} from "react-icons/fi";
 import { apiFetch } from "../api";
 import { getToolCatalogGroups } from "../toolMeta";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_COLOUR } from "../hooks/usePlan";
 
-/* Group icons (none — text-only labels) */
-const GROUP_ICONS = {};
+const GROUP_ICONS = {
+ seo: FiSearch,
+ lifecycle: FiMail,
+ support: FiHeart,
+ social: FiMessageCircle,
+ ads: FiTrendingUp,
+ analytics: FiBarChart2,
+ personalization: FiUsers,
+ finance: FiBriefcase,
+ automation: FiActivity,
+ ai: FiGrid,
+ platform: FiCode,
+};
 
 const SIDEBAR_PREF_KEY = "aura-sidebar-prefs";
 
@@ -94,16 +122,16 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  /* Styles */
  const S = {
  sidebar: {
- width: collapsed ? 64 : 260,
- minWidth: collapsed ? 64 : 260,
- maxWidth: collapsed ? 64 : 260,
+ width: collapsed ? 68 : 272,
+ minWidth: collapsed ? 68 : 272,
+ maxWidth: collapsed ? 68 : 272,
  height: "100vh",
  position: "sticky",
  top: 0,
  display: "flex",
  flexDirection: "column",
- background: "#0a0a0c",
- borderRight: "1px solid #1e1e22",
+ background: "#ffffff",
+ borderRight: "1px solid #e2e8f0",
  transition: "width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease",
  overflow: "hidden",
  zIndex: 50,
@@ -115,8 +143,8 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  gap: 10,
  padding: collapsed ? "16px 0": "16px 16px",
  justifyContent: collapsed ? "center": "flex-start",
- borderBottom: "1px solid #1e1e22",
- minHeight: 56,
+ borderBottom: "1px solid #e2e8f0",
+ minHeight: 64,
  },
  logo: {
  width: 28,
@@ -128,7 +156,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  brandText: {
  fontSize: 15,
  fontWeight: 800,
- color: "#ffffff",
+ color: "#172033",
  letterSpacing: "0.06em",
  display: collapsed ? "none": "block",
  whiteSpace: "nowrap",
@@ -141,9 +169,9 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  width: "100%",
  padding: "8px 10px 8px 32px",
  borderRadius: 8,
- border: "1px solid #27272a",
- background: "#18181b",
- color: "#fafafa",
+ border: "1px solid #d5deea",
+ background: "#f8fafc",
+ color: "#172033",
  fontSize: 13,
  outline: "none",
  boxSizing: "border-box",
@@ -154,7 +182,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  top: "50%",
  transform: "translateY(-50%)",
  fontSize: 13,
- color: "#52525b",
+ color: "#64748b",
  pointerEvents: "none",
  },
  navArea: {
@@ -171,9 +199,9 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  padding: collapsed ? "10px 0": "8px 16px",
  justifyContent: collapsed ? "center": "flex-start",
  border: "none",
- borderLeft: active ? "3px solid #4f46e5": "3px solid transparent",
- background: active ? "rgba(79, 70, 229, 0.10)": "transparent",
- color: active ? "#c7d2fe": "#a1a1aa",
+ borderLeft: active ? "3px solid #2563eb": "3px solid transparent",
+ background: active ? "#eff6ff": "transparent",
+ color: active ? "#1d4ed8": "#334155",
  fontWeight: active ? 700 : 500,
  fontSize: 13,
  cursor: "pointer",
@@ -203,9 +231,9 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  padding: collapsed ? "10px 0": "9px 16px",
  justifyContent: collapsed ? "center": "flex-start",
  border: "none",
- borderLeft: active ? "3px solid #4f46e5": "3px solid transparent",
- background: active ? "rgba(79, 70, 229, 0.06)": "transparent",
- color: active ? "#c7d2fe": "#d4d4d8",
+ borderLeft: active ? "3px solid #2563eb": "3px solid transparent",
+ background: active ? "#eff6ff": "transparent",
+ color: active ? "#1d4ed8": "#334155",
  fontWeight: 700,
  fontSize: 12,
  cursor: "pointer",
@@ -220,7 +248,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  display: collapsed ? "none": "inline-block",
  marginLeft: "auto",
  fontSize: 10,
- color: "#52525b",
+ color: "#64748b",
  transition: "transform 0.2s ease",
  transform: expanded ? "rotate(90deg)": "rotate(0deg)",
  flexShrink: 0,
@@ -233,9 +261,9 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  padding: collapsed ? "7px 0": "6px 16px 6px 42px",
  justifyContent: collapsed ? "center": "flex-start",
  border: "none",
- borderLeft: active ? "3px solid #818cf8": "3px solid transparent",
- background: active ? "rgba(99, 102, 241, 0.12)": "transparent",
- color: active ? "#e0e7ff": locked ? "#52525b": "#9ca3af",
+ borderLeft: active ? "3px solid #2563eb": "3px solid transparent",
+ background: active ? "#eff6ff": "transparent",
+ color: active ? "#1d4ed8": "#334155",
  fontWeight: active ? 600 : 400,
  fontSize: 13,
  cursor: locked ? "default": "pointer",
@@ -244,7 +272,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  whiteSpace: "nowrap",
  overflow: "hidden",
  textOverflow: "ellipsis",
- opacity: locked ? 0.6 : 1,
+ opacity: 1,
  borderRadius: 0,
  }),
  toolDot: (status) => ({
@@ -255,7 +283,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  flexShrink: 0,
  }),
  footer: {
- borderTop: "1px solid #1e1e22",
+ borderTop: "1px solid #e2e8f0",
  padding: collapsed ? "10px 0": "8px 0",
  },
  collapseBtn: {
@@ -266,7 +294,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  padding: "10px 0",
  border: "none",
  background: "transparent",
- color: "#52525b",
+ color: "#64748b",
  fontSize: 16,
  cursor: "pointer",
  transition: "color 0.15s",
@@ -276,7 +304,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  fontWeight: 800,
  padding: "1px 5px",
  borderRadius: 4,
- background: color || "#4f46e5",
+ background: color || "#2563eb",
  color: "#fff",
  marginLeft: 6,
  display: collapsed ? "none": "inline",
@@ -284,7 +312,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  }),
  toolCount: {
  fontSize: 10,
- color: "#52525b",
+ color: "#64748b",
  marginLeft: "auto",
  display: collapsed ? "none": "inline",
  flexShrink: 0,
@@ -295,14 +323,22 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  <aside style={S.sidebar} aria-label="App navigation">
  {/* Brand */}
  <div style={S.brandArea}>
- <img src="/logo-aura.png"alt="AURA"style={S.logo} />
- <span style={S.brandText}>AURA</span>
+ <button
+ className="sidebar-brand-button"
+ type="button"
+ onClick={() => setActiveSection("dashboard")}
+ aria-label="Go to AURA dashboard"
+ style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 0, border: "none", background: "transparent", cursor: "pointer" }}
+ >
+ <img src="/logo-aura.png" alt="" style={S.logo} />
+ <span className="sidebar-brand-text" style={S.brandText}>AURA</span>
+ </button>
  </div>
 
  {/* Search */}
- <div style={S.searchWrap}>
+ <div className="sidebar-search" style={S.searchWrap}>
  <div style={{ position: "relative"}}>
-
+ <FiSearch style={S.searchIcon} aria-hidden="true" />
  <input
  type="text"placeholder="Search tools…"value={search}
  onChange={e => setSearch(e.target.value)}
@@ -326,7 +362,8 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  style={S.navItem(activeSection === "dashboard")}
  onClick={() => setActiveSection("dashboard")}
  title="Dashboard">
- <span style={S.navItemLabel}>Dashboard</span>
+ <FiHome style={S.navItemIcon} aria-hidden="true" />
+ <span className="sidebar-item-label" style={S.navItemLabel}>Dashboard</span>
  </button>
 
  {/* All Tools */}
@@ -334,14 +371,15 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  style={S.navItem(activeSection === "all-tools")}
  onClick={() => setActiveSection("all-tools")}
  title="All Tools">
- <span style={S.navItemLabel}>All Tools</span>
+ <FiGrid style={S.navItemIcon} aria-hidden="true" />
+ <span className="sidebar-item-label" style={S.navItemLabel}>All Tools</span>
  {!collapsed && totalTools > 0 && (
  <span style={S.toolCount}>{totalTools}</span>
  )}
  </button>
 
  {/* Divider */}
- <div style={{ height: 1, background: "#1e1e22", margin: "6px 12px"}} />
+ <div style={{ height: 1, background: "#263244", margin: "8px 12px"}} />
 
  {/* Loading skeleton */}
  {loading && !collapsed && (
@@ -352,7 +390,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  {filteredGroups.map(group => {
  const expanded = Boolean(search.trim()) || expandedGroups[group.id] || false;
  const groupActive = isGroupActive(group.id);
- const icon = GROUP_ICONS[group.id] || "";
+ const GroupIcon = GROUP_ICONS[group.id] || FiBox;
  const toolCount = group.modules?.length || 0;
 
  return (
@@ -360,7 +398,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  <button
  style={S.groupHeader(groupActive, expanded)}
  onClick={() => {
- if (collapsed) {
+ if (collapsed || window.innerWidth <= 640) {
  // In collapsed mode, clicking group navigates to all-tools
  setActiveSection("all-tools");
  } else {
@@ -370,8 +408,8 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  title={group.title}
  aria-expanded={expanded}
  >
- <span style={S.navItemIcon}>{icon}</span>
- <span style={S.navItemLabel}>{group.title}</span>
+ <GroupIcon style={S.navItemIcon} aria-hidden="true" />
+ <span className="sidebar-item-label" style={S.navItemLabel}>{group.title}</span>
  {!collapsed && (
  <span style={S.toolCount}>{toolCount}</span>
  )}
@@ -397,7 +435,7 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  title={locked ? `${tool.name} (${PLAN_LABEL[requiredPlanFor(tool.id)] || "Upgrade"} plan required)` : tool.name}
  >
  {tool.status && <span style={S.toolDot(tool.status)} />}
- <span style={{ overflow: "hidden", textOverflow: "ellipsis"}}>{tool.name}</span>
+ <span className="sidebar-tool-label" style={{ overflow: "hidden", textOverflow: "ellipsis"}}>{tool.name}</span>
  {locked && <span style={S.badge(PLAN_COLOUR[requiredPlanFor(tool.id)] || PLAN_COLOUR.pro)}>{(PLAN_LABEL[requiredPlanFor(tool.id)] || "PRO").toUpperCase()}</span>}
  </button>
  );
@@ -418,12 +456,21 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
 
  {/* Footer */}
  <div style={S.footer}>
+ <button
+ style={S.navItem(activeSection === "help")}
+ onClick={() => setActiveSection("help")}
+ title="Help & support">
+ <FiHelpCircle style={S.navItemIcon} aria-hidden="true" />
+ <span className="sidebar-item-label" style={S.navItemLabel}>Help &amp; Support</span>
+ </button>
+
  {/* Settings */}
  <button
  style={S.navItem(activeSection === "settings")}
  onClick={() => setActiveSection("settings")}
  title="Settings">
- <span style={S.navItemLabel}>Settings</span>
+ <FiSettings style={S.navItemIcon} aria-hidden="true" />
+ <span className="sidebar-item-label" style={S.navItemLabel}>Settings</span>
  </button>
 
  {/* Collapse toggle */}

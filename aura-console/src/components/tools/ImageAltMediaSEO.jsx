@@ -86,7 +86,7 @@ export default function ImageAltText() {
       {done && <div style={S.ok}>{done}</div>}
 
       <div style={S.card}>
-        <h2 style={S.h}>Your images {s ? `(${images.length} checked)` : ""}</h2>
+        <h2 style={S.h}>Your images {s ? `(${images.length} checked)` : ""}<HelpTip title="Your images" toolId="image-alt-media-seo">Images with missing or weak alt text are listed. Tick the ones you want AI to write alt text for, check the result, then apply.</HelpTip></h2>
         {data && (
           <div style={{ marginBottom: 10 }}>
             <span style={S.pill}>{images.filter((i) => i.problem === "missing").length} missing</span>
@@ -97,7 +97,7 @@ export default function ImageAltText() {
         )}
         <div style={{ marginBottom: 12 }}>
           <button style={{ ...S.btn, ...(!chosen.length || busy || !(data && data.ai) ? S.off : {}) }} disabled={!chosen.length || !!busy || !(data && data.ai)} onClick={() => generate(chosen)}>
-            {busy === "gen" ? "Looking at images…" : `AI: write alt text for ${chosen.length || "selected"} (1 credit each, max 10)`}
+            {busy === "gen" ? "Looking at images…" : <>{`AI: write alt text for ${chosen.length || "selected"} (max 10)`}<CostBadge action="alt-text" times={chosen.length || 1} style={{ background: "#fff", marginLeft: 6 }} /></>}
           </button>
           {data && !data.ai && <span style={S.muted}>AI is not set up on this server. You can still type alt text yourself.</span>}
         </div>

@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const model = require('./model');
+const { getShopContext } = require('../../core/shopContext');
 
 const { getOpenAIClient } = require("../../core/openaiClient");
 const openai = getOpenAIClient();
@@ -322,10 +323,32 @@ router.post('/shopify/apply', async (req, res) => {
     const shop = req.headers['x-shopify-shop-domain'] || req.body.shop;
     if (!shop) return res.status(400).json({ ok: false, error: 'No shop domain — add x-shopify-shop-domain header' });
     const { applyProductFields } = require('../../core/shopifyApply');
-    const result = await applyProductFields(shop, productId, { title, body_html, handle, tags, metaDescription, seoTitle });
+    const productSnapshot = require('../../core/productSnapshot');
+    const fields = { title, body_html, handle, tags, metaDescription, seoTitle };
+    let before = null;
+    try { before = await productSnapshot.snapshot(shop, productId); } catch (e) { console.error('[product-seo] could not save an undo copy:', e.message); }
+    const result = await applyProductFields(shop, productId, fields);
+    if (before) { try { result.undoId = productSnapshot.record(shop, productId, before, fields).id; } catch (e) { console.error('[product-seo] could not save undo record:', e.message); } }
     res.json(result);
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+router.get('/shopify/history', (req, res) => {
+  const ctx = getShopContext(req);
+  if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
+  res.json({ ok: true, history: require('../../core/productSnapshot').history(ctx.shop) });
+});
+
+router.post('/shopify/undo', async (req, res) => {
+  const ctx = getShopContext(req);
+  if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
+  try {
+    const entry = await require('../../core/productSnapshot').undo(ctx.shop, req.body && req.body.id);
+    res.json({ ok: true, entry });
+  } catch (e) {
+    res.status(e.status || 500).json({ ok: false, error: e.message });
   }
 });
 

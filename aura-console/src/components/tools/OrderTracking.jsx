@@ -93,7 +93,7 @@ export default function OrderTracking() {
             <span style={S.muted}> · {o.ageDays} days ago{o.customer ? ` · ${o.customer}` : ""}{o.place ? ` · ${o.place}` : ""}</span>
             <div style={S.muted}>{o.items.join(", ")}</div>
             {o.tracking.map((t, i) => <div key={i} style={{ fontSize: 12, marginTop: 4 }}>{t.company || "Carrier"} {t.url ? <a style={{ color: "#a5b4fc" }} href={t.url} target="_blank" rel="noreferrer">{t.number}</a> : t.number}</div>)}
-            {o.state !== "cancelled" && <div style={{ marginTop: 8 }}><button style={{ ...S.ghost, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => write(o)}>{busy === o.id ? "Writing…" : "AI write update (2 credits)"}</button></div>}
+            {o.state !== "cancelled" && <div style={{ marginTop: 8 }}><button style={{ ...S.ghost, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => write(o)}>{busy === o.id ? "Writing…" : <>AI write update<CostBadge action="email-gen" /></>}</button></div>}
           </div>
         ))}
       </div>

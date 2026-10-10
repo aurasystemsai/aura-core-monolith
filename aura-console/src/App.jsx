@@ -10,7 +10,6 @@ import HubTool from "./components/HubTool.jsx";
 import AiChatbot from "./components/AiChatbot.jsx";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
-import OnboardingModal from "./components/OnboardingModal.jsx";
 import ShopifyReconnectButton from "./components/ShopifyReconnectButton.jsx";
 import AppSidebar from "./components/AppSidebar.jsx";import ErrorBoundary from './components/ErrorBoundary.jsx';
 const PricingPage = lazy(() => import("./components/PricingPage"));
@@ -32,6 +31,9 @@ const FixQueue = lazy(() => import("./components/FixQueue"));
 const Auth = lazy(() => import("./auth/Auth.jsx"));
 const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
 const Credits = lazy(() => import("./credits/Credits.jsx"));
+const Help = lazy(() => import("./help/Help.jsx"));
+import HelpDrawer from "./help/HelpDrawer.jsx";
+import GUIDES from "./help/guides.js";
 const Settings = lazy(() => import("./components/Settings.jsx"));
 
 // Tool components organized by suite
@@ -141,6 +143,8 @@ function App() {
  const { plan, planLoading } = usePlan();
  const { balance, loading: creditsLoading } = useCredits();
  const [toolInitUrl, setToolInitUrl] = useState(null);
+ const [helpFor, setHelpFor] = useState(null);
+ useEffect(() => { setHelpFor(null); }, [activeSection]);
  const [hubTabs, setHubTabs] = useState({});
  const planLoadedRef = React.useRef(false);
  const isPushingFromPopstate = React.useRef(false);
@@ -250,8 +254,6 @@ function App() {
  const [coreUrl] = useState(window.CORE_API || 'https://aura-core-monolith.onrender.com');
  // Floating AI Chatbot widget state
  const [showChatbot, setShowChatbot] = useState(false);
- // Onboarding modal state
- const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('auraOnboarded'));
  // Changelog modal state
  const [showChangelog, setShowChangelog] = useState(false);
  const [showToolsMenu, setShowToolsMenu] = useState(false);
@@ -288,11 +290,6 @@ function App() {
  setActiveSectionRaw('settings');
  }, []);
 
- // Mark onboarding as complete
- const handleCloseOnboarding = () => {
- setShowOnboarding(false);
- localStorage.setItem('auraOnboarded', '1');
- };
  // Mark changelog as seen
  const handleShowChangelog = () => {
  setShowChangelog(true);
@@ -302,7 +299,7 @@ function App() {
  // Human-readable section labels for the breadcrumb
  const SECTION_LABELS = {
  'dashboard': 'Dashboard', 'all-tools': 'All Tools', 'main-suite': 'Suite',
- 'settings': 'Settings', 'credits': 'Credits', 'pricing': 'Pricing',
+ 'settings': 'Settings', 'credits': 'Credits', 'help': 'Help & Support', 'pricing': 'Pricing',
  'blog-seo': 'Blog SEO Engine', 'blog-draft-engine': 'Blog Draft Engine',
  'product-seo': 'Product SEO', 'product-feed': 'Product Feed', 'translations': 'Translations', 'discounts-bundles': 'Discounts & Bundles', 'order-tracking': 'Order Tracking', 'back-in-stock': 'Back-in-Stock Alerts', 'popups': 'Popups & Email Capture', 'size-guides': 'Size Guides', 'google-ads-integration': 'Google Ads', 'facebook-ads-integration': 'Facebook & Instagram Ads', 'tiktok-ads-integration': 'TikTok Ads', 'keyword-research-suite': 'Keyword Research',
  'on-page-seo-engine': 'On-Page SEO', 'technical-seo-auditor': 'Technical SEO',
@@ -332,7 +329,6 @@ function App() {
 
  return (
  <ErrorBoundary>
- <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
  <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
  <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info'})} />
  <div className="app-shell"style={{ flexDirection: 'row'}}>
@@ -346,6 +342,22 @@ function App() {
  {/* Slim top bar persistent back + breadcrumb + plan badge */}
  <header className="top-bar-slim">
  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+ {activeSection !== "dashboard" && (
+ <button
+ className="topbar-quick-link"
+ onClick={() => setActiveSection("dashboard")}
+ aria-label="Go to dashboard"
+ >
+ Home
+ </button>
+ )}
+ <button
+ className="topbar-quick-link"
+ onClick={() => setActiveSection("all-tools")}
+ aria-label="Browse all tools"
+ >
+ All tools
+ </button>
  {/* Back button always visible when history exists */}
  {sectionHistory.length > 0 && (
  <button
@@ -359,9 +371,9 @@ function App() {
  </button>
  )}
  {/* Current page name */}
- <span style={{ fontSize: 13, fontWeight: 600, color: '#e4e4e7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{currentPageLabel}</span>
+ <span style={{ fontSize: 13, fontWeight: 600, color: '#172033', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{currentPageLabel}</span>
  {plan && (
- <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: plan === 'free'? '#27272a': `${PLAN_COLOUR[plan]}18`, color: PLAN_COLOUR[plan] || '#a1a1aa', border: `1px solid ${PLAN_COLOUR[plan] || '#27272a'}44`, letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0 }}>
+ <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: plan === 'free'? '#f1f5f9': `${PLAN_COLOUR[plan]}18`, color: PLAN_COLOUR[plan] || '#64748b', border: `1px solid ${PLAN_COLOUR[plan] || '#dbe3ed'}44`, letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0 }}>
  {PLAN_LABEL[plan]}
  </span>
  )}
@@ -372,6 +384,12 @@ function App() {
  <span className="shop-name">{String(project.name).replace(/\.myshopify\.com$/i, '')}</span>
  </div>
  )}
+ {GUIDES[activeSection] && (
+ <button onClick={() => setHelpFor(activeSection)} title="Steps and video for this tool"
+ style={{ background: '#eef2ff', border: '1px solid #c7d2fe', color: '#4338ca', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>
+ ? Help with this tool
+ </button>
+ )}
  {/* Persistent credit balance pill â€” always visible, click â†’ credits page */}
  {!creditsLoading && (
  <button
@@ -379,14 +397,14 @@ function App() {
  title="View credits & usage"
  style={{
  display: 'flex', alignItems: 'center', gap: 5,
- background: (balance !== null && balance <= 10) ? '#2d1515' : '#18181b',
- border: `1px solid ${(balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}`,
+ background: (balance !== null && balance <= 10) ? '#fff1f2' : '#f8fafc',
+ border: `1px solid ${(balance !== null && balance <= 10) ? '#fecdd3' : '#d5deea'}`,
  borderRadius: 20, padding: '4px 12px', cursor: 'pointer',
- fontSize: 12, fontWeight: 700, color: (balance !== null && balance <= 10) ? '#f87171' : '#a1a1aa',
+ fontSize: 12, fontWeight: 700, color: (balance !== null && balance <= 10) ? '#be123c' : '#475569',
  transition: 'all 0.2s', whiteSpace: 'nowrap',
  }}
  onMouseEnter={e => e.currentTarget.style.borderColor = '#6366f1'}
- onMouseLeave={e => e.currentTarget.style.borderColor = (balance !== null && balance <= 10) ? '#7f1d1d' : '#3f3f46'}
+ onMouseLeave={e => e.currentTarget.style.borderColor = (balance !== null && balance <= 10) ? '#fecdd3' : '#d5deea'}
  >
  <span style={{ fontSize: 13 }}></span>
  {balance === null ? 'â€¦' : `${balance.toLocaleString()} credits`}
@@ -397,10 +415,17 @@ function App() {
  <main className="app-main">
  <div className="page-frame fade-in">
  <section className="tool-section">
+ {helpFor && GUIDES[helpFor] && <HelpDrawer toolId={helpFor} onClose={() => setHelpFor(null)} onMore={() => { setHelpFor(null); setActiveSection("help"); }} />}
+ {!creditsLoading && balance !== null && balance < 20 && activeSection !== "credits" && (
+ <div role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", color: "#78350f", borderRadius: 8, padding: "10px 14px", margin: "0 0 14px", display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
+ <span>{balance <= 0 ? "You are out of credits. AI actions are paused." : `Only ${balance} credits left. AI actions will pause when they run out.`}</span>
+ <button onClick={() => setActiveSection("credits")} style={{ background: "#78350f", color: "#fff", border: 0, borderRadius: 6, padding: "6px 12px", fontWeight: 600, cursor: "pointer" }}>Get more credits</button>
+ </div>
+ )}
  {/* Main content routing */}
  <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading</p></div>}>
  {/* Core sections */}
- {activeSection === "dashboard"&& <Dashboard setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }} />}
+ {activeSection === "dashboard"&& <Dashboard plan={plan} setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }} />}
  {activeSection === "all-tools"&& <AllTools setActiveSection={setActiveSection} />}
  {activeSection === "main-suite"&& <MainSuite setActiveSection={setActiveSection} />}
  {activeSection === "settings"&& <Settings setActiveSection={setActiveSection} />}
@@ -413,6 +438,7 @@ function App() {
  {activeSection === "user-management"&& <UserManagement coreUrl={coreUrl} />}
  {activeSection === "onboarding"&& <Onboarding />}
  {activeSection === "credits"&& <Credits plan={plan} />}
+ {activeSection === "help"&& <Help setActiveSection={setActiveSection} />}
  {activeSection === "ai-chatbot"&& <AiChatbot coreUrl={coreUrl} />}
 
  {/* Utility sections */}
@@ -542,4 +568,3 @@ function App() {
  );
 }
 export default App;
-

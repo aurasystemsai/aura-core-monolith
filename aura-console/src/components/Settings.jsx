@@ -396,7 +396,7 @@ const Settings = ({ setActiveSection }) => {
  {billingLoading ? (
  <div style={{ color: '#71717a', textAlign: 'center', padding: '32px 0'}}>Loading plan info</div>
  ) : (
- <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+ <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 16 }}>
  {(() => {
  const currentPlanIndex = PLANS.findIndex(p => p.id === (subscription?.plan_id || 'free'));
  return PLANS.map((plan, planIndex) => {
@@ -487,11 +487,15 @@ const Settings = ({ setActiveSection }) => {
 
  <style>{`
  .settings-page {
- padding: 32px;
+ width: 100%;
+ min-width: 0;
+ box-sizing: border-box;
+ padding: clamp(16px, 3vw, 32px);
  max-width: 1200px;
  margin: 0 auto;
- background: #18181b;
- min-height: 100vh;
+ background: #f5f7fb;
+ color: #172033;
+ min-height: 100%;
  }
 
  .settings-header {
@@ -502,25 +506,25 @@ const Settings = ({ setActiveSection }) => {
  font-size: 32px;
  font-weight: 700;
  margin: 0 0 8px 0;
- color: #fafafa;
+ color: #172033;
  }
 
  .settings-header p {
- color: #a1a1aa;
+ color: #64748b;
  margin: 0;
  }
 
  .settings-section {
- background: #18181b;
+ background: #ffffff;
  padding: 32px;
  border-radius: 12px;
- border: 1px solid #27272a;
- box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+ border: 1px solid #dbe3ed;
+ box-shadow: 0 1px 3px rgba(15,23,42,0.06);
  margin-bottom: 24px;
  }
 
  .settings-section h2 {
- color: #fafafa;
+ color: #172033;
  }
 
  .connect-shopify-card {
@@ -754,8 +758,8 @@ const Settings = ({ setActiveSection }) => {
 
  /* Modern Card Styles */
  .setting-card {
- background: #18181b;
- border: 1px solid #27272a;
+ background: #ffffff;
+ border: 1px solid #dbe3ed;
  border-radius: 16px;
  margin-bottom: 24px;
  overflow: hidden;
@@ -763,8 +767,8 @@ const Settings = ({ setActiveSection }) => {
  }
 
  .setting-card:hover {
- border-color: #3f3f46;
- box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+ border-color: #bfdbfe;
+ box-shadow: 0 4px 12px rgba(15,23,42,0.08);
  }
 
  .card-header {
@@ -772,8 +776,8 @@ const Settings = ({ setActiveSection }) => {
  align-items: center;
  gap: 16px;
  padding: 24px;
- border-bottom: 1px solid #27272a;
- background: #18181b;
+ border-bottom: 1px solid #dbe3ed;
+ background: #f8fafc;
  }
 
  .header-icon {
@@ -791,13 +795,13 @@ const Settings = ({ setActiveSection }) => {
  margin: 0 0 4px 0;
  font-size: 20px;
  font-weight: 600;
- color: #fafafa;
+ color: #172033;
  }
 
  .card-subtitle {
  margin: 0;
  font-size: 14px;
- color: #a1a1aa;
+ color: #64748b;
  }
 
  .card-body {
@@ -890,8 +894,19 @@ const Settings = ({ setActiveSection }) => {
  .help-text-small {
  margin-top: 12px;
  font-size: 13px;
- color: #a1a1aa;
+ color: #64748b;
  line-height: 1.5;
+ }
+
+ .settings-content,
+ .settings-page > div {
+ min-width: 0;
+ }
+
+ @media (max-width: 600px) {
+ .settings-section {
+ padding: 20px;
+ }
  }
  `}</style>
  </div>
@@ -899,6 +914,5 @@ const Settings = ({ setActiveSection }) => {
 };
 
 export default Settings;
-
 
 

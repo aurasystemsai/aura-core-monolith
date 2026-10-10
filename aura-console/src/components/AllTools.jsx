@@ -122,9 +122,9 @@ export default function AllTools({ setActiveSection }) {
  onClick={() => setActiveCategory(cat.id)}
  style={{
  padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer',
- border: `1px solid ${activeCategory === cat.id ? '#4f46e5': '#27272a'}`,
- background: activeCategory === cat.id ? '#4f46e522': 'transparent',
- color: activeCategory === cat.id ? '#4f46e5': '#a1a1aa',
+ border: `1px solid ${activeCategory === cat.id ? '#93c5fd': '#dbe3ed'}`,
+ background: activeCategory === cat.id ? '#eff6ff': '#ffffff',
+ color: activeCategory === cat.id ? '#1d4ed8': '#475569',
  }}
  >
  {cat.label}
@@ -133,7 +133,7 @@ export default function AllTools({ setActiveSection }) {
  {(searchTerm || activeCategory !== 'all') && (
  <button
  onClick={() => { setSearchTerm(''); setActiveCategory('all'); }}
- style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #52525b', background: 'transparent', color: '#71717a'}}
+ style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #dbe3ed', background: '#ffffff', color: '#64748b'}}
  >
  Clear filters 
  </button>
@@ -142,11 +142,11 @@ export default function AllTools({ setActiveSection }) {
 
  {/* Tool Grid */}
  {sortedModules.length === 0 && (
- <div style={{ textAlign: 'center', padding: '80px 20px', color: '#71717a'}}>
+ <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b'}}>
  
- <div style={{ fontSize: 18, fontWeight: 700, color: '#a1a1aa', marginBottom: 8 }}>No tools found</div>
+ <div style={{ fontSize: 18, fontWeight: 700, color: '#172033', marginBottom: 8 }}>No tools found</div>
  <div style={{ fontSize: 14 }}>Try a different search term or category</div>
- <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #52525b', background: 'transparent', color: '#4f46e5', fontWeight: 700, cursor: 'pointer'}}>Clear filters</button>
+ <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #dbe3ed', background: '#ffffff', color: '#1d4ed8', fontWeight: 700, cursor: 'pointer'}}>Clear filters</button>
  </div>
  )}
  <div className="all-tools-grid">
@@ -161,11 +161,11 @@ export default function AllTools({ setActiveSection }) {
  style={locked ? { opacity: 0.72, position: "relative", cursor: "pointer"} : { position: "relative"}}
  >
  {locked && (
- <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", background: "rgba(15,23,42,0.82)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 12, textAlign: "center"}}>
+ <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", background: "rgba(248,250,252,0.94)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 12, textAlign: "center"}}>
  <span style={{ fontSize: 28 }}></span>
  <span style={{ fontSize: 13, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan</span>
- <span style={{ fontSize: 11, color: "#a1a1aa"}}>from {PLAN_PRICE[reqPlan]}</span>
- <span style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700, marginTop: 2 }}>Upgrade Plan </span>
+ <span style={{ fontSize: 11, color: "#64748b"}}>from {PLAN_PRICE[reqPlan]}</span>
+ <span style={{ fontSize: 11, color: "#1d4ed8", fontWeight: 700, marginTop: 2 }}>Upgrade Plan </span>
  </div>
  )}
  <div className="tool-card-header">
@@ -197,11 +197,12 @@ export default function AllTools({ setActiveSection }) {
 
  <style>{`
  .all-tools-container {
- padding: 32px;
+ width: 100%;
+ padding: clamp(16px, 3vw, 32px);
  max-width: 1400px;
  margin: 0 auto;
- background: #18181b;
- min-height: 100vh;
+ background: transparent;
+ color: #172033;
  }
 
  .all-tools-header {
@@ -211,12 +212,12 @@ export default function AllTools({ setActiveSection }) {
  .all-tools-header h1 {
  font-size: 36px;
  font-weight: 900;
- color: #4f46e5;
+ color: #172033;
  margin: 0 0 8px 0;
  }
 
  .subtitle {
- color: #a1a1aa;
+ color: #64748b;
  font-size: 16px;
  margin: 0;
  }
@@ -252,45 +253,52 @@ export default function AllTools({ setActiveSection }) {
 
  .all-tools-controls {
  display: flex;
- gap: 16px;
+ flex-wrap: wrap;
+ gap: 10px;
  margin-bottom: 32px;
  align-items: center;
+ width: 100%;
  }
 
- .search-input {
- flex: 1;
+ .all-tools-container .search-input {
+ flex: 1 1 220px;
+ min-width: 0;
  padding: 12px 16px;
  border-radius: 10px;
- border: 1px solid #27272a;
- background: #18181b;
- color: #fafafa;
+ border: 1px solid #dbe3ed;
+ background: #ffffff;
+ color: #172033;
  font-size: 15px;
  }
 
- .search-input:focus {
+ .all-tools-container .search-input:focus {
  outline: none;
- border-color: #4f46e5;
- box-shadow: 0 0 0 3px rgba(127, 255, 212, 0.1);
+ border-color: #60a5fa;
+ box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
  }
 
- .sort-select {
+ .all-tools-container .sort-select {
+ flex: 0 1 auto;
+ min-width: 0;
  padding: 12px 16px;
  border-radius: 10px;
- border: 1px solid #27272a;
- background: #18181b;
- color: #fafafa;
+ border: 1px solid #dbe3ed;
+ background: #ffffff;
+ color: #334155;
  font-size: 15px;
  cursor: pointer;
  }
 
  .btn-open-suite {
- padding: 12px 24px;
+ flex: 0 1 auto;
+ padding: 12px 18px;
  border-radius: 10px;
  border: none;
- background: linear-gradient(135deg, #4f46e5 0%, #22d3ee 100%);
- color: #18181b;
+ background: #2563eb;
+ color: #ffffff;
  font-weight: 700;
- font-size: 15px;
+ font-size: 14px;
+ white-space: nowrap;
  cursor: pointer;
  transition: transform 0.2s;
  }
@@ -301,27 +309,29 @@ export default function AllTools({ setActiveSection }) {
 
  .all-tools-grid {
  display: grid;
- grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
- gap: 20px;
+ grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+ gap: 16px;
  }
 
- .tool-card {
- background: #18181b;
- border: 1px solid #27272a;
+ .all-tools-container .tool-card {
+ min-width: 0;
+ background: #ffffff;
+ border: 1px solid #e2e8f0;
  border-radius: 16px;
- padding: 24px;
+ padding: 20px;
  cursor: pointer;
  transition: all 0.2s;
  position: relative;
+ box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.035);
  }
 
- .tool-card:hover {
+ .all-tools-container .tool-card:hover {
  transform: translateY(-4px);
- border-color: #4f46e5;
- box-shadow: 0 8px 24px rgba(127, 255, 212, 0.15);
+ border-color: #93c5fd;
+ box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
  }
 
- .tool-card-header {
+ .all-tools-container .tool-card-header {
  display: flex;
  align-items: start;
  justify-content: space-between;
@@ -329,15 +339,15 @@ export default function AllTools({ setActiveSection }) {
  margin-bottom: 12px;
  }
 
- .tool-card h3 {
+ .all-tools-container .tool-card h3 {
  font-size: 18px;
  font-weight: 700;
- color: #fafafa;
+ color: #172033;
  margin: 0;
  flex: 1;
  }
 
- .category-tag {
+ .all-tools-container .category-tag {
  padding: 4px 10px;
  border-radius: 6px;
  font-size: 11px;
@@ -348,14 +358,14 @@ export default function AllTools({ setActiveSection }) {
  white-space: nowrap;
  }
 
- .tool-description {
- color: #a1a1aa;
+ .all-tools-container .tool-description {
+ color: #64748b;
  font-size: 14px;
  line-height: 1.6;
  margin: 0;
  }
 
- .status-badge {
+ .all-tools-container .status-badge {
  display: inline-block;
  margin-top: 12px;
  padding: 4px 10px;
@@ -365,30 +375,39 @@ export default function AllTools({ setActiveSection }) {
  text-transform: uppercase;
  }
 
- .status-new {
+ .all-tools-container .status-new {
  background: #22d3ee;
- color: #18181b;
+ color: #172033;
  }
 
- .status-beta {
+ .all-tools-container .status-beta {
  background: #f59e0b;
- color: #18181b;
+ color: #172033;
  }
 
- .doc-link {
+ .all-tools-container .doc-link {
  display: inline-block;
  margin-top: 12px;
- color: #4f46e5;
+ color: #1d4ed8;
  font-size: 13px;
  font-weight: 600;
  text-decoration: none;
  }
 
- .doc-link:hover {
+ .all-tools-container .doc-link:hover {
  text-decoration: underline;
+ }
+
+ @media (max-width: 700px) {
+ .all-tools-container .all-tools-controls > * {
+ flex: 1 1 100%;
+ }
+
+ .all-tools-container .btn-open-suite {
+ text-align: center;
+ }
  }
  `}</style>
  </div>
  );
 }
-

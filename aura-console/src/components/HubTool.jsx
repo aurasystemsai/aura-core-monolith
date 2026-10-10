@@ -43,10 +43,10 @@ const TOOLS = {
 };
 
 const S = {
-  bar: { display: "flex", gap: 4, flexWrap: "wrap", padding: "10px 16px 0", borderBottom: "1px solid #27272a", background: "#09090b", position: "sticky", top: 0, zIndex: 5 },
-  tab: (on) => ({ background: on ? "#18181b" : "transparent", color: on ? "#fafafa" : "#a1a1aa", border: "1px solid " + (on ? "#3f3f46" : "transparent"), borderBottom: on ? "1px solid #18181b" : "1px solid transparent", borderRadius: "8px 8px 0 0", padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: -1 }),
-  lock: { margin: 24, padding: 20, background: "#18181b", border: "1px solid #3f3f46", borderRadius: 10, color: "#e4e4e7", maxWidth: 520 },
-  btn: { marginTop: 12, background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 600, cursor: "pointer" },
+  bar: { display: "flex", gap: 6, flexWrap: "nowrap", overflowX: "auto", overflowY: "hidden", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", padding: "12px 16px 0", borderBottom: "1px solid #e2e8f0", background: "#ffffff", position: "sticky", top: 0, zIndex: 5 },
+  tab: (on) => ({ flexShrink: 0, whiteSpace: "nowrap", background: on ? "#eff6ff" : "transparent", color: on ? "#1d4ed8" : "#64748b", border: "1px solid " + (on ? "#bfdbfe" : "transparent"), borderBottom: on ? "1px solid #eff6ff" : "1px solid transparent", borderRadius: "8px 8px 0 0", padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: -1 }),
+  lock: { margin: 24, padding: 20, background: "#ffffff", border: "1px solid #dbe3ed", borderRadius: 10, color: "#172033", maxWidth: 520 },
+  btn: { marginTop: 12, background: "#2563eb", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 600, cursor: "pointer" },
   load: { padding: 24, color: "#a1a1aa", fontSize: 13 },
 };
 

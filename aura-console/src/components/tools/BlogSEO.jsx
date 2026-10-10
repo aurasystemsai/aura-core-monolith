@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { apiFetchJSON } from "../../api";
 const API = "/api/blog-seo";
 const S = {
@@ -14,10 +14,10 @@ export default function BlogSEO() {
   const [posts,setPosts]=useState([]);const [loading,setLoading]=useState(true);const [err,setErr]=useState(null);const [url,setUrl]=useState("");const [score,setScore]=useState(null);const [analyzing,setAnalyzing]=useState(false);
   useEffect(()=>{apiFetchJSON(API+"/posts").then(r=>setPosts(r.posts||[])).catch(e=>setErr(e.message)).finally(()=>setLoading(false));},[]);
   const analyze=async()=>{if(!url.trim())return;setAnalyzing(true);try{const r=await apiFetchJSON(API+"/analyze",{method:"POST",body:JSON.stringify({url})});setScore(r.score||r);}catch(e){setErr(e.message);}finally{setAnalyzing(false);}};
-  return (<div style={S.page}><h1 style={S.h1}>Blog SEO</h1><p style={S.sub}>Analyze and optimize blog post SEO performance.</p>
+  return (<div style={S.page}><h1 style={S.h1}>Blog SEO<HelpTip title="Blog SEO" toolId="blog-seo">Paste the link to a blog post to get a score and a list of fixes.</HelpTip></h1><p style={S.sub}>Analyze and optimize blog post SEO performance.</p>
     {err&&<div style={S.err}>{err}</div>}
     <div style={S.card}><div style={{fontSize:11,fontWeight:700,color:"#52525b",textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>Analyze Post URL</div>
-      <div style={S.row}><input style={S.input} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://your-store.com/blog/post-title"/><button style={S.btn("primary")} onClick={analyze} disabled={analyzing}>{analyzing?"Analyzing…":"Analyze (1 credit)"}</button></div>
+      <div style={S.row}><input style={S.input} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://your-store.com/blog/post-title"/><button style={S.btn("primary")} onClick={analyze} disabled={analyzing}>{analyzing?"Analyzing…":<>Analyze<CostBadge action="seo-analysis" style={{ background: "#fff", marginLeft: 6 }} /></>}</button></div>
       {score&&<div style={{background:"#0c0c0e",border:"1px solid #27272a",borderRadius:10,padding:"14px 16px"}}>
         <div style={{display:"flex",gap:20,marginBottom:12}}>{score.score&&<div><div style={{fontSize:12,color:"#71717a"}}>SEO Score</div><div style={{fontWeight:800,fontSize:24,color:score.score>=70?"#4ade80":score.score>=50?"#fbbf24":"#f87171"}}>{score.score}/100</div></div>}</div>
         {(score.recommendations||[]).map((r,i)=><div key={i} style={{fontSize:13,color:"#e4e4e7",padding:"4px 0",borderBottom:"1px solid #1f1f22"}}>→ {typeof r==="string"?r:r.text||r.message}</div>)}

@@ -94,7 +94,7 @@ function LoadingOverviewSkeleton() {
  <div style={{ fontSize: 12, color: "#71717a" }}>Querying ChatGPT, Google AI Overview, AI Mode &amp; Gemini — this takes 15–30 seconds</div>
  </div>
  </div>
- <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
+ <div className="ait-overview-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
  <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 20 }}>
  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20, gap: 10 }}>
@@ -284,7 +284,7 @@ function OverviewTab({ onNavigate }) {
  {loading && !result && <LoadingOverviewSkeleton />}
 
  {/* Main content — shown with real data or as empty-state blueprint */}
- <div style={{ display: loading && !result ? "none" : "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
+ <div className="ait-overview-grid" style={{ display: loading && !result ? "none" : "grid", gridTemplateColumns: "1fr 1.8fr", gap: 16, marginBottom: 16 }}>
 
  {/* Left: Score + platform breakdown */}
  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -448,7 +448,7 @@ function OverviewTab({ onNavigate }) {
  </div>
 
  {/* Table */}
- <div style={{ padding: "0 0 4px" }}>
+ <div style={{ padding: "0 0 4px", maxWidth: "100%", overflowX: "auto" }}>
  {/* Header */}
  <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 100px 80px 120px 90px", gap: 0, padding: "10px 20px", borderBottom: "1px solid #27272a", background: "#111113" }}>
  {["Topic", "Visibility", "Your Mentions", "", "AI Volume", "Intent"].map((h, i) => (
@@ -2974,4 +2974,3 @@ export default function AIVisibilityTracker() {
  </div>
  );
 }
-

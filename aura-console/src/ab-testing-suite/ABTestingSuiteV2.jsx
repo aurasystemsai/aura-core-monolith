@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AppProvider } from '@shopify/polaris';
 import {
  Page,
  Layout,
@@ -16,6 +17,7 @@ import {
  Spinner,
  Text
 } from '@shopify/polaris';
+import enTranslations from '@shopify/polaris/locales/en.json';
 import {
  AnalyticsMajor,
  ExportMinor,
@@ -31,7 +33,7 @@ import { apiFetchJSON } from '../api';
  * Exposes experiment management and statistical workflows backed by the API.
  */
 
-const ABTestingSuiteV2 = () => {
+const ABTestingSuiteContent = () => {
  const [selectedTab, setSelectedTab] = useState(0);
  const [loading, setLoading] = useState(false);
  const [experiments, setExperiments] = useState([]);
@@ -1059,5 +1061,11 @@ const ABTestingSuiteV2 = () => {
  </div>
  );
 };
+
+const ABTestingSuiteV2 = () => (
+ <AppProvider i18n={enTranslations}>
+  <ABTestingSuiteContent />
+ </AppProvider>
+);
 
 export default ABTestingSuiteV2;

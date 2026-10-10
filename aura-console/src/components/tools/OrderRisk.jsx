@@ -38,7 +38,7 @@ export default function OrderRisk() {
   return (
     <div style={S.root}>
       <h1 style={S.title}>Order Risk</h1>
-      <p style={S.subtitle}>Orders worth a second look before they ship, from Shopify's fraud checks plus a few plain rules. It only flags, it never cancels anything. Free and uses no credits.</p>
+      <p style={S.subtitle}>Orders worth a second look before they ship, from Shopify's fraud checks plus a few plain rules. It only flags, it never cancels anything. Uses no credits.</p>
       {error && <div style={S.error}>{error}</div>}
       {needsScopes && <div style={S.warn}>Approve the updated permissions for AURA in your Shopify admin, then press Refresh.</div>}
       <div style={{ marginBottom: 14 }}>

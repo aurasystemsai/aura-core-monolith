@@ -87,7 +87,7 @@ export default function Translations() {
 
       {locales && locales.length > 0 && (
         <div style={S.card}>
-          <h2 style={S.h}>Products</h2>
+          <h2 style={S.h}>Products<HelpTip title="Translating a product" toolId="translations">Press the AI button on a product to translate its title, description and search text into each store language. You can edit the result. Nothing reaches Shopify until you press Apply.</HelpTip></h2>
           <label style={S.muted}>Language </label>
           <select style={{ ...S.input, width: "auto", marginBottom: 12 }} value={locale} onChange={(e) => setLocale(e.target.value)} aria-label="Language">
             {locales.map((l) => <option key={l.locale} value={l.locale}>{l.name}{l.published ? "" : " (not published)"}</option>)}
@@ -101,7 +101,7 @@ export default function Translations() {
                   <div style={{ fontWeight: 600 }}>{p.title}</div>
                   <div style={{ fontSize: 12, color: p.done === p.total ? "#4ade80" : "#fbbf24" }}>{p.done} of {p.total} fields translated{p.outdated ? `, ${p.outdated} out of date` : ""}</div>
                 </div>
-                <button style={{ ...S.btn, marginRight: 0, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => suggest(p)}>{busy === "s:" + p.id ? "Translating..." : (p.done === p.total ? "Redo with AI" : "AI: translate") + " (2 credits)"}</button>
+                <button style={{ ...S.btn, marginRight: 0, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => suggest(p)}>{busy === "s:" + p.id ? "Translating..." : <>{p.done === p.total ? "Redo with AI" : "AI: translate"}<CostBadge action="product-description" style={{ background: "#fff", marginLeft: 6 }} /></>}</button>
               </div>
               {draft && draft.id === p.id && (
                 <div style={{ marginTop: 10 }}>
@@ -122,7 +122,7 @@ export default function Translations() {
       )}
 
       <div style={S.card}>
-        <h2 style={S.h}>Changes made</h2>
+        <h2 style={S.h}>Changes made<HelpTip title="Undo" toolId="translations">Every translation you apply is listed here. Press Undo on a line to put the old text back.</HelpTip></h2>
         {log.length === 0 && <div style={S.empty}>No translations saved yet.</div>}
         {log.map((e) => (
           <div key={e.id} style={{ ...S.row, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>

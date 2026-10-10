@@ -68,8 +68,8 @@ export default function BackInStock() {
 
   return (
     <div style={S.root}>
-      <h1 style={S.title}>Back-in-Stock Alerts</h1>
-      <p style={S.subtitle}>Shoppers who asked to be told get one email when a sold-out item is available again. Stock is checked live in Shopify. Free to run, no credits.</p>
+      <h1 style={S.title}>Back-in-Stock Alerts<HelpTip title="Back-in-stock alerts" toolId="back-in-stock">Shoppers sign up on sold-out products. When the item is back, each one is told once.</HelpTip></h1>
+      <p style={S.subtitle}>Shoppers who asked to be told get one email when a sold-out item is available again. Stock is checked live in Shopify.</p>
       {error && <div style={S.error}>{error}</div>}
       {note && <div style={S.ok}>{note}</div>}
       {status && !status.sending && <div style={S.error}>Email sending is not set up on the server yet, so alerts cannot be sent.</div>}

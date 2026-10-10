@@ -74,7 +74,7 @@ export default function Popups() {
   return (
     <div style={S.root}>
       <h1 style={S.title}>Popups &amp; Email Capture</h1>
-      <p style={S.subtitle}>Show an email signup or announcement on your storefront and keep the signups. Writing the words with AI costs 2 credits, only when it works. Everything else is free.</p>
+      <p style={S.subtitle}>Show an email signup or announcement on your storefront and keep the signups. Writing the words with AI costs 2 credits, only when it works. Everything else is included in your plan.</p>
       {error && <div style={S.error}>{error}</div>}
       {note && <div style={S.ok}>{note}</div>}
 
@@ -103,10 +103,10 @@ export default function Popups() {
           </select>
           {form.trigger === "delay" && (<><label style={S.label}>Seconds to wait</label><input style={S.input} type="number" min={0} max={120} value={form.delaySeconds} onChange={(e) => set("delaySeconds", e.target.value)} /></>)}
           {form.type === "email" && (<><label style={S.label}>Discount code to show after signup (optional, create it in Discounts &amp; Bundles first)</label><input style={S.input} value={form.discountCode} maxLength={40} onChange={(e) => set("discountCode", e.target.value)} /></>)}
-          <div style={{ ...S.muted, margin: "14px 0 6px" }}>Let AI write it (optional)</div>
+          <div style={{ ...S.muted, margin: "14px 0 6px" }}>Let AI write it (optional)<HelpTip title="AI copywriter" toolId="popups">Describe your offer and AI writes the popup wording. Edit it, then switch the popup on.</HelpTip></div>
           <div style={{ display: "flex", gap: 8 }}>
             <input style={S.input} value={goal} maxLength={160} placeholder="e.g. welcome new visitors to our candle shop" onChange={(e) => setGoal(e.target.value)} />
-            <button style={{ ...S.btn, marginRight: 0, whiteSpace: "nowrap", ...(busy || (status && !status.ai) ? S.off : {}) }} disabled={!!busy || (status && !status.ai)} onClick={write}>{busy === "ai" ? "Writing…" : "Write (2 credits)"}</button>
+            <button style={{ ...S.btn, marginRight: 0, whiteSpace: "nowrap", ...(busy || (status && !status.ai) ? S.off : {}) }} disabled={!!busy || (status && !status.ai)} onClick={write}>{busy === "ai" ? "Writing…" : <>Write<CostBadge action="email-gen" style={{ background: "#fff", marginLeft: 6 }} /></>}</button>
           </div>
           <label style={S.label}>Headline</label>
           <input style={S.input} value={form.headline} maxLength={80} onChange={(e) => set("headline", e.target.value)} />

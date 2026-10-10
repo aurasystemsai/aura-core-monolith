@@ -89,13 +89,13 @@ export default function DiscountsBundles() {
       {done && <div style={S.ok}>{done}</div>}
 
       <div style={S.card}>
-        <h2 style={S.h}>AI offers</h2>
+        <h2 style={S.h}>AI offers<HelpTip title="AI offers" toolId="discounts-bundles">AI looks at what your customers really buy together and suggests offers. You choose which to turn into a real Shopify discount code.</HelpTip></h2>
         {insight && <p style={S.muted}>Based on your last {insight.orders} orders{insight.orders ? `, average ${insight.currency} ${insight.averageOrder}` : ""}.</p>}
         <label style={S.label}>Goal (optional)</label>
         <input style={S.input} value={goal} maxLength={300} onChange={(e) => setGoal(e.target.value)} placeholder="e.g. Sell more mugs, or clear slow stock" />
         <p style={{ margin: "10px 0 0" }}>
           <button style={{ ...S.btn, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={suggest}>{busy === "suggest" ? "Thinking…" : "AI suggest offers"}</button>
-          <span style={S.muted}>Costs about 3 credits only if AI answers.</span>
+          <CostBadge action="campaign-gen" />
         </p>
         {offers.map((o, i) => (
           <div key={i} style={{ ...S.row, marginTop: 10 }}>
@@ -115,7 +115,7 @@ export default function DiscountsBundles() {
       </div>
 
       <div style={S.card}>
-        <h2 style={S.h}>Create a code yourself</h2>
+        <h2 style={S.h}>Create a code yourself<HelpTip title="Manual codes" toolId="discounts-bundles">Make a code without AI. This uses no credits.</HelpTip></h2>
         <div style={S.grid}>
           <div><label style={S.label}>Type</label>
             <select style={S.input} value={form.kind} onChange={set("kind")}><option value="basic">Percent off the order</option><option value="bundle">Bundle (buy one, get one off)</option></select></div>
@@ -137,7 +137,7 @@ export default function DiscountsBundles() {
       </div>
 
       <div style={S.card}>
-        <h2 style={S.h}>Your codes</h2>
+        <h2 style={S.h}>Your codes<HelpTip title="Your codes" toolId="discounts-bundles">Pause or delete any code here. Changes happen in Shopify straight away.</HelpTip></h2>
         {list === null && <div style={S.empty}>Loading…</div>}
         {list && list.length === 0 && <div style={S.empty}>No discount codes yet. Ask AI for an offer above.</div>}
         {list && list.map((d) => (

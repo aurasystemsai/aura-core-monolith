@@ -59,7 +59,7 @@ export default function ProfitAnalytics() {
   return (
     <div style={S.root}>
       <h1 style={S.title}>Profit Analytics</h1>
-      <p style={S.subtitle}>What you actually kept: your real orders minus product cost, fees, shipping and ads. Free, read-only, and uses no credits.</p>
+      <p style={S.subtitle}>What you actually kept: your real orders minus product cost, fees, shipping and ads. Read-only, and uses no credits.</p>
       {error && <div style={S.error}>{error}</div>}
       {needsScopes && <div style={S.warn}>Approve the updated permissions for AURA in your Shopify admin, then press Refresh.</div>}
       {done && <div style={S.ok}>{done}</div>}

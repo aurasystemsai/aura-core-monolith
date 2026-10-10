@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { apiFetchJSON } from "../../api";
+import HelpTip from "../../help/HelpTip";
+import CostBadge from "../../help/CostBadge";
 
 const S = {
   root: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },
@@ -70,7 +72,7 @@ export default function SizeGuides() {
   return (
     <div style={S.root}>
       <h1 style={S.title}>Size Guides</h1>
-      <p style={S.subtitle}>Show a size table on your product pages to cut down on wrong-size returns. AI can draft a table for 2 credits, only when it works. Everything else is free.</p>
+      <p style={S.subtitle}>Show a size table on your product pages to cut down on wrong-size returns. AI can draft a table for 2 credits, only when it works. Everything else is included in your plan.</p>
       {error && <div style={S.error}>{error}</div>}
       {note && <div style={S.ok}>{note}</div>}
 
@@ -94,11 +96,11 @@ export default function SizeGuides() {
           <label style={S.label}>Button and window title</label>
           <input style={S.input} value={form.title} maxLength={60} onChange={(e) => set("title", e.target.value)} />
 
-          <div style={{ ...S.muted, margin: "14px 0 6px" }}>Let AI draft the table (optional)</div>
+          <div style={{ ...S.muted, margin: "14px 0 6px" }}>Let AI draft the table (optional)<HelpTip title="AI size table" toolId="size-guides">Type the kind of item, pick cm or inches, and AI fills in a typical size table. These are typical figures, so check each number against your own products before you switch the guide on.</HelpTip></div>
           <div style={{ display: "flex", gap: 8 }}>
             <input style={S.input} value={item} maxLength={80} placeholder="e.g. women's t-shirts" onChange={(e) => setItem(e.target.value)} />
             <select style={{ ...S.input, width: 90 }} value={unit} onChange={(e) => setUnit(e.target.value)}><option value="cm">cm</option><option value="in">inches</option></select>
-            <button style={{ ...S.btn, marginRight: 0, whiteSpace: "nowrap", ...(busy || !item || (status && !status.ai) ? S.off : {}) }} disabled={!!busy || !item || (status && !status.ai)} onClick={draft}>{busy === "ai" ? "Drafting…" : "Draft (2 credits)"}</button>
+            <button style={{ ...S.btn, marginRight: 0, whiteSpace: "nowrap", ...(busy || !item || (status && !status.ai) ? S.off : {}) }} disabled={!!busy || !item || (status && !status.ai)} onClick={draft}>{busy === "ai" ? "Drafting…" : <>Draft<CostBadge action="product-description" style={{ background: "#fff", marginLeft: 6 }} /></>}</button>
           </div>
           <div style={{ ...S.warn, marginTop: 8 }}>AI sizes are typical figures, not yours. Check every number against your own products before you turn this on.</div>
 

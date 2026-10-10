@@ -54,7 +54,7 @@ export default function AIShoppingReadiness() {
   return (
     <div style={S.root}>
       <h1 style={S.title}>AI Shopping Readiness</h1>
-      <p style={S.subtitle}>Checks every product for the details AI shopping assistants such as ChatGPT and Google AI Mode need. Free, read-only, and uses no credits.</p>
+      <p style={S.subtitle}>Checks every product for the details AI shopping assistants such as ChatGPT and Google AI Mode need. Read-only, and uses no credits.</p>
       {error && <div style={S.error}>{error}</div>}
       {done && <div style={S.ok}>{done}</div>}
 

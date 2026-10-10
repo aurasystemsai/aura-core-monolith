@@ -275,6 +275,35 @@ export default function ProductSEOEngine() {
  }, (data) => setBulkJob(data.results || []));
  };
 
+ const undoPush = async () => {
+ const id = shopifyPushResult?.undoId;
+ if (!id) return;
+ setShopifyPushing(true);
+ try {
+ const res = await apiFetchJSON("/api/product-seo/shopify/undo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+ if (!res.ok) throw new Error(res.error || "Could not undo");
+ setShopifyPushResult({ ok: true, message: "Undone", undone: true });
+ showToast("Put the product back as it was.");
+ } catch (err) {
+ setShopifyPushResult({ ok: false, message: err.message });
+ } finally {
+ setShopifyPushing(false);
+ }
+ };
+
+ const downloadChangeLog = async () => {
+ try {
+ const res = await apiFetchJSON("/api/product-seo/shopify/history");
+ if (!res.ok) throw new Error(res.error || "Could not load changes");
+ const cell = (v) => { let s = String(v == null ? "" : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+ const rows = [["when", "product id", "fields changed", "undone", "previous title", "previous SEO title", "previous meta description"],
+ ...res.history.map((h) => [h.at, h.productId, (h.changed || []).join(" "), h.reverted ? "yes" : "no", h.before?.title, h.before?.seoTitle, h.before?.metaDescription])];
+ const url = URL.createObjectURL(new Blob([rows.map((r) => r.map(cell).join(",")).join("\n")], { type: "text/csv" }));
+ const a = document.createElement("a"); a.href = url; a.download = "product-seo-changes.csv"; a.click();
+ URL.revokeObjectURL(url);
+ } catch (err) { showToast(err.message); }
+ };
+
  const pushToShopify = async () => {
  if (!selectedProduct) return;
  setShopifyPushing(true);
@@ -293,7 +322,7 @@ export default function ProductSEOEngine() {
  }),
  });
  if (!res.ok) throw new Error(res.error || "Shopify update failed");
- setShopifyPushResult({ ok: true, message: res.message || "Product updated on Shopify"});
+ setShopifyPushResult({ ok: true, message: res.message || "Product updated on Shopify", undoId: res.undoId });
  showToast("Pushed to Shopify!");
  } catch (err) {
  setShopifyPushResult({ ok: false, message: err.message });
@@ -464,6 +493,13 @@ export default function ProductSEOEngine() {
  {shopifyPushResult && !shopifyPushResult.ok && (
  <span style={{ fontSize: 12, color: "#f87171"}}>{shopifyPushResult.message}</span>
  )}
+ {shopifyPushResult?.ok && shopifyPushResult.undoId && (
+ <button onClick={undoPush} disabled={shopifyPushing} style={{ background: "#fff", color: "#18181b", border: "1px solid #a1a1aa", borderRadius: 10, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Undo this change</button>
+ )}
+ {shopifyPushResult?.ok && shopifyPushResult.undone && (
+ <span style={{ fontSize: 12, color: "#4ade80"}}>Put back as it was.</span>
+ )}
+ <button onClick={downloadChangeLog} style={{ background: "transparent", color: "#52525b", border: "none", textDecoration: "underline", fontSize: 13, cursor: "pointer" }}>Download change log (CSV)</button>
  </div>
  </div>
  )}
@@ -792,7 +828,7 @@ export default function ProductSEOEngine() {
  };
 
  return (
- <div style={{ background: "#05080f", minHeight: "100%", padding: 20, color: "#fafafa", fontFamily: "Inter, system-ui, sans-serif"}}>
+ <div className="product-seo-engine" style={{ background: "#05080f", minHeight: "100%", padding: 20, color: "#fafafa", fontFamily: "Inter, system-ui, sans-serif"}}>
  <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
  <div>
  <div style={{ fontSize: 26, fontWeight: 800 }}>Product SEO Engine</div>
@@ -804,10 +840,10 @@ export default function ProductSEOEngine() {
  </div>
  </header>
 
- <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 14 }}>
- <div style={{ background: "#18181b", border: "1px solid #18181b", borderRadius: 14, padding: 12, maxHeight: "82vh", overflow: "auto"}}>
+ <div className="product-seo-workspace" style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 14 }}>
+ <div className="product-seo-nav" style={{ background: "#18181b", border: "1px solid #18181b", borderRadius: 14, padding: 12, maxHeight: "82vh", overflow: "auto"}}>
  {categories.map(cat => (
- <div key={cat.id} style={{ marginBottom: 14 }}>
+ <div key={cat.id} className="product-seo-nav-category" style={{ marginBottom: 14 }}>
  <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer"}} onClick={() => setActiveTab(cat.tabs[0].id)}>
  <span style={{ width: 10, height: 10, borderRadius: "50%", background: cat.accent }} />
  <div style={{ fontWeight: 700 }}>{cat.label}</div>
@@ -834,7 +870,7 @@ export default function ProductSEOEngine() {
  ))}
  </div>
 
- <div style={{ background: "#18181b", border: "1px solid #18181b", borderRadius: 14, padding: 16, minHeight: "80vh"}}>
+ <div className="product-seo-content" style={{ background: "#18181b", border: "1px solid #18181b", borderRadius: 14, padding: 16, minHeight: "80vh"}}>
  {renderTab()}
  </div>
  </div>
@@ -857,6 +893,70 @@ export default function ProductSEOEngine() {
  .text-area { width: 100%; background: #18181b; border: 1px solid #27272a; color: #fafafa; padding: 10px; border-radius: 10px; }
  .code-block { background: #05080f; border: 1px solid #27272a; color: #fafafa; padding: 12px; border-radius: 10px; margin-top: 10px; white-space: pre-wrap; word-break: break-word; }
  button:disabled { opacity: 0.6; cursor: not-allowed; }
+ .product-seo-engine {
+  background: #f5f7fb !important;
+  color: #172033 !important;
+ }
+ .product-seo-engine [style*="background: rgb(5, 8, 15)"],
+ .product-seo-engine [style*="background: rgb(9, 9, 11)"],
+ .product-seo-engine [style*="background: rgb(24, 24, 27)"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+ }
+ .product-seo-engine [style*="background: rgb(39, 39, 42)"],
+ .product-seo-engine [style*="background: rgb(63, 63, 70)"] {
+  background-color: #f1f5f9 !important;
+  border-color: #d5deea !important;
+ }
+ .product-seo-engine [style*="color: rgb(250, 250, 250)"] {
+  color: #172033 !important;
+ }
+ .product-seo-engine [style*="color: rgb(161, 161, 170)"],
+ .product-seo-engine [style*="color: rgb(113, 113, 122)"],
+ .product-seo-engine [style*="color: rgb(82, 82, 91)"] {
+  color: #64748b !important;
+ }
+ .product-seo-engine .btn-secondary,
+ .product-seo-engine .btn-tertiary {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+ }
+ .product-seo-engine .text-area,
+ .product-seo-engine input,
+ .product-seo-engine textarea,
+ .product-seo-engine select {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #172033 !important;
+ }
+ .product-seo-engine input::placeholder,
+ .product-seo-engine textarea::placeholder {
+  color: #64748b;
+ }
+ .product-seo-engine .code-block {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #172033;
+ }
+ @media (max-width: 900px) {
+  .product-seo-engine { padding: 12px !important; }
+  .product-seo-workspace { grid-template-columns: minmax(0, 1fr) !important; }
+  .product-seo-nav {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   max-height: none !important;
+   overflow: visible !important;
+  }
+  .product-seo-nav-category { flex: 1 1 150px; min-width: 0; margin: 0 !important; }
+  .product-seo-nav-category > div:last-child { display: flex !important; flex-wrap: wrap; }
+  .product-seo-nav-category > div:last-child > button { flex: 1 1 auto; }
+  .product-seo-content { min-height: 0 !important; min-width: 0; }
+ }
+ @media (max-width: 540px) {
+  .product-seo-engine > header { align-items: flex-start !important; flex-direction: column; gap: 10px; }
+ }
  `}</style>
  </div>
  );

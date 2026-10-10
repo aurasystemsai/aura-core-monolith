@@ -84,7 +84,7 @@ export default function ProductFeed() {
       {done && <div style={S.ok}>{done}</div>}
 
       <div style={S.card}>
-        <h2 style={S.h}>Feed health</h2>
+        <h2 style={S.h}>Feed health<HelpTip title="Feed health" toolId="product-feed">Every active product is checked against Google Shopping rules. Products with problems may be rejected or ranked lower, so fix the ones listed below.</HelpTip></h2>
         {busy === "load" && !data && <div style={S.empty}>Reading your products...</div>}
         {data && data.products.length === 0 && <div style={S.empty}>You have no active products yet.</div>}
         {s && s.total > 0 && (
@@ -104,7 +104,7 @@ export default function ProductFeed() {
       </div>
 
       <div style={S.card}>
-        <h2 style={S.h}>Products to improve</h2>
+        <h2 style={S.h}>Products to improve<HelpTip title="Fixing with AI" toolId="product-feed">AI rewrites the title and description for you to read. Nothing changes in Shopify until you press Apply.</HelpTip></h2>
         <label style={{ ...S.muted, display: "block", marginBottom: 10 }}><input type="checkbox" checked={onlyBad} onChange={(e) => setOnlyBad(e.target.checked)} /> Only show products with issues</label>
         {data && data.products.length > 0 && shown.length === 0 && <div style={S.empty}>No issues found. Your feed is in good shape.</div>}
         {shown.map((p) => {
@@ -118,7 +118,7 @@ export default function ProductFeed() {
                   <div style={{ fontWeight: 600 }}>{p.title} <span style={{ color: scoreColor(p.score), fontWeight: 700 }}>{p.score}</span></div>
                   {p.issues.map((i) => <div key={i.code} style={{ fontSize: 12, color: COLOR[i.level] }}>{i.level === "error" ? "Error" : i.level === "warn" ? "Warning" : "Tip"}: {i.msg}</div>)}
                 </div>
-                {canAI && !d && <button style={{ ...S.btn, marginRight: 0, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => suggest(p)}>{busy === "s:" + p.id ? "Writing..." : "AI: fix title and description (2 credits)"}</button>}
+                {canAI && !d && <button style={{ ...S.btn, marginRight: 0, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => suggest(p)}>{busy === "s:" + p.id ? "Writing..." : <>AI: fix title and description<CostBadge action="product-description" style={{ background: "#fff", marginLeft: 6 }} /></>}</button>}
               </div>
               {d && open === p.id && (
                 <div style={{ marginTop: 10 }}>
@@ -136,7 +136,7 @@ export default function ProductFeed() {
       </div>
 
       <div style={S.card}>
-        <h2 style={S.h}>Changes made</h2>
+        <h2 style={S.h}>Changes made<HelpTip title="Changes made" toolId="product-feed">A record of what you applied, so you can see what changed.</HelpTip></h2>
         {log.length === 0 && <div style={S.empty}>No listings changed yet.</div>}
         {log.map((e) => (
           <div key={e.id} style={{ ...S.row, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>

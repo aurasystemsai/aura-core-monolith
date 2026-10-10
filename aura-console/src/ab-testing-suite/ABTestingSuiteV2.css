@@ -13,16 +13,16 @@
 /* ==================== GLOBAL STYLES ==================== */
 
 .ab-testing-suite-v2 {
-  --primary-color: #34d399;
+  --primary-color: #2563eb;
   --success-color: #50b83c;
   --warning-color: #f49342;
   --critical-color: #de3618;
-  --info-color: #2c6ecb;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --border-color: #3f3f46;
-  --background-primary: #18181b;
-  --background-secondary: #27272a;
+  --info-color: #2563eb;
+  --text-primary: #172033;
+  --text-secondary: #64748b;
+  --border-color: #dbe3ed;
+  --background-primary: #ffffff;
+  --background-secondary: #f1f5f9;
   --shadow-sm: 0 1px 0 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -33,9 +33,11 @@
 
 .ab-testing-suite-v2 {
   min-height: 100%;
-  padding: 1.6rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem;
   color: var(--text-primary);
-  background: #09090b;
+  background: #f5f7fb;
 }
 
 .ab-testing-suite-v2 .Polaris-Page,
@@ -67,7 +69,7 @@
 .ab-testing-suite-v2 .Polaris-Select__Input,
 .ab-testing-suite-v2 .Polaris-Select__Content {
   color: var(--text-primary);
-  background: #09090b;
+  background: #ffffff;
   border-color: var(--border-color);
 }
 
@@ -80,17 +82,6 @@
 .ab-testing-suite-v2 .Polaris-DataTable__Cell--header {
   color: var(--text-primary);
   border-color: var(--border-color);
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .ab-testing-suite-v2 {
-    --text-primary: #e3e5e7;
-    --text-secondary: #b5b5b5;
-    --border-color: #5c5f62;
-    --background-primary: #27272a;
-    --background-secondary: #27272a;
-  }
 }
 
 /* ==================== TAB NAVIGATION ==================== */

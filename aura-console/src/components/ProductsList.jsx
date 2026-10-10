@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { apiFetch } from '../api';
 import './ProductsList.css';
 import './ProductsList.modern.css'; // Add a new CSS module for world-class polish
 
@@ -49,7 +50,7 @@ function getSeoIssues({ title, metaDescription, keywords, slug }) {
 // Context for plugin/extension support
 export const ProductsListContext = createContext();
 
-const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
+const ProductsList = ({ shopDomain, plugins = [] }) => {
  const [products, setProducts] = useState([]);
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState(null);
@@ -72,7 +73,6 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
  return (
  <div className="pl-debug-panel">
  <b>DEBUG PANEL</b><br/>
- <div>shopToken: <span className="pl-debug-accent">{String(shopToken)}</span></div>
  <div>shopDomain: <span className="pl-debug-accent">{String(shopDomain)}</span></div>
  <div>products: <span className="pl-debug-accent">{Array.isArray(products) ? products.length : 'n/a'}</span></div>
  <div>loading: <span className="pl-debug-accent">{String(loading)}</span></div>
@@ -145,10 +145,10 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
  }
  // Fetch products from Shopify
  const fetchProducts = useCallback(() => {
- debugLog('fetchProducts called', { shopDomain, shopToken });
+ debugLog('fetchProducts called', { shopDomain });
  setInit(true);
  if (!shopDomain) {
- debugLog('Missing shopDomain', { shopDomain, shopToken });
+ debugLog('Missing shopDomain', { shopDomain });
  setProducts([]);
  setError('Missing Shopify shop domain. Please connect your store.');
  setLoading(false);
@@ -157,7 +157,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
  setLoading(true);
  setError(null);
  // Do not send a potentially stale client token; let the backend resolve the persisted/session token.
- fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`)
+ apiFetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`)
  .then(async (res) => {
  debugLog('Fetch response', res);
  const data = await res.json().catch(() => ({}));
@@ -177,7 +177,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
  setError(err.message || 'Error loading products');
  setLoading(false);
  });
- }, [shopDomain, shopToken]);
+ }, [shopDomain]);
 
  const reconnectShopify = useCallback(() => {
  const url = typeof window !== 'undefined'? new URL(window.location.href) : null;
@@ -279,7 +279,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
  );
  }
  if (!shopDomain) {
- debugLog('No shopDomain', { shopToken, shopDomain });
+ debugLog('No shopDomain', { shopDomain });
  return (
  <div className="pl-connect">
  <h1 className="pl-title">Shopify Products</h1>
@@ -566,7 +566,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
  <div className="pl-fatal">
  Fatal render error: {e.message}
  <div className="pl-fatal-debug">
- Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}
+ Debug info: shopDomain={String(shopDomain)}
  </div>
  </div>
  );
@@ -574,4 +574,3 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
 };
 
 export default ProductsList;
-

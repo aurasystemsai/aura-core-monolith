@@ -2,6 +2,8 @@
 import { apiFetch, apiFetchJSON } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
+import { canUseTool } from "../hooks/usePlan";
+import GettingStarted from "../onboarding/GettingStarted";
 
 const DashboardCharts = lazy(() => import("./DashboardCharts"));
 
@@ -41,7 +43,7 @@ function GaugeArc({ percent, size = 90, color = "#6366f1" }) {
 // ─── Sub-widgets ──────────────────────────────────────────────────────────────
 
 const Widget = ({ title, info, children, onClose, action, style = {} }) => (
-	<div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, overflow: "hidden", ...style }}>
+	<div className="dashboard-widget" style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, overflow: "hidden", ...style }}>
 		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid #27272a" }}>
 			<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 				<span style={{ color: "#fafafa", fontWeight: 700, fontSize: 15 }}>{title}</span>
@@ -86,7 +88,7 @@ const SetupCard = ({ icon, title, desc, onClick }) => (
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
-const Dashboard = ({ setActiveSection }) => {
+const Dashboard = ({ setActiveSection, plan }) => {
 const [shop, setShop] = useState(null);
 const [loading, setLoading] = useState(true);
 const [shopStats, setShopStats] = useState({
@@ -311,7 +313,7 @@ return (
 }
 
 return (
-<div style={{ padding: "24px", background: "#09090b", minHeight: "100vh" }}>
+<div className="dashboard-home" style={{ padding: "4px 0 24px", background: "#f5f7fb", minHeight: "100%" }}>
 <style>{`
 @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
 @keyframes toastIn { from{opacity:0;transform:translateX(40px);} to{opacity:1;transform:translateX(0);} }
@@ -417,28 +419,46 @@ Fix All Issues with AI →
 )}
 
 {/* Page header */}
-<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+<GettingStarted setActiveSection={(s) => setActiveSection && setActiveSection(s)} />
+<div className="dashboard-page-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 <img src="/logo-aura.png" alt="AURA" style={{ height: 44, width: 44, objectFit: "contain", borderRadius: 10 }} />
-<div>
-<h1 style={{ fontSize: 26, fontWeight: 900, color: "#fafafa", margin: 0, letterSpacing: "-0.02em" }}>
-SEO Dashboard: <span style={{ color: "#6366f1" }}>{shop.domain || shop.name || "My Store"}</span>
+<div className="dashboard-title-copy">
+<h1 className="dashboard-page-title" style={{ fontSize: 24, fontWeight: 750, color: "#172033", margin: 0, letterSpacing: "-0.02em" }}>
+Store overview
 </h1>
-<p style={{ fontSize: 13, color: "#71717a", margin: "3px 0 0" }}>
-Last updated: {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+<p className="dashboard-page-subtitle" style={{ fontSize: 13, color: "#64748b", margin: "4px 0 0" }}>
+{shop.domain || shop.name || "My Store"} <span aria-hidden="true">·</span> Updated {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
 </p>
 </div>
 </div>
-<div style={{ display: "flex", gap: 10 }}>
+<div className="dashboard-page-actions" style={{ display: "flex", gap: 10 }}>
 <button onClick={() => setShowCopilot(p => !p)}
-style={{ background: showCopilot ? "#3f3f46" : "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "9px 16px", color: "#a5b4fc", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+style={{ background: showCopilot ? "#eff6ff" : "#ffffff", border: "1px solid #dbe3ed", borderRadius: 8, padding: "9px 16px", color: "#1d4ed8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
 AI Copilot
 </button>
 <button onClick={fetchDashboardData}
-style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "9px 14px", color: "#71717a", fontSize: 18, cursor: "pointer" }}
+style={{ background: "#ffffff", border: "1px solid #dbe3ed", borderRadius: 8, padding: "9px 14px", color: "#64748b", fontSize: 18, cursor: "pointer" }}
 title="Refresh">↻</button>
 </div>
 </div>
+
+<nav className="dashboard-shortcuts" aria-label="Quick access">
+{[
+{ id: "search-visibility", title: "Search visibility", description: "SEO, rankings and AI discovery" },
+{ id: "ads-hub", title: "Ads", description: "Ad accounts and performance" },
+{ id: "customers-profit", title: "Customers & profit", description: "Customer value, risk and margins" },
+{ id: "inventory-forecasting", title: "Inventory & cash", description: "Stock, suppliers and purchase orders" },
+].map((item) => (
+<button key={item.id} className="dashboard-shortcut" onClick={() => setActiveSection(canUseTool(plan, item.id) ? item.id : "pricing")}>
+<span className="dashboard-shortcut-copy">
+<strong>{item.title}</strong>
+<small>{canUseTool(plan, item.id) ? item.description : "View plans to unlock"}</small>
+</span>
+<span className="dashboard-shortcut-arrow" aria-hidden="true">→</span>
+</button>
+))}
+</nav>
 
 {/* AI Copilot panel */}
 {showCopilot && (
@@ -468,7 +488,7 @@ style={{ background: copilotLoading ? "#3f3f46" : "#6366f1", border: "none", bor
 action={
  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
  <button onClick={() => setShowAiInfo(p => !p)} style={{ background: "none", border: "1px solid #3f3f46", borderRadius: 6, padding: "3px 10px", color: "#a1a1aa", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>ⓘ How it works</button>
- <span style={{ background: "#a855f7", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>
+ <span style={{ background: "#2563eb", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>AI Search</span>
  </div>
 }>
 
@@ -903,11 +923,11 @@ Connect Analytics
 </Widget>
 
 {/* Connect Google */}
-<div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 14, padding: 20, display: "flex", alignItems: "center", gap: 16 }}>
-<div style={{ fontSize: 36 }}></div>
-<div style={{ flex: 1 }}>
-<div style={{ fontWeight: 700, color: "#fafafa", fontSize: 14, marginBottom: 4 }}>Connect Google services</div>
-<div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.4 }}>Enrich your dashboard with data from Google Analytics and Google Search Console.</div>
+<div className="dashboard-google-connect" style={{ background: "#ffffff", border: "1px solid #dbe3ed", borderRadius: 14, padding: 20, display: "flex", alignItems: "center", gap: 16 }}>
+<div className="dashboard-google-connect-icon" style={{ fontSize: 36 }}></div>
+<div className="dashboard-google-connect-copy" style={{ flex: 1 }}>
+<div style={{ fontWeight: 700, color: "#172033", fontSize: 14, marginBottom: 4 }}>Connect Google services</div>
+<div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.4 }}>Enrich your dashboard with data from Google Analytics and Google Search Console.</div>
 </div>
 <button style={{ background: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", color: "#1a1a1a", fontWeight: 700, fontSize: 13, cursor: "pointer", flexShrink: 0 }}>
 G Connect

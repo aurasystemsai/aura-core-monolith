@@ -150,6 +150,8 @@ app.use('/api/integration', require('./routes/integration'));
 
 // --- Register notifications API route ---
 app.use('/api/notifications', require('./routes/notifications'));
+// --- Help: contact form, data export and deletion ---
+app.use('/api/help', require('./routes/help'));
 // --- Register analytics API route ---
 app.use('/api/analytics', require('./routes/analytics'));
 // --- Predictive analytics telemetry (local storage backed) ---
@@ -1147,12 +1149,7 @@ app.get("/api/shopify/products", async (req, res) => {
       shop = Object.keys(allTokens)[0];
     }
 
-    const authHeader = req.headers.authorization;
-    const bearerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
-
     let token =
-      req.query.token ||
-      bearerToken ||
       (req.session && req.session.shopifyToken) ||
       (shop ? shopTokens.getToken(shop) : null) ||
       null;
@@ -1164,10 +1161,7 @@ app.get("/api/shopify/products", async (req, res) => {
     }
 
     console.log("[Core] /api/shopify/products called", {
-      query: req.query,
-      headers: req.headers,
       resolvedShop: shop,
-      token: token ? token.slice(0, 6) + '...' : undefined,
       time: new Date().toISOString(),
     });
 
@@ -1196,7 +1190,6 @@ app.get("/api/shopify/products", async (req, res) => {
     } catch (shopifyErr) {
       console.error("[Core] Shopify fetch error in /api/shopify/products route", {
         shop,
-        token: token ? token.slice(0, 6) + '...' : undefined,
         apiVersion: req.query.apiVersion,
         limit: req.query.limit,
         error: shopifyErr && shopifyErr.message,

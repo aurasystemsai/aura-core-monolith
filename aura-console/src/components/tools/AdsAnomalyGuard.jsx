@@ -39,7 +39,7 @@ export default function AdsAnomalyGuard() {
   return (
     <div style={S.root}>
       <h1 style={S.title}>Ads Anomaly Guard</h1>
-      <p style={S.subtitle}>Compares each campaign&apos;s last 7 days with its own weekly average over the 23 days before, and flags spend spikes, wasted spend, falling returns and traffic drops. Free to run.</p>
+      <p style={S.subtitle}>Compares each campaign&apos;s last 7 days with its own weekly average over the 23 days before, and flags spend spikes, wasted spend, falling returns and traffic drops.</p>
       {error && <div style={S.error}>{error}</div>}
       <p><button style={{ ...S.btn, ...(busy ? S.off : {}) }} disabled={busy} onClick={check}>{busy ? "Checking…" : "Check now"}</button>
         {data && <span style={S.muted}> Last checked {new Date(data.checkedAt).toLocaleTimeString()}</span>}</p>
