@@ -9078,55 +9078,23 @@ router.post('/apply-field', async (req, res) => {
       if (!r.ok) throw new Error(`Shopify update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
       return res.json({ ok: true, message: 'Title updated on post' });
     }
-    if (field === 'handle') {
-      // Sanitise to valid Shopify handle: lowercase, hyphens, no special chars
-      const sanitised = value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-      const r = await fetch(`${articleBase}.json`, {
-        method: 'PUT', headers,
-        body: JSON.stringify({ article: { id: articleId, handle: sanitised } }),
-      });
-      if (!r.ok) throw new Error(`Shopify handle update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
-      return res.json({ ok: true, message: 'URL slug updated on post', handle: sanitised });
-    }
-    if (field === 'metaDescription') {
-      // Update SEO meta description via metafields (create or update)
-      const existing = await fetch(`${articleBase}/metafields.json?namespace=global&key=description_tag`, { headers });
-      const existJson = await existing.json();
-      const existId = existJson?.metafields?.[0]?.id;
-      if (existId) {
-        const r = await fetch(`https://${resolvedShop}/admin/api/${ver}/metafields/${existId}.json`, {
-          method: 'PUT', headers,
-          body: JSON.stringify({ metafield: { id: existId, value, type: 'single_line_text_field' } }),
-        });
-        if (!r.ok) throw new Error(`Shopify metafield update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
-      } else {
-        const r = await fetch(`${articleBase}/metafields.json`, {
-          method: 'POST', headers,
-          body: JSON.stringify({ metafield: { namespace: 'global', key: 'description_tag', value, type: 'single_line_text_field' } }),
-        });
-        if (!r.ok) throw new Error(`Shopify metafield create failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
+    if (field === 'handle' || field === 'metaDescription' || field === 'seoTitle') {
+      // GraphQL keeps these working on every API version; the REST metafield-by-id route needs scopes the app does not have.
+      const { gql } = require('../../core/seoStoreData');
+      const gid = `gid://shopify/Article/${String(articleId).replace(/\D/g, '')}`;
+      const fail = (what, errs) => { throw new Error(`Shopify ${what} update failed: ${errs.map((e) => e.message).join('; ')}`); };
+      if (field === 'handle') {
+        // Sanitise to valid Shopify handle: lowercase, hyphens, no special chars
+        const sanitised = value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        const d = await gql(resolvedShop, token, 'mutation($id: ID!, $a: ArticleUpdateInput!) { articleUpdate(id: $id, article: $a) { userErrors { message } } }', { id: gid, a: { handle: sanitised } });
+        if (d.articleUpdate.userErrors.length) fail('URL slug', d.articleUpdate.userErrors);
+        return res.json({ ok: true, message: 'URL slug updated on post', handle: sanitised });
       }
-      return res.json({ ok: true, message: 'Meta description updated on post' });
-    }
-    if (field === 'seoTitle') {
-      // Update SEO title (og:title) via metafields (create or update)
-      const existing = await fetch(`${articleBase}/metafields.json?namespace=global&key=title_tag`, { headers });
-      const existJson = await existing.json();
-      const existId = existJson?.metafields?.[0]?.id;
-      if (existId) {
-        const r = await fetch(`https://${resolvedShop}/admin/api/${ver}/metafields/${existId}.json`, {
-          method: 'PUT', headers,
-          body: JSON.stringify({ metafield: { id: existId, value, type: 'single_line_text_field' } }),
-        });
-        if (!r.ok) throw new Error(`Shopify SEO title update failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
-      } else {
-        const r = await fetch(`${articleBase}/metafields.json`, {
-          method: 'POST', headers,
-          body: JSON.stringify({ metafield: { namespace: 'global', key: 'title_tag', value, type: 'single_line_text_field' } }),
-        });
-        if (!r.ok) throw new Error(`Shopify SEO title create failed (${r.status}): ${(await r.text()).slice(0, 200)}`);
-      }
-      return res.json({ ok: true, message: 'SEO title (og:title) updated on post' });
+      const key = field === 'metaDescription' ? 'description_tag' : 'title_tag';
+      const d = await gql(resolvedShop, token, 'mutation($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { userErrors { message } } }',
+        { m: [{ ownerId: gid, namespace: 'global', key, type: 'single_line_text_field', value: String(value).slice(0, 320) }] });
+      if (d.metafieldsSet.userErrors.length) fail(field === 'metaDescription' ? 'meta description' : 'SEO title', d.metafieldsSet.userErrors);
+      return res.json({ ok: true, message: field === 'metaDescription' ? 'Meta description updated on post' : 'SEO title (og:title) updated on post' });
     }
     if (field === 'headings') {
       const newH2s = value.split(/\s*\|\s*/).map(h => h.trim()).filter(Boolean);

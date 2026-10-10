@@ -142,7 +142,7 @@ async function deliver(shop, endpoint, event, payload, attempt = 0) {
     }, RETRY_DELAYS[attempt]);
     if (timer.unref) timer.unref();
   }
-  return { ok, status, error };
+  return { ok, status, error: ok ? '' : error || `HTTP ${status}` };
 }
 
 // Fire and forget: a slow or broken receiver must never slow down or fail the merchant's own action.

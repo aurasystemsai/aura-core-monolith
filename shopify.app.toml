@@ -24,7 +24,7 @@ api_version = "2025-10"
 [access_scopes]
 # Scopes used by currently implemented Shopify product, content, order, customer,
 # inventory, location, and metaobject integrations.
-scopes = "read_products,write_products,read_content,write_content,read_orders,read_customers,read_inventory,read_locations,read_online_store_pages,read_themes,read_metaobjects,write_metaobjects,read_locales,read_translations,write_translations,read_discounts,write_discounts"
+scopes = "read_products,write_products,read_content,write_content,read_orders,read_customers,write_customers,read_inventory,write_inventory,read_locations,read_online_store_pages,read_themes,read_metaobjects,write_metaobjects,read_locales,read_translations,write_translations,read_discounts,write_discounts"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
