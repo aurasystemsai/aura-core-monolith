@@ -127,6 +127,9 @@ app.use('/tiktok', require('./routes/tiktok-oauth'));
 // Public storefront endpoints for popups and back-in-stock signups (no login, validated and rate limited inside).
 app.use('/storefront', require('./tools/popups/public'));
 
+// Public read-only API, authenticated by the shop's own API key instead of a Shopify session.
+app.use('/v1', require('./routes/public-api'));
+
 // --- Public healthcheck (no auth) ---
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
@@ -152,6 +155,7 @@ app.use('/api/integration', require('./routes/integration'));
 app.use('/api/notifications', require('./routes/notifications'));
 // --- Help: contact form, data export and deletion ---
 app.use('/api/help', require('./routes/help'));
+app.use('/api/settings', require('./routes/api-key-settings'));
 // --- Register analytics API route ---
 app.use('/api/analytics', require('./routes/analytics'));
 // --- Predictive analytics telemetry (local storage backed) ---

@@ -1,4 +1,4 @@
-ï»¿// Settings Page - Shopify Integration
+// Settings Page - Shopify Integration
 // Platform configuration and integrations management
 
 import React, { useState, useEffect } from 'react';
@@ -42,7 +42,9 @@ const Settings = ({ setActiveSection }) => {
  const [shopInfo, setShopInfo] = useState(null);
  const [loading, setLoading] = useState(true);
  const [saving, setSaving] = useState(false);
- const [apiKeyRevealed, setApiKeyRevealed] = useState(false);
+ const [apiKeyInfo, setApiKeyInfo] = useState(null);
+ const [newApiKey, setNewApiKey] = useState('');
+ const [apiKeyError, setApiKeyError] = useState('');
  const [subscription, setSubscription] = useState(null);
  const [billingLoading, setBillingLoading] = useState(false);
  const SYNC_TOOL_MAP = {
@@ -99,11 +101,11 @@ const Settings = ({ setActiveSection }) => {
  });
  const data = await res.json();
  if (data.error) throw new Error(data.error);
- // Shopify returns a confirmationUrl â€” redirect there for merchant approval
+ // Shopify returns a confirmationUrl — redirect there for merchant approval
  if (data.confirmationUrl) {
  window.top.location.href = data.confirmationUrl;
  } else if (data.plan_id) {
- // Immediate plan change (e.g. downgrade to free) â€” reload so plan badge & credits refresh
+ // Immediate plan change (e.g. downgrade to free) — reload so plan badge & credits refresh
  setSubscription(data);
  setTimeout(() => window.location.reload(), 300);
  }
@@ -220,28 +222,55 @@ const Settings = ({ setActiveSection }) => {
  }
  }
 
+ async function loadApiKey() {
+ try {
+ const r = await apiFetch('/api/settings/api-key');
+ const d = await r.json();
+ if (d.ok) setApiKeyInfo(d); else setApiKeyError(d.error || 'Could not load your API key status.');
+ } catch (error) {
+ setApiKeyError('Could not load your API key status.');
+ }
+ }
+
+ useEffect(() => { loadApiKey(); }, []);
+
  function copyApiKey() {
- navigator.clipboard.writeText('aura_live_sk_1234567890abcdef')
+ navigator.clipboard.writeText(newApiKey)
  .then(() => alert('API key copied to clipboard'))
  .catch(() => alert('Failed to copy'));
  }
 
  async function regenerateApiKey() {
- if (!confirm('Are you sure you want to regenerate your API key? This will invalidate the current key.')) {
+ if (apiKeyInfo && apiKeyInfo.exists && !confirm('Make a new API key? The current key will stop working straight away.')) {
  return;
  }
- setSaving(true);
+ setSaving(true); setApiKeyError('');
  try {
- await apiFetch('/settings/api-key/regenerate', { method: 'POST'});
- alert('API key regenerated successfully');
- setApiKeyRevealed(false);
+ const r = await apiFetch('/api/settings/api-key/regenerate', { method: 'POST' });
+ const d = await r.json();
+ if (!d.ok) throw new Error(d.error || 'Request failed');
+ setNewApiKey(d.key);
+ setApiKeyInfo(d);
  } catch (error) {
- alert('Failed to regenerate: '+ error.message);
+ setApiKeyError('Could not make a key: ' + error.message);
  } finally {
  setSaving(false);
  }
  }
 
+ async function revokeApiKey() {
+ if (!confirm('Delete your API key? Anything using it will stop working.')) return;
+ setSaving(true); setApiKeyError('');
+ try {
+ await apiFetch('/api/settings/api-key', { method: 'DELETE' });
+ setNewApiKey('');
+ await loadApiKey();
+ } catch (error) {
+ setApiKeyError('Could not delete the key: ' + error.message);
+ } finally {
+ setSaving(false);
+ }
+ }
  if (loading) {
  return (
  <div className="settings-page">
@@ -453,32 +482,32 @@ const Settings = ({ setActiveSection }) => {
  </div>
  <div className="card-body">
  <div className="api-key-section">
- <label className="input-label">Your API Key</label>
+ <label className="input-label">Your API key</label>
+ {apiKeyError && <p className="help-text-small" style={{ color: '#b91c1c' }}>{apiKeyError}</p>}
+ {newApiKey ? (
+ <>
  <div className="api-key-display">
- <code className="api-key-code">
- {apiKeyRevealed ? 'aura_live_sk_1234567890abcdef': 'aura_live_'}
- </code>
+ <code className="api-key-code" style={{ wordBreak: 'break-all' }}>{newApiKey}</code>
  <div className="api-key-actions">
- <button 
- className="btn-icon-action"onClick={() => setApiKeyRevealed(!apiKeyRevealed)}
- title={apiKeyRevealed ? 'Hide': 'Reveal'}
- >
- {apiKeyRevealed ? '': ''}
- </button>
- <button 
- className="btn-icon-action"onClick={copyApiKey}
- title="Copy to clipboard">
- 
- </button>
- <button 
- className="btn-secondary-small"onClick={regenerateApiKey}
- disabled={saving}
- >
- Regenerate
- </button>
+ <button className="btn-secondary-small" onClick={copyApiKey}>Copy</button>
  </div>
  </div>
- <p className="help-text-small">Keep your API key secure. Never share it publicly or commit it to version control.</p>
+ <p className="help-text-small"><strong>Copy it now.</strong> For your security it is shown only once and cannot be shown again.</p>
+ </>
+ ) : (
+ <p className="help-text-small">
+ {!apiKeyInfo ? 'Checking…' : apiKeyInfo.exists
+ ? `A key ending in ${apiKeyInfo.hint} was made ${new Date(apiKeyInfo.createdAt).toLocaleDateString()}. ${apiKeyInfo.lastUsedAt ? `Last used ${new Date(apiKeyInfo.lastUsedAt).toLocaleString()}.` : 'Not used yet.'}`
+ : 'You do not have a key yet.'}
+ </p>
+ )}
+ <div className="api-key-actions" style={{ marginTop: 8 }}>
+ <button className="btn-secondary-small" onClick={regenerateApiKey} disabled={saving}>
+ {saving ? 'Working…' : apiKeyInfo && apiKeyInfo.exists ? 'Make a new key' : 'Make my API key'}
+ </button>
+ {apiKeyInfo && apiKeyInfo.exists && <button className="btn-secondary-small" onClick={revokeApiKey} disabled={saving} style={{ marginLeft: 8 }}>Delete key</button>}
+ </div>
+ <p className="help-text-small">Read-only: lets other tools see your plan, credits and the changes AURA has made. It cannot change anything and uses no credits. Send it as <code>Authorization: Bearer YOUR_KEY</code> to <code>/v1/me</code> or <code>/v1/changes</code>. Keep it private.</p>
  </div>
  </div>
  </div>
