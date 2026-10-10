@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { apiFetchJSON } from "../../api";
+import CostBadge from "../../help/CostBadge";
 
 const S = {
   root: { background: "#09090b", minHeight: "100vh", color: "#fafafa", fontFamily: "'Inter',system-ui,sans-serif", padding: "28px 32px" },

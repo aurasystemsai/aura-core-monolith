@@ -115,7 +115,7 @@ export default function RankVisibilityTracker() {
       {error && <div style={S.error}>{error}</div>}
 
       <div style={S.card}>
-        <div style={{ fontWeight: 700, marginBottom: 4 }}>Google Search Console <span style={{ color: "#86efac", fontSize: 12, fontWeight: 600 }}>Free</span></div>
+        <div style={{ fontWeight: 700, marginBottom: 4 }}>Google Search Console <span style={{ color: "#86efac", fontSize: 12, fontWeight: 600 }}>No credits used</span></div>
         <p style={{ color: "#a1a1aa", fontSize: 13, margin: "0 0 12px" }}>Connect your own Google account to see the real average position, clicks and impressions for every search your store already appears in. No credits used. Don't have a Google account? Use the on-demand checks below instead.</p>
         {!gsc.available ? <div style={S.warn}>Google connection is not set up on this server yet.</div> : !gsc.connected ? (
           <div style={S.row}>

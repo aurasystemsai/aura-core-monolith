@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiFetchJSON } from "../../api";
+import HelpTip from "../../help/HelpTip";
+import CostBadge from "../../help/CostBadge";
 const API = "/api/blog-seo";
 const S = {
   page:{background:"#09090b",minHeight:"100vh",color:"#fafafa",fontFamily:"'Inter',system-ui,sans-serif",padding:"28px 32px"},
