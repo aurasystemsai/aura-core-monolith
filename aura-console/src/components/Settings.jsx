@@ -36,6 +36,12 @@ const PLANS = [
  },
 ];
 
+async function readJson(r) {
+ try { return await r.json(); } catch (e) {
+ return { ok: false, error: r.status === 401 ? 'Please reopen AURA from your Shopify admin to sign in.' : 'The server sent an unexpected reply. Please try again.' };
+ }
+}
+
 const Settings = ({ setActiveSection }) => {
  const [shopifyConnected, setShopifyConnected] = useState(false);
  const [shopDomain, setShopDomain] = useState('');
@@ -231,7 +237,7 @@ const Settings = ({ setActiveSection }) => {
  setHookBusy(name); setHookMsg('');
  try {
  const r = await apiFetch('/api/settings/webhooks' + path, options);
- const d = await r.json();
+  const d = await readJson(r);
  if (!d.ok) throw new Error(d.error || 'Request failed');
  return d;
  } catch (error) {
@@ -263,7 +269,7 @@ const Settings = ({ setActiveSection }) => {
  async function loadApiKey() {
  try {
  const r = await apiFetch('/api/settings/api-key');
- const d = await r.json();
+  const d = await readJson(r);
  if (d.ok) setApiKeyInfo(d); else setApiKeyError(d.error || 'Could not load your API key status.');
  } catch (error) {
  setApiKeyError('Could not load your API key status.');
@@ -285,7 +291,7 @@ const Settings = ({ setActiveSection }) => {
  setSaving(true); setApiKeyError('');
  try {
  const r = await apiFetch('/api/settings/api-key/regenerate', { method: 'POST' });
- const d = await r.json();
+  const d = await readJson(r);
  if (!d.ok) throw new Error(d.error || 'Request failed');
  setNewApiKey(d.key);
  setApiKeyInfo(d);
@@ -534,7 +540,7 @@ const Settings = ({ setActiveSection }) => {
  </>
  ) : (
  <p className="help-text-small">
- {!apiKeyInfo ? 'Checking…' : apiKeyInfo.exists
+ {!apiKeyInfo ? (apiKeyError ? '' : 'Checking…') : apiKeyInfo.exists
  ? `A key ending in ${apiKeyInfo.hint} was made ${new Date(apiKeyInfo.createdAt).toLocaleDateString()}. ${apiKeyInfo.lastUsedAt ? `Last used ${new Date(apiKeyInfo.lastUsedAt).toLocaleString()}.` : 'Not used yet.'}`
  : 'You do not have a key yet.'}
  </p>
