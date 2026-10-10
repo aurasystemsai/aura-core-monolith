@@ -7,15 +7,14 @@ const crypto = require('crypto');
 const { getShopContext } = require('../../core/shopContext');
 const { getOpenAIClient } = require('../../core/openaiClient');
 const { gql } = require('../../core/seoStoreData');
+const { MODEL, judge, clean, loadImages, describeImage } = require('./alt');
 const store = require('../../core/shopStore');
+const schedule = require('../../core/altSchedule');
 
 const router = express.Router();
-const MODEL = 'gpt-4o-mini';
 const TOOL = 'image-alt-media-seo';
 const LOG = 'alt-log';
-const PAGE = 25;
 const MAX_BATCH = 10;
-const MAX_ALT = 125;
 
 function withShop(handler) {
   return async (req, res) => {
@@ -23,31 +22,6 @@ function withShop(handler) {
     if (ctx.error) return res.status(ctx.status).json({ ok: false, error: ctx.error });
     try { await handler(req, res, ctx); } catch (err) { res.status(err.status || 500).json({ ok: false, error: err.message }); }
   };
-}
-
-// Why an alt text is poor, or '' when it is fine.
-function judge(alt) {
-  const a = String(alt || '').trim();
-  if (!a) return 'missing';
-  if (/\.(jpe?g|png|webp|gif|avif)$/i.test(a) || (/^(img|dsc|image|photo|screenshot)[-_ ]?\d*/i.test(a) && a.length < 14)) return 'filename';
-  if (a.length < 10) return 'short';
-  if (a.length > MAX_ALT) return 'long';
-  return '';
-}
-
-const QUERY = `query($first:Int!,$after:String){ products(first:$first, after:$after, query:"status:active"){
-  pageInfo{hasNextPage endCursor}
-  nodes{ id title media(first:20){ nodes{ ... on MediaImage{ id alt image{ url(transform:{maxWidth:800}) } } } } } } }`;
-
-async function loadImages(shop, token, after) {
-  const d = await gql(shop, token, QUERY, { first: PAGE, after: after || null });
-  const images = [];
-  for (const p of d.products.nodes) {
-    (p.media.nodes || []).filter((m) => m && m.id && m.image).forEach((m, i) => {
-      images.push({ id: m.id, productId: p.id, productTitle: p.title, position: i + 1, url: m.image.url, alt: m.alt || '', problem: judge(m.alt) });
-    });
-  }
-  return { images, hasMore: d.products.pageInfo.hasNextPage, cursor: d.products.pageInfo.endCursor };
 }
 
 router.get('/images', withShop(async (req, res, { shop, token }) => {
@@ -59,12 +33,6 @@ router.get('/images', withShop(async (req, res, { shop, token }) => {
     ai: !!getOpenAIClient(),
   });
 }));
-
-function clean(text) {
-  let t = String(text || '').replace(/^["'\s]+|["'\s]+$/g, '').replace(/^(an? )?(image|photo|picture) of /i, '').replace(/\s+/g, ' ');
-  if (t.length > MAX_ALT) t = t.slice(0, MAX_ALT).replace(/\s+\S*$/, '');
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
 
 // Suggests alt text for up to MAX_BATCH images. Only images that were really described are charged.
 router.post('/generate', withShop(async (req, res, { shop, token }) => {
@@ -79,14 +47,7 @@ router.post('/generate', withShop(async (req, res, { shop, token }) => {
   for (const m of found) {
     const hint = String(hints[m.id] || '').slice(0, 120);
     try {
-      const resp = await client.chat.completions.create({
-        model: MODEL, temperature: 0.2, max_tokens: 60,
-        messages: [{ role: 'user', content: [
-          { type: 'text', text: `Write alt text for this product image${hint ? ` (product: ${hint})` : ''}. Describe what is actually visible in one plain sentence under 110 characters: the item, colour, and anything that sets it apart. Do not start with "image of" or "photo of". Do not invent brand names. Reply with the alt text only.` },
-          { type: 'image_url', image_url: { url: m.image.url, detail: 'low' } },
-        ] }],
-      });
-      const alt = clean(resp.choices[0].message.content);
+      const alt = await describeImage(client, m.image.url, hint);
       if (!alt) { results.push({ id: m.id, error: 'AI returned nothing for this image.' }); continue; }
       if (req.deductCredits) await req.deductCredits({ model: MODEL, action: 'alt-text' });
       results.push({ id: m.id, alt, previous: m.alt || '' });
@@ -106,21 +67,54 @@ async function setAlt(shop, token, productId, id, alt) {
   if (errs.length) throw Object.assign(new Error(errs.map((e) => e.message).join('; ')), { status: 422 });
 }
 
-router.post('/apply', withShop(async (req, res, { shop, token }) => {
-  const b = req.body || {};
+// Validates, sets the alt text in Shopify and writes the undo log entry.
+async function applyAlt(shop, token, b) {
   const alt = String(b.alt || '').trim();
-  if (!/^gid:\/\/shopify\/MediaImage\/\d+$/.test(String(b.id || ''))) return res.status(400).json({ ok: false, error: 'Choose an image.' });
-  if (!/^gid:\/\/shopify\/Product\/\d+$/.test(String(b.productId || ''))) return res.status(400).json({ ok: false, error: 'Missing product.' });
-  if (!alt) return res.status(400).json({ ok: false, error: 'Alt text cannot be empty.' });
-  if (alt.length > 512) return res.status(400).json({ ok: false, error: 'Alt text is too long.' });
+  const fail = (status, message) => Object.assign(new Error(message), { status });
+  if (!/^gid:\/\/shopify\/MediaImage\/\d+$/.test(String(b.id || ''))) throw fail(400, 'Choose an image.');
+  if (!/^gid:\/\/shopify\/Product\/\d+$/.test(String(b.productId || ''))) throw fail(400, 'Missing product.');
+  if (!alt) throw fail(400, 'Alt text cannot be empty.');
+  if (alt.length > 512) throw fail(400, 'Alt text is too long.');
   const cur = await gql(shop, token, 'query($id:ID!){ node(id:$id){ ... on MediaImage{ id alt } } }', { id: b.id });
-  if (!cur.node || !cur.node.id) return res.status(404).json({ ok: false, error: 'That image was not found.' });
+  if (!cur.node || !cur.node.id) throw fail(404, 'That image was not found.');
   await setAlt(shop, token, b.productId, b.id, alt);
   const entry = { id: crypto.randomUUID(), at: new Date().toISOString(), productId: b.productId, mediaId: b.id, label: String(b.label || '').slice(0, 120), from: cur.node.alt || '', to: alt, reverted: false };
   const data = store.read(TOOL, shop, {});
   data[LOG] = [entry, ...(data[LOG] || [])].slice(0, 300);
   store.write(TOOL, shop, data);
+  return entry;
+}
+
+router.post('/apply', withShop(async (req, res, { shop, token }) => {
+  res.json({ ok: true, entry: await applyAlt(shop, token, req.body || {}) });
+}));
+
+// Scheduled drafts: AI writes drafts on a schedule, nothing reaches Shopify until the merchant approves it.
+router.get('/schedule', withShop(async (req, res, { shop }) => {
+  res.json({ ok: true, schedule: schedule.load(shop), maxPerRun: schedule.MAX_PER_RUN });
+}));
+
+router.post('/schedule', withShop(async (req, res, { shop }) => {
+  res.json({ ok: true, schedule: schedule.update(shop, req.body || {}) });
+}));
+
+router.post('/schedule/run', withShop(async (req, res, { shop }) => {
+  const result = await schedule.runForShop(shop);
+  res.json({ ok: true, ...result, schedule: schedule.load(shop) });
+}));
+
+router.post('/schedule/approve', withShop(async (req, res, { shop, token }) => {
+  const draft = schedule.load(shop).drafts.find((d) => d.id === (req.body && req.body.id));
+  if (!draft) return res.status(404).json({ ok: false, error: 'Draft not found.' });
+  const alt = String((req.body && req.body.alt) || draft.alt);
+  const entry = await applyAlt(shop, token, { id: draft.mediaId, productId: draft.productId, alt, label: draft.label });
+  schedule.removeDraft(shop, draft.id);
   res.json({ ok: true, entry });
+}));
+
+router.post('/schedule/dismiss', withShop(async (req, res, { shop }) => {
+  if (!schedule.removeDraft(shop, req.body && req.body.id)) return res.status(404).json({ ok: false, error: 'Draft not found.' });
+  res.json({ ok: true });
 }));
 
 router.get('/log', withShop(async (req, res, { shop }) => {

@@ -17,6 +17,12 @@ jest.mock('../core/seoStoreData', () => ({
 const mockCreate = jest.fn(async () => ({ choices: [{ message: { content: '"Image of a red cotton t-shirt laid flat on a white background"' } }] }));
 jest.mock('../core/openaiClient', () => ({ getOpenAIClient: () => ({ chat: { completions: { create: mockCreate } } }) }));
 
+const mockCredits = { balance: 10, charged: 0 };
+jest.mock('../core/creditLedger', () => ({
+  checkCredits: async () => ({ allowed: mockCredits.balance > 0 }),
+  deductCredits: async () => { mockCredits.balance -= 1; mockCredits.charged += 1; return { ok: true }; },
+}));
+
 const RUN = Date.now();
 function makeApp(shop, charges) {
   const router = require('../tools/image-alt-media-seo/router');
@@ -57,5 +63,48 @@ describe('image alt text', () => {
     expect((await request(app).post(B + '/revert').send({ id: a.entry.id })).body.entry.reverted).toBe(true);
     expect(mockMedia[M1]).toBe('');
     expect((await request(app).post(B + '/revert').send({ id: a.entry.id })).status).toBe(400);
+  });
+});
+
+describe('scheduled alt text drafts', () => {
+  it('writes drafts only, charges per draft, and nothing reaches Shopify until approved', async () => {
+    const app = makeApp('al-s');
+    expect((await request(app).post(B + '/schedule').send({ everyDays: 3 })).status).toBe(400);
+    expect((await request(app).post(B + '/schedule').send({ perRun: 99 })).status).toBe(400);
+    await request(app).post(B + '/schedule').send({ enabled: true, everyDays: 7, perRun: 5 });
+    const updatesBefore = mockUpdates.length;
+    mockCredits.balance = 10; mockCredits.charged = 0;
+    const run = (await request(app).post(B + '/schedule/run')).body;
+    expect(run.added).toBe(2);
+    expect(mockCredits.charged).toBe(2);
+    expect(mockUpdates.length).toBe(updatesBefore);
+    const drafts = run.schedule.drafts;
+    expect(drafts).toHaveLength(2);
+    // a second run does not redo images that already have a draft waiting
+    expect((await request(app).post(B + '/schedule/run')).body.added).toBe(0);
+    const ok = (await request(app).post(B + '/schedule/approve').send({ id: drafts[0].id })).body;
+    expect(ok.entry.to).toBe(drafts[0].alt);
+    expect(mockUpdates.length).toBe(updatesBefore + 1);
+    expect((await request(app).post(B + '/schedule/dismiss').send({ id: drafts[1].id })).body.ok).toBe(true);
+    expect((await request(app).get(B + '/schedule')).body.schedule.drafts).toHaveLength(0);
+    expect((await request(app).post(B + '/schedule/approve').send({ id: 'nope' })).status).toBe(404);
+  });
+
+  it('stops when credits run out', async () => {
+    const app = makeApp('al-t');
+    mockMedia[M1] = ''; mockMedia['gid://shopify/MediaImage/2'] = 'IMG_2231.jpg';
+    mockCredits.balance = 1;
+    const run = (await request(app).post(B + '/schedule/run')).body;
+    expect(run.added).toBe(1);
+    expect(run.note).toMatch(/not enough credits/);
+  });
+
+  it('is due only when enabled and the interval has passed', () => {
+    const { isDue } = require('../core/altSchedule');
+    const now = Date.now();
+    expect(isDue({ enabled: false, everyDays: 1, lastRun: null }, now)).toBe(false);
+    expect(isDue({ enabled: true, everyDays: 7, lastRun: null }, now)).toBe(true);
+    expect(isDue({ enabled: true, everyDays: 7, lastRun: new Date(now - 3 * 86400000).toISOString() }, now)).toBe(false);
+    expect(isDue({ enabled: true, everyDays: 7, lastRun: new Date(now - 8 * 86400000).toISOString() }, now)).toBe(true);
   });
 });

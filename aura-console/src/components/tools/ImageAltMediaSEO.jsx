@@ -40,6 +40,7 @@ export default function ImageAltText() {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
+  const [sched, setSched] = useState(null);
   const run = (n, u, o) => call(setBusy, setError, n, u, o);
   const post = (body) => ({ method: "POST", body: JSON.stringify(body || {}) });
 
@@ -48,7 +49,8 @@ export default function ImageAltText() {
     if (r) { setData(r); setImages((prev) => (after ? [...prev, ...r.images] : r.images)); }
   }
   async function loadLog() { const l = await run("log", "/log"); if (l) setLog(l.log); }
-  useEffect(() => { load(); loadLog(); }, []); // eslint-disable-line
+  async function loadSched() { const r = await run("sched", "/schedule"); if (r) setSched(r.schedule); }
+  useEffect(() => { load(); loadLog(); loadSched(); }, []); // eslint-disable-line
 
   const shown = images.filter((i) => !onlyBad || i.problem);
   const chosen = shown.filter((i) => picked[i.id]).slice(0, 10);
@@ -77,6 +79,24 @@ export default function ImageAltText() {
     if (r) { setDone("Put the old alt text back."); load(); loadLog(); }
   }
 
+  async function saveSched(change) {
+    const r = await run("sched-save", "/schedule", post(change));
+    if (r) setSched(r.schedule);
+  }
+  async function runSched() {
+    setDone("");
+    const r = await run("sched-run", "/schedule/run", post());
+    if (r) { setSched(r.schedule); setDone(r.note); }
+  }
+  async function approveDraft(d) {
+    const r = await run("d:" + d.id, "/schedule/approve", post({ id: d.id }));
+    if (r) { setDone(`Alt text saved to Shopify for ${d.label}.`); loadSched(); loadLog(); load(); }
+  }
+  async function dismissDraft(d) {
+    const r = await run("d:" + d.id, "/schedule/dismiss", post({ id: d.id }));
+    if (r) loadSched();
+  }
+
   const s = data && data.summary;
   return (
     <div style={S.root}>
@@ -85,6 +105,44 @@ export default function ImageAltText() {
       {error && <div style={S.error}>{error}</div>}
       {done && <div style={S.ok}>{done}</div>}
 
+      <div style={S.card}>
+        <h2 style={S.h}>Automatic drafts<HelpTip title="Automatic drafts" toolId="image-alt-media-seo">AI checks your images on a schedule and writes alt text drafts. Nothing changes in your store until you approve a draft. Each draft uses credits when it is written, and it stops if you run out.</HelpTip></h2>
+        {!sched && <div style={S.empty}>Loading…</div>}
+        {sched && (
+          <>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
+              <label style={{ fontSize: 13 }}><input type="checkbox" checked={sched.enabled} disabled={!!busy} onChange={(e) => saveSched({ enabled: e.target.checked })} /> Write drafts automatically</label>
+              <label style={S.muted}>How often{" "}
+                <select style={{ ...S.input, width: "auto" }} value={sched.everyDays} disabled={!!busy} onChange={(e) => saveSched({ everyDays: Number(e.target.value) })}>
+                  <option value={1}>Daily</option><option value={7}>Weekly</option><option value={30}>Monthly</option>
+                </select>
+              </label>
+              <label style={S.muted}>Images per run{" "}
+                <select style={{ ...S.input, width: "auto" }} value={sched.perRun} disabled={!!busy} onChange={(e) => saveSched({ perRun: Number(e.target.value) })}>
+                  {[1, 3, 5, 10].map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+              <button style={{ ...S.btn, marginRight: 0, ...(busy || !(data && data.ai) ? S.off : {}) }} disabled={!!busy || !(data && data.ai)} onClick={runSched}>
+                {busy === "sched-run" ? "Writing drafts…" : "Write drafts now"}<CostBadge action="alt-text" times={sched.perRun} style={{ background: "#fff", marginLeft: 6 }} />
+              </button>
+            </div>
+            <div style={S.muted}>{sched.lastRun ? `Last run ${new Date(sched.lastRun).toLocaleString()}. ${sched.lastNote}` : "Has not run yet."}</div>
+            {sched.drafts.length === 0 && <div style={S.empty}>No drafts waiting for your approval.</div>}
+            {sched.drafts.map((d) => (
+              <div key={d.id} style={{ ...S.row, marginTop: 8 }}>
+                <img src={d.url} alt="" width={56} height={56} style={{ objectFit: "cover", borderRadius: 8, background: "#09090b" }} />
+                <div style={{ flex: "1 1 280px", minWidth: 220 }}>
+                  <div style={{ fontWeight: 600 }}>{d.label}</div>
+                  <div style={S.muted}>Now: {d.from ? `"${d.from}"` : "no alt text"}</div>
+                  <div>Draft: "{d.alt}"</div>
+                </div>
+                <button style={{ ...S.btn, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => approveDraft(d)}>{busy === "d:" + d.id ? "Saving…" : "Approve"}</button>
+                <button style={{ ...S.ghost, marginRight: 0 }} disabled={!!busy} onClick={() => dismissDraft(d)}>Dismiss</button>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
       <div style={S.card}>
         <h2 style={S.h}>Your images {s ? `(${images.length} checked)` : ""}<HelpTip title="Your images" toolId="image-alt-media-seo">Images with missing or weak alt text are listed. Tick the ones you want AI to write alt text for, check the result, then apply.</HelpTip></h2>
         {data && (

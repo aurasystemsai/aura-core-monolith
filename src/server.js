@@ -199,7 +199,7 @@ const toolRouters = [
   { path: '/api/ai-visibility-tracker', router: require('./tools/ai-visibility-tracker/router'), middleware: requireTool('ai-visibility-tracker'), creditAction: 'seo-analysis' },
   { path: '/api/content-scoring-optimization', router: require('./tools/content-scoring-optimization/router'), middleware: requireTool('content-scoring-optimization'), creditAction: 'content-brief' },
   { path: '/api/entity-topic-explorer', router: require('./tools/entity-topic-explorer/router'), middleware: requireTool('entity-topic-explorer'), creditAction: 'seo-analysis' },
-  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text' },
+  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text', noCreditPaths: ['/apply', '/revert', '/schedule'] },
   { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine'), creditAction: 'pricing-optimize' },
   { path: '/api/inventory-forecasting', router: require('./tools/inventory-forecasting/router'), middleware: requireTool('inventory-forecasting'), creditAction: 'analytics-insight' },
   { path: '/api/returns-rma-automation', router: require('./tools/returns-rma-automation/router'), middleware: requireTool('returns-rma-automation'), creditAction: 'generic-ai' },
@@ -1557,6 +1557,7 @@ if (require.main === module) {
 
     // Start background retry worker
     startFixQueueWorker();
+    require('./core/altSchedule').start();
   });
 }
 
