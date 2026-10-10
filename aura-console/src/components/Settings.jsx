@@ -45,6 +45,11 @@ const Settings = ({ setActiveSection }) => {
  const [apiKeyInfo, setApiKeyInfo] = useState(null);
  const [newApiKey, setNewApiKey] = useState('');
  const [apiKeyError, setApiKeyError] = useState('');
+ const [hooks, setHooks] = useState(null);
+ const [hookUrl, setHookUrl] = useState('');
+ const [hookSecret, setHookSecret] = useState('');
+ const [hookMsg, setHookMsg] = useState('');
+ const [hookBusy, setHookBusy] = useState('');
  const [subscription, setSubscription] = useState(null);
  const [billingLoading, setBillingLoading] = useState(false);
  const SYNC_TOOL_MAP = {
@@ -101,11 +106,11 @@ const Settings = ({ setActiveSection }) => {
  });
  const data = await res.json();
  if (data.error) throw new Error(data.error);
- // Shopify returns a confirmationUrl � redirect there for merchant approval
+ // Shopify returns a confirmationUrl — redirect there for merchant approval
  if (data.confirmationUrl) {
  window.top.location.href = data.confirmationUrl;
  } else if (data.plan_id) {
- // Immediate plan change (e.g. downgrade to free) � reload so plan badge & credits refresh
+ // Immediate plan change (e.g. downgrade to free) — reload so plan badge & credits refresh
  setSubscription(data);
  setTimeout(() => window.location.reload(), 300);
  }
@@ -222,6 +227,39 @@ const Settings = ({ setActiveSection }) => {
  }
  }
 
+ async function hookCall(name, path, options) {
+ setHookBusy(name); setHookMsg('');
+ try {
+ const r = await apiFetch('/api/settings/webhooks' + path, options);
+ const d = await r.json();
+ if (!d.ok) throw new Error(d.error || 'Request failed');
+ return d;
+ } catch (error) {
+ setHookMsg(error.message);
+ return null;
+ } finally {
+ setHookBusy('');
+ }
+ }
+ const hookJson = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+ async function loadHooks() { const d = await hookCall('load', ''); if (d) setHooks(d); }
+ useEffect(() => { loadHooks(); }, []);
+ async function addHook() {
+ const d = await hookCall('add', '', hookJson('POST', { url: hookUrl }));
+ if (d) { setHookSecret(d.webhook.secret); setHookUrl(''); loadHooks(); }
+ }
+ async function testHook(h) {
+ const d = await hookCall('t:' + h.id, `/${h.id}/test`, hookJson('POST'));
+ if (d) { setHookMsg(d.ok ? 'Test sent: your server answered OK.' : `Test failed: ${d.error || 'HTTP ' + d.status}`); loadHooks(); }
+ }
+ async function toggleHook(h) {
+ const d = await hookCall('a:' + h.id, `/${h.id}/active`, hookJson('POST', { active: !h.active }));
+ if (d) setHooks((prev) => ({ ...prev, endpoints: d.endpoints }));
+ }
+ async function removeHook(h) {
+ if (!confirm('Delete this webhook?')) return;
+ if (await hookCall('d:' + h.id, `/${h.id}`, { method: 'DELETE' })) loadHooks();
+ }
  async function loadApiKey() {
  try {
  const r = await apiFetch('/api/settings/api-key');
@@ -496,19 +534,59 @@ const Settings = ({ setActiveSection }) => {
  </>
  ) : (
  <p className="help-text-small">
- {!apiKeyInfo ? 'Checking�' : apiKeyInfo.exists
+ {!apiKeyInfo ? 'Checking…' : apiKeyInfo.exists
  ? `A key ending in ${apiKeyInfo.hint} was made ${new Date(apiKeyInfo.createdAt).toLocaleDateString()}. ${apiKeyInfo.lastUsedAt ? `Last used ${new Date(apiKeyInfo.lastUsedAt).toLocaleString()}.` : 'Not used yet.'}`
  : 'You do not have a key yet.'}
  </p>
  )}
  <div className="api-key-actions" style={{ marginTop: 8 }}>
  <button className="btn-secondary-small" onClick={regenerateApiKey} disabled={saving}>
- {saving ? 'Working�' : apiKeyInfo && apiKeyInfo.exists ? 'Make a new key' : 'Make my API key'}
+ {saving ? 'Working…' : apiKeyInfo && apiKeyInfo.exists ? 'Make a new key' : 'Make my API key'}
  </button>
  {apiKeyInfo && apiKeyInfo.exists && <button className="btn-secondary-small" onClick={revokeApiKey} disabled={saving} style={{ marginLeft: 8 }}>Delete key</button>}
  </div>
  <p className="help-text-small">Read-only: lets other tools see your plan, credits and the changes AURA has made. It cannot change anything and uses no credits. Send it as <code>Authorization: Bearer YOUR_KEY</code> to <code>/v1/me</code> or <code>/v1/changes</code>. Keep it private.</p>
  </div>
+ </div>
+ </div>
+ <div className="setting-card" style={{ marginTop: 16 }}>
+ <div className="card-header">
+ <div className="header-icon"></div>
+ <div>
+ <h3>Webhooks</h3>
+ <p className="card-subtitle">Get a message sent to your own system when AURA changes something</p>
+ </div>
+ </div>
+ <div className="card-body">
+ {hookMsg && <p className="help-text-small" style={{ color: '#b91c1c' }}>{hookMsg}</p>}
+ {hookSecret && (
+ <p className="help-text-small"><strong>Signing secret, copy it now (shown once):</strong> <code style={{ wordBreak: 'break-all' }}>{hookSecret}</code></p>
+ )}
+ {!hooks && !hookMsg && <p className="help-text-small">Loading…</p>}
+ {hooks && hooks.endpoints.length === 0 && <p className="help-text-small">No webhooks yet.</p>}
+ {hooks && hooks.endpoints.map((h) => {
+ const last = hooks.log.find((l) => l.endpointId === h.id);
+ return (
+ <div key={h.id} style={{ borderTop: '1px solid #e4e4e7', padding: '8px 0' }}>
+ <div style={{ wordBreak: 'break-all', fontWeight: 600 }}>{h.url}</div>
+ <div className="help-text-small">
+ {h.active ? 'On' : 'Off'}{!h.active && h.failures >= 10 ? ' (turned off after repeated failures)' : ''} · {last ? (last.ok ? `last send OK (${last.status})` : `last send failed: ${last.error}`) : 'nothing sent yet'}
+ </div>
+ <div className="api-key-actions" style={{ marginTop: 6 }}>
+ <button className="btn-secondary-small" disabled={!!hookBusy} onClick={() => testHook(h)}>{hookBusy === 't:' + h.id ? 'Sending…' : 'Send test'}</button>
+ <button className="btn-secondary-small" disabled={!!hookBusy} onClick={() => toggleHook(h)} style={{ marginLeft: 8 }}>{h.active ? 'Turn off' : 'Turn on'}</button>
+ <button className="btn-secondary-small" disabled={!!hookBusy} onClick={() => removeHook(h)} style={{ marginLeft: 8 }}>Delete</button>
+ </div>
+ </div>
+ );
+ })}
+ {hooks && hooks.endpoints.length < hooks.max && (
+ <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+ <input type="url" aria-label="Webhook address" placeholder="https://your-server.com/aura" value={hookUrl} onChange={(e) => setHookUrl(e.target.value)} style={{ flex: '1 1 260px', padding: 8, border: '1px solid #a1a1aa', borderRadius: 8 }} />
+ <button className="btn-secondary-small" disabled={!hookUrl.trim() || !!hookBusy} onClick={addHook}>{hookBusy === 'add' ? 'Adding…' : 'Add webhook'}</button>
+ </div>
+ )}
+ <p className="help-text-small">Sent when a change is applied to your store and when a scheduled draft is written. Must be an https address. Each message is signed: check the <code>X-Aura-Signature</code> header (HMAC-SHA256 of <code>timestamp.body</code> with your secret). Failed sends are retried twice.</p>
  </div>
  </div>
  </div>

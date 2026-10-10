@@ -107,7 +107,7 @@ export default function ImageAltText() {
 
       <div style={S.card}>
         <h2 style={S.h}>Automatic drafts<HelpTip title="Automatic drafts" toolId="image-alt-media-seo">AI checks your images on a schedule and writes alt text drafts. Nothing changes in your store until you approve a draft. Each draft uses credits when it is written, and it stops if you run out.</HelpTip></h2>
-        {!sched && <div style={S.empty}>Loading…</div>}
+        {!sched && <div style={S.empty}>Loadingâ€¦</div>}
         {sched && (
           <>
             <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
@@ -123,7 +123,7 @@ export default function ImageAltText() {
                 </select>
               </label>
               <button style={{ ...S.btn, marginRight: 0, ...(busy || !(data && data.ai) ? S.off : {}) }} disabled={!!busy || !(data && data.ai)} onClick={runSched}>
-                {busy === "sched-run" ? "Writing drafts…" : "Write drafts now"}<CostBadge action="alt-text" times={sched.perRun} style={{ background: "#fff", marginLeft: 6 }} />
+                {busy === "sched-run" ? "Writing draftsâ€¦" : "Write drafts now"}<CostBadge action="alt-text" times={sched.perRun} style={{ background: "#fff", marginLeft: 6 }} />
               </button>
             </div>
             <div style={S.muted}>{sched.lastRun ? `Last run ${new Date(sched.lastRun).toLocaleString()}. ${sched.lastNote}` : "Has not run yet."}</div>
@@ -136,7 +136,7 @@ export default function ImageAltText() {
                   <div style={S.muted}>Now: {d.from ? `"${d.from}"` : "no alt text"}</div>
                   <div>Draft: "{d.alt}"</div>
                 </div>
-                <button style={{ ...S.btn, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => approveDraft(d)}>{busy === "d:" + d.id ? "Saving…" : "Approve"}</button>
+                <button style={{ ...S.btn, ...(busy ? S.off : {}) }} disabled={!!busy} onClick={() => approveDraft(d)}>{busy === "d:" + d.id ? "Savingâ€¦" : "Approve"}</button>
                 <button style={{ ...S.ghost, marginRight: 0 }} disabled={!!busy} onClick={() => dismissDraft(d)}>Dismiss</button>
               </div>
             ))}

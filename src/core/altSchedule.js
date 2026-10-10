@@ -9,6 +9,7 @@ const shopTokens = require('./shopTokens');
 const credits = require('./creditLedger');
 const { getOpenAIClient } = require('./openaiClient');
 const alt = require('../tools/image-alt-media-seo/alt');
+const webhooks = require('./webhooks');
 
 const TOOL = 'alt-schedule';
 const DAY = 24 * 60 * 60 * 1000;
@@ -71,6 +72,7 @@ async function runForShop(shop) {
       if (paid && paid.ok === false) { note = 'Stopped early: not enough credits.'; break; }
       s.drafts.unshift({ id: crypto.randomUUID(), at: new Date().toISOString(), mediaId: img.id, productId: img.productId, label: img.productTitle, url: img.url, from: img.alt, alt: text });
       added += 1;
+      webhooks.emit(shop, 'draft.created', { tool: 'image-alt-text', draftId: s.drafts[0].id, productId: img.productId, mediaId: img.id, alt: text });
     } catch (e) {
       note = `Some images could not be read: ${e.message}`;
     }

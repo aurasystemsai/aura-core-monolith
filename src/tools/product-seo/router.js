@@ -329,6 +329,7 @@ router.post('/shopify/apply', async (req, res) => {
     try { before = await productSnapshot.snapshot(shop, productId); } catch (e) { console.error('[product-seo] could not save an undo copy:', e.message); }
     const result = await applyProductFields(shop, productId, fields);
     if (before) { try { result.undoId = productSnapshot.record(shop, productId, before, fields).id; } catch (e) { console.error('[product-seo] could not save undo record:', e.message); } }
+    if (result && result.ok !== false) require('../../core/webhooks').emit(shop, 'change.applied', { tool: 'product-seo', productId: String(productId), fieldsChanged: Object.keys(fields).filter((k) => fields[k]), changeId: result.undoId || null });
     res.json(result);
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });

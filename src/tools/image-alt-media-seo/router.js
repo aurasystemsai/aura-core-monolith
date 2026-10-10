@@ -10,6 +10,7 @@ const { gql } = require('../../core/seoStoreData');
 const { MODEL, judge, clean, loadImages, describeImage } = require('./alt');
 const store = require('../../core/shopStore');
 const schedule = require('../../core/altSchedule');
+const webhooks = require('../../core/webhooks');
 
 const router = express.Router();
 const TOOL = 'image-alt-media-seo';
@@ -82,6 +83,7 @@ async function applyAlt(shop, token, b) {
   const data = store.read(TOOL, shop, {});
   data[LOG] = [entry, ...(data[LOG] || [])].slice(0, 300);
   store.write(TOOL, shop, data);
+  webhooks.emit(shop, 'change.applied', { tool: 'image-alt-text', productId: entry.productId, mediaId: entry.mediaId, from: entry.from, to: entry.to, changeId: entry.id });
   return entry;
 }
 
