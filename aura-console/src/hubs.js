@@ -95,9 +95,6 @@ export const HUBS = [
       { id: "auto-insights", label: "Reports" },
       { id: "profit-analytics", label: "Profit" },
       { id: "order-risk", label: "Order risk" },
-      { id: "ai-segmentation-engine", label: "Segments" },
-      { id: "ltv-churn-predictor", label: "LTV & churn" },
-      { id: "churn-prediction-playbooks", label: "Churn playbooks" },
     ],
   },
   {
