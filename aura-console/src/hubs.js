@@ -35,7 +35,9 @@ export const HUBS = [
     description: "Fix product titles, meta and image alt text with AI.",
     tabs: [
       { id: "product-seo", label: "Product SEO" },
+
       { id: "image-alt-media-seo", label: "Image alt text" },
+      { id: "digital-asset-management", label: "Media library" },
     ],
   },
   {
@@ -45,6 +47,9 @@ export const HUBS = [
       { id: "rank-visibility-tracker", label: "Google rankings" },
       { id: "ai-visibility-tracker", label: "AI answers" },
       { id: "ai-shopping-readiness", label: "AI shopping" },
+      { id: "competitive-analysis", label: "Competitors" },
+      { id: "backlink-explorer", label: "Backlinks" },
+      { id: "link-intersect-outreach", label: "Link outreach" },
     ],
   },
   {
@@ -55,6 +60,8 @@ export const HUBS = [
       { id: "abandoned-checkout-winback", label: "Win-back" },
       { id: "sms-whatsapp-marketing", label: "SMS & WhatsApp" },
       { id: "email-deliverability", label: "Deliverability" },
+      { id: "newsletter-automation", label: "Newsletters" },
+      { id: "omnichannel-campaign-builder", label: "Campaigns" },
     ],
   },
   {
@@ -71,6 +78,9 @@ export const HUBS = [
     tabs: [
       { id: "upsell-cross-sell-engine", label: "Upsell" },
       { id: "discounts-bundles", label: "Discounts & bundles" },
+      { id: "personalization-recommendation-engine", label: "Recommendations" },
+      { id: "advanced-personalization-engine", label: "Personalization" },
+      { id: "conversion-rate-optimization", label: "Conversion" },
     ],
   },
   {
@@ -79,6 +89,8 @@ export const HUBS = [
     tabs: [
       { id: "review-ugc-engine", label: "Reviews" },
       { id: "loyalty-referral-programs", label: "Loyalty & referrals" },
+      { id: "affiliate-partner-management", label: "Affiliates" },
+      { id: "subscription-management", label: "Subscriptions" },
     ],
   },
   {
@@ -90,6 +102,9 @@ export const HUBS = [
       { id: "auto-insights", label: "Reports" },
       { id: "profit-analytics", label: "Profit" },
       { id: "order-risk", label: "Order risk" },
+      { id: "ai-segmentation-engine", label: "Segments" },
+      { id: "ltv-churn-predictor", label: "LTV & churn" },
+      { id: "churn-prediction-playbooks", label: "Churn playbooks" },
     ],
   },
   {
@@ -101,6 +116,79 @@ export const HUBS = [
       { id: "tiktok-ads-integration", label: "TikTok" },
       { id: "ad-creative-optimizer", label: "Ad copy" },
       { id: "ads-anomaly-guard", label: "Spend alerts" },
+      { id: "multi-channel-optimizer", label: "Channel mix" },
+      { id: "creative-automation-engine", label: "Creative automation" },
+    ],
+  },
+  {
+    id: "specialist-seo", name: "Specialist SEO", suite: "seo", category: "SEO",
+    description: "Local, voice and video search tools for stores that need them.",
+    tabs: [
+      { id: "local-seo-toolkit", label: "Local SEO" },
+      { id: "voice-search-optimization", label: "Voice search" },
+      { id: "video-podcast-seo", label: "Video & podcast" },
+    ],
+  },
+  {
+    id: "social-hub", name: "Social", suite: "social", category: "Social",
+    description: "Schedule posts, listen to your brand and track social performance.",
+    tabs: [
+      { id: "social-scheduler-content-engine", label: "Scheduler" },
+      { id: "social-media-analytics-listening", label: "Analytics & listening" },
+      { id: "brand-intelligence-layer", label: "Brand intelligence" },
+    ],
+  },
+  {
+    id: "reports-analytics", name: "Reports & Analytics", suite: "analytics", category: "Analytics",
+    description: "Attribution, forecasts, custom dashboards and scheduled exports.",
+    tabs: [
+      { id: "advanced-analytics-attribution", label: "Attribution" },
+      { id: "predictive-analytics-widgets", label: "Predictions" },
+      { id: "self-service-analytics", label: "Report builder" },
+      { id: "custom-dashboard-builder", label: "Dashboards" },
+      { id: "reporting-integrations", label: "Integrations" },
+      { id: "scheduled-export", label: "Scheduled export" },
+    ],
+  },
+  {
+    id: "finance-stock", name: "Finance & Stock", suite: "finance", category: "Finance",
+    description: "Cash, planning and supplier tools for your stock.",
+    tabs: [
+      { id: "finance-autopilot", label: "Finance" },
+      { id: "daily-cfo-pack", label: "Daily CFO pack" },
+      { id: "advanced-finance-inventory-planning", label: "Planning" },
+      { id: "inventory-supplier-sync", label: "Supplier sync" },
+      { id: "inventory-forecasting", label: "Forecasting & POs" },
+    ],
+  },
+  {
+    id: "support-desk", name: "Support Desk", suite: "support", category: "Support",
+    description: "Shared inbox and a self-service help centre for your customers.",
+    tabs: [
+      { id: "inbox-assistant", label: "Inbox" },
+      { id: "self-service-portal", label: "Help centre" },
+    ],
+  },
+  {
+    id: "automation-hub", name: "Workflow Builder", suite: "automation", category: "Automation",
+    description: "Templates, workflows, conditional logic and approvals.",
+    tabs: [
+      { id: "automation-templates", label: "Templates" },
+      { id: "visual-workflow-builder", label: "Workflow builder" },
+      { id: "workflow-orchestrator", label: "Orchestrator" },
+      { id: "conditional-logic-automation", label: "Conditional logic" },
+      { id: "collaboration-approval-workflows", label: "Approvals" },
+    ],
+  },
+  {
+    id: "platform-hub", name: "Platform & Developer", suite: "platform", category: "Platform",
+    description: "API, webhooks, operations AI, launch planning and compliance.",
+    tabs: [
+      { id: "aura-api-sdk", label: "API & SDK" },
+      { id: "webhook-api-triggers", label: "Webhooks" },
+      { id: "aura-operations-ai", label: "Operations AI" },
+      { id: "ai-launch-planner", label: "Launch planner" },
+      { id: "compliance-privacy-suite", label: "Compliance" },
     ],
   },
 ];
@@ -121,3 +209,8 @@ export function resolveSection(raw) {
   return null;
 }
 export const hiddenToolIds = new Set(byTab.keys());
+
+// Tools that exist but are still being rebuilt on real store data.
+const PREVIEW = new Set(["advanced-analytics-attribution", "advanced-finance-inventory-planning", "advanced-personalization-engine", "affiliate-partner-management", "ai-launch-planner", "ai-segmentation-engine", "aura-api-sdk", "aura-operations-ai", "automation-templates", "backlink-explorer", "brand-intelligence-layer", "churn-prediction-playbooks", "collaboration-approval-workflows", "competitive-analysis", "compliance-privacy-suite", "conditional-logic-automation", "conversion-rate-optimization", "creative-automation-engine", "custom-dashboard-builder", "daily-cfo-pack", "digital-asset-management", "finance-autopilot", "inbox-assistant", "inventory-supplier-sync", "link-intersect-outreach", "local-seo-toolkit", "ltv-churn-predictor", "multi-channel-optimizer", "newsletter-automation", "omnichannel-campaign-builder", "personalization-recommendation-engine", "predictive-analytics-widgets", "reporting-integrations", "scheduled-export", "self-service-analytics", "self-service-portal", "social-media-analytics-listening", "social-scheduler-content-engine", "subscription-management", "video-podcast-seo", "visual-workflow-builder", "voice-search-optimization", "webhook-api-triggers", "workflow-orchestrator"]);
+export const isPreviewTool = (id) => PREVIEW.has(id);
+export const isPreviewHub = (id) => { const h = byId.get(id); return !!h && h.tabs.every((x) => PREVIEW.has(x.id)); };

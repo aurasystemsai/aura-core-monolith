@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import { canUseTool, requiredPlanFor, PLAN_LABEL } from "../hooks/usePlan";
+import { isPreviewTool } from "../hubs.js";
 
 const t = (p) => lazy(p);
 const TOOLS = {
@@ -40,6 +41,51 @@ const TOOLS = {
   "tiktok-ads-integration": t(() => import("./tools/TikTokAdsIntegration.jsx")),
   "ad-creative-optimizer": t(() => import("./tools/AdCreativeOptimizer.jsx")),
   "ads-anomaly-guard": t(() => import("./tools/AdsAnomalyGuard.jsx")),
+  "advanced-analytics-attribution": t(() => import("./tools/AdvancedAnalyticsAttribution.jsx")),
+  "advanced-finance-inventory-planning": t(() => import("./tools/AdvancedFinanceInventoryPlanning.jsx")),
+  "advanced-personalization-engine": t(() => import("./tools/AdvancedPersonalizationEngine.jsx")),
+  "affiliate-partner-management": t(() => import("./tools/AffiliatePartnerManagement.jsx")),
+  "ai-launch-planner": t(() => import("./tools/AILaunchPlanner.jsx")),
+  "ai-segmentation-engine": t(() => import("./tools/AiSegmentationEngine.jsx")),
+  "aura-api-sdk": t(() => import("./tools/AuraAPISDK.jsx")),
+  "aura-operations-ai": t(() => import("./tools/AuraOperationsAI.jsx")),
+  "automation-templates": t(() => import("./tools/AutomationTemplates.jsx")),
+  "backlink-explorer": t(() => import("./tools/BacklinkExplorer.jsx")),
+  "brand-intelligence-layer": t(() => import("./tools/BrandIntelligenceLayer.jsx")),
+  "churn-prediction-playbooks": t(() => import("./tools/ChurnPredictionPlaybooks.jsx")),
+  "collaboration-approval-workflows": t(() => import("./tools/CollaborationApprovalWorkflows.jsx")),
+  "competitive-analysis": t(() => import("./tools/CompetitiveAnalysis.jsx")),
+  "compliance-privacy-suite": t(() => import("./tools/CompliancePrivacySuite.jsx")),
+  "conditional-logic-automation": t(() => import("./tools/ConditionalLogicAutomation.jsx")),
+  "conversion-rate-optimization": t(() => import("./tools/ConversionRateOptimization.jsx")),
+  "creative-automation-engine": t(() => import("./tools/CreativeAutomationEngine.jsx")),
+  "custom-dashboard-builder": t(() => import("./tools/CustomDashboardBuilder.jsx")),
+  "daily-cfo-pack": t(() => import("./tools/DailyCFOPack.jsx")),
+  "digital-asset-management": t(() => import("./tools/DigitalAssetManagement.jsx")),
+  "finance-autopilot": t(() => import("./tools/FinanceAutopilot.jsx")),
+  "inbox-assistant": t(() => import("./tools/InboxAssistant.jsx")),
+  "inventory-supplier-sync": t(() => import("./tools/InventorySupplierSync.jsx")),
+  "link-intersect-outreach": t(() => import("./tools/LinkIntersectOutreach.jsx")),
+  "local-seo-toolkit": t(() => import("./tools/LocalSEOToolkit.jsx")),
+  "ltv-churn-predictor": t(() => import("./tools/LTVChurnPredictor.jsx")),
+  "multi-channel-optimizer": t(() => import("./tools/MultiChannelOptimizer.jsx")),
+  "newsletter-automation": t(() => import("./tools/NewsletterAutomation.jsx")),
+  "omnichannel-campaign-builder": t(() => import("./tools/OmnichannelCampaignBuilder.jsx")),
+  "personalization-recommendation-engine": t(() => import("./tools/PersonalizationRecommendationEngine.jsx")),
+  "predictive-analytics-widgets": t(() => import("./tools/PredictiveAnalyticsWidgets.jsx")),
+  "reporting-integrations": t(() => import("./tools/ReportingIntegrations.jsx")),
+  "scheduled-export": t(() => import("./tools/ScheduledExport.jsx")),
+  "self-service-analytics": t(() => import("./tools/SelfServiceAnalytics.jsx")),
+  "self-service-portal": t(() => import("./tools/SelfServicePortal.jsx")),
+  "social-media-analytics-listening": t(() => import("./tools/SocialMediaAnalyticsListening.jsx")),
+  "social-scheduler-content-engine": t(() => import("./tools/SocialSchedulerContentEngine.jsx")),
+  "subscription-management": t(() => import("./tools/SubscriptionManagement.jsx")),
+  "video-podcast-seo": t(() => import("./tools/VideoPodcastSEO.jsx")),
+  "visual-workflow-builder": t(() => import("./tools/VisualWorkflowBuilder.jsx")),
+  "voice-search-optimization": t(() => import("./tools/VoiceSearchOptimization.jsx")),
+  "webhook-api-triggers": t(() => import("./tools/WebhookApiTriggers.jsx")),
+  "workflow-orchestrator": t(() => import("./tools/WorkflowOrchestrator.jsx")),
+  "inventory-forecasting": t(() => import("./tools/InventoryForecasting.jsx")),
 };
 
 const S = {
@@ -47,6 +93,8 @@ const S = {
   tab: (on) => ({ flexShrink: 0, whiteSpace: "nowrap", background: on ? "#eff6ff" : "transparent", color: on ? "#1d4ed8" : "#64748b", border: "1px solid " + (on ? "#bfdbfe" : "transparent"), borderBottom: on ? "1px solid #eff6ff" : "1px solid transparent", borderRadius: "8px 8px 0 0", padding: "9px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: -1 }),
   lock: { margin: 24, padding: 20, background: "#ffffff", border: "1px solid #dbe3ed", borderRadius: 10, color: "#172033", maxWidth: 520 },
   btn: { marginTop: 12, background: "#2563eb", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 600, cursor: "pointer" },
+  badge: { marginLeft: 6, fontSize: 10, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a", borderRadius: 999, padding: "1px 7px" },
+  note: { margin: "12px 16px 0", padding: "10px 14px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, color: "#92400e", fontSize: 13 },
   load: { padding: 24, color: "#a1a1aa", fontSize: 13 },
 };
 
@@ -63,11 +111,12 @@ export default function HubTool({ hub, tab, plan, onTab, toolProps = {}, onUpgra
           const ok = canUseTool(plan, x.id);
           return (
             <button key={x.id} role="tab" aria-selected={x.id === current.id} style={S.tab(x.id === current.id)} onClick={() => onTab(x.id)}>
-              {x.label}{ok ? "" : ` · ${PLAN_LABEL[requiredPlanFor(x.id)]}`}
+              {x.label}{ok ? "" : ` · ${PLAN_LABEL[requiredPlanFor(x.id)]}`}{isPreviewTool(x.id) && <span style={S.badge}>Preview</span>}
             </button>
           );
         })}
       </div>
+      {isPreviewTool(current.id) && <div style={S.note}><strong>Preview.</strong> This tool is still being rebuilt on your real store data, so figures and results here are not yet reliable. Please do not act on them.</div>}
       {!allowed ? (
         <div style={S.lock}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>{current.label} needs the {PLAN_LABEL[requiredPlanFor(current.id)]} plan</div>
