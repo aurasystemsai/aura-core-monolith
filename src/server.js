@@ -259,7 +259,7 @@ const toolRouters = [
   { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant'), creditAction: 'support-reply' },
   { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync'), creditAction: 'generic-ai' },
   { path: '/api/link-intersect-outreach', router: require('./tools/link-intersect-outreach/router'), middleware: requireTool('link-intersect-outreach'), creditAction: 'keyword-research' },
-  { path: '/api/local-seo-toolkit', router: require('./tools/local-seo-toolkit/router'), middleware: requireTool('local-seo-toolkit'), creditAction: 'seo-scan' },
+  { path: '/api/local-seo-toolkit', router: require('./tools/local-seo-toolkit/router'), middleware: requireTool('local-seo-toolkit'), creditAction: 'seo-scan', noCreditPaths: ['/locations'] },
   { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router'), middleware: requireTool('ltv-churn-predictor'), creditAction: 'churn-predict' },
   { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer'), creditAction: 'analytics-insight' },
   { path: '/api/newsletter-automation', router: require('./tools/newsletter-automation/router'), middleware: requireTool('newsletter-automation'), creditAction: 'newsletter-generate' },
