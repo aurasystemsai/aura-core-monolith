@@ -106,8 +106,6 @@ export const HUBS = [
       { id: "tiktok-ads-integration", label: "TikTok" },
       { id: "ad-creative-optimizer", label: "Ad copy" },
       { id: "ads-anomaly-guard", label: "Spend alerts" },
-      { id: "multi-channel-optimizer", label: "Channel mix" },
-      { id: "creative-automation-engine", label: "Creative automation" },
     ],
   },
   {
