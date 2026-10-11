@@ -254,7 +254,7 @@ const toolRouters = [
   { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router'), middleware: requireTool('creative-automation-engine'), creditAction: 'ad-copy' },
   { path: '/api/custom-dashboard-builder', router: require('./tools/custom-dashboard-builder/router'), middleware: requireTool('custom-dashboard-builder'), creditAction: 'analytics-insight' },
   { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router'), middleware: requireTool('daily-cfo-pack'), creditAction: 'analytics-insight' },
-  { path: '/api/digital-asset-management', router: require('./tools/digital-asset-management/router'), middleware: requireTool('digital-asset-management'), creditAction: 'analytics-insight' },
+  { path: '/api/digital-asset-management', router: require('./tools/digital-asset-management/router'), middleware: requireTool('digital-asset-management'), creditAction: 'alt-text', noCreditPaths: ['/apply'] },
   { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router'), middleware: requireTool('finance-autopilot'), creditAction: 'analytics-insight' },
   { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant'), creditAction: 'support-reply' },
   { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync'), creditAction: 'generic-ai' },
