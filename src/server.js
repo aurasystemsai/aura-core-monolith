@@ -243,7 +243,7 @@ const toolRouters = [
   { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router'), middleware: requireTool('aura-api-sdk'), creditAction: 'generic-ai' },
   { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai'), creditAction: 'analytics-insight' },
   { path: '/api/automation-templates', router: require('./tools/automation-templates/router'), middleware: requireTool('automation-templates'), creditAction: 'generic-ai' },
-  { path: '/api/backlink-explorer', router: require('./tools/backlink-explorer/router'), middleware: requireTool('backlink-explorer'), creditAction: 'competitive-analysis' },
+  { path: '/api/backlink-explorer', router: require('./tools/backlink-explorer/router'), middleware: requireTool('backlink-explorer'), creditAction: 'email-gen', noCreditPaths: ['/links', '/pages'] },
   { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router'), middleware: requireTool('brand-intelligence-layer'), creditAction: 'competitive-analysis' },
   { path: '/api/churn-prediction-playbooks', router: require('./tools/churn-prediction-playbooks/router'), middleware: requireTool('churn-prediction-playbooks'), creditAction: 'churn-predict' },
   { path: '/api/collaboration-approval-workflows', router: require('./tools/collaboration-approval-workflows/router'), middleware: requireTool('collaboration-approval-workflows'), creditAction: 'generic-ai' },
