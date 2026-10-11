@@ -237,7 +237,7 @@ const toolRouters = [
   { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router'), middleware: requireTool('advanced-analytics-attribution'), creditAction: 'analytics-insight' },
   { path: '/api/advanced-finance-inventory-planning', router: require('./tools/advanced-finance-inventory-planning/router'), middleware: requireTool('advanced-finance-inventory-planning'), creditAction: 'analytics-insight' },
   { path: '/api/advanced-personalization-engine', router: require('./tools/advanced-personalization-engine/router'), middleware: requireTool('advanced-personalization-engine'), creditAction: 'analytics-insight' },
-  { path: '/api/affiliate-partner-management', router: require('./tools/affiliate-partner-management/router'), middleware: requireTool('affiliate-partner-management'), creditAction: 'analytics-insight' },
+  { path: '/api/affiliate-partner-management', router: require('./tools/affiliate-partner-management/router'), middleware: requireTool('affiliate-partner-management'), creditAction: 'analytics-insight', noCreditPaths: ['/partners'] },
   { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router'), middleware: requireTool('ai-launch-planner'), creditAction: 'campaign-gen' },
   { path: '/api/ai-segmentation-engine', router: require('./tools/ai-segmentation-engine/router'), middleware: requireTool('ai-segmentation-engine'), creditAction: 'analytics-insight' },
   { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router'), middleware: requireTool('aura-api-sdk'), creditAction: 'generic-ai' },
