@@ -271,7 +271,7 @@ const toolRouters = [
   { path: '/api/self-service-analytics', router: require('./tools/self-service-analytics/router'), middleware: requireTool('self-service-analytics'), creditAction: 'analytics-insight' },
   { path: '/api/self-service-portal', router: require('./tools/self-service-portal/router'), middleware: requireTool('self-service-portal'), creditAction: 'generic-ai' },
   { path: '/api/social-media-analytics-listening', router: require('./tools/social-media-analytics-listening/router'), middleware: requireTool('social-media-analytics-listening'), creditAction: 'analytics-insight' },
-  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post' },
+  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post', noCreditPaths: ['/posts', '/products'] },
   { path: '/api/subscription-management', router: require('./tools/subscription-management/router'), middleware: requireTool('subscription-management'), creditAction: 'analytics-insight' },
   { path: '/api/video-podcast-seo', router: require('./tools/video-podcast-seo/router'), middleware: requireTool('video-podcast-seo'), creditAction: 'analytics-insight' },
   { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router'), middleware: requireTool('visual-workflow-builder'), creditAction: 'analytics-insight' },
