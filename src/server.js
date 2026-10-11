@@ -247,7 +247,7 @@ const toolRouters = [
   { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router'), middleware: requireTool('brand-intelligence-layer'), creditAction: 'competitive-analysis' },
   { path: '/api/churn-prediction-playbooks', router: require('./tools/churn-prediction-playbooks/router'), middleware: requireTool('churn-prediction-playbooks'), creditAction: 'churn-predict' },
   { path: '/api/collaboration-approval-workflows', router: require('./tools/collaboration-approval-workflows/router'), middleware: requireTool('collaboration-approval-workflows'), creditAction: 'generic-ai' },
-  { path: '/api/competitive-analysis', router: require('./tools/competitive-analysis/router'), middleware: requireTool('competitive-analysis'), creditAction: 'competitive-analysis' },
+  { path: '/api/competitive-analysis', router: require('./tools/competitive-analysis/router'), middleware: requireTool('competitive-analysis'), creditAction: 'competitive-analysis', noCreditPaths: ['/compare'] },
   { path: '/api/compliance-privacy-suite', router: require('./tools/compliance-privacy-suite/router'), middleware: requireTool('compliance-privacy-suite'), creditAction: 'analytics-insight' },
   { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router'), middleware: requireTool('conditional-logic-automation'), creditAction: 'analytics-insight' },
   { path: '/api/conversion-rate-optimization', router: require('./tools/conversion-rate-optimization/router'), middleware: requireTool('conversion-rate-optimization'), creditAction: 'cro-scan' },
