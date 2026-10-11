@@ -173,9 +173,9 @@ const toolRouters = [
 
   // Growth tier tools
   { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
-  { path: '/api/size-guides', router: require('./tools/size-guides/router'), middleware: requireTool('size-guides'), creditAction: 'product-description' },
-  { path: '/api/popups', router: require('./tools/popups/router'), middleware: requireTool('popups'), creditAction: 'email-gen' },
-  { path: '/api/back-in-stock', router: require('./tools/back-in-stock/router'), middleware: requireTool('back-in-stock'), creditAction: 'email-gen' },
+  { path: '/api/size-guides', router: require('./tools/size-guides/router'), middleware: requireTool('size-guides'), creditAction: 'product-description', noCreditPaths: ['/save', '/toggle'] },
+  { path: '/api/popups', router: require('./tools/popups/router'), middleware: requireTool('popups'), creditAction: 'email-gen', noCreditPaths: ['/save', '/toggle'] },
+  { path: '/api/back-in-stock', router: require('./tools/back-in-stock/router'), middleware: requireTool('back-in-stock'), creditAction: 'email-gen', noCreditPaths: ['/add', '/send'] },
   { path: '/api/order-tracking', router: require('./tools/order-tracking/router'), middleware: requireTool('order-tracking'), creditAction: 'email-gen' },
   { path: '/api/discounts-bundles', router: require('./tools/discounts-bundles/router'), middleware: requireTool('discounts-bundles'), creditAction: 'campaign-gen' },
   { path: '/api/translations', router: require('./tools/translations/router'), middleware: requireTool('translations'), creditAction: 'product-description' },
