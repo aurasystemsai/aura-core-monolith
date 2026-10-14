@@ -212,7 +212,7 @@ const toolRouters = [
   { path: '/api/tiktok-ads-integration', router: require('./tools/tiktok-ads-integration/router'), middleware: requireTool('tiktok-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/ad-creative-optimizer', router: require('./tools/ad-creative-optimizer/router'), middleware: requireTool('ad-creative-optimizer'), creditAction: 'ad-copy' },
   { path: '/api/ads-anomaly-guard', router: require('./tools/ads-anomaly-guard/router'), middleware: requireTool('ads-anomaly-guard'), creditAction: 'analytics-insight' },
-  { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight' },
+  { path: '/api/workflow-automation-builder', router: require('./tools/workflow-automation-builder/router'), middleware: requireTool('workflow-automation-builder'), creditAction: 'analytics-insight', noCreditPaths: ['/rules', '/run-all'] },
   { path: '/api/ai-copilot', router: require('./tools/ai-copilot/router'), middleware: requireTool('ai-copilot'), creditAction: 'ai-chat' },
   { path: '/api/email-deliverability', router: require('./tools/email-deliverability/router'), middleware: requireTool('email-deliverability'), creditAction: 'analytics-insight' },
   { path: '/api/sms-whatsapp-marketing', router: require('./tools/sms-whatsapp-marketing/router'), middleware: requireTool('sms-whatsapp-marketing'), creditAction: 'sms-campaign' },

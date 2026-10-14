@@ -146,13 +146,9 @@ export const HUBS = [
   },
   {
     id: "automation-hub", name: "Workflow Builder", suite: "automation", category: "Automation",
-    description: "Templates, workflows, conditional logic and approvals.",
+    description: "Run rules against real Shopify stock, customer and order data.",
     tabs: [
-      { id: "automation-templates", label: "Templates" },
-      { id: "visual-workflow-builder", label: "Workflow builder" },
-      { id: "workflow-orchestrator", label: "Orchestrator" },
-      { id: "conditional-logic-automation", label: "Conditional logic" },
-      { id: "collaboration-approval-workflows", label: "Approvals" },
+      { id: "workflow-automation-builder", label: "Store rules" },
     ],
   },
   {

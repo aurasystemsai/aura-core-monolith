@@ -86,6 +86,7 @@ const TOOLS = {
   "voice-search-optimization": t(() => import("./tools/VoiceSearchOptimization.jsx")),
   "webhook-api-triggers": t(() => import("./tools/WebhookApiTriggers.jsx")),
   "workflow-orchestrator": t(() => import("./tools/WorkflowOrchestrator.jsx")),
+  "workflow-automation-builder": t(() => import("./tools/WorkflowAutomationBuilder.jsx")),
   "inventory-forecasting": t(() => import("./tools/InventoryForecasting.jsx")),
   "returns-rma-automation": t(() => import("./tools/ReturnsRMAAutomation.jsx")),
 };
