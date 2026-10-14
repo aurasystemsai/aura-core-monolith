@@ -124,14 +124,9 @@ export const HUBS = [
   },
   {
     id: "reports-analytics", name: "Reports & Analytics", suite: "analytics", category: "Analytics",
-    description: "Attribution, forecasts, custom dashboards and scheduled exports.",
+    description: "Build and download reports from your real recent Shopify orders.",
     tabs: [
-      { id: "advanced-analytics-attribution", label: "Attribution" },
-      { id: "predictive-analytics-widgets", label: "Predictions" },
-      { id: "self-service-analytics", label: "Report builder" },
-      { id: "custom-dashboard-builder", label: "Dashboards" },
-      { id: "reporting-integrations", label: "Integrations" },
-      { id: "scheduled-export", label: "Scheduled export" },
+      { id: "self-service-analytics", label: "Shopify reports" },
     ],
   },
   {
@@ -195,6 +190,6 @@ export function resolveSection(raw) {
 export const hiddenToolIds = new Set(byTab.keys());
 
 // Tools that exist but are still being rebuilt on real store data.
-const PREVIEW = new Set(["advanced-analytics-attribution", "advanced-finance-inventory-planning", "ai-launch-planner", "ai-segmentation-engine", "aura-api-sdk", "aura-operations-ai", "automation-templates", "brand-intelligence-layer", "churn-prediction-playbooks", "collaboration-approval-workflows", "compliance-privacy-suite", "conditional-logic-automation", "creative-automation-engine", "custom-dashboard-builder", "daily-cfo-pack", "finance-autopilot", "inbox-assistant", "inventory-supplier-sync", "link-intersect-outreach", "ltv-churn-predictor", "multi-channel-optimizer", "predictive-analytics-widgets", "reporting-integrations", "scheduled-export", "self-service-analytics", "self-service-portal", "social-media-analytics-listening", "video-podcast-seo", "visual-workflow-builder", "voice-search-optimization", "webhook-api-triggers", "workflow-orchestrator"]);
+const PREVIEW = new Set(["advanced-analytics-attribution", "advanced-finance-inventory-planning", "ai-launch-planner", "ai-segmentation-engine", "aura-api-sdk", "aura-operations-ai", "automation-templates", "brand-intelligence-layer", "churn-prediction-playbooks", "collaboration-approval-workflows", "compliance-privacy-suite", "conditional-logic-automation", "creative-automation-engine", "custom-dashboard-builder", "daily-cfo-pack", "finance-autopilot", "inbox-assistant", "inventory-supplier-sync", "link-intersect-outreach", "ltv-churn-predictor", "multi-channel-optimizer", "predictive-analytics-widgets", "reporting-integrations", "scheduled-export", "self-service-portal", "social-media-analytics-listening", "video-podcast-seo", "visual-workflow-builder", "voice-search-optimization", "webhook-api-triggers", "workflow-orchestrator"]);
 export const isPreviewTool = (id) => PREVIEW.has(id);
 export const isPreviewHub = (id) => { const h = byId.get(id); return !!h && h.tabs.every((x) => PREVIEW.has(x.id)); };
