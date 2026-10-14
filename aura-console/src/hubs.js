@@ -131,13 +131,9 @@ export const HUBS = [
   },
   {
     id: "finance-stock", name: "Finance & Stock", suite: "finance", category: "Finance",
-    description: "Cash, planning and supplier tools for your stock.",
+    description: "Real Shopify stock levels, recent sales, reorder suggestions and purchase orders.",
     tabs: [
-      { id: "finance-autopilot", label: "Finance" },
-      { id: "daily-cfo-pack", label: "Daily CFO pack" },
-      { id: "advanced-finance-inventory-planning", label: "Planning" },
-      { id: "inventory-supplier-sync", label: "Supplier sync" },
-      { id: "inventory-forecasting", label: "Forecasting & POs" },
+      { id: "inventory-forecasting", label: "Inventory & Cash" },
     ],
   },
   {
