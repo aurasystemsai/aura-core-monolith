@@ -34,6 +34,7 @@ const TOOLS = {
   "customer-data-platform": t(() => import("./tools/CustomerDataPlatform.jsx")),
   "dynamic-pricing-engine": t(() => import("./tools/DynamicPricingEngine.jsx")),
   "order-risk": t(() => import("./tools/OrderRisk.jsx")),
+  "order-tracking": t(() => import("./tools/OrderTracking.jsx")),
   "profit-analytics": t(() => import("./tools/ProfitAnalytics.jsx")),
   "auto-insights": t(() => import("./tools/AutoInsights.jsx")),
   "facebook-ads-integration": t(() => import("./tools/FacebookAdsIntegration.jsx")),
@@ -86,6 +87,7 @@ const TOOLS = {
   "webhook-api-triggers": t(() => import("./tools/WebhookApiTriggers.jsx")),
   "workflow-orchestrator": t(() => import("./tools/WorkflowOrchestrator.jsx")),
   "inventory-forecasting": t(() => import("./tools/InventoryForecasting.jsx")),
+  "returns-rma-automation": t(() => import("./tools/ReturnsRMAAutomation.jsx")),
 };
 
 const S = {

@@ -206,7 +206,7 @@ const toolRouters = [
   { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text', noCreditPaths: ['/apply', '/revert', '/schedule'] },
   { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine'), creditAction: 'pricing-optimize' },
   { path: '/api/inventory-forecasting', router: require('./tools/inventory-forecasting/router'), middleware: requireTool('inventory-forecasting'), creditAction: 'analytics-insight', noCreditPaths: ['/suppliers', '/assign', '/pos'] },
-  { path: '/api/returns-rma-automation', router: require('./tools/returns-rma-automation/router'), middleware: requireTool('returns-rma-automation'), creditAction: 'generic-ai' },
+  { path: '/api/returns-rma-automation', router: require('./tools/returns-rma-automation/router'), middleware: requireTool('returns-rma-automation'), creditAction: 'generic-ai', noCreditPaths: ['/returns'] },
   { path: '/api/google-ads-integration', router: require('./tools/google-ads-integration/router'), middleware: requireTool('google-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/facebook-ads-integration', router: require('./tools/facebook-ads-integration/router'), middleware: requireTool('facebook-ads-integration'), creditAction: 'analytics-insight' },
   { path: '/api/tiktok-ads-integration', router: require('./tools/tiktok-ads-integration/router'), middleware: requireTool('tiktok-ads-integration'), creditAction: 'analytics-insight' },
