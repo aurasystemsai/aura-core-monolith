@@ -151,17 +151,6 @@ export const HUBS = [
       { id: "workflow-automation-builder", label: "Store rules" },
     ],
   },
-  {
-    id: "platform-hub", name: "Platform & Developer", suite: "platform", category: "Platform",
-    description: "API, webhooks, operations AI, launch planning and compliance.",
-    tabs: [
-      { id: "aura-api-sdk", label: "API & SDK" },
-      { id: "webhook-api-triggers", label: "Webhooks" },
-      { id: "aura-operations-ai", label: "Operations AI" },
-      { id: "ai-launch-planner", label: "Launch planner" },
-      { id: "compliance-privacy-suite", label: "Compliance" },
-    ],
-  },
 ];
 
 const byTab = new Map();
