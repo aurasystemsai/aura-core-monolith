@@ -435,8 +435,8 @@ export default function AppSidebar({ activeSection, setActiveSection, plan }) {
  }}
  title={locked ? `${tool.name} (${PLAN_LABEL[requiredPlanFor(tool.id)] || "Upgrade"} plan required)` : tool.name}
  >
- {tool.status && <span style={S.toolDot(tool.status)} />}
- <span className="sidebar-tool-label" style={{ overflow: "hidden", textOverflow: "ellipsis"}}>{tool.name}</span>{isPreviewHub(tool.id) && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, textTransform: "uppercase", background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>Preview</span>}
+ {tool.status && tool.status !== "preview" && <span style={S.toolDot(tool.status)} />}
+ <span className="sidebar-tool-label" style={{ overflow: "hidden", textOverflow: "ellipsis"}}>{tool.name}</span>{(tool.status === "preview" || isPreviewHub(tool.id)) && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, textTransform: "uppercase", background: "#fef3c7", color: "#92400e", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>Preview</span>}
  {locked && <span style={S.badge(PLAN_COLOUR[requiredPlanFor(tool.id)] || PLAN_COLOUR.pro)}>{(PLAN_LABEL[requiredPlanFor(tool.id)] || "PRO").toUpperCase()}</span>}
  </button>
  );

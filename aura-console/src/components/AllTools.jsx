@@ -179,7 +179,7 @@ export default function AllTools({ setActiveSection }) {
  <p className="tool-description">{mod.description}</p>
  {mod.status && (
  <span className={`status-badge status-${mod.status}`}>
- {mod.status === "new"? "NEW": mod.status === "beta"? "BETA": mod.status}
+ {mod.status === "new"? "NEW": mod.status === "beta"? "BETA": mod.status === "preview" ? "PREVIEW" : mod.status}
  </span>
  )}
  {mod.docUrl && (
@@ -383,6 +383,11 @@ export default function AllTools({ setActiveSection }) {
  .all-tools-container .status-beta {
  background: #f59e0b;
  color: #172033;
+ }
+
+ .all-tools-container .status-preview {
+ background: #fef3c7;
+ color: #92400e;
  }
 
  .all-tools-container .doc-link {
