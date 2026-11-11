@@ -21,7 +21,6 @@ const ProductsList = lazy(() => import("./components/ProductsList.jsx"));
 const ToolsList = lazy(() => import("./components/ToolsList.jsx"));
 const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAuditor"));
 const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
-const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/tools/InternalLinkOptimizer"));
 const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
@@ -534,7 +533,7 @@ function App() {
  
  {/* Legacy sections */}
  {activeSection === "pricing"&& <PricingPage />}
- {activeSection === "automation-scheduler"&& <AutomationScheduler />}
+ {activeSection === "automation-scheduler"&& <WorkflowAutomationBuilder />}
  {activeSection === "reports"&& <AutoInsights />}
  {activeSection === "auth"&& <Auth />}
  {activeSection === "user-management"&& <UserManagement coreUrl={coreUrl} />}
