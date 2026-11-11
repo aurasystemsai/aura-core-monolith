@@ -5,7 +5,7 @@ import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
 import { useCredits } from "./hooks/useCredits";
 
 import toolsMeta from "./toolMeta";
-import { HUBS, hubById, resolveSection } from "./hubs.js";
+import { HUBS, hubById, isPreviewTool, resolveSection } from "./hubs.js";
 import HubTool from "./components/HubTool.jsx";
 import AiChatbot from "./components/AiChatbot.jsx";
 import ChangelogModal from "./components/ChangelogModal.jsx";
@@ -521,6 +521,11 @@ function App() {
  <div role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", color: "#78350f", borderRadius: 8, padding: "10px 14px", margin: "0 0 14px", display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
  <span>{balance <= 0 ? "You are out of credits. AI actions are paused." : `Only ${balance} credits left. AI actions will pause when they run out.`}</span>
  <button onClick={() => setActiveSection("credits")} style={{ background: "#78350f", color: "#fff", border: 0, borderRadius: 6, padding: "6px 12px", fontWeight: 600, cursor: "pointer" }}>Get more credits</button>
+ </div>
+ )}
+ {isPreviewTool(activeSection) && activeSection !== "ai-visibility-tracker" && (
+ <div role="note" style={{ background: "#1c1407", border: "1px solid #854d0e", color: "#fcd34d", borderRadius: 8, padding: "10px 14px", margin: "0 0 14px", fontSize: 13 }}>
+ <strong>Preview.</strong> This tool is still being completed or connected to live data. Treat its results as unverified, and do not rely on them for business decisions.
  </div>
  )}
  {/* Main content routing */}
