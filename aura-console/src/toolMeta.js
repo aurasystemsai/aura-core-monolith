@@ -44,9 +44,9 @@ const toolsMeta = [
  { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Preview: mention tracking is not connected to external sources yet.", category: "Brand", suite: "social" },
 
  // ── Ads & Acquisition (6 tools) ──
- { id: "google-ads-integration", name: "Google Ads", description: "Manage Google Ads campaigns with AI bidding and optimization.", category: "Ads", suite: "ads" },
- { id: "facebook-ads-integration", name: "Facebook & Instagram Ads", description: "Run and optimize Meta ad campaigns from one dashboard.", category: "Ads", suite: "ads" },
- { id: "tiktok-ads-integration", name: "TikTok Ads", description: "Create and manage TikTok ad campaigns with creative tools.", category: "Ads", suite: "ads" },
+ { id: "google-ads-integration", name: "Google Ads", description: "Connect Google Ads to view real campaign performance and get AI suggestions. Read-only: AURA does not create, edit or optimize campaigns.", category: "Ads", suite: "ads" },
+ { id: "facebook-ads-integration", name: "Facebook & Instagram Ads", description: "Connect Meta Ads to view real campaign performance and get AI suggestions. Read-only: AURA does not create, edit or optimize campaigns.", category: "Ads", suite: "ads" },
+ { id: "tiktok-ads-integration", name: "TikTok Ads", description: "Connect TikTok Ads to view real campaign performance and get AI suggestions. Read-only: AURA does not create, edit or optimize campaigns.", category: "Ads", suite: "ads" },
  { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Flags spend spikes, wasted spend, falling returns and traffic drops across your connected ad accounts.", category: "Ads", suite: "ads" },
  { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "AI writes headlines and descriptions for your real products, cut to Google, Meta and TikTok character limits.", category: "Ads", suite: "ads" },
 
