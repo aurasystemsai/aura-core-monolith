@@ -37,7 +37,7 @@ const toolsMeta = [
  { id: "returns-rma-automation", name: "Returns", description: "Log return requests, check them against real orders and track them to refund.", category: "Email", suite: "lifecycle" },
 
  // ── Customer Support (4 tools) ──
- { id: "ai-support-assistant", name: "AI Support Assistant", description: "Instant AI-powered responses trained on your knowledge base.", category: "Support", suite: "support" },
+ { id: "ai-support-assistant", name: "AI Support Assistant", description: "Add customer messages manually, import Shopify pages into your knowledge base, and draft replies with AI. It does not connect to an email/helpdesk inbox or send replies.", category: "Support", suite: "support" },
  { id: "review-ugc-engine", name: "Review & UGC Engine", description: "Manage reviews and user content with moderation and sentiment analysis.", category: "Support", suite: "support" },
 
  // ── Social & Brand (5 tools) ──
@@ -67,7 +67,7 @@ const toolsMeta = [
  { id: "mobile-app-analytics", name: "Mobile App Analytics", description: "Preview: no mobile analytics source is connected, so retention, screen-flow and crash data are not available.", category: "Personalization", suite: "personalization", status: "preview" },
  { id: "sms-whatsapp-marketing", name: "SMS & WhatsApp Marketing", description: "Automate SMS and WhatsApp campaigns with personalised messaging.", category: "Email", suite: "lifecycle" },
  { id: "workflow-automation-builder", name: "Automations", description: "Rules that check your real store data (low stock, lapsed customers, big orders) and email you or tag the matches.", category: "Automation", suite: "automation" },
- { id: "ai-copilot", name: "AI Copilot", description: "Your AI-powered store assistant — ask anything about your data, campaigns, and strategy.", category: "AI", suite: "ai" },
+ { id: "ai-copilot", name: "AI Copilot", description: "Ask questions about your Shopify products, stock and recent sales. It reads store data only and does not change anything.", category: "AI", suite: "ai" },
 
  // ── Platform & Developer (5 tools) ──
  { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Create rewards programs that drive repeat purchases.", category: "Platform", suite: "platform" },
