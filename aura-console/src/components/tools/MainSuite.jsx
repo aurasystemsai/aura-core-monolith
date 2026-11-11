@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
+import { isPreviewTool } from "../../hubs.js";
 import Toast from "../Toast";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../../hooks/usePlan";
 
@@ -307,6 +308,7 @@ export default function MainSuite({ setActiveSection }) {
  {(sortedModules || []).map((m) => {
  const locked = !planLoading && !canUseTool(plan, m.id);
  const reqPlan = requiredPlanFor(m.id);
+ const status = m.status || (isPreviewTool(m.id) ? "preview" : "");
  return (
  <div
  key={m.id}
@@ -346,16 +348,16 @@ export default function MainSuite({ setActiveSection }) {
  )}
  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
  <div style={{ fontWeight: 700, color: palette.text }}>{m.name}</div>
- {m.status && (
+ {status && (
  <span style={{
  fontSize: 11,
  fontWeight: 800,
- color: palette.text,
- background: m.status === "beta"? "#f59e0b": "#10b981",
+ color: status === "preview" ? "#92400e" : palette.text,
+ background: status === "preview" ? "#fef3c7" : status === "beta"? "#f59e0b": "#10b981",
  padding: "2px 8px",
  borderRadius: 999,
  }}>
- {m.status.toUpperCase()}
+ {status.toUpperCase()}
  </span>
  )}
  </div>
@@ -389,6 +391,5 @@ export default function MainSuite({ setActiveSection }) {
  </div>
  );
 }
-
 
 
