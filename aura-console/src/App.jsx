@@ -62,7 +62,6 @@ const VideoPodcastSEO = lazy(() => import("./components/tools/VideoPodcastSEO.js
 const SubscriptionManagement = lazy(() => import("./components/tools/SubscriptionManagement.jsx"));
 const SocialSchedulerContentEngine = lazy(() => import("./components/tools/SocialSchedulerContentEngine.jsx"));
 const SocialMediaAnalyticsListening = lazy(() => import("./components/tools/SocialMediaAnalyticsListening.jsx"));
-const SelfServicePortal = lazy(() => import("./components/tools/SelfServicePortal.jsx"));
 const SelfServiceAnalytics = lazy(() => import("./components/tools/SelfServiceAnalytics.jsx"));
 const ScheduledExport = lazy(() => import("./components/tools/ScheduledExport.jsx"));
 const ReportingIntegrations = lazy(() => import("./components/tools/ReportingIntegrations.jsx"));
@@ -596,7 +595,7 @@ function App() {
   {activeSection === "subscription-management"&& <SubscriptionManagement />}
   {activeSection === "social-scheduler-content-engine"&& <SocialSchedulerContentEngine />}
   {activeSection === "social-media-analytics-listening"&& <SocialMediaAnalyticsListening />}
-  {activeSection === "self-service-portal"&& <SelfServicePortal />}
+  {activeSection === "self-service-portal"&& <OrderTracking />}
   {activeSection === "self-service-analytics"&& <SelfServiceAnalytics />}
   {activeSection === "scheduled-export"&& <ScheduledExport />}
   {activeSection === "reporting-integrations"&& <ReportingIntegrations />}

@@ -161,16 +161,16 @@ export const isHub = (id) => byId.has(id);
 export const hubById = (id) => byId.get(id) || null;
 export const hubForTool = (toolId) => byTab.get(toolId) || null;
 // A hub id or any of its tool ids resolves to the hub and the tab to show.
-const ALIASES = { "ai-alt-text-engine": "image-alt-media-seo", "loyalty-referral-program-v2": "loyalty-referral-programs" };
+const ALIASES = { "ai-alt-text-engine": "image-alt-media-seo", "loyalty-referral-program-v2": "loyalty-referral-programs", "self-service-portal": "order-tracking" };
 export function resolveSection(raw) {
   const section = ALIASES[raw] || raw;
   if (byId.has(section)) return { hub: byId.get(section), tab: null };
   if (byTab.has(section)) return { hub: byTab.get(section), tab: section };
   return null;
 }
-export const hiddenToolIds = new Set(byTab.keys());
+export const hiddenToolIds = new Set([...byTab.keys(), "self-service-portal"]);
 
 // Tools that exist but are still being rebuilt on real store data.
-const PREVIEW = new Set(["advanced-analytics-attribution", "advanced-finance-inventory-planning", "advanced-personalization-engine", "ai-launch-planner", "ai-segmentation-engine", "ai-visibility-tracker", "aura-api-sdk", "aura-operations-ai", "automation-templates", "brand-intelligence-layer", "churn-prediction-playbooks", "collaboration-approval-workflows", "compliance-privacy-suite", "conditional-logic-automation", "conversion-rate-optimization", "creative-automation-engine", "custom-dashboard-builder", "daily-cfo-pack", "finance-autopilot", "inbox-assistant", "internal-link-optimizer", "inventory-supplier-sync", "link-intersect-outreach", "ltv-churn-predictor", "multi-channel-optimizer", "newsletter-automation", "omnichannel-campaign-builder", "personalization-recommendation-engine", "predictive-analytics-widgets", "reporting-integrations", "schema-rich-results-engine", "scheduled-export", "self-service-portal", "social-media-analytics-listening", "subscription-management", "video-podcast-seo", "visual-workflow-builder", "voice-search-optimization", "webhook-api-triggers", "workflow-orchestrator"]);
+const PREVIEW = new Set(["advanced-analytics-attribution", "advanced-finance-inventory-planning", "advanced-personalization-engine", "ai-launch-planner", "ai-segmentation-engine", "ai-visibility-tracker", "aura-api-sdk", "aura-operations-ai", "automation-templates", "brand-intelligence-layer", "churn-prediction-playbooks", "collaboration-approval-workflows", "compliance-privacy-suite", "conditional-logic-automation", "conversion-rate-optimization", "creative-automation-engine", "custom-dashboard-builder", "daily-cfo-pack", "finance-autopilot", "inbox-assistant", "internal-link-optimizer", "inventory-supplier-sync", "link-intersect-outreach", "ltv-churn-predictor", "multi-channel-optimizer", "newsletter-automation", "omnichannel-campaign-builder", "personalization-recommendation-engine", "predictive-analytics-widgets", "reporting-integrations", "schema-rich-results-engine", "scheduled-export", "social-media-analytics-listening", "subscription-management", "video-podcast-seo", "visual-workflow-builder", "voice-search-optimization", "webhook-api-triggers", "workflow-orchestrator"]);
 export const isPreviewTool = (id) => PREVIEW.has(id);
 export const isPreviewHub = (id) => { const h = byId.get(id); return !!h && h.tabs.every((x) => PREVIEW.has(x.id)); };
