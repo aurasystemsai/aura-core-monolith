@@ -155,7 +155,7 @@ export function getToolCatalogGroups(serverGroups = []) {
    const existingGroup = moduleLocations.get(serverTool.id);
    if (existingGroup) {
 	const index = existingGroup.modules.findIndex(tool => tool.id === serverTool.id);
-	existingGroup.modules[index] = { ...existingGroup.modules[index], ...serverTool };
+	existingGroup.modules[index] = { ...existingGroup.modules[index], ...serverTool, status: serverTool.status || existingGroup.modules[index].status };
    } else {
 	group.modules.push(serverTool);
 	moduleLocations.set(serverTool.id, group);
