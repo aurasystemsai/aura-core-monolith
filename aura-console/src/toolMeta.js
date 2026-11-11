@@ -41,7 +41,7 @@ const toolsMeta = [
  { id: "review-ugc-engine", name: "Review & UGC Engine", description: "Manage reviews and user content with moderation and sentiment analysis.", category: "Support", suite: "support" },
 
  // ── Social & Brand (5 tools) ──
- { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Preview: mention tracking is not connected to external sources yet.", category: "Brand", suite: "social" },
+ { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Log mentions you collect from reviews, social posts, press and email; AI can label sentiment and draft replies. It does not monitor the web or social networks automatically.", category: "Brand", suite: "social" },
 
  // ── Ads & Acquisition (6 tools) ──
  { id: "google-ads-integration", name: "Google Ads", description: "Connect Google Ads to view real campaign performance and get AI suggestions. Read-only: AURA does not create, edit or optimize campaigns.", category: "Ads", suite: "ads" },
@@ -73,7 +73,7 @@ const toolsMeta = [
  { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Create rewards programs that drive repeat purchases.", category: "Platform", suite: "platform" },
   { id: "advanced-analytics-attribution", name: "Advanced Attribution", description: "Multi-touch attribution across all marketing channels.", category: "Analytics", suite: "analytics" },
   { id: "advanced-finance-inventory-planning", name: "Advanced Finance & Inventory Planning", description: "Monte Carlo simulations, P&L modelling, OTB planning and working capital analysis.", category: "Finance", suite: "finance" },
-  { id: "advanced-personalization-engine", name: "Advanced Personalization Engine", description: "Real-time personalization with ML models and A/B testing.", category: "Personalization", suite: "personalization" },
+  { id: "advanced-personalization-engine", name: "Advanced Personalization Engine", description: "Preview: it does not install real-time personalization on your storefront; the assistant and experiment data are not connected to a live personalization service.", category: "Personalization", suite: "personalization", status: "preview" },
   { id: "affiliate-partner-management", name: "Affiliate & Partner Management", description: "Manage affiliate partners, track commissions and automate payouts.", category: "Marketing", suite: "lifecycle" },
   { id: "ai-launch-planner", name: "AI Launch Planner", description: "Plan and execute product launches with AI-powered strategies.", category: "Platform", suite: "platform" },
   { id: "ai-segmentation-engine", name: "AI Segmentation Engine", description: "Automatic customer segmentation using machine learning.", category: "Analytics", suite: "analytics" },
@@ -81,7 +81,7 @@ const toolsMeta = [
   { id: "aura-operations-ai", name: "Aura Operations AI", description: "Platform-wide AI operations assistant and orchestration.", category: "Platform", suite: "platform" },
   { id: "automation-templates", name: "Automation Templates", description: "Pre-built automation templates for common marketing workflows.", category: "Email", suite: "lifecycle" },
   { id: "backlink-explorer", name: "Backlink Explorer", description: "Analyze your backlink profile and find link-building opportunities.", category: "SEO", suite: "seo" },
-  { id: "brand-intelligence-layer", name: "Brand Intelligence Layer", description: "Deep brand health analytics with competitive positioning.", category: "Brand", suite: "social" },
+  { id: "brand-intelligence-layer", name: "Brand Intelligence Layer", description: "Preview: no external reviews, social mentions or competitor sources are connected, so live brand health analytics are not available.", category: "Brand", suite: "social" },
   { id: "churn-prediction-playbooks", name: "Churn Prediction Playbooks", description: "Automated playbooks triggered by churn risk signals.", category: "Personalization", suite: "personalization" },
   { id: "collaboration-approval-workflows", name: "Collaboration & Approvals", description: "Team collaboration with approval workflows for campaigns.", category: "Email", suite: "lifecycle" },
   { id: "competitive-analysis", name: "Competitive Analysis", description: "Benchmark against competitors across SEO, content, and market share.", category: "SEO", suite: "seo" },
